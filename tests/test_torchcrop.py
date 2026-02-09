@@ -2,7 +2,6 @@
 
 """Tests for `torchcrop` package."""
 
-
 import unittest
 
 from torchcrop import torchcrop
