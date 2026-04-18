@@ -1,0 +1,3 @@
+# partitioning
+
+::: torchcrop.processes.partitioning

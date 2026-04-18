@@ -80,7 +80,41 @@ nav:
     - Changelog: changelog.md
     - Report Issues: https://github.com/geonextgis/torchcrop/issues
     - Examples:
-        - examples/intro.ipynb
+          - examples/intro.ipynb
     - API Reference:
-          - torchcrop module: torchcrop.md
-          - common module: common.md
+          - Overview: api/torchcrop.md
+          - Config: api/config.md
+          - Engine: api/engine.md
+          - Model: api/model.md
+          - Drivers:
+                - weather: api/drivers/weather.md
+          - Parameters:
+                - crop_params: api/parameters/crop_params.md
+                - site_params: api/parameters/site_params.md
+                - soil_params: api/parameters/soil_params.md
+          - States:
+                - model_state: api/states/model_state.md
+          - Functions:
+                - fst_functions: api/functions/fst_functions.md
+                - interpolation: api/functions/interpolation.md
+                - smoothing: api/functions/smoothing.md
+          - Neural Networks:
+                - learned_stress: api/nn/learned_stress.md
+                - param_net: api/nn/param_net.md
+                - residual: api/nn/residual.md
+          - Processes:
+                - astro: api/processes/astro.md
+                - evapotranspiration: api/processes/evapotranspiration.md
+                - irradiation: api/processes/irradiation.md
+                - leaf_dynamics: api/processes/leaf_dynamics.md
+                - nutrient_demand: api/processes/nutrient_demand.md
+                - partitioning: api/processes/partitioning.md
+                - phenology: api/processes/phenology.md
+                - photosynthesis: api/processes/photosynthesis.md
+                - root_dynamics: api/processes/root_dynamics.md
+                - stress: api/processes/stress.md
+                - water_balance: api/processes/water_balance.md
+          - Utils:
+                - io: api/utils/io.md
+                - validation: api/utils/validation.md
+                - vis: api/utils/vis.md
