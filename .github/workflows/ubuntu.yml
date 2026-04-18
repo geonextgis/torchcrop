@@ -39,8 +39,8 @@ jobs:
                   gdalinfo --version
             - name: Install dependencies
               run: |
-                  pip install --user -r requirements.txt
-                  pip install .
+                  pip install --user -r requirements.txt --retries 5 --timeout 120
+                  pip install . --retries 5 --timeout 120
             - name: PKG-TEST
               run: |
                   pip install pytest
