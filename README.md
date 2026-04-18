@@ -35,7 +35,7 @@ responses, parameter networks) and calibrated end-to-end with standard
 ## Installation
 
 ```bash
-pip install -e ".[dev]"
+pip install torchcrop
 ```
 
 ## Quickstart
@@ -120,9 +120,9 @@ pre-commit run --all-files
 
 ## References
 
-- Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
+- Wolf, J. (2012). _User guide for LINTUL5_. Wageningen UR.
   https://models.pps.wur.nl/system/files/LINTUL5-report-vs1_0.zip
-- WUR-AI. *diffWOFOST — Differentiable WOFOST crop model*.
+- WUR-AI. _diffWOFOST — Differentiable WOFOST crop model_.
   https://github.com/WUR-AI/diffWOFOST
 - The SIMPLACE Java reference implementation of Lintul5 (read-only) lives
   under `simplace/sim/components/models/lintul5/` in this repository.
