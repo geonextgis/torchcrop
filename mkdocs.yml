@@ -1,22 +1,26 @@
 site_name: torchcrop
-site_description: This is the standard PyTorch library for hybrid crop modeling.
+site_description: A PyTorch-native library for hybrid crop modeling.
 site_author: geonextgis
 site_url: https://geonextgis.github.io/torchcrop
 repo_url: https://github.com/geonextgis/torchcrop
+
+extra_javascript:
+    - https://polyfill.io/v3/polyfill.min.js?features=es6
+    - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 copyright: "Copyright &copy; 2024 - 2024 Krishnagopal Halder"
 
 theme:
     palette:
         - scheme: default
-          #   primary: blue
-          #   accent: indigo
+          primary: teal
+          accent: teal
           toggle:
               icon: material/toggle-switch-off-outline
               name: Switch to dark mode
         - scheme: slate
-          primary: indigo
-          accent: indigo
+          primary: teal
+          accent: teal
           toggle:
               icon: material/toggle-switch
               name: Switch to light mode
@@ -47,7 +51,7 @@ plugins:
     - mkdocs-jupyter:
           include_source: True
           ignore_h1_titles: True
-          execute: True
+          execute: false
           allow_errors: false
           ignore: ["conf.py"]
           execute_ignore: ["*ignore.ipynb"]
