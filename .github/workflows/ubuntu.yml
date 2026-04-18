@@ -43,5 +43,5 @@ jobs:
                   pip install .
             - name: PKG-TEST
               run: |
-                  python -m unittest discover tests/
-
+                  pip install pytest
+                  pytest tests/
