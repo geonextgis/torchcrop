@@ -1,3 +1,0 @@
-# torchcrop module
-
-::: torchcrop
