@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-torchcrop" class="md-skip">
+        <a href="#torchcrop" class="md-skip">
           Skip to content
         </a>
       
@@ -333,6 +333,89 @@
     <span class="md-ellipsis">
       
         Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quickstart
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quickstart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gradient-based-parameter-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradient-based parameter calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hybrid-modeling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hybrid modeling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
       
     </span>
   </a>
@@ -1879,6 +1962,89 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quickstart
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quickstart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gradient-based-parameter-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gradient-based parameter calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hybrid-modeling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hybrid modeling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1902,16 +2068,156 @@
   
 
 
-<h1 id="welcome-to-torchcrop">Welcome to torchcrop<a class="headerlink" href="#welcome-to-torchcrop" title="Permanent link">&para;</a></h1>
-<p><a href="https://pypi.python.org/pypi/torchcrop"><img alt="image" src="https://img.shields.io/pypi/v/torchcrop.svg" /></a></p>
-<p><strong>This is the standard PyTorch library for hybrid crop modeling.</strong></p>
+<h1 id="torchcrop">torchcrop<a class="headerlink" href="#torchcrop" title="Permanent link">&para;</a></h1>
+<p><a href="https://pypi.python.org/pypi/torchcrop"><img alt="image" src="https://img.shields.io/pypi/v/torchcrop.svg" /></a>
+<a href="https://anaconda.org/conda-forge/torchcrop"><img alt="image" src="https://img.shields.io/conda/vn/conda-forge/torchcrop.svg" /></a></p>
+<p><strong>A PyTorch-native library for hybrid crop modeling.</strong></p>
+<p><code>torchcrop</code> is a fully differentiable reimplementation of the
+<a href="https://models.pps.wur.nl/node/450">Lintul5</a> crop growth model (Wolf, 2012).
+Every step of the simulation — from sowing to harvest — produces valid
+<code>torch.autograd</code> gradients, so mechanistic crop processes can be combined
+seamlessly with learnable components (neural residuals, learned stress
+responses, parameter networks) and calibrated end-to-end with standard
+<code>torch.optim</code> optimizers.</p>
 <ul>
 <li>Free software: MIT License</li>
-<li>Documentation: <a href="https://geonextgis.github.io/torchcrop">https://geonextgis.github.io/torchcrop</a></li>
+<li>Documentation: https://geonextgis.github.io/torchcrop</li>
 </ul>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
 <ul>
-<li>TODO</li>
+<li><strong>Differentiable Lintul5</strong> — daily forward-Euler simulation of phenology,
+  radiation interception, photosynthesis, partitioning, leaf and root
+  dynamics, water balance and NPK uptake, all as <code>torch.nn.Module</code>s.</li>
+<li><strong>Batch-first</strong> — every state, parameter and driver carries a leading
+  batch dimension <code>[B, ...]</code> so that many sites, years, or parameter sets
+  can be simulated in parallel on GPU.</li>
+<li><strong>Hybrid modeling hooks</strong> — drop-in <code>NeuralResidual</code>, <code>LearnedStressFactor</code>
+  and <code>ParameterNet</code> modules that plug into the mechanistic pipeline.</li>
+<li><strong>Smooth options</strong> — stage-based branching (<code>DVS &lt; 1</code>, maturity, etc.) can
+  be switched between hard <code>torch.where</code> and sigmoid blends for second-order
+  smoothness.</li>
+<li><strong>Gradient-checked primitives</strong> — differentiable AFGEN-style interpolation
+  and soft FST helpers (<code>LIMIT</code>, <code>INSW</code>, <code>NOTNUL</code>) pass <code>torch.autograd.gradcheck</code>.</li>
+</ul>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>torchcrop
+</code></pre></div></td></tr></table></div>
+<h2 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchcrop</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_constant_weather</span>
+
+<span class="n">weather</span> <span class="o">=</span> <span class="n">make_constant_weather</span><span class="p">(</span><span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_days</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torchcrop</span><span class="o">.</span><span class="n">Lintul5Model</span><span class="p">()</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">yield_</span><span class="p">)</span>        <span class="c1"># [B] final storage-organ biomass (g m-2)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">lai</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>     <span class="c1"># [B, T+1] LAI trajectory</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">dvs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>     <span class="c1"># [B, T+1] development stage trajectory</span>
+</code></pre></div></td></tr></table></div>
+<h3 id="gradient-based-parameter-calibration">Gradient-based parameter calibration<a class="headerlink" href="#gradient-based-parameter-calibration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lintul5Model</span><span class="p">,</span> <span class="n">CropParameters</span>
+
+<span class="n">crop</span> <span class="o">=</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">crop</span><span class="o">.</span><span class="n">rue</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">crop_params</span><span class="o">=</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">crop</span><span class="o">.</span><span class="n">rue</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">weather</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span> <span class="o">-</span> <span class="n">observed_yield</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+<h3 id="hybrid-modeling">Hybrid modeling<a class="headerlink" href="#hybrid-modeling" title="Permanent link">&para;</a></h3>
+<p>Inject a neural residual on top of the mechanistic photosynthesis output:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">NeuralResidual</span>
+
+<span class="n">residual</span> <span class="o">=</span> <span class="n">NeuralResidual</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">hybrid</span> <span class="o">=</span> <span class="n">torchcrop</span><span class="o">.</span><span class="n">Lintul5Model</span><span class="p">(</span>
+    <span class="n">residual_modules</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;photosynthesis&quot;</span><span class="p">:</span> <span class="n">residual</span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+<p>All parameters — mechanistic and neural — are surfaced by
+<code>hybrid.parameters()</code> and can be optimized jointly.</p>
+<h2 id="package-layout">Package layout<a class="headerlink" href="#package-layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code>torchcrop/
+├── model.py                   # Lintul5Model(nn.Module)
+├── engine.py                  # SimulationEngine time-stepping loop
+├── config.py                  # RunConfig
+├── parameters/                # CropParameters / SoilParameters / SiteParameters
+├── drivers/weather.py         # WeatherDriver [B, T, C]
+├── states/model_state.py      # ModelState tensor container
+├── processes/                 # Biophysical processes (astro, phenology,
+│                              # irradiation, evapotranspiration, water_balance,
+│                              # photosynthesis, partitioning, leaf_dynamics,
+│                              # root_dynamics, nutrient_demand, stress)
+├── functions/                 # Differentiable primitives (AFGEN, FST, smoothing)
+├── nn/                        # NeuralResidual, LearnedStressFactor, ParameterNet
+└── utils/                     # I/O, visualisation, validation helpers
+</code></pre></div></td></tr></table></div>
+<h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>pytest<span class="w">                    </span><span class="c1"># run the test suite</span>
+flake8<span class="w"> </span>torchcrop<span class="w"> </span>tests<span class="w">    </span><span class="c1"># lint</span>
+black<span class="w"> </span>torchcrop<span class="w"> </span>tests<span class="w">     </span><span class="c1"># format</span>
+pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div></td></tr></table></div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.
+  https://models.pps.wur.nl/system/files/LINTUL5-report-vs1_0.zip</li>
+<li>WUR-AI. <em>diffWOFOST — Differentiable WOFOST crop model</em>.
+  https://github.com/WUR-AI/diffWOFOST</li>
+<li>The SIMPLACE Java reference implementation of Lintul5 (read-only) lives
+  under <code>simplace/sim/components/models/lintul5/</code> in this repository.</li>
 </ul>
 
 
@@ -1935,7 +2241,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 4, 2026 18:18:05 UTC"><span class="timeago" datetime="2026-02-04T18:18:05+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 4, 2026 18:18:05 UTC">2026-02-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 18, 2026 22:51:53 UTC"><span class="timeago" datetime="2026-04-18T22:51:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 18, 2026 22:51:53 UTC">2026-04-18</span>
   </span>
 
     
