@@ -22,11 +22,11 @@ class Astro(nn.Module):
     Equations:
 
         $$
-        \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]
+        \delta = -\arcsin\left(\sin(23.45^\circ)\,\cos\left(2\pi \frac{DOY + 10}{365}\right)\right)
         $$
 
         $$
-        \cos(H_0) = -\tan(\phi)\tan(\delta)
+        \cos(H_0) = -\tan(\phi)\,\tan(\delta)
         $$
 
         where $\phi$ is latitude in radians.
