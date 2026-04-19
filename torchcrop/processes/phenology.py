@@ -1,24 +1,22 @@
 """Phenological development — DVS accumulation, thermal time, vernalisation.
 
-Reference
----------
-Wolf (2012), Section 3.2; SIMPLACE ``Phenology.java``.
+References:
+    Wolf (2012), Section 3.2; SIMPLACE ``Phenology.java``.
 
-Equations
----------
-Effective daily temperature:
+Equations:
+    Effective daily temperature:
 
-.. math::
-    \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
+    .. math::
+        \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
 
-Development rate (pre-emergence, vegetative, generative):
+    Development rate (pre-emergence, vegetative, generative):
 
-.. math::
-    \\text{DVR} =
-    \\begin{cases}
-        \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} / \\text{TSUM1}, & 0 \\le DVS < 1 \\\\
-        \\text{DTSU} / \\text{TSUM2}, & 1 \\le DVS < 2
-    \\end{cases}
+    .. math::
+        \\text{DVR} =
+        \\begin{cases}
+            \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} / \\text{TSUM1}, & 0 \\le DVS < 1 \\\\
+            \\text{DTSU} / \\text{TSUM2}, & 1 \\le DVS < 2
+        \\end{cases}
 """
 
 from __future__ import annotations
@@ -32,7 +30,14 @@ from torchcrop.states.model_state import ModelState
 
 
 class Phenology(nn.Module):
-    """Development-stage rate calculation."""
+    """Development-stage rate calculation.
+
+    Args:
+        smooth: If ``True``, use sigmoid blends (sharpness ``k_sharp``) in
+            place of hard stage-based branches for smoother gradients.
+        k_sharp: Sharpness of the sigmoid blends (ignored when
+            ``smooth=False``).
+    """
 
     def __init__(self, smooth: bool = False, k_sharp: float = 50.0) -> None:
         super().__init__()
@@ -48,20 +53,41 @@ class Phenology(nn.Module):
     ) -> dict[str, torch.Tensor]:
         """Compute phenology rates for one day.
 
-        Parameters
-        ----------
-        state : ModelState
-        davtmp : torch.Tensor
-            Mean daily air temperature [°C], shape ``[B]``.
-        ddlp : torch.Tensor
-            Photoperiodic daylength [h], shape ``[B]``.
-        params : CropParameters
+        Args:
+            state: Current state; uses ``state.dvs`` and ``state.tsump``.
+            davtmp: Mean daily air temperature [°C], shape ``[B]``.
+            ddlp: Photoperiodic daylength [h], shape ``[B]``.
+            params: Crop parameters; uses the temperature and photoperiod
+                tables plus ``tsum1`` / ``tsum2`` / ``tsumem``.
 
-        Returns
-        -------
-        dict
-            ``dvs_rate``, ``tsum_rate``, ``tsump_rate``, ``vern_rate``,
-            ``photofac``, ``vernfac``.
+        Returns:
+            Dict of ``[B]`` tensors grouped as follows.
+
+            Rate variables (consumed by the engine for state update):
+
+                * ``dvs_rate`` [d⁻¹] — Daily increment of development
+                  stage ``dvs``. Piecewise on DVS:
+                  ``dtsu * photofac * vernfac / tsum1`` while ``dvs < 1``;
+                  ``dtsu / tsum2`` while ``1 <= dvs < 2``; gated to zero
+                  pre-emergence and post-maturity.
+                * ``tsum_rate`` [°C d d⁻¹] — Effective thermal-time
+                  accumulation since emergence (``= dtsu`` once emerged,
+                  else 0).
+                * ``tsump_rate`` [°C d d⁻¹] — Thermal-time accumulation
+                  since sowing (``max(0, T_avg - tbasem)`` capped at
+                  ``teffmx - tbasem``).
+                * ``vern_rate`` [d d⁻¹] — Vernalisation accumulation rate
+                  (placeholder = 0 in this minimal port).
+
+            Diagnostics (passed downstream, not integrated):
+
+                * ``photofac`` [-] — Photoperiod reduction factor in
+                  ``[0, 1]``.
+                * ``vernfac`` [-] — Vernalisation factor in ``[0, 1]``.
+                * ``emerged`` [-] — Hard mask (or smooth sigmoid) of
+                  ``tsump >= tsumem``.
+                * ``dtsu`` [°C d d⁻¹] — Effective thermal time from
+                  ``AFGEN(dtsmtb, T_avg)``.
         """
         # Effective thermal time
         dtsu = torch.clamp(interpolate(params.dtsmtb, davtmp), min=0.0)
@@ -119,5 +145,13 @@ class Phenology(nn.Module):
 
 
 def _safe(t: torch.Tensor, eps: float = 1e-10) -> torch.Tensor:
-    """Guard a denominator against zero."""
+    """Guard a denominator against zero.
+
+    Args:
+        t: Denominator tensor.
+        eps: Threshold below which ``t`` is replaced by ``1``.
+
+    Returns:
+        ``t`` with near-zero entries replaced by ones.
+    """
     return torch.where(t.abs() > eps, t, torch.ones_like(t))

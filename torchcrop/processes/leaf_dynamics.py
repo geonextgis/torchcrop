@@ -1,8 +1,7 @@
 """Leaf area growth and senescence.
 
-Reference
----------
-``Lintul5.java`` (leaf block).
+References:
+    ``Lintul5.java`` (leaf block).
 
 Early exponential LAI growth is driven by temperature (``RGRL``); after
 canopy closure LAI follows leaf weight × SLA. Senescence is driven by self-
@@ -31,6 +30,39 @@ class LeafDynamics(nn.Module):
         nstress: torch.Tensor,
         params: CropParameters,
     ) -> dict[str, torch.Tensor]:
+        """Compute leaf area and leaf-biomass rates for one day.
+
+        Args:
+            state: Current state; uses ``state.lai``, ``state.wlv``,
+                ``state.dvs``.
+            g_lv: Leaf growth allocated by partitioning [g DM m⁻² d⁻¹],
+                shape ``[B]``.
+            dtsu: Effective thermal time [°C d d⁻¹], shape ``[B]``.
+            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.
+            nstress: Nutrient-stress factor in ``[0, 1]``, shape ``[B]``.
+            params: Crop parameters; uses ``laicr``, ``rgrl``, ``sla``,
+                ``rdrshm``, ``rdrtb``.
+
+        Returns:
+            Dict of ``[B]`` tensors grouped as follows.
+
+            Rate variables (consumed by the engine for state update):
+
+                * ``lai_rate`` [m² m⁻² d⁻¹] — Net daily change in LAI
+                  (``= lai_growth - lai_sen``).
+                * ``wlv_rate`` [g DM m⁻² d⁻¹] — Net daily change in green
+                  leaf weight (``= g_lv - wlv * rdr_stress``).
+                * ``wlvd_rate`` [g DM m⁻² d⁻¹] — Daily senesced leaf mass
+                  transferred into the dead-leaf pool ``wlvd``.
+
+            Diagnostics:
+
+                * ``lai_growth`` [m² m⁻² d⁻¹] — Combined exponential +
+                  source-limited (``g_lv * sla``) leaf area growth.
+                * ``lai_sen`` [m² m⁻² d⁻¹] — Daily LAI loss to senescence.
+                * ``rdr`` [d⁻¹] — Effective relative death rate after
+                  shading and stress amplification, clamped to ≤ 0.1.
+        """
         lai = state.lai
         wlv = state.wlv
 
@@ -69,4 +101,13 @@ class LeafDynamics(nn.Module):
 
 
 def _safe(t: torch.Tensor, eps: float = 1e-10) -> torch.Tensor:
+    """Guard a denominator against zero.
+
+    Args:
+        t: Denominator tensor.
+        eps: Threshold below which ``t`` is replaced by ``1``.
+
+    Returns:
+        ``t`` with near-zero entries replaced by ones.
+    """
     return torch.where(t.abs() > eps, t, torch.ones_like(t))

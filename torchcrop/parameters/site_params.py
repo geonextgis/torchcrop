@@ -5,11 +5,10 @@ family — primarily ``PotentialEvapoTranspiration.java`` (atmosphere) and
 the sowing/emergence-calendar constants of ``Phenology.java`` — to a
 PyTorch-friendly dataclass.
 
-Note
-----
-Latitude is normally consumed by the
-:class:`AstronomicParametersTransformer` upstream of Lintul5; we keep it
-here so torchcrop can compute astronomy and irradiation internally.
+Note:
+    Latitude is normally consumed by the
+    :class:`AstronomicParametersTransformer` upstream of Lintul5; we keep it
+    here so torchcrop can compute astronomy and irradiation internally.
 """
 
 from __future__ import annotations
@@ -21,7 +20,15 @@ import torch
 
 
 def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
-    """Build a scalar tensor with the requested dtype."""
+    """Build a scalar tensor with the requested dtype.
+
+    Args:
+        x: Python scalar value.
+        dtype: Target tensor dtype.
+
+    Returns:
+        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+    """
     return torch.tensor(x, dtype=dtype)
 
 
@@ -29,7 +36,15 @@ def _table(
     rows: list[tuple[float, float]],
     dtype: torch.dtype = torch.float32,
 ) -> torch.Tensor:
-    """Build an ``[N, 2]`` interpolation table tensor."""
+    """Build an ``[N, 2]`` interpolation table tensor.
+
+    Args:
+        rows: List of ``(x, y)`` breakpoints.
+        dtype: Target tensor dtype.
+
+    Returns:
+        A 2-D tensor of shape ``[N, 2]``.
+    """
     return torch.tensor(rows, dtype=dtype)
 
 
@@ -117,8 +132,15 @@ class SiteParameters:
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> "SiteParameters":
-        """Return a new :class:`SiteParameters` with all tensor fields
-        cast/moved to the requested dtype/device."""
+        """Cast and/or move all tensor fields to a new dtype/device.
+
+        Args:
+            dtype: Target tensor dtype, or ``None`` to leave unchanged.
+            device: Target torch device, or ``None`` to leave unchanged.
+
+        Returns:
+            A new :class:`SiteParameters` with every tensor field moved/cast.
+        """
         kwargs: dict[str, Any] = {}
         for f in fields(self):
             t = getattr(self, f.name)

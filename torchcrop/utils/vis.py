@@ -12,6 +12,15 @@ import torch
 
 
 def _require_matplotlib():
+    """Import ``matplotlib.pyplot`` lazily with a helpful error.
+
+    Returns:
+        The imported :mod:`matplotlib.pyplot` module.
+
+    Raises:
+        ImportError: If ``matplotlib`` is not installed, with a message
+            pointing to the pip install command.
+    """
     try:
         import matplotlib.pyplot as plt  # noqa: F401
     except ImportError as e:
@@ -28,7 +37,19 @@ def plot_trajectories(
     ylabel: str = "",
     labels: Iterable[str] | None = None,
 ):
-    """Plot one or more trajectories of shape ``[B, T]`` or ``[T]``."""
+    """Plot one or more trajectories.
+
+    Args:
+        traj: Trajectory tensor of shape ``[T]`` (single series) or
+            ``[B, T]`` (batched series — one line per batch element).
+        title: Figure title.
+        ylabel: Y-axis label.
+        labels: Optional iterable of legend labels, one per batch element.
+            Ignored for 1-D input. Defaults to ``"batch i"``.
+
+    Returns:
+        Tuple ``(fig, ax)`` of the created Matplotlib figure and axes.
+    """
     plt = _require_matplotlib()
     fig, ax = plt.subplots(figsize=(8, 4))
     y = traj.detach().cpu().numpy()

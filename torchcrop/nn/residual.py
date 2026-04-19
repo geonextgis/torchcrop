@@ -13,8 +13,20 @@ import torch.nn as nn
 class NeuralResidual(nn.Module):
     r"""Bounded additive residual from an MLP.
 
+    The residual output is produced by
+
     .. math::
         f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))
+
+    which keeps the correction bounded to ``[-scale, +scale]`` so that the
+    learned term cannot overwhelm the mechanistic prediction it augments.
+
+    Args:
+        input_dim: Size of the context feature vector fed to the MLP.
+        output_dim: Dimensionality of the residual correction (default 1).
+        hidden_dim: Hidden-layer width.
+        n_hidden: Number of hidden layers (each followed by ``Tanh``).
+        scale: Magnitude cap on the residual output.
     """
 
     def __init__(
@@ -36,4 +48,13 @@ class NeuralResidual(nn.Module):
         self.scale = scale
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the bounded residual correction.
+
+        Args:
+            x: Context feature tensor of shape ``[..., input_dim]``.
+
+        Returns:
+            Residual correction of shape ``[..., output_dim]`` with values
+            in ``[-scale, +scale]``.
+        """
         return self.scale * torch.tanh(self.mlp(x))

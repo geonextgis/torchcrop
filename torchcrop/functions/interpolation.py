@@ -21,19 +21,17 @@ def interpolate(
     table the output is clamped to the first/last y-value (flat extrapolation),
     matching the SIMPLACE ``InterpolationTable`` behaviour.
 
-    Parameters
-    ----------
-    table : torch.Tensor
-        Breakpoint table of shape ``[N, 2]`` with columns ``(x_k, y_k)``
-        sorted by increasing ``x_k``. May also be of shape ``[B, N, 2]``
-        for batch-specific tables.
-    x : torch.Tensor
-        Query values of shape ``[B]`` (or scalar).
+    Args:
+        table: Breakpoint table of shape ``[N, 2]`` with columns
+            ``(x_k, y_k)`` sorted by increasing ``x_k``. May also be of
+            shape ``[B, N, 2]`` for batch-specific tables.
+        x: Query values of shape ``[B]`` (or scalar).
 
-    Returns
-    -------
-    torch.Tensor
+    Returns:
         Interpolated values with the broadcast shape of ``x``.
+
+    Raises:
+        ValueError: If ``table`` is neither 2-D nor 3-D.
     """
     if table.dim() == 2:
         xs = table[:, 0].contiguous()
@@ -51,7 +49,19 @@ def _interp_1d(
     ys: torch.Tensor,
     x: torch.Tensor,
 ) -> torch.Tensor:
-    """Piecewise-linear interpolation with a single shared table."""
+    """Piecewise-linear interpolation with a single shared table.
+
+    Args:
+        xs: Abscissae, sorted increasing, shape ``[N]``.
+        ys: Ordinates, shape ``[N]``.
+        x: Query values of arbitrary shape.
+
+    Returns:
+        Interpolated values with the same shape as ``x``.
+
+    Raises:
+        ValueError: If fewer than two breakpoints are supplied.
+    """
     n = xs.shape[0]
     if n < 2:
         raise ValueError("interpolation table needs at least 2 breakpoints")
@@ -79,7 +89,19 @@ def _interp_batched(
     table: torch.Tensor,
     x: torch.Tensor,
 ) -> torch.Tensor:
-    """Piecewise-linear interpolation with a per-batch table ``[B, N, 2]``."""
+    """Piecewise-linear interpolation with a per-batch table.
+
+    Args:
+        table: Per-batch breakpoint tables of shape ``[B, N, 2]``.
+        x: Query values of shape ``[B]``.
+
+    Returns:
+        Interpolated values of shape ``[B]``.
+
+    Raises:
+        ValueError: If the batch size of ``table`` does not match ``x`` or
+            fewer than two breakpoints are supplied.
+    """
     b, n, _ = table.shape
     if n < 2:
         raise ValueError("interpolation table needs at least 2 breakpoints")

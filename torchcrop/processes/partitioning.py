@@ -1,8 +1,7 @@
 """Biomass allocation to plant organs.
 
-Reference
----------
-Biomass partitioning block of ``Lintul5.java``.
+References:
+    Biomass partitioning block of ``Lintul5.java``.
 
 Partitioning fractions depend on DVS via the parameters ``FLTB``, ``FSTB``,
 ``FRTB``, ``FOTB`` (leaves, stems, roots, storage). The above-ground fraction
@@ -28,6 +27,39 @@ class Partitioning(nn.Module):
         gtotal: torch.Tensor,
         params: CropParameters,
     ) -> dict[str, torch.Tensor]:
+        """Split gross daily biomass production across organs.
+
+        Args:
+            state: Current state (uses ``state.dvs`` for table lookups).
+            gtotal: Gross daily biomass production [g DM m⁻² d⁻¹], shape
+                ``[B]``.
+            params: Crop parameters; uses the partitioning tables ``frtb``,
+                ``fltb``, ``fstb``, ``fotb``.
+
+        Returns:
+            Dict of ``[B]`` tensors grouped as follows.
+
+            Rate variables (per-organ growth, fed to leaf/root/state updates
+            and nutrient demand):
+
+                * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate
+                  (``= gtotal * fr``); becomes ``wrt_rate``.
+                * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence;
+                  :class:`LeafDynamics` converts it into ``wlv_rate`` and
+                  ``lai_rate``.
+                * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate; becomes
+                  ``wst_rate`` directly.
+                * ``g_so`` [g DM m⁻² d⁻¹] — Storage organ growth rate;
+                  becomes ``wso_rate`` and drives final yield.
+
+            Diagnostics (normalised partitioning fractions):
+
+                * ``fr`` [-] — Below-ground (root) fraction, clamped to
+                  ``[0, 0.95]``.
+                * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to
+                  leaves, stems, storage organs. Re-normalised so that
+                  ``fl + fs + fo == 1``.
+        """
         dvs = state.dvs
         fr = interpolate(params.frtb, dvs)
         fl = interpolate(params.fltb, dvs)

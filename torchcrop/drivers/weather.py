@@ -38,6 +38,13 @@ class WeatherDriver:
 
     Provides named channel access and input validation. The underlying tensor
     is accessible as ``.data`` for direct use in process modules.
+
+    Attributes:
+        data: The underlying weather tensor of shape ``[B, T, C]``.
+
+    Raises:
+        ValueError: If ``data`` is not 3-D or does not carry exactly
+            :data:`N_WEATHER_CHANNELS` channels.
     """
 
     data: torch.Tensor
@@ -55,19 +62,38 @@ class WeatherDriver:
 
     @property
     def batch_size(self) -> int:
+        """Leading batch dimension ``B``."""
         return self.data.shape[0]
 
     @property
     def n_days(self) -> int:
+        """Number of daily time steps ``T``."""
         return self.data.shape[1]
 
     def day(self, t: int) -> dict[str, torch.Tensor]:
-        """Return a dict of named channels for day ``t``. Each value has shape ``[B]``."""
+        """Return a dict of named channels for day ``t``.
+
+        Args:
+            t: Time index in ``[0, T)``.
+
+        Returns:
+            Dict mapping channel name to a ``[B]`` tensor.
+        """
         slice_t = self.data[:, t, :]
         return {name: slice_t[:, i] for i, name in enumerate(WEATHER_CHANNELS)}
 
     def channel(self, name: str) -> torch.Tensor:
-        """Return the full ``[B, T]`` trajectory of a named channel."""
+        """Return the full ``[B, T]`` trajectory of a named channel.
+
+        Args:
+            name: Channel name (see :data:`WEATHER_CHANNELS`).
+
+        Returns:
+            A ``[B, T]`` tensor view of the requested channel.
+
+        Raises:
+            KeyError: If ``name`` is not a known weather channel.
+        """
         try:
             idx = WEATHER_CHANNELS.index(name)
         except ValueError as e:
@@ -75,4 +101,13 @@ class WeatherDriver:
         return self.data[:, :, idx]
 
     def to(self, dtype: torch.dtype | None = None, device: torch.device | str | None = None) -> "WeatherDriver":
+        """Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.
+
+        Args:
+            dtype: Target tensor dtype, or ``None`` to leave unchanged.
+            device: Target torch device, or ``None`` to leave unchanged.
+
+        Returns:
+            A new :class:`WeatherDriver` wrapping the cast tensor.
+        """
         return WeatherDriver(self.data.to(dtype=dtype, device=device))

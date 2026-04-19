@@ -10,7 +10,21 @@ def relative_error(
     y_ref: torch.Tensor,
     eps: float = 1e-10,
 ) -> torch.Tensor:
-    """Element-wise relative error :math:`|y - y_\\text{ref}| / \\max(|y_\\text{ref}|, \\epsilon)`."""
+    """Compute element-wise relative error.
+
+    .. math::
+        e_i = \\frac{|y_i - y_{\\text{ref},i}|}{\\max(|y_{\\text{ref},i}|,
+        \\epsilon)}
+
+    Args:
+        y: Tensor of computed values.
+        y_ref: Tensor of reference values broadcastable to ``y``.
+        eps: Lower bound on the denominator to avoid division by zero.
+
+    Returns:
+        Tensor of relative errors with the broadcast shape of ``y`` and
+        ``y_ref``.
+    """
     return (y - y_ref).abs() / torch.clamp(y_ref.abs(), min=eps)
 
 
@@ -20,7 +34,24 @@ def compare_trajectories(
     rtol: float = 1e-4,
     atol: float = 1e-6,
 ) -> dict[str, torch.Tensor | bool]:
-    """Compare trajectories and report max/mean error and pass/fail flag."""
+    """Compare trajectories and report max/mean error and pass/fail flag.
+
+    Args:
+        y: Computed trajectory tensor.
+        y_ref: Reference trajectory tensor broadcastable to ``y``.
+        rtol: Relative tolerance forwarded to :func:`torch.allclose`.
+        atol: Absolute tolerance forwarded to :func:`torch.allclose`.
+
+    Returns:
+        Dict with the following entries:
+
+            * ``max_abs_error`` — scalar tensor, maximum absolute error.
+            * ``mean_abs_error`` — scalar tensor, mean absolute error.
+            * ``max_rel_error`` — scalar tensor, maximum relative error
+              (using :func:`relative_error`).
+            * ``passed`` — ``bool``, result of
+              ``torch.allclose(y, y_ref, rtol=rtol, atol=atol)``.
+    """
     diff = (y - y_ref).abs()
     max_err = diff.max()
     mean_err = diff.mean()

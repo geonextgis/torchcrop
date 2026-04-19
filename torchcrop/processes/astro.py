@@ -1,10 +1,9 @@
 """Astronomical parameters: solar declination, daylength, extraterrestrial radiation.
 
-Reference
----------
-Goudriaan, J. & van Laar, H.H. (1994). *Modelling potential crop growth
-processes* — the daylength formulation used by the SIMPLACE
-``AstronomicParametersTransformer``.
+References:
+    Goudriaan, J. & van Laar, H.H. (1994). *Modelling potential crop growth
+    processes* — the daylength formulation used by the SIMPLACE
+    ``AstronomicParametersTransformer``.
 """
 
 from __future__ import annotations
@@ -20,15 +19,14 @@ _DEG2RAD = math.pi / 180.0
 class Astro(nn.Module):
     r"""Compute solar declination and astronomical daylength.
 
-    Equations
-    ---------
-    .. math::
-        \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]
+    Equations:
+        .. math::
+            \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]
 
-    .. math::
-        \cos(H_0) = -\tan(\phi)\tan(\delta)
+        .. math::
+            \cos(H_0) = -\tan(\phi)\tan(\delta)
 
-    where :math:`\phi` is latitude in radians.
+        where :math:`\phi` is latitude in radians.
 
     Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses
     a civil-twilight inclusion angle of :math:`-4^\circ` as in Lintul5.
@@ -41,18 +39,15 @@ class Astro(nn.Module):
     ) -> dict[str, torch.Tensor]:
         """Compute astronomical parameters.
 
-        Parameters
-        ----------
-        doy : torch.Tensor
-            Day of year, shape ``[B]``.
-        latitude : torch.Tensor
-            Latitude in degrees, shape ``[B]`` or ``[]`` (broadcastable).
+        Args:
+            doy: Day of year, shape ``[B]``.
+            latitude: Latitude in degrees, shape ``[B]`` or ``[]``
+                (broadcastable).
 
-        Returns
-        -------
-        dict
-            ``declination`` [rad], ``daylength`` [h], ``ddlp`` [h] (photoperiod),
-            ``sinld``/``cosld``/``dsinbe`` (used by irradiation).
+        Returns:
+            Dict with keys ``declination`` [rad], ``daylength`` [h],
+            ``ddlp`` [h] (photoperiod), and ``sinld``/``cosld``/``dsinbe``
+            (used by irradiation).
         """
         lat_rad = latitude * _DEG2RAD
         dec = -torch.asin(

@@ -4,12 +4,11 @@ A light-weight Priestley–Taylor approximation is implemented by default; this
 is adequate for differentiable experimentation. For operational use, swap in
 a full FAO-56 Penman–Monteith variant (kept as a TODO hook).
 
-Equations
----------
-.. math::
-    ET_0 = \\alpha \\cdot \\frac{\\Delta}{\\Delta + \\gamma} \\cdot \\frac{R_n}{\\lambda}
+Equations:
+    .. math::
+        ET_0 = \\alpha \\cdot \\frac{\\Delta}{\\Delta + \\gamma} \\cdot \\frac{R_n}{\\lambda}
 
-with :math:`\\alpha = 1.26`, :math:`\\lambda = 2.45\\ \\text{MJ kg}^{-1}`.
+    with :math:`\\alpha = 1.26`, :math:`\\lambda = 2.45\\ \\text{MJ kg}^{-1}`.
 """
 
 from __future__ import annotations
@@ -19,7 +18,12 @@ import torch.nn as nn
 
 
 class PotentialEvapoTranspiration(nn.Module):
-    """Priestley–Taylor reference evapotranspiration."""
+    """Priestley–Taylor reference evapotranspiration.
+
+    Args:
+        alpha_pt: Priestley–Taylor coefficient :math:`\\alpha`
+            (default 1.26).
+    """
 
     def __init__(self, alpha_pt: float = 1.26) -> None:
         super().__init__()
@@ -32,23 +36,27 @@ class PotentialEvapoTranspiration(nn.Module):
         lai: torch.Tensor,
         k_ext: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """
-        Parameters
-        ----------
-        davtmp : torch.Tensor
-            Mean daily air temperature [°C], shape ``[B]``.
-        irrad : torch.Tensor
-            Global daily radiation [MJ m-2 d-1], shape ``[B]``.
-        lai : torch.Tensor
-            Leaf area index, shape ``[B]``.
-        k_ext : torch.Tensor
-            Canopy extinction coefficient.
+        """Compute reference ET and split it into canopy / soil fluxes.
 
-        Returns
-        -------
-        dict
-            ``et0`` [mm d-1], ``pevap`` (potential soil evap), ``ptran``
-            (potential transpiration).
+        Args:
+            davtmp: Mean daily air temperature [°C], shape ``[B]``.
+            irrad: Global daily radiation [MJ m⁻² d⁻¹], shape ``[B]``.
+            lai: Leaf area index, shape ``[B]``.
+            k_ext: Canopy extinction coefficient.
+
+        Returns:
+            Dict of ``[B]`` tensors with the potential fluxes (no state is
+            integrated here — :class:`WaterBalance` turns
+            ``ptran``/``pevap`` into actual ``tran``/``evap``):
+
+                * ``et0`` [mm d⁻¹] — Reference evapotranspiration
+                  (Priestley–Taylor).
+                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration
+                  ``= et0 * (1 - exp(-k_ext * lai))``; passed to
+                  :class:`WaterBalance` to compute actual transpiration.
+                * ``pevap`` [mm d⁻¹] — Potential soil evaporation
+                  ``= et0 * exp(-k_ext * lai)``; passed to
+                  :class:`WaterBalance`.
         """
         # Slope of saturation vapour pressure curve [kPa K-1]
         delta = (

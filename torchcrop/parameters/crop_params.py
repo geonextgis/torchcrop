@@ -11,16 +11,15 @@ table itself is batch-varying), where column 0 is the abscissa (DVS or
 temperature) and column 1 is the value. Tables are interpolated by
 :func:`torchcrop.functions.interpolate`.
 
-Naming conventions
-------------------
-* Field names follow the original Lintul5 (Wolf, 2012) symbol, lowercased.
-* Constants prefixed with ``c`` in SIMPLACE drop the ``c`` prefix here.
-* Tables originally named ``cXxxTableY`` are concatenated into a single
-  two-column tensor named ``xxx_tb`` (or ``xxx_table``).
+Naming conventions:
+    * Field names follow the original Lintul5 (Wolf, 2012) symbol,
+      lowercased.
+    * Constants prefixed with ``c`` in SIMPLACE drop the ``c`` prefix here.
+    * Tables originally named ``cXxxTableY`` are concatenated into a single
+      two-column tensor named ``xxx_tb`` (or ``xxx_table``).
 
-Reference
----------
-Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
+References:
+    Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
 """
 
 from __future__ import annotations
@@ -32,7 +31,15 @@ import torch
 
 
 def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
-    """Build a scalar tensor with the requested dtype."""
+    """Build a scalar tensor with the requested dtype.
+
+    Args:
+        x: Python scalar value.
+        dtype: Target tensor dtype.
+
+    Returns:
+        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+    """
     return torch.tensor(x, dtype=dtype)
 
 
@@ -40,7 +47,16 @@ def _table(
     rows: list[tuple[float, float]],
     dtype: torch.dtype = torch.float32,
 ) -> torch.Tensor:
-    """Build an ``[N, 2]`` interpolation table tensor."""
+    """Build an ``[N, 2]`` interpolation table tensor.
+
+    Args:
+        rows: List of ``(x, y)`` breakpoints.
+        dtype: Target tensor dtype.
+
+    Returns:
+        A 2-D tensor of shape ``[N, 2]`` with abscissa in column 0 and
+        ordinate in column 1.
+    """
     return torch.tensor(rows, dtype=dtype)
 
 
@@ -677,8 +693,17 @@ class CropParameters:
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> "CropParameters":
-        """Return a new :class:`CropParameters` with all tensor fields
-        cast/moved to the requested dtype/device."""
+        """Cast and/or move all tensor fields to a new dtype/device.
+
+        Args:
+            dtype: Target tensor dtype, or ``None`` to leave unchanged.
+            device: Target torch device, or ``None`` to leave unchanged.
+
+        Returns:
+            A new :class:`CropParameters` with every tensor field moved /
+            cast; non-tensor fields (e.g., optional tables set to ``None``)
+            are copied through unchanged.
+        """
         kwargs: dict[str, Any] = {}
         for f in fields(self):
             t = getattr(self, f.name)
@@ -690,5 +715,13 @@ class CropParameters:
 
 
 def default_wheat_params(dtype: torch.dtype = torch.float32) -> CropParameters:
-    """Return the SIMPLACE Lintul5 wheat-like default parameter set."""
+    """Return the SIMPLACE Lintul5 wheat-like default parameter set.
+
+    Args:
+        dtype: Target tensor dtype for all scalar/tabular fields.
+
+    Returns:
+        A fresh :class:`CropParameters` with the Lintul5 wheat defaults
+        cast to ``dtype``.
+    """
     return CropParameters().to(dtype=dtype)

@@ -37,21 +37,15 @@ from torchcrop.states.model_state import ModelState
 class ModelOutput:
     """Container for a full simulation run.
 
-    Attributes
-    ----------
-    states : list[ModelState]
-        Per-day state snapshots (length ``T + 1``; the first entry is the
-        initial condition).
-    rates : list[dict[str, torch.Tensor]]
-        Per-day rate dicts (length ``T``).
-    yield_ : torch.Tensor
-        Final storage-organ dry weight ``WSO`` at the last step [g m-2].
-    lai : torch.Tensor
-        LAI trajectory of shape ``[B, T + 1]``.
-    dvs : torch.Tensor
-        DVS trajectory of shape ``[B, T + 1]``.
-    biomass : torch.Tensor
-        Above-ground biomass trajectory of shape ``[B, T + 1]``.
+    Attributes:
+        states: Per-day state snapshots (length ``T + 1``; the first entry is
+            the initial condition).
+        rates: Per-day rate dicts (length ``T``).
+        yield_: Final storage-organ dry weight ``WSO`` at the last step
+            [g m-2].
+        lai: LAI trajectory of shape ``[B, T + 1]``.
+        dvs: DVS trajectory of shape ``[B, T + 1]``.
+        biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.
     """
 
     states: list[ModelState]
@@ -65,18 +59,18 @@ class ModelOutput:
 class Lintul5Model(nn.Module):
     """Differentiable reimplementation of the Lintul5 crop growth model.
 
-    Parameters
-    ----------
-    crop_params, soil_params, site_params :
-        Parameter containers (see :mod:`torchcrop.parameters`).
-    smooth : bool
-        Use smooth (sigmoid-blend) replacements for stage-based branching.
-    stress_module : nn.Module, optional
-        Replacement for the default :class:`StressFactors` combiner.
-    residual_modules : dict[str, nn.Module], optional
-        Optional neural residual corrections keyed by process name
-        (``"photosynthesis"`` adds to ``gtotal``; ``"partitioning"`` adds to
-        the four allocation fractions; ``"leaf_dynamics"`` adds to ``lai_rate``).
+    Args:
+        crop_params: Crop parameter container (see :mod:`torchcrop.parameters`).
+        soil_params: Soil parameter container.
+        site_params: Site parameter container (e.g. latitude, altitude).
+        smooth: If ``True``, use smooth (sigmoid-blend) replacements for
+            stage-based branching.
+        stress_module: Optional replacement for the default
+            :class:`StressFactors` combiner.
+        residual_modules: Optional neural residual corrections keyed by
+            process name (``"photosynthesis"`` adds to ``gtotal``;
+            ``"partitioning"`` adds to the four allocation fractions;
+            ``"leaf_dynamics"`` adds to ``lai_rate``).
     """
 
     def __init__(
@@ -124,7 +118,18 @@ class Lintul5Model(nn.Module):
         dtype: torch.dtype = torch.float32,
         device: torch.device | str = "cpu",
     ) -> ModelState:
-        """Build an initial state for a batch, using ``dvsi`` from crop params."""
+        """Build an initial state for a batch, using ``dvsi`` from crop params.
+
+        Args:
+            batch_size: Number of parallel simulation instances ``B``.
+            dtype: Tensor dtype.
+            device: Torch device (e.g. ``"cpu"``, ``"cuda"``).
+
+        Returns:
+            A fresh :class:`ModelState` with initial DVS, root depth, soil
+            water at field capacity, and a seeded leaf mass so that LAI
+            growth has a substrate post-emergence.
+        """
         dvsi = float(self.crop_params.dvsi.detach().cpu().item())
         rootdi = float(self.crop_params.rootdi.detach().cpu().item())
         # Initialise at field capacity × initial rooting depth (mm)
@@ -151,7 +156,19 @@ class Lintul5Model(nn.Module):
         start_doy: int = 1,
         initial_state: ModelState | None = None,
     ) -> ModelOutput:
-        """Run a full simulation and return trajectories plus final yield."""
+        """Run a full simulation and return trajectories plus final yield.
+
+        Args:
+            weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of
+                daily weather forcing.
+            start_doy: Day-of-year of the first simulated day.
+            initial_state: Optional pre-built :class:`ModelState`. When
+                omitted, :meth:`initialize` is called automatically.
+
+        Returns:
+            A :class:`ModelOutput` containing the full state/rate trajectories
+            and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).
+        """
         if isinstance(weather, torch.Tensor):
             weather = WeatherDriver(weather)
         batch_size = weather.batch_size
@@ -197,7 +214,18 @@ class Lintul5Model(nn.Module):
         weather_day: dict[str, torch.Tensor],
         doy: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Compute the rate vector for a single day (low-level API)."""
+        """Compute the rate vector for a single day (low-level API).
+
+        Args:
+            state: Current :class:`ModelState`.
+            weather_day: Dict of named weather channels for the current day
+                (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.
+            doy: Day-of-year tensor of shape ``[B]``.
+
+        Returns:
+            Dict of rate tensors keyed by ``"<field>_rate"`` plus diagnostics
+            (``tranrf``, ``nstress``, ``gtotal``).
+        """
         return self._compute_rates_dispatch(
             state=state,
             weather_day=weather_day,
@@ -213,6 +241,16 @@ class Lintul5Model(nn.Module):
         rates: dict[str, torch.Tensor],
         dt: float = 1.0,
     ) -> ModelState:
+        """Apply a forward-Euler step to advance the state by ``dt`` days.
+
+        Args:
+            state: Current :class:`ModelState`.
+            rates: Dict of rate tensors produced by :meth:`compute_rates`.
+            dt: Integration step in days.
+
+        Returns:
+            A new :class:`ModelState` advanced by one step.
+        """
         return euler_update(state, rates, dt)
 
     # ------------------------------------------------------------------ #
@@ -366,7 +404,15 @@ class Lintul5Model(nn.Module):
     # ------------------------------------------------------------------ #
 
     def learnable_parameter_groups(self) -> dict[str, Any]:
-        """Return a dict of named nn.Parameters across all parameter containers."""
+        """Return a dict of named :class:`nn.Parameter` tensors.
+
+        Walks the ``crop``/``soil``/``site`` parameter containers and
+        collects every field that is an :class:`nn.Parameter`.
+
+        Returns:
+            Dict keyed by ``"<container>.<field>"`` mapping to the
+            corresponding :class:`nn.Parameter`.
+        """
         out: dict[str, Any] = {}
         for name, params in (
             ("crop", self.crop_params),

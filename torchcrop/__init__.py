@@ -2,9 +2,8 @@
 
 Top-level package exposing the public API of torchcrop.
 
-Reference
----------
-Wolf, J. (2012). User guide for LINTUL5. Wageningen UR.
+References:
+    Wolf, J. (2012). User guide for LINTUL5. Wageningen UR.
 """
 
 __author__ = """Krishnagopal Halder"""

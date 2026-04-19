@@ -3,6 +3,24 @@
 Every field has shape ``[B]`` for scalar-per-batch quantities. The container
 is a simple ``@dataclass``; all operations that "update" state return a new
 ``ModelState`` instance so the computation graph is preserved for autograd.
+
+Terminology:
+    * **State variables**: quantities that persist across time steps and
+      define the system at a given instant (e.g., ``dvs``, ``lai``, ``wlv``,
+      ``wa``). They are integrated over time via explicit Euler updates.
+    * **Rate variables**: time derivatives of states (units of state-unit per
+      day) computed by the process modules each step (e.g., ``dvs_rate``,
+      ``wlv_rate``, ``lai_rate``). Rates are *not* stored on ``ModelState``;
+      they are produced by process ``forward()`` calls and consumed by the
+      state update step ``s_{t+1} = s_t + r_t * dt``.
+    * **Output variables**: per-step snapshots of selected states /
+      diagnostics collected by the engine and returned by ``Lintul5Model``
+      as a ``ModelOutput`` (e.g., trajectories of ``dvs``, ``lai``, total
+      biomass, and final ``yield_ = wso`` at maturity).
+
+References:
+    * Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
+    * SIMPLACE reference: ``simplace/sim/components/models/lintul5/``.
 """
 
 from __future__ import annotations
@@ -17,7 +35,40 @@ import torch
 class ModelState:
     """Full Lintul5 state vector.
 
-    Units follow Wolf (2012).
+    Holds every persistent quantity advanced by the simulation engine. All
+    fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per batch
+    element) and units follow Wolf (2012). The container is purely a *state*
+    snapshot — daily *rates* are produced by the process modules and the
+    *outputs* (per-step trajectories, final yield, etc.) are assembled by the
+    engine; see the module docstring for the full catalogue.
+
+    Attributes:
+        dvs: Development stage in ``[0, 2]`` (0=emergence, 1=anthesis,
+            2=maturity), ``[B]``, dimensionless.
+        tsum: Thermal time accumulated since emergence, ``[B]`` [°C d].
+        tsump: Thermal time accumulated since sowing, ``[B]`` [°C d].
+        vern: Vernalisation days accumulated, ``[B]`` [d].
+        wlv: Green leaf dry weight, ``[B]`` [g m⁻²].
+        wlvd: Dead leaf dry weight (senesced), ``[B]`` [g m⁻²].
+        wst: Stem dry weight, ``[B]`` [g m⁻²].
+        wrt: Root dry weight, ``[B]`` [g m⁻²].
+        wso: Storage organ dry weight (drives final yield), ``[B]``
+            [g m⁻²].
+        lai: Leaf area index, ``[B]`` [m² m⁻²].
+        rootd: Rooting depth, ``[B]`` [m].
+        wa: Actual soil water in the root zone, ``[B]`` [mm].
+        anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,
+            storage organs, each ``[B]`` [g N m⁻²].
+        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].
+        aklv, akst, akrt, akso: Potassium pools, each ``[B]`` [g K m⁻²].
+        tran_cum: Cumulative actual transpiration, ``[B]`` [mm].
+        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].
+
+    Note:
+        Updates are functional: :meth:`replace` returns a *new*
+        ``ModelState`` rather than mutating in place, so the autograd graph
+        is preserved across the explicit-Euler step
+        ``s_{t+1} = s_t + r_t * dt``.
     """
 
     # Phenology
@@ -74,7 +125,21 @@ class ModelState:
         wai: float = 60.0,
         rootdi: float = 0.10,
     ) -> "ModelState":
-        """Construct a zeroed initial state for a batch."""
+        """Construct a zeroed initial state for a batch.
+
+        Args:
+            batch_size: Number of parallel simulation instances ``B``.
+            dtype: Tensor dtype.
+            device: Torch device.
+            dvsi: Initial development stage ``DVSI``.
+            wai: Initial soil water content in the root zone [mm].
+            rootdi: Initial rooting depth [m].
+
+        Returns:
+            A fresh :class:`ModelState` with all biomass / nutrient pools at
+            zero and the specified initial values for ``dvs``, ``rootd`` and
+            ``wa``.
+        """
         zeros = torch.zeros(batch_size, dtype=dtype, device=device)
         full = lambda v: torch.full((batch_size,), float(v), dtype=dtype, device=device)
         return cls(
@@ -107,11 +172,24 @@ class ModelState:
         )
 
     def replace(self, **updates: Any) -> "ModelState":
-        """Functional update — returns a new ``ModelState`` with fields replaced."""
+        """Return a new :class:`ModelState` with selected fields replaced.
+
+        Args:
+            **updates: Field name / tensor pairs to override. Fields not
+                passed are copied through unchanged.
+
+        Returns:
+            A new :class:`ModelState` instance with the updates applied.
+        """
         return replace(self, **updates)
 
     def stack(self) -> torch.Tensor:
-        """Stack all scalar-per-batch tensors into ``[B, C]`` for logging."""
+        """Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.
+
+        Returns:
+            A ``[B, C]`` tensor where ``C`` is the number of tensor fields,
+            laid out in field-definition order.
+        """
         tensors = [
             getattr(self, f.name)
             for f in fields(self)
@@ -121,6 +199,7 @@ class ModelState:
 
     @property
     def field_names(self) -> list[str]:
+        """Names of all tensor fields on this :class:`ModelState`."""
         return [
             f.name
             for f in fields(self)

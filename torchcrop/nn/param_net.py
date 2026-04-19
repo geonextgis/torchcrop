@@ -11,6 +11,12 @@ class ParameterNet(nn.Module):
 
     This is useful when you want to condition parameters on site/cultivar
     metadata (e.g., a learned embedding for each cultivar identifier).
+
+    Args:
+        embedding_dim: Size of the input context embedding.
+        n_params: Number of crop parameters to predict.
+        hidden_dim: Hidden-layer width.
+        n_hidden: Number of hidden layers (each followed by ``Tanh``).
     """
 
     def __init__(
@@ -30,4 +36,13 @@ class ParameterNet(nn.Module):
         self.mlp = nn.Sequential(*layers)
 
     def forward(self, embedding: torch.Tensor) -> torch.Tensor:
+        """Predict crop parameters from a context embedding.
+
+        Args:
+            embedding: Context embedding tensor of shape
+                ``[..., embedding_dim]``.
+
+        Returns:
+            Predicted parameter vector of shape ``[..., n_params]``.
+        """
         return self.mlp(embedding)

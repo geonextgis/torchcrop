@@ -21,7 +21,13 @@ from torchcrop.states.model_state import ModelState
 
 @dataclass
 class StepResult:
-    """Outputs of a single simulation step."""
+    """Outputs of a single simulation step.
+
+    Attributes:
+        state: The updated :class:`ModelState` after applying the Euler step.
+        rates: Dict of rate tensors produced by the process modules for the
+            current day, keyed by state-field name (e.g. ``dvs_rate``).
+    """
 
     state: ModelState
     rates: dict[str, torch.Tensor]
@@ -33,6 +39,13 @@ class SimulationEngine(nn.Module):
     The engine expects a callable ``compute_rates(state, weather_day, doy)``
     returning a dict of rate tensors indexed by state-field name, plus a
     callable ``update_state(state, rates, dt)``.
+
+    Args:
+        compute_rates: Callable returning per-day rate tensors for a given
+            ``(state, weather_day, doy, params...)`` tuple.
+        update_state: Callable applying an integration step
+            ``(state, rates, dt) -> ModelState``.
+        dt: Integration step size in days. Defaults to ``1.0``.
     """
 
     def __init__(
@@ -75,7 +88,22 @@ class SimulationEngine(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
     ) -> tuple[list[ModelState], list[dict[str, torch.Tensor]]]:
-        """Run the full trajectory, returning per-day state and rate lists."""
+        """Run the full trajectory.
+
+        Args:
+            state: Initial :class:`ModelState` at day 0.
+            weather: :class:`WeatherDriver` carrying the daily forcing.
+            start_doy: Day-of-year of the first simulated day.
+            crop_params: Species-specific crop parameters.
+            soil_params: Soil-specific parameters.
+            site_params: Site-level parameters (e.g. latitude).
+
+        Returns:
+            A ``(states, rates)`` tuple where ``states`` is a list of length
+            ``T + 1`` of per-day :class:`ModelState` snapshots (the first
+            entry is the initial state) and ``rates`` is a list of length
+            ``T`` of per-day rate dicts.
+        """
         states: list[ModelState] = [state]
         rates_all: list[dict[str, torch.Tensor]] = []
 
@@ -100,11 +128,21 @@ class SimulationEngine(nn.Module):
 
 
 def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -> ModelState:
-    """Forward-Euler update of a :class:`ModelState` from a dict of rate tensors.
+    """Forward-Euler update of a :class:`ModelState`.
 
     Rate keys must match state field names with a ``_rate`` suffix (e.g.
     ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left
     unchanged.
+
+    Args:
+        state: Current :class:`ModelState`.
+        rates: Dict of rate tensors keyed by ``"<field>_rate"``.
+        dt: Integration step size in days.
+
+    Returns:
+        A new :class:`ModelState` with all matched fields advanced by
+        ``rates[field + "_rate"] * dt``. Physically non-negative fields are
+        clamped to ``>= 0`` and ``dvs`` is clamped to ``[0, 2]``.
     """
     updates: dict[str, torch.Tensor] = {}
     for f in fields(state):

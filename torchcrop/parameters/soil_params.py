@@ -3,19 +3,18 @@
 Ports the **constant** soil-level inputs of the SIMPLACE
 ``WaterBalance.java`` component to a PyTorch-friendly dataclass.
 
-Shapes
-------
-Scalar per batch: ``[B]`` or ``[]`` (broadcastable).
-Multi-layer (optional, for future extensions): ``[B, N_layers]``.
+Shapes:
+    * Scalar per batch: ``[B]`` or ``[]`` (broadcastable).
+    * Multi-layer (optional, for future extensions): ``[B, N_layers]``.
 
 The naming convention follows Lintul5: ``cSM*`` (volumetric soil moisture
 contents) drop the ``cSM`` prefix and become ``wc*`` (water content); other
 constants drop the ``c`` prefix.
 
-Reference
----------
-Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
-SIMPLACE source: ``simplace/sim/components/models/lintul5/WaterBalance.java``.
+References:
+    * Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
+    * SIMPLACE source:
+      ``simplace/sim/components/models/lintul5/WaterBalance.java``.
 """
 
 from __future__ import annotations
@@ -27,7 +26,15 @@ import torch
 
 
 def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
-    """Build a scalar tensor with the requested dtype."""
+    """Build a scalar tensor with the requested dtype.
+
+    Args:
+        x: Python scalar value.
+        dtype: Target tensor dtype.
+
+    Returns:
+        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+    """
     return torch.tensor(x, dtype=dtype)
 
 
@@ -35,11 +42,10 @@ def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
 class SoilParameters:
     """Soil hydraulic and water-balance parameters.
 
-    Notes
-    -----
-    Only a single-layer bucket model is implemented in the initial scaffold;
-    the containers accept either ``[B]`` (single-layer) or ``[B, N_layers]``
-    tensors for future multi-layer extensions.
+    Note:
+        Only a single-layer bucket model is implemented in the initial
+        scaffold; the containers accept either ``[B]`` (single-layer) or
+        ``[B, N_layers]`` tensors for future multi-layer extensions.
     """
 
     # ------------------------------------------------------------------ #
@@ -184,8 +190,15 @@ class SoilParameters:
         dtype: torch.dtype | None = None,
         device: torch.device | str | None = None,
     ) -> "SoilParameters":
-        """Return a new :class:`SoilParameters` with all tensor fields
-        cast/moved to the requested dtype/device."""
+        """Cast and/or move all tensor fields to a new dtype/device.
+
+        Args:
+            dtype: Target tensor dtype, or ``None`` to leave unchanged.
+            device: Target torch device, or ``None`` to leave unchanged.
+
+        Returns:
+            A new :class:`SoilParameters` with every tensor field moved/cast.
+        """
         kwargs: dict[str, Any] = {}
         for f in fields(self):
             t = getattr(self, f.name)
@@ -197,5 +210,13 @@ class SoilParameters:
 
 
 def default_loam_params(dtype: torch.dtype = torch.float32) -> SoilParameters:
-    """Return the SIMPLACE Lintul5 default loam-like soil parameter set."""
+    """Return the SIMPLACE Lintul5 default loam-like soil parameter set.
+
+    Args:
+        dtype: Target tensor dtype for all scalar fields.
+
+    Returns:
+        A fresh :class:`SoilParameters` with the Lintul5 loam defaults
+        cast to ``dtype``.
+    """
     return SoilParameters().to(dtype=dtype)

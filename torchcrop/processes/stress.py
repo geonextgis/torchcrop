@@ -22,4 +22,19 @@ class StressFactors(nn.Module):
         tranrf: torch.Tensor,
         nstress: torch.Tensor,
     ) -> torch.Tensor:
+        """Combine water and nutrient stress into a single growth reducer.
+
+        Args:
+            tranrf: Water-stress factor in ``[0, 1]`` from
+                :class:`WaterBalance`, shape ``[B]``.
+            nstress: Nutrient-stress factor in ``[0, 1]`` from
+                :class:`NutrientDemand`, shape ``[B]``.
+
+        Returns:
+            Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,
+            shape ``[B]``. This is *not* a rate — it is a multiplicative
+            factor that scales the gross growth rate ``gtotal`` (and
+            therefore propagates into every per-organ rate
+            ``g_lv``/``g_st``/``g_root``/``g_so``).
+        """
         return tranrf * nstress

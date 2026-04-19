@@ -1,10 +1,9 @@
 """Crop nutrient demand, uptake, translocation and stress indices.
 
-Reference
----------
-NPK block of ``Lintul5.java``. A minimal, batch-compatible formulation is
-implemented: daily demand from maximum concentrations, supply from the soil
-reservoir, and a simple nutrient-stress index tied to leaf N.
+References:
+    NPK block of ``Lintul5.java``. A minimal, batch-compatible formulation
+    is implemented: daily demand from maximum concentrations, supply from
+    the soil reservoir, and a simple nutrient-stress index tied to leaf N.
 """
 
 from __future__ import annotations
@@ -30,6 +29,47 @@ class NutrientDemand(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
     ) -> dict[str, torch.Tensor]:
+        """Compute daily NPK uptake per organ and the nutrient-stress factor.
+
+        Args:
+            state: Current state (unused in this minimal port but kept for
+                the uniform process signature).
+            g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,
+                from :class:`Partitioning`.
+            g_st: Stem biomass growth rate, shape ``[B]``.
+            g_rt: Root biomass growth rate, shape ``[B]``.
+            g_so: Storage-organ biomass growth rate, shape ``[B]``.
+            crop_params: Crop parameters; uses maximum tissue concentrations
+                ``{n,p,k}max{lv,st,rt,so}``.
+            soil_params: Soil parameters; uses available soil pools
+                ``nmins``, ``pmins``, ``kmins``.
+
+        Returns:
+            Dict of ``[B]`` tensors grouped as follows.
+
+            Rate variables (per-organ NPK uptake — consumed by the engine
+            to update the corresponding ``a{n,p,k}{lv,st,rt,so}`` state
+            pools):
+
+                * ``n_lv_rate``, ``n_st_rate``, ``n_rt_rate``,
+                  ``n_so_rate`` [g N m⁻² d⁻¹] — Daily nitrogen uptake by
+                  leaves, stems, roots, storage organs.
+                * ``p_lv_rate``, ``p_st_rate``, ``p_rt_rate``,
+                  ``p_so_rate`` [g P m⁻² d⁻¹] — Daily phosphorus uptake
+                  per organ.
+                * ``k_lv_rate``, ``k_st_rate``, ``k_rt_rate``,
+                  ``k_so_rate`` [g K m⁻² d⁻¹] — Daily potassium uptake
+                  per organ.
+
+            Diagnostics:
+
+                * ``n_uptake``, ``p_uptake``, ``k_uptake`` [g X m⁻² d⁻¹] —
+                  Whole-plant uptake totals before per-organ splitting.
+                * ``nstress`` [-] — Combined nutrient-stress factor in
+                  ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when
+                  there is no demand). Multiplies ``gtotal`` in
+                  :class:`Photosynthesis`.
+        """
         # Maximum-demand uptake per organ (fraction of DM growth)
         n_demand = (
             g_lv * crop_params.nmaxlv

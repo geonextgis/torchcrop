@@ -25,7 +25,27 @@ def make_constant_weather(
     dtype: torch.dtype = torch.float32,
     device: torch.device | str = "cpu",
 ) -> WeatherDriver:
-    """Synthetic constant weather for quick tests and demos."""
+    """Build a synthetic constant-weather driver for quick tests and demos.
+
+    Args:
+        batch_size: Number of batch elements ``B`` in the output driver.
+        n_days: Simulation length ``T`` in days.
+        davtmp: Constant mean daily temperature [°C].
+        tmin: Constant minimum daily temperature [°C].
+        tmax: Constant maximum daily temperature [°C].
+        irrad: Constant solar radiation [MJ m⁻² d⁻¹].
+        rain: Constant daily precipitation [mm d⁻¹].
+        vp: Constant vapour pressure [kPa].
+        wind: Constant wind speed [m s⁻¹].
+        start_doy: Day of year for the first simulated day; ``doy``
+            increments by 1 and wraps modulo 365.
+        dtype: Floating-point dtype for all tensors.
+        device: Device on which to allocate the tensors.
+
+    Returns:
+        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape
+        ``[B, T, C]`` with identical rows for every batch element.
+    """
     doy = torch.arange(n_days, dtype=dtype, device=device) + float(start_doy)
     doy = ((doy - 1) % 365) + 1
     channels = {
@@ -54,6 +74,22 @@ def load_weather_csv(
     :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS` (lowercase) or an
     explicit ``columns`` argument may be passed mapping file columns to the
     expected order.
+
+    Args:
+        path: Path to the CSV file. The first line must be a header row.
+        columns: Optional override for the expected column names in the
+            CSV, in the order used by
+            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`. If
+            ``None``, ``WEATHER_CHANNELS`` is used verbatim.
+        dtype: Floating-point dtype for the returned tensor.
+
+    Returns:
+        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape
+        ``[1, T, C]`` where ``T`` is the number of data rows in the CSV.
+
+    Raises:
+        ValueError: If ``columns`` has a different length than
+            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`.
     """
     path = Path(path)
     if columns is None:
