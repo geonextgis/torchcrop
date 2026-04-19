@@ -121,4 +121,8 @@ class ModelState:
 
     @property
     def field_names(self) -> list[str]:
-        return [f.name for f in fields(self) if isinstance(getattr(self, f.name), torch.Tensor)]
+        return [
+            f.name
+            for f in fields(self)
+            if isinstance(getattr(self, f.name), torch.Tensor)
+        ]
