@@ -17,7 +17,7 @@ _DEG2RAD = math.pi / 180.0
 
 
 class Astro(nn.Module):
-    r"""Compute solar declination and astronomical daylength.
+    """Compute solar declination and astronomical daylength.
 
     Equations:
 
@@ -54,19 +54,30 @@ class Astro(nn.Module):
         """
         lat_rad = latitude * _DEG2RAD
         dec = -torch.asin(
-            torch.sin(torch.tensor(23.45 * _DEG2RAD, dtype=doy.dtype, device=doy.device))
+            torch.sin(
+                torch.tensor(23.45 * _DEG2RAD, dtype=doy.dtype, device=doy.device)
+            )
             * torch.cos(2.0 * math.pi * (doy + 10.0) / 365.0)
         )
 
         sinld = torch.sin(lat_rad) * torch.sin(dec)
         cosld = torch.cos(lat_rad) * torch.cos(dec)
-        aob = torch.clamp(sinld / torch.where(cosld.abs() > 1e-12, cosld, torch.ones_like(cosld)), -1.0, 1.0)
+        aob = torch.clamp(
+            sinld / torch.where(cosld.abs() > 1e-12, cosld, torch.ones_like(cosld)),
+            -1.0,
+            1.0,
+        )
 
         daylength = 12.0 * (1.0 + 2.0 * torch.asin(aob) / math.pi)
 
         # Photoperiodic daylength — civil twilight angle of -4°
         aob_phot = torch.clamp(
-            (-torch.sin(torch.tensor(-4.0 * _DEG2RAD, dtype=doy.dtype, device=doy.device)) + sinld)
+            (
+                -torch.sin(
+                    torch.tensor(-4.0 * _DEG2RAD, dtype=doy.dtype, device=doy.device)
+                )
+                + sinld
+            )
             / torch.where(cosld.abs() > 1e-12, cosld, torch.ones_like(cosld)),
             -1.0,
             1.0,
@@ -75,7 +86,11 @@ class Astro(nn.Module):
 
         dsinbe = 3600.0 * (
             daylength * (sinld + 0.4 * (sinld * sinld + cosld * cosld * 0.5))
-            + 12.0 * cosld * (2.0 + 3.0 * 0.4 * sinld) * torch.sqrt(torch.clamp(1.0 - aob * aob, min=0.0)) / math.pi
+            + 12.0
+            * cosld
+            * (2.0 + 3.0 * 0.4 * sinld)
+            * torch.sqrt(torch.clamp(1.0 - aob * aob, min=0.0))
+            / math.pi
         )
 
         return {

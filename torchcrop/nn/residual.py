@@ -11,7 +11,7 @@ import torch.nn as nn
 
 
 class NeuralResidual(nn.Module):
-    r"""Bounded additive residual from an MLP.
+    """Bounded additive residual from an MLP.
 
     The residual output is produced by
 

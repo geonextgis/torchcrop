@@ -15,7 +15,7 @@ def interpolate(
     table: torch.Tensor,
     x: torch.Tensor,
 ) -> torch.Tensor:
-    r"""Piecewise-linear interpolation of ``x`` against a breakpoint table.
+    """Piecewise-linear interpolation of ``x`` against a breakpoint table.
 
     Equivalent to the Lintul5 ``AFGEN`` function. Outside the support of the
     table the output is clamped to the first/last y-value (flat extrapolation),
