@@ -1,7 +1,7 @@
 """Top-level Lintul5 model.
 
 Wires all process sub-modules together and provides both a high-level and a
-low-level API (see ``CLAUDE.md``, §7).
+low-level API.
 """
 
 from __future__ import annotations
@@ -271,7 +271,11 @@ class Lintul5Model(nn.Module):
         rain = weather_day["rain"]
 
         # 1. Astro
-        lat_b = site_params.latitude.expand_as(doy) if site_params.latitude.dim() > 0 else site_params.latitude
+        lat_b = (
+            site_params.latitude.expand_as(doy)
+            if site_params.latitude.dim() > 0
+            else site_params.latitude
+        )
         astro = self.astro(doy=doy, latitude=lat_b)
         ddlp = astro["ddlp"]
 
@@ -309,7 +313,9 @@ class Lintul5Model(nn.Module):
             nstress=torch.ones_like(davtmp),
             params=crop_params,
         )
-        part_pre = self.partitioning(state=state, gtotal=photo_pre["gtotal"], params=crop_params)
+        part_pre = self.partitioning(
+            state=state, gtotal=photo_pre["gtotal"], params=crop_params
+        )
         nut = self.nutrient_demand(
             state=state,
             g_lv=part_pre["g_lv"],
