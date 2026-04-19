@@ -51,7 +51,7 @@ def insw(
         y1: Value returned when ``x < 0``.
         y2: Value returned when ``x >= 0``.
         smooth: If ``True``, use a sigmoid blend of sharpness ``k`` instead
-            of the hard :func:`torch.where` switch.
+            of the hard `torch.where` switch.
         k: Sharpness of the sigmoid blend (only used when ``smooth=True``).
 
     Returns:
@@ -109,6 +109,6 @@ def afgen(table: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         x: Query values.
 
     Returns:
-        Interpolated values; see :func:`interpolate` for details.
+        Interpolated values; see `interpolate` for details.
     """
     return interpolate(table, x)

@@ -65,7 +65,7 @@ class ModelState:
         evap_cum: Cumulative soil evaporation, ``[B]`` [mm].
 
     Note:
-        Updates are functional: :meth:`replace` returns a *new*
+        Updates are functional: `replace` returns a *new*
         ``ModelState`` rather than mutating in place, so the autograd graph
         is preserved across the explicit-Euler step
         ``s_{t+1} = s_t + r_t * dt``.
@@ -136,7 +136,7 @@ class ModelState:
             rootdi: Initial rooting depth [m].
 
         Returns:
-            A fresh :class:`ModelState` with all biomass / nutrient pools at
+            A fresh `ModelState` with all biomass / nutrient pools at
             zero and the specified initial values for ``dvs``, ``rootd`` and
             ``wa``.
         """
@@ -172,14 +172,14 @@ class ModelState:
         )
 
     def replace(self, **updates: Any) -> "ModelState":
-        """Return a new :class:`ModelState` with selected fields replaced.
+        """Return a new `ModelState` with selected fields replaced.
 
         Args:
             **updates: Field name / tensor pairs to override. Fields not
                 passed are copied through unchanged.
 
         Returns:
-            A new :class:`ModelState` instance with the updates applied.
+            A new `ModelState` instance with the updates applied.
         """
         return replace(self, **updates)
 
@@ -199,7 +199,7 @@ class ModelState:
 
     @property
     def field_names(self) -> list[str]:
-        """Names of all tensor fields on this :class:`ModelState`."""
+        """Names of all tensor fields on this `ModelState`."""
         return [
             f.name
             for f in fields(self)

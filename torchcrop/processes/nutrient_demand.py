@@ -35,7 +35,7 @@ class NutrientDemand(nn.Module):
             state: Current state (unused in this minimal port but kept for
                 the uniform process signature).
             g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,
-                from :class:`Partitioning`.
+                from `Partitioning`.
             g_st: Stem biomass growth rate, shape ``[B]``.
             g_rt: Root biomass growth rate, shape ``[B]``.
             g_so: Storage-organ biomass growth rate, shape ``[B]``.
@@ -68,7 +68,7 @@ class NutrientDemand(nn.Module):
                 * ``nstress`` [-] — Combined nutrient-stress factor in
                   ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when
                   there is no demand). Multiplies ``gtotal`` in
-                  :class:`Photosynthesis`.
+                  `Photosynthesis`.
         """
         # Maximum-demand uptake per organ (fraction of DM growth)
         n_demand = (

@@ -33,7 +33,7 @@ def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
         dtype: Target tensor dtype.
 
     Returns:
-        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+        A 0-dimensional `torch.Tensor` holding ``x``.
     """
     return torch.tensor(x, dtype=dtype)
 
@@ -130,14 +130,14 @@ class SoilParameters:
     irri: torch.Tensor = field(default_factory=lambda: _t(0.0))
     """``cIRRI``. Irrigation mode: ``0`` → no irrigation,
     ``1`` → automatic (refill to field capacity),
-    ``2`` → use day-resolved :attr:`irrtab`."""
+    ``2`` → use day-resolved `irrtab`."""
 
     irrtab: torch.Tensor | None = None
     """``cIRRTAB``. Optional table of effective irrigation applications
     [mm d⁻¹] as a function of day number; shape ``[N, 2]``."""
 
     scale_factor_irr: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorIRR``. Scale factor on :attr:`irrtab` y-values for
+    """``cScaleFactorIRR``. Scale factor on `irrtab` y-values for
     sensitivity analysis / calibration."""
 
     # ------------------------------------------------------------------ #
@@ -197,7 +197,7 @@ class SoilParameters:
             device: Target torch device, or ``None`` to leave unchanged.
 
         Returns:
-            A new :class:`SoilParameters` with every tensor field moved/cast.
+            A new `SoilParameters` with every tensor field moved/cast.
         """
         kwargs: dict[str, Any] = {}
         for f in fields(self):
@@ -216,7 +216,7 @@ def default_loam_params(dtype: torch.dtype = torch.float32) -> SoilParameters:
         dtype: Target tensor dtype for all scalar fields.
 
     Returns:
-        A fresh :class:`SoilParameters` with the Lintul5 loam defaults
+        A fresh `SoilParameters` with the Lintul5 loam defaults
         cast to ``dtype``.
     """
     return SoilParameters().to(dtype=dtype)

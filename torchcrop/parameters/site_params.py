@@ -7,7 +7,7 @@ PyTorch-friendly dataclass.
 
 Note:
     Latitude is normally consumed by the
-    :class:`AstronomicParametersTransformer` upstream of Lintul5; we keep it
+    `AstronomicParametersTransformer` upstream of Lintul5; we keep it
     here so torchcrop can compute astronomy and irradiation internally.
 """
 
@@ -27,7 +27,7 @@ def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
         dtype: Target tensor dtype.
 
     Returns:
-        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+        A 0-dimensional `torch.Tensor` holding ``x``.
     """
     return torch.tensor(x, dtype=dtype)
 
@@ -74,7 +74,7 @@ class SiteParameters:
 
     co2: torch.Tensor = field(default_factory=lambda: _t(370.0))
     """``cCO``. Atmospheric CO₂ concentration [ppm]. Mirrors
-    :attr:`CropParameters.co2`; provided here so a site-level CO₂ scenario
+    `CropParameters.co2`; provided here so a site-level CO₂ scenario
     can be set independently of the crop default. The Lintul5 ET routine
     uses 370 ppm as its reference."""
 
@@ -111,16 +111,16 @@ class SiteParameters:
 
     plant_at_sowing: torch.Tensor = field(default_factory=lambda: _t(1.0))
     """``cPL``. Boolean flag (0/1) — if 1, the simulation starts at
-    **planting** (uses :attr:`idpl`); if 0, it starts at **emergence**
-    (uses :attr:`idem`)."""
+    **planting** (uses `idpl`); if 0, it starts at **emergence**
+    (uses `idem`)."""
 
     idpl: torch.Tensor = field(default_factory=lambda: _t(0.0))
     """``cIDPL``. Day of planting [day-of-year, 0–366]. Used when
-    :attr:`plant_at_sowing` = 1."""
+    `plant_at_sowing` = 1."""
 
     idem: torch.Tensor = field(default_factory=lambda: _t(0.0))
     """``cIDEM``. Day of emergence [day-of-year, 0–366]. Used when
-    :attr:`plant_at_sowing` = 0 to bypass the temperature-sum-driven
+    `plant_at_sowing` = 0 to bypass the temperature-sum-driven
     emergence calculation."""
 
     # ------------------------------------------------------------------ #
@@ -139,7 +139,7 @@ class SiteParameters:
             device: Target torch device, or ``None`` to leave unchanged.
 
         Returns:
-            A new :class:`SiteParameters` with every tensor field moved/cast.
+            A new `SiteParameters` with every tensor field moved/cast.
         """
         kwargs: dict[str, Any] = {}
         for f in fields(self):

@@ -4,12 +4,12 @@ This module ports the **constant** crop-level inputs of the SIMPLACE Lintul5
 component family (``Lintul5.java``, ``Phenology.java``,
 ``RadiationUseEfficiency.java``) to a single PyTorch-friendly dataclass.
 
-All scalar fields are stored as :class:`torch.Tensor` so they can be made
-learnable by wrapping them with :class:`torch.nn.Parameter`. Table fields
+All scalar fields are stored as `torch.Tensor` so they can be made
+learnable by wrapping them with `torch.nn.Parameter`. Table fields
 (``..._tb`` / ``..._table``) carry shape ``[N, 2]`` (or ``[B, N, 2]`` if the
 table itself is batch-varying), where column 0 is the abscissa (DVS or
 temperature) and column 1 is the value. Tables are interpolated by
-:func:`torchcrop.functions.interpolate`.
+`torchcrop.functions.interpolate`.
 
 Naming conventions:
     * Field names follow the original Lintul5 (Wolf, 2012) symbol,
@@ -38,7 +38,7 @@ def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
         dtype: Target tensor dtype.
 
     Returns:
-        A 0-dimensional :class:`torch.Tensor` holding ``x``.
+        A 0-dimensional `torch.Tensor` holding ``x``.
     """
     return torch.tensor(x, dtype=dtype)
 
@@ -134,7 +134,7 @@ class CropParameters:
     )
     """``cVERNRT`` (= ``cVernalisationTableMeanTemp`` × ``cVernalisationTableRate``).
     Daily vernal-day rate [-] as a function of mean daily temperature [°C].
-    Used only when :attr:`idsl` ≥ 2."""
+    Used only when `idsl` ≥ 2."""
 
     vbase: torch.Tensor = field(default_factory=lambda: _t(0.0))
     """``cVBASE``. Vernalisation base [thermal day]: vernal days
@@ -160,7 +160,7 @@ class CropParameters:
 
     co2: torch.Tensor = field(default_factory=lambda: _t(360.0))
     """``cCO``. Atmospheric CO₂ concentration [ppm] used both as input to
-    the RUE CO₂ correction (:attr:`cotb`) and the ET₀ CO₂ correction.
+    the RUE CO₂ correction (`cotb`) and the ET₀ CO₂ correction.
     Default is the original Lintul5 reference."""
 
     day_temp_factor: torch.Tensor = field(default_factory=lambda: _t(0.25))
@@ -171,7 +171,7 @@ class CropParameters:
 
     rue: torch.Tensor = field(default_factory=lambda: _t(3.0))
     """``cRUETableRUE`` (scalar surrogate). Reference radiation use
-    efficiency [g DM · MJ⁻¹ PAR] used when :attr:`ruetb` is omitted.
+    efficiency [g DM · MJ⁻¹ PAR] used when `ruetb` is omitted.
     Lintul5 wheat default is 3.0 g · MJ⁻¹."""
 
     ruetb: torch.Tensor = field(
@@ -217,7 +217,7 @@ class CropParameters:
 
     scale_factor_rue: torch.Tensor = field(default_factory=lambda: _t(1.0))
     """``cScaleFactorRUE``. Multiplicative scale factor on the y-values of
-    :attr:`ruetb` for sensitivity analysis / calibration."""
+    `ruetb` for sensitivity analysis / calibration."""
 
     # ------------------------------------------------------------------ #
     # 3. Light interception / canopy (from Lintul5.java)
@@ -225,7 +225,7 @@ class CropParameters:
 
     k: torch.Tensor = field(default_factory=lambda: _t(0.60))
     """Effective canopy light extinction coefficient [-]; scalar fallback
-    when :attr:`kdiftb` is collapsed to a constant."""
+    when `kdiftb` is collapsed to a constant."""
 
     kdiftb: torch.Tensor = field(
         default_factory=lambda: _table([(0.0, 0.6), (2.0, 0.6)])
@@ -234,7 +234,7 @@ class CropParameters:
     function of DVS."""
 
     scale_factor_kdif: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorKDIF``. Scale factor on :attr:`kdiftb` y-values."""
+    """``cScaleFactorKDIF``. Scale factor on `kdiftb` y-values."""
 
     laicr: torch.Tensor = field(default_factory=lambda: _t(4.0))
     """``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves
@@ -267,7 +267,7 @@ class CropParameters:
 
     sla: torch.Tensor = field(default_factory=lambda: _t(0.0212))
     """Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback
-    used when :attr:`slatb` is collapsed."""
+    used when `slatb` is collapsed."""
 
     slatb: torch.Tensor = field(
         default_factory=lambda: _table([(0.0, 0.0212), (2.0, 0.0212)])
@@ -275,7 +275,7 @@ class CropParameters:
     """``cSLATB``. Specific leaf area [m² g⁻¹] as a function of DVS."""
 
     scale_factor_sla: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorSLA``. Scale factor on :attr:`slatb` y-values."""
+    """``cScaleFactorSLA``. Scale factor on `slatb` y-values."""
 
     laii: torch.Tensor = field(default_factory=lambda: _t(0.012))
     """``LAII`` initial leaf area index [m² m⁻²] at emergence (Lintul5
@@ -290,7 +290,7 @@ class CropParameters:
 
     rdrshm: torch.Tensor = field(default_factory=lambda: _t(0.03))
     """``cRDRSHM``. Maximum relative death rate of leaves [d⁻¹] caused by
-    shading when LAI > :attr:`laicr`."""
+    shading when LAI > `laicr`."""
 
     rdrl: torch.Tensor = field(default_factory=lambda: _t(0.05))
     """``cRDRL``. Maximum relative death rate of leaves [d⁻¹] due to
@@ -325,13 +325,13 @@ class CropParameters:
     DVS."""
 
     scale_factor_rdr_leaves: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorRDRLeaves``. Scale factor on :attr:`rdrltb`."""
+    """``cScaleFactorRDRLeaves``. Scale factor on `rdrltb`."""
 
     scale_factor_rdr_stems: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorRDRStems``. Scale factor on :attr:`rdrstb`."""
+    """``cScaleFactorRDRStems``. Scale factor on `rdrstb`."""
 
     scale_factor_rdr_roots: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorRDRRoots``. Scale factor on :attr:`rdrrtb`."""
+    """``cScaleFactorRDRRoots``. Scale factor on `rdrrtb`."""
 
     # ------------------------------------------------------------------ #
     # 6. Biomass partitioning (from Lintul5.java)
@@ -441,20 +441,20 @@ class CropParameters:
     fraction of the maximum N concentration in leaves [-]."""
 
     lrpr: torch.Tensor = field(default_factory=lambda: _t(0.5))
-    """``cLRPR``. As :attr:`lrnr` but for P."""
+    """``cLRPR``. As `lrnr` but for P."""
 
     lrkr: torch.Tensor = field(default_factory=lambda: _t(0.5))
-    """``cLRKR``. As :attr:`lrnr` but for K."""
+    """``cLRKR``. As `lrnr` but for K."""
 
     lsnr: torch.Tensor = field(default_factory=lambda: _t(0.5))
     """``cLSNR``. Maximum N concentration in **stems** as a fraction of
     the maximum N concentration in leaves [-]."""
 
     lspr: torch.Tensor = field(default_factory=lambda: _t(0.5))
-    """``cLSPR``. As :attr:`lsnr` but for P."""
+    """``cLSPR``. As `lsnr` but for P."""
 
     lskr: torch.Tensor = field(default_factory=lambda: _t(0.5))
-    """``cLSKR``. As :attr:`lsnr` but for K."""
+    """``cLSKR``. As `lsnr` but for K."""
 
     frnx: torch.Tensor = field(default_factory=lambda: _t(1.0))
     """``cFRNX``. Optimal N concentration as a fraction of the maximum N
@@ -550,7 +550,7 @@ class CropParameters:
 
     dvsdlt: torch.Tensor = field(default_factory=lambda: _t(1.0))
     """``cDVSDLT``. DVS above which leaf death (controlled by mean
-    temperature, see :attr:`rdrltb`) begins."""
+    temperature, see `rdrltb`) begins."""
 
     # ------------------------------------------------------------------ #
     # 10. Fertiliser application & recovery (from Lintul5.java)
@@ -558,7 +558,7 @@ class CropParameters:
 
     nrf: torch.Tensor = field(default_factory=lambda: _t(0.7))
     """``cNRF``. Default recovery fraction [0–1] of applied fertiliser N
-    (used when no day-resolved :attr:`nrftab` is provided)."""
+    (used when no day-resolved `nrftab` is provided)."""
 
     prf: torch.Tensor = field(default_factory=lambda: _t(0.2))
     """``cPRF``. Default recovery fraction [0–1] of applied fertiliser P."""
@@ -587,13 +587,13 @@ class CropParameters:
     """``cFERKTAB``. Optional table of K fertiliser applications."""
 
     scale_factor_fern: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorFERN``. Scale factor on :attr:`ferntab` y-values."""
+    """``cScaleFactorFERN``. Scale factor on `ferntab` y-values."""
 
     scale_factor_ferp: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorFERP``. Scale factor on :attr:`ferptab` y-values."""
+    """``cScaleFactorFERP``. Scale factor on `ferptab` y-values."""
 
     scale_factor_ferk: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cScaleFactorFERK``. Scale factor on :attr:`ferktab` y-values."""
+    """``cScaleFactorFERK``. Scale factor on `ferktab` y-values."""
 
     # ------------------------------------------------------------------ #
     # 11. Run-control flags (from Lintul5.java)
@@ -616,13 +616,13 @@ class CropParameters:
     # ------------------------------------------------------------------ #
 
     rootdi: torch.Tensor = field(default_factory=lambda: _t(0.10))
-    """Scaffold alias of :attr:`rdi` — initial rooting depth [m]."""
+    """Scaffold alias of `rdi` — initial rooting depth [m]."""
 
     rootdm: torch.Tensor = field(default_factory=lambda: _t(1.20))
-    """Scaffold alias of :attr:`rdmcr` — maximum rooting depth [m]."""
+    """Scaffold alias of `rdmcr` — maximum rooting depth [m]."""
 
     rrdmax: torch.Tensor = field(default_factory=lambda: _t(0.012))
-    """Scaffold alias of :attr:`rri` — maximum daily root-depth growth
+    """Scaffold alias of `rri` — maximum daily root-depth growth
     rate [m d⁻¹]."""
 
     rdrtb: torch.Tensor = field(
@@ -631,13 +631,13 @@ class CropParameters:
         )
     )
     """Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used
-    by :class:`LeafDynamics` for developmental senescence. Not a direct
+    by `LeafDynamics` for developmental senescence. Not a direct
     SIMPLACE constant (SIMPLACE separates leaf senescence into
-    :attr:`rdrltb` (vs T), :attr:`rdrrtb` and :attr:`rdrstb` (vs DVS))."""
+    `rdrltb` (vs T), `rdrrtb` and `rdrstb` (vs DVS))."""
 
     nmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.050))
     """Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold
-    surrogate of :attr:`nmxlv` table)."""
+    surrogate of `nmxlv` table)."""
 
     nmaxst: torch.Tensor = field(default_factory=lambda: _t(0.020))
     """Scalar max N concentration in stems (≈ ``lsnr × nmaxlv``)."""
@@ -647,7 +647,7 @@ class CropParameters:
 
     pmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.008))
     """Scalar max P concentration in leaves (scaffold surrogate of
-    :attr:`pmxlv` table)."""
+    `pmxlv` table)."""
 
     pmaxst: torch.Tensor = field(default_factory=lambda: _t(0.004))
     """Scalar max P concentration in stems (≈ ``lspr × pmaxlv``)."""
@@ -657,7 +657,7 @@ class CropParameters:
 
     kmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.040))
     """Scalar max K concentration in leaves (scaffold surrogate of
-    :attr:`kmxlv` table)."""
+    `kmxlv` table)."""
 
     kmaxst: torch.Tensor = field(default_factory=lambda: _t(0.025))
     """Scalar max K concentration in stems (≈ ``lskr × kmaxlv``)."""
@@ -667,7 +667,7 @@ class CropParameters:
 
     nresid: torch.Tensor = field(default_factory=lambda: _t(0.004))
     """Aggregated residual N concentration [g N · g⁻¹ DM] used by the
-    scaffold (compare per-organ :attr:`rnflv`/:attr:`rnfst`/:attr:`rnfrt`)."""
+    scaffold (compare per-organ `rnflv`/`rnfst`/`rnfrt`)."""
 
     presid: torch.Tensor = field(default_factory=lambda: _t(0.001))
     """Aggregated residual P concentration."""
@@ -680,9 +680,9 @@ class CropParameters:
             [(-10.0, 0.0), (0.0, 0.0), (10.0, 0.6), (20.0, 1.0), (30.0, 1.0), (40.0, 0.0)]
         )
     )
-    """Scaffold alias of :attr:`tmpftb` (T-response of RUE) used by the
-    current :class:`Photosynthesis` module. Will be merged with
-    :attr:`tmpftb` once the full SIMPLACE RUE chain is wired in."""
+    """Scaffold alias of `tmpftb` (T-response of RUE) used by the
+    current `Photosynthesis` module. Will be merged with
+    `tmpftb` once the full SIMPLACE RUE chain is wired in."""
 
     # ------------------------------------------------------------------ #
     # Helpers
@@ -700,7 +700,7 @@ class CropParameters:
             device: Target torch device, or ``None`` to leave unchanged.
 
         Returns:
-            A new :class:`CropParameters` with every tensor field moved /
+            A new `CropParameters` with every tensor field moved /
             cast; non-tensor fields (e.g., optional tables set to ``None``)
             are copied through unchanged.
         """
@@ -721,7 +721,7 @@ def default_wheat_params(dtype: torch.dtype = torch.float32) -> CropParameters:
         dtype: Target tensor dtype for all scalar/tabular fields.
 
     Returns:
-        A fresh :class:`CropParameters` with the Lintul5 wheat defaults
+        A fresh `CropParameters` with the Lintul5 wheat defaults
         cast to ``dtype``.
     """
     return CropParameters().to(dtype=dtype)

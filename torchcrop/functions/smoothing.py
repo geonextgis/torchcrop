@@ -18,8 +18,8 @@ def smooth_step(
 ) -> torch.Tensor:
     r"""Differentiable Heaviside step.
 
-    Returns :math:`\sigma(k (x - x_0))` which tends to 0 for
-    :math:`x \ll x_0` and to 1 for :math:`x \gg x_0`.
+    Returns $\sigma(k (x - x_0))$ which tends to 0 for
+    $x \ll x_0$ and to 1 for $x \gg x_0$.
 
     Args:
         x: Input tensor.
@@ -61,7 +61,7 @@ def soft_clamp(
 def soft_min(a: torch.Tensor, b: torch.Tensor, k: float = 50.0) -> torch.Tensor:
     r"""Differentiable minimum using the log-sum-exp trick.
 
-    :math:`\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})`.
+    $\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.
 
     Args:
         a: First input tensor.

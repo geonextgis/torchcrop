@@ -45,7 +45,7 @@ class Partitioning(nn.Module):
                 * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate
                   (``= gtotal * fr``); becomes ``wrt_rate``.
                 * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence;
-                  :class:`LeafDynamics` converts it into ``wlv_rate`` and
+                  `LeafDynamics` converts it into ``wlv_rate`` and
                   ``lai_rate``.
                 * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate; becomes
                   ``wst_rate`` directly.

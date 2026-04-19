@@ -44,7 +44,7 @@ class WeatherDriver:
 
     Raises:
         ValueError: If ``data`` is not 3-D or does not carry exactly
-            :data:`N_WEATHER_CHANNELS` channels.
+            `N_WEATHER_CHANNELS` channels.
     """
 
     data: torch.Tensor
@@ -86,7 +86,7 @@ class WeatherDriver:
         """Return the full ``[B, T]`` trajectory of a named channel.
 
         Args:
-            name: Channel name (see :data:`WEATHER_CHANNELS`).
+            name: Channel name (see `WEATHER_CHANNELS`).
 
         Returns:
             A ``[B, T]`` tensor view of the requested channel.
@@ -101,13 +101,13 @@ class WeatherDriver:
         return self.data[:, :, idx]
 
     def to(self, dtype: torch.dtype | None = None, device: torch.device | str | None = None) -> "WeatherDriver":
-        """Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.
+        """Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.
 
         Args:
             dtype: Target tensor dtype, or ``None`` to leave unchanged.
             device: Target torch device, or ``None`` to leave unchanged.
 
         Returns:
-            A new :class:`WeatherDriver` wrapping the cast tensor.
+            A new `WeatherDriver` wrapping the cast tensor.
         """
         return WeatherDriver(self.data.to(dtype=dtype, device=device))

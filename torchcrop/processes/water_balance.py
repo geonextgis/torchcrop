@@ -4,32 +4,36 @@ References:
     SIMPLACE ``WaterBalance.java``. The simplified bucket implementation
     below tracks a single effective root-zone water storage ``WA`` [mm].
     It produces actual transpiration from potential transpiration via a
-    linear water-stress response ``TRANRF`` in :math:`[0, 1]`.
+    linear water-stress response ``TRANRF`` in $[0, 1]$.
 
 Equations:
     Available water, capacity limits at field capacity and wilting point:
 
-    .. math::
-        W_\\text{fc}  = 1000 \\cdot \\theta_\\text{fc} \\cdot D_\\text{root}
-        \\qquad
-        W_\\text{wp}  = 1000 \\cdot \\theta_\\text{wp} \\cdot D_\\text{root}
+    $$
+    W_\\text{fc}  = 1000 \\cdot \\theta_\\text{fc} \\cdot D_\\text{root}
+    \\qquad
+    W_\\text{wp}  = 1000 \\cdot \\theta_\\text{wp} \\cdot D_\\text{root}
+    $$
 
     Water stress reduction factor (linear between wilting and critical
     point):
 
-    .. math::
-        \\text{TRANRF} = \\text{clip}\\!\\left(\\frac{W_a - W_\\text{wp}}
-        {W_\\text{fc} - W_\\text{wp}},\\ 0,\\ 1\\right)
+    $$
+    \\text{TRANRF} = \\text{clip}\\!\\left(\\frac{W_a - W_\\text{wp}}
+    {W_\\text{fc} - W_\\text{wp}},\\ 0,\\ 1\\right)
+    $$
 
     Actual transpiration:
 
-    .. math::
-        T_a = \\text{PTRAN} \\cdot \\text{TRANRF}
+    $$
+    T_a = \\text{PTRAN} \\cdot \\text{TRANRF}
+    $$
 
     Mass balance update:
 
-    .. math::
-        W_{a,t+1} = W_{a,t} + P - T_a - E_a - \\text{drain} - \\text{runoff}
+    $$
+    W_{a,t+1} = W_{a,t} + P - T_a - E_a - \\text{drain} - \\text{runoff}
+    $$
 """
 
 from __future__ import annotations
@@ -82,7 +86,7 @@ class WaterBalance(nn.Module):
                   available water above the air-dry threshold.
                 * ``tranrf`` [-] — Water-stress reduction factor in
                   ``[0, 1]``; multiplies ``gtotal`` in
-                  :class:`Photosynthesis`.
+                  `Photosynthesis`.
                 * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the
                   root zone (includes any over-saturation outflow).
                 * ``runoff`` [mm d⁻¹] — Surface runoff

@@ -60,13 +60,13 @@ class Lintul5Model(nn.Module):
     """Differentiable reimplementation of the Lintul5 crop growth model.
 
     Args:
-        crop_params: Crop parameter container (see :mod:`torchcrop.parameters`).
+        crop_params: Crop parameter container (see `torchcrop.parameters`).
         soil_params: Soil parameter container.
         site_params: Site parameter container (e.g. latitude, altitude).
         smooth: If ``True``, use smooth (sigmoid-blend) replacements for
             stage-based branching.
         stress_module: Optional replacement for the default
-            :class:`StressFactors` combiner.
+            `StressFactors` combiner.
         residual_modules: Optional neural residual corrections keyed by
             process name (``"photosynthesis"`` adds to ``gtotal``;
             ``"partitioning"`` adds to the four allocation fractions;
@@ -126,7 +126,7 @@ class Lintul5Model(nn.Module):
             device: Torch device (e.g. ``"cpu"``, ``"cuda"``).
 
         Returns:
-            A fresh :class:`ModelState` with initial DVS, root depth, soil
+            A fresh `ModelState` with initial DVS, root depth, soil
             water at field capacity, and a seeded leaf mass so that LAI
             growth has a substrate post-emergence.
         """
@@ -159,14 +159,14 @@ class Lintul5Model(nn.Module):
         """Run a full simulation and return trajectories plus final yield.
 
         Args:
-            weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of
+            weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of
                 daily weather forcing.
             start_doy: Day-of-year of the first simulated day.
-            initial_state: Optional pre-built :class:`ModelState`. When
-                omitted, :meth:`initialize` is called automatically.
+            initial_state: Optional pre-built `ModelState`. When
+                omitted, `initialize` is called automatically.
 
         Returns:
-            A :class:`ModelOutput` containing the full state/rate trajectories
+            A `ModelOutput` containing the full state/rate trajectories
             and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).
         """
         if isinstance(weather, torch.Tensor):
@@ -217,9 +217,9 @@ class Lintul5Model(nn.Module):
         """Compute the rate vector for a single day (low-level API).
 
         Args:
-            state: Current :class:`ModelState`.
+            state: Current `ModelState`.
             weather_day: Dict of named weather channels for the current day
-                (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.
+                (see `WEATHER_CHANNELS`), each of shape ``[B]``.
             doy: Day-of-year tensor of shape ``[B]``.
 
         Returns:
@@ -244,12 +244,12 @@ class Lintul5Model(nn.Module):
         """Apply a forward-Euler step to advance the state by ``dt`` days.
 
         Args:
-            state: Current :class:`ModelState`.
-            rates: Dict of rate tensors produced by :meth:`compute_rates`.
+            state: Current `ModelState`.
+            rates: Dict of rate tensors produced by `compute_rates`.
             dt: Integration step in days.
 
         Returns:
-            A new :class:`ModelState` advanced by one step.
+            A new `ModelState` advanced by one step.
         """
         return euler_update(state, rates, dt)
 
@@ -410,14 +410,14 @@ class Lintul5Model(nn.Module):
     # ------------------------------------------------------------------ #
 
     def learnable_parameter_groups(self) -> dict[str, Any]:
-        """Return a dict of named :class:`nn.Parameter` tensors.
+        """Return a dict of named `nn.Parameter` tensors.
 
         Walks the ``crop``/``soil``/``site`` parameter containers and
-        collects every field that is an :class:`nn.Parameter`.
+        collects every field that is an `nn.Parameter`.
 
         Returns:
             Dict keyed by ``"<container>.<field>"`` mapping to the
-            corresponding :class:`nn.Parameter`.
+            corresponding `nn.Parameter`.
         """
         out: dict[str, Any] = {}
         for name, params in (

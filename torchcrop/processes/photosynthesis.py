@@ -7,9 +7,10 @@ References:
 Equations:
     Gross biomass growth rate (daily):
 
-    .. math::
-        \\text{GTOTAL} = \\text{RUE} \\cdot f_T(T) \\cdot f_{CO_2} \\cdot
-        \\text{NSTRESS} \\cdot \\text{TRANRF} \\cdot \\text{PARINT}
+    $$
+    \\text{GTOTAL} = \\text{RUE} \\cdot f_T(T) \\cdot f_{CO_2} \\cdot
+    \\text{NSTRESS} \\cdot \\text{TRANRF} \\cdot \\text{PARINT}
+    $$
 
     where ``RUE`` has units of g dry matter per MJ intercepted PAR.
 """
@@ -49,7 +50,7 @@ class Photosynthesis(nn.Module):
         Returns:
             Dict of ``[B]`` tensors grouped as follows.
 
-            Rate variables (consumed by :class:`Partitioning`):
+            Rate variables (consumed by `Partitioning`):
 
                 * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass
                   production rate

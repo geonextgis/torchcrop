@@ -1,7 +1,7 @@
 """Simulation engine — orchestrates the daily time-stepping loop.
 
 The engine owns no trainable parameters of its own; it wires together the
-process sub-modules supplied by :class:`~torchcrop.model.Lintul5Model`.
+process sub-modules supplied by `Lintul5Model`.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ class StepResult:
     """Outputs of a single simulation step.
 
     Attributes:
-        state: The updated :class:`ModelState` after applying the Euler step.
+        state: The updated `ModelState` after applying the Euler step.
         rates: Dict of rate tensors produced by the process modules for the
             current day, keyed by state-field name (e.g. ``dvs_rate``).
     """
@@ -91,8 +91,8 @@ class SimulationEngine(nn.Module):
         """Run the full trajectory.
 
         Args:
-            state: Initial :class:`ModelState` at day 0.
-            weather: :class:`WeatherDriver` carrying the daily forcing.
+            state: Initial `ModelState` at day 0.
+            weather: `WeatherDriver` carrying the daily forcing.
             start_doy: Day-of-year of the first simulated day.
             crop_params: Species-specific crop parameters.
             soil_params: Soil-specific parameters.
@@ -100,7 +100,7 @@ class SimulationEngine(nn.Module):
 
         Returns:
             A ``(states, rates)`` tuple where ``states`` is a list of length
-            ``T + 1`` of per-day :class:`ModelState` snapshots (the first
+            ``T + 1`` of per-day `ModelState` snapshots (the first
             entry is the initial state) and ``rates`` is a list of length
             ``T`` of per-day rate dicts.
         """
@@ -128,19 +128,19 @@ class SimulationEngine(nn.Module):
 
 
 def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -> ModelState:
-    """Forward-Euler update of a :class:`ModelState`.
+    """Forward-Euler update of a `ModelState`.
 
     Rate keys must match state field names with a ``_rate`` suffix (e.g.
     ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left
     unchanged.
 
     Args:
-        state: Current :class:`ModelState`.
+        state: Current `ModelState`.
         rates: Dict of rate tensors keyed by ``"<field>_rate"``.
         dt: Integration step size in days.
 
     Returns:
-        A new :class:`ModelState` with all matched fields advanced by
+        A new `ModelState` with all matched fields advanced by
         ``rates[field + "_rate"] * dt``. Physically non-negative fields are
         clamped to ``>= 0`` and ``dvs`` is clamped to ``[0, 2]``.
     """

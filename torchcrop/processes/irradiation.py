@@ -7,14 +7,16 @@ Equations:
     Photosynthetically active radiation fraction of global radiation is
     0.50:
 
-    .. math::
-        \\text{PAR} = 0.5 \\cdot \\text{IRRAD}
+    $$
+    \\text{PAR} = 0.5 \\cdot \\text{IRRAD}
+    $$
 
     Fraction intercepted by a canopy of index ``LAI`` with extinction
     ``K``:
 
-    .. math::
-        \\text{frac} = 1 - \\exp(-K \\cdot \\text{LAI})
+    $$
+    \\text{frac} = 1 - \\exp(-K \\cdot \\text{LAI})
+    $$
 
     So intercepted PAR is ``PARINT = PAR * frac`` [MJ m⁻² d⁻¹].
 """
@@ -53,7 +55,7 @@ class Irradiation(nn.Module):
                   radiation at the top of the canopy (``= 0.5 * irrad``).
                 * ``parint`` [MJ m⁻² d⁻¹] — PAR intercepted by the canopy
                   (``= par * frac_intercepted``); used by
-                  :class:`Photosynthesis` to drive ``gtotal``.
+                  `Photosynthesis` to drive ``gtotal``.
                 * ``frac_intercepted`` [-] — Beer–Lambert interception
                   fraction ``1 - exp(-k * lai)`` in ``[0, 1]``.
         """

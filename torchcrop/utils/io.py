@@ -43,7 +43,7 @@ def make_constant_weather(
         device: Device on which to allocate the tensors.
 
     Returns:
-        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape
+        `WeatherDriver` of shape
         ``[B, T, C]`` with identical rows for every batch element.
     """
     doy = torch.arange(n_days, dtype=dtype, device=device) + float(start_doy)
@@ -71,7 +71,7 @@ def load_weather_csv(
     """Load a single-site daily weather CSV.
 
     The CSV must contain the columns listed in
-    :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS` (lowercase) or an
+    `WEATHER_CHANNELS` (lowercase) or an
     explicit ``columns`` argument may be passed mapping file columns to the
     expected order.
 
@@ -79,17 +79,17 @@ def load_weather_csv(
         path: Path to the CSV file. The first line must be a header row.
         columns: Optional override for the expected column names in the
             CSV, in the order used by
-            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`. If
+            `WEATHER_CHANNELS`. If
             ``None``, ``WEATHER_CHANNELS`` is used verbatim.
         dtype: Floating-point dtype for the returned tensor.
 
     Returns:
-        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape
+        `WeatherDriver` of shape
         ``[1, T, C]`` where ``T`` is the number of data rows in the CSV.
 
     Raises:
         ValueError: If ``columns`` has a different length than
-            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`.
+            `WEATHER_CHANNELS`.
     """
     path = Path(path)
     if columns is None:

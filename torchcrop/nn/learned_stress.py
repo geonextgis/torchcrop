@@ -1,7 +1,7 @@
 """Learned stress-factor module.
 
 Replaces the empirical water-stress curve (``TRANRF``) with a small MLP that
-maps soil-water descriptors to a stress factor in :math:`[0, 1]` via a
+maps soil-water descriptors to a stress factor in $[0, 1]$ via a
 sigmoid output.
 """
 
@@ -46,9 +46,9 @@ class LearnedStressFactor(nn.Module):
 
         Args:
             tranrf: Water-stress factor in ``[0, 1]`` from
-                :class:`WaterBalance`, shape ``[B]``.
+                `WaterBalance`, shape ``[B]``.
             nstress: Nutrient-stress factor in ``[0, 1]`` from
-                :class:`NutrientDemand`, shape ``[B]``.
+                `NutrientDemand`, shape ``[B]``.
             *extra: Optional additional context tensors, each of shape
                 ``[B]``.
 

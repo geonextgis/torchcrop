@@ -15,7 +15,7 @@ def _require_matplotlib():
     """Import ``matplotlib.pyplot`` lazily with a helpful error.
 
     Returns:
-        The imported :mod:`matplotlib.pyplot` module.
+        The imported `matplotlib.pyplot` module.
 
     Raises:
         ImportError: If ``matplotlib`` is not installed, with a message

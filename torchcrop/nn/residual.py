@@ -15,8 +15,9 @@ class NeuralResidual(nn.Module):
 
     The residual output is produced by
 
-    .. math::
-        f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))
+    $$
+    f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))
+    $$
 
     which keeps the correction bounded to ``[-scale, +scale]`` so that the
     learned term cannot overwhelm the mechanistic prediction it augments.

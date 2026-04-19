@@ -6,17 +6,19 @@ References:
 Equations:
     Effective daily temperature:
 
-    .. math::
-        \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
+    $$
+    \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
+    $$
 
     Development rate (pre-emergence, vegetative, generative):
 
-    .. math::
-        \\text{DVR} =
-        \\begin{cases}
-            \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} / \\text{TSUM1}, & 0 \\le DVS < 1 \\\\
-            \\text{DTSU} / \\text{TSUM2}, & 1 \\le DVS < 2
-        \\end{cases}
+    $$
+    \\text{DVR} =
+    \\begin{cases}
+        \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} / \\text{TSUM1}, & 0 \\le DVS < 1 \\\\
+        \\text{DTSU} / \\text{TSUM2}, & 1 \\le DVS < 2
+    \\end{cases}
+    $$
 """
 
 from __future__ import annotations

@@ -5,10 +5,12 @@ is adequate for differentiable experimentation. For operational use, swap in
 a full FAO-56 Penman–Monteith variant (kept as a TODO hook).
 
 Equations:
-    .. math::
-        ET_0 = \\alpha \\cdot \\frac{\\Delta}{\\Delta + \\gamma} \\cdot \\frac{R_n}{\\lambda}
 
-    with :math:`\\alpha = 1.26`, :math:`\\lambda = 2.45\\ \\text{MJ kg}^{-1}`.
+    $$
+    ET_0 = \\alpha \\cdot \\frac{\\Delta}{\\Delta + \\gamma} \\cdot \\frac{R_n}{\\lambda}
+    $$
+
+    with $\\alpha = 1.26$, $\\lambda = 2.45\\ \\text{MJ kg}^{-1}$.
 """
 
 from __future__ import annotations
@@ -21,7 +23,7 @@ class PotentialEvapoTranspiration(nn.Module):
     """Priestley–Taylor reference evapotranspiration.
 
     Args:
-        alpha_pt: Priestley–Taylor coefficient :math:`\\alpha`
+        alpha_pt: Priestley–Taylor coefficient $\\alpha$
             (default 1.26).
     """
 
@@ -46,17 +48,17 @@ class PotentialEvapoTranspiration(nn.Module):
 
         Returns:
             Dict of ``[B]`` tensors with the potential fluxes (no state is
-            integrated here — :class:`WaterBalance` turns
+            integrated here — `WaterBalance` turns
             ``ptran``/``pevap`` into actual ``tran``/``evap``):
 
                 * ``et0`` [mm d⁻¹] — Reference evapotranspiration
                   (Priestley–Taylor).
                 * ``ptran`` [mm d⁻¹] — Potential canopy transpiration
                   ``= et0 * (1 - exp(-k_ext * lai))``; passed to
-                  :class:`WaterBalance` to compute actual transpiration.
+                  `WaterBalance` to compute actual transpiration.
                 * ``pevap`` [mm d⁻¹] — Potential soil evaporation
                   ``= et0 * exp(-k_ext * lai)``; passed to
-                  :class:`WaterBalance`.
+                  `WaterBalance`.
         """
         # Slope of saturation vapour pressure curve [kPa K-1]
         delta = (

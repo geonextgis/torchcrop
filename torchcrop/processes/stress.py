@@ -4,7 +4,7 @@ A light wrapper module that bundles the water-stress factor ``TRANRF`` and
 the nutrient-stress factor ``NSTRESS`` into a single multiplicative reducer.
 
 This module is deliberately minimal: the substantive computations live in
-``water_balance.py`` and ``nutrient_demand.py``. Use :class:`StressFactors`
+``water_balance.py`` and ``nutrient_demand.py``. Use `StressFactors`
 if you want to swap in a learned alternative via the hybrid API.
 """
 
@@ -26,9 +26,9 @@ class StressFactors(nn.Module):
 
         Args:
             tranrf: Water-stress factor in ``[0, 1]`` from
-                :class:`WaterBalance`, shape ``[B]``.
+                `WaterBalance`, shape ``[B]``.
             nstress: Nutrient-stress factor in ``[0, 1]`` from
-                :class:`NutrientDemand`, shape ``[B]``.
+                `NutrientDemand`, shape ``[B]``.
 
         Returns:
             Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,
