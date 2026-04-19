@@ -9,7 +9,7 @@ Wolf, J. (2012). User guide for LINTUL5. Wageningen UR.
 
 __author__ = """Krishnagopal Halder"""
 __email__ = "geonextgis@gmail.com"
-__version__ = "0.0.1"
+__version__ = "1.0.0"
 
 from torchcrop.config import RunConfig
 from torchcrop.drivers.weather import WeatherDriver
