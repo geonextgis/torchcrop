@@ -1979,12 +1979,14 @@
 <p class="admonition-title">Equations</p>
 <p>Photosynthetically active radiation fraction of global radiation is
 0.50:</p>
-<p>.. math::
-    \text{PAR} = 0.5 \cdot \text{IRRAD}</p>
+<p>$$
+\text{PAR} = 0.5 \cdot \text{IRRAD}
+$$</p>
 <p>Fraction intercepted by a canopy of index <code>LAI</code> with extinction
 <code>K</code>:</p>
-<p>.. math::
-    \text{frac} = 1 - \exp(-K \cdot \text{LAI})</p>
+<p>$$
+\text{frac} = 1 - \exp(-K \cdot \text{LAI})
+$$</p>
 <p>So intercepted PAR is <code>PARINT = PAR * frac</code> [MJ m⁻² d⁻¹].</p>
 </div>
 
@@ -2042,7 +2044,7 @@ Irradiation            (<span title="torch.nn.modules.module.Module">Module</spa
 <span class="sd">                  radiation at the top of the canopy (``= 0.5 * irrad``).</span>
 <span class="sd">                * ``parint`` [MJ m⁻² d⁻¹] — PAR intercepted by the canopy</span>
 <span class="sd">                  (``= par * frac_intercepted``); used by</span>
-<span class="sd">                  :class:`Photosynthesis` to drive ``gtotal``.</span>
+<span class="sd">                  `Photosynthesis` to drive ``gtotal``.</span>
 <span class="sd">                * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">                  fraction ``1 - exp(-k * lai)`` in ``[0, 1]``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2128,7 +2130,7 @@ integrated here, they feed photosynthesis and ET)</code></td>
       radiation at the top of the canopy (<code>= 0.5 * irrad</code>).<ul>
 <li><code>parint</code> [MJ m⁻² d⁻¹] — PAR intercepted by the canopy
   (<code>= par * frac_intercepted</code>); used by
-  :class:<code>Photosynthesis</code> to drive <code>gtotal</code>.</li>
+  <code>Photosynthesis</code> to drive <code>gtotal</code>.</li>
 <li><code>frac_intercepted</code> [-] — Beer–Lambert interception
   fraction <code>1 - exp(-k * lai)</code> in <code>[0, 1]</code>.</li>
 </ul>
@@ -2161,7 +2163,7 @@ integrated here, they feed photosynthesis and ET)</code></td>
 <span class="sd">              radiation at the top of the canopy (``= 0.5 * irrad``).</span>
 <span class="sd">            * ``parint`` [MJ m⁻² d⁻¹] — PAR intercepted by the canopy</span>
 <span class="sd">              (``= par * frac_intercepted``); used by</span>
-<span class="sd">              :class:`Photosynthesis` to drive ``gtotal``.</span>
+<span class="sd">              `Photosynthesis` to drive ``gtotal``.</span>
 <span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">              fraction ``1 - exp(-k * lai)`` in ``[0, 1]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>

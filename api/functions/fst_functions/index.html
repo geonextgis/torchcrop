@@ -2088,8 +2088,8 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>Interpolated values; see </code></td>
-      <td></td>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Interpolated values; see <code>interpolate</code> for details.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2103,7 +2103,7 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
 <span class="sd">        x: Query values.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Interpolated values; see :func:`interpolate` for details.</span>
+<span class="sd">        Interpolated values; see `interpolate` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div>
@@ -2163,7 +2163,7 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
         <td><code>smooth</code></td>
         <td><code>bool</code></td>
         <td><p>If <code>True</code>, use a sigmoid blend of sharpness <code>k</code> instead
-of the hard :func:<code>torch.where</code> switch.</p></td>
+of the hard <code>torch.where</code> switch.</p></td>
         <td><code>False</code></td>
       </tr>
       <tr>
@@ -2208,7 +2208,7 @@ of the hard :func:<code>torch.where</code> switch.</p></td>
 <span class="sd">        y1: Value returned when ``x &lt; 0``.</span>
 <span class="sd">        y2: Value returned when ``x &gt;= 0``.</span>
 <span class="sd">        smooth: If ``True``, use a sigmoid blend of sharpness ``k`` instead</span>
-<span class="sd">            of the hard :func:`torch.where` switch.</span>
+<span class="sd">            of the hard `torch.where` switch.</span>
 <span class="sd">        k: Sharpness of the sigmoid blend (only used when ``smooth=True``).</span>
 
 <span class="sd">    Returns:</span>

@@ -2139,7 +2139,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
       <tr>
         <td><code>ValueError</code></td>
         <td><p>If <code>data</code> is not 3-D or does not carry exactly
-:data:<code>N_WEATHER_CHANNELS</code> channels.</p></td>
+<code>N_WEATHER_CHANNELS</code> channels.</p></td>
       </tr>
   </tbody>
 </table>
@@ -2157,7 +2157,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``data`` is not 3-D or does not carry exactly</span>
-<span class="sd">            :data:`N_WEATHER_CHANNELS` channels.</span>
+<span class="sd">            `N_WEATHER_CHANNELS` channels.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -2199,7 +2199,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name: Channel name (see :data:`WEATHER_CHANNELS`).</span>
+<span class="sd">            name: Channel name (see `WEATHER_CHANNELS`).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``[B, T]`` tensor view of the requested channel.</span>
@@ -2214,14 +2214,14 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">idx</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`WeatherDriver` wrapping the cast tensor.</span>
+<span class="sd">            A new `WeatherDriver` wrapping the cast tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>
@@ -2318,7 +2318,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
       <tr>
         <td><code>name</code></td>
         <td><code>str</code></td>
-        <td><p>Channel name (see :data:<code>WEATHER_CHANNELS</code>).</p></td>
+        <td><p>Channel name (see <code>WEATHER_CHANNELS</code>).</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2359,7 +2359,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: Channel name (see :data:`WEATHER_CHANNELS`).</span>
+<span class="sd">        name: Channel name (see `WEATHER_CHANNELS`).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``[B, T]`` tensor view of the requested channel.</span>
@@ -2461,7 +2461,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>WeatherDriver</code> cast/moved to <code>dtype</code>/<code>device</code>.</p>
+      <p>Return a new <code>WeatherDriver</code> cast/moved to <code>dtype</code>/<code>device</code>.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2498,22 +2498,22 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;WeatherDriver&#39;</code></td>
+      <td><p>A new <code>WeatherDriver</code> wrapping the cast tensor.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`WeatherDriver` wrapping the cast tensor.</span>
+<span class="sd">        A new `WeatherDriver` wrapping the cast tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>

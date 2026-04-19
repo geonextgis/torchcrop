@@ -2054,8 +2054,8 @@ events in the model.</p>
     <div class="doc doc-contents ">
 
       <p>Differentiable Heaviside step.</p>
-<p>Returns :math:<code>\sigma(k (x - x_0))</code> which tends to 0 for
-:math:<code>x \ll x_0</code> and to 1 for :math:<code>x \gg x_0</code>.</p>
+<p>Returns $\sigma(k (x - x_0))$ which tends to 0 for
+$x \ll x_0$ and to 1 for $x \gg x_0$.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2112,8 +2112,8 @@ events in the model.</p>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable Heaviside step.</span>
 
-<span class="sd">    Returns :math:`\sigma(k (x - x_0))` which tends to 0 for</span>
-<span class="sd">    :math:`x \ll x_0` and to 1 for :math:`x \gg x_0`.</span>
+<span class="sd">    Returns $\sigma(k (x - x_0))$ which tends to 0 for</span>
+<span class="sd">    $x \ll x_0$ and to 1 for $x \gg x_0$.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: Input tensor.</span>
@@ -2439,7 +2439,7 @@ closely.</p></td>
     <div class="doc doc-contents ">
 
       <p>Differentiable minimum using the log-sum-exp trick.</p>
-<p>:math:<code>\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})</code>.</p>
+<p>$\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2493,7 +2493,7 @@ closely.</p></td>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_min</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable minimum using the log-sum-exp trick.</span>
 
-<span class="sd">    :math:`\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})`.</span>
+<span class="sd">    $\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a: First input tensor.</span>

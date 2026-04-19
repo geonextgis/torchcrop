@@ -4614,12 +4614,12 @@
 <p>This module ports the <strong>constant</strong> crop-level inputs of the SIMPLACE Lintul5
 component family (<code>Lintul5.java</code>, <code>Phenology.java</code>,
 <code>RadiationUseEfficiency.java</code>) to a single PyTorch-friendly dataclass.</p>
-<p>All scalar fields are stored as :class:<code>torch.Tensor</code> so they can be made
-learnable by wrapping them with :class:<code>torch.nn.Parameter</code>. Table fields
+<p>All scalar fields are stored as <code>torch.Tensor</code> so they can be made
+learnable by wrapping them with <code>torch.nn.Parameter</code>. Table fields
 (<code>..._tb</code> / <code>..._table</code>) carry shape <code>[N, 2]</code> (or <code>[B, N, 2]</code> if the
 table itself is batch-varying), where column 0 is the abscissa (DVS or
 temperature) and column 1 is the value. Tables are interpolated by
-:func:<code>torchcrop.functions.interpolate</code>.</p>
+<code>torchcrop.functions.interpolate</code>.</p>
 <p>Naming conventions:
     * Field names follow the original Lintul5 (Wolf, 2012) symbol,
       lowercased.
@@ -4739,7 +4739,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVERNRT`` (= ``cVernalisationTableMeanTemp`` × ``cVernalisationTableRate``).</span>
 <span class="sd">    Daily vernal-day rate [-] as a function of mean daily temperature [°C].</span>
-<span class="sd">    Used only when :attr:`idsl` ≥ 2.&quot;&quot;&quot;</span>
+<span class="sd">    Used only when `idsl` ≥ 2.&quot;&quot;&quot;</span>
 
     <span class="n">vbase</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVBASE``. Vernalisation base [thermal day]: vernal days</span>
@@ -4765,7 +4765,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">360.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCO``. Atmospheric CO₂ concentration [ppm] used both as input to</span>
-<span class="sd">    the RUE CO₂ correction (:attr:`cotb`) and the ET₀ CO₂ correction.</span>
+<span class="sd">    the RUE CO₂ correction (`cotb`) and the ET₀ CO₂ correction.</span>
 <span class="sd">    Default is the original Lintul5 reference.&quot;&quot;&quot;</span>
 
     <span class="n">day_temp_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.25</span><span class="p">))</span>
@@ -4776,7 +4776,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">3.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRUETableRUE`` (scalar surrogate). Reference radiation use</span>
-<span class="sd">    efficiency [g DM · MJ⁻¹ PAR] used when :attr:`ruetb` is omitted.</span>
+<span class="sd">    efficiency [g DM · MJ⁻¹ PAR] used when `ruetb` is omitted.</span>
 <span class="sd">    Lintul5 wheat default is 3.0 g · MJ⁻¹.&quot;&quot;&quot;</span>
 
     <span class="n">ruetb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
@@ -4822,7 +4822,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">scale_factor_rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRUE``. Multiplicative scale factor on the y-values of</span>
-<span class="sd">    :attr:`ruetb` for sensitivity analysis / calibration.&quot;&quot;&quot;</span>
+<span class="sd">    `ruetb` for sensitivity analysis / calibration.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 3. Light interception / canopy (from Lintul5.java)</span>
@@ -4830,7 +4830,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.60</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Effective canopy light extinction coefficient [-]; scalar fallback</span>
-<span class="sd">    when :attr:`kdiftb` is collapsed to a constant.&quot;&quot;&quot;</span>
+<span class="sd">    when `kdiftb` is collapsed to a constant.&quot;&quot;&quot;</span>
 
     <span class="n">kdiftb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)])</span>
@@ -4839,7 +4839,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    function of DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_kdif</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorKDIF``. Scale factor on :attr:`kdiftb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorKDIF``. Scale factor on `kdiftb` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">laicr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">4.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves</span>
@@ -4872,7 +4872,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">sla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0212</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback</span>
-<span class="sd">    used when :attr:`slatb` is collapsed.&quot;&quot;&quot;</span>
+<span class="sd">    used when `slatb` is collapsed.&quot;&quot;&quot;</span>
 
     <span class="n">slatb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">)])</span>
@@ -4880,7 +4880,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSLATB``. Specific leaf area [m² g⁻¹] as a function of DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_sla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorSLA``. Scale factor on :attr:`slatb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorSLA``. Scale factor on `slatb` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">laii</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``LAII`` initial leaf area index [m² m⁻²] at emergence (Lintul5</span>
@@ -4895,7 +4895,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">rdrshm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.03</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRSHM``. Maximum relative death rate of leaves [d⁻¹] caused by</span>
-<span class="sd">    shading when LAI &gt; :attr:`laicr`.&quot;&quot;&quot;</span>
+<span class="sd">    shading when LAI &gt; `laicr`.&quot;&quot;&quot;</span>
 
     <span class="n">rdrl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRL``. Maximum relative death rate of leaves [d⁻¹] due to</span>
@@ -4930,13 +4930,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_leaves</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRLeaves``. Scale factor on :attr:`rdrltb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRLeaves``. Scale factor on `rdrltb`.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_stems</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRStems``. Scale factor on :attr:`rdrstb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRStems``. Scale factor on `rdrstb`.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_roots</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRRoots``. Scale factor on :attr:`rdrrtb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRRoots``. Scale factor on `rdrrtb`.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 6. Biomass partitioning (from Lintul5.java)</span>
@@ -5046,20 +5046,20 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    fraction of the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
 
     <span class="n">lrpr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRPR``. As :attr:`lrnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRPR``. As `lrnr` but for P.&quot;&quot;&quot;</span>
 
     <span class="n">lrkr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRKR``. As :attr:`lrnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRKR``. As `lrnr` but for K.&quot;&quot;&quot;</span>
 
     <span class="n">lsnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSNR``. Maximum N concentration in **stems** as a fraction of</span>
 <span class="sd">    the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
 
     <span class="n">lspr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSPR``. As :attr:`lsnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSPR``. As `lsnr` but for P.&quot;&quot;&quot;</span>
 
     <span class="n">lskr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSKR``. As :attr:`lsnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSKR``. As `lsnr` but for K.&quot;&quot;&quot;</span>
 
     <span class="n">frnx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRNX``. Optimal N concentration as a fraction of the maximum N</span>
@@ -5155,7 +5155,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">dvsdlt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSDLT``. DVS above which leaf death (controlled by mean</span>
-<span class="sd">    temperature, see :attr:`rdrltb`) begins.&quot;&quot;&quot;</span>
+<span class="sd">    temperature, see `rdrltb`) begins.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 10. Fertiliser application &amp; recovery (from Lintul5.java)</span>
@@ -5163,7 +5163,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">nrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.7</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNRF``. Default recovery fraction [0–1] of applied fertiliser N</span>
-<span class="sd">    (used when no day-resolved :attr:`nrftab` is provided).&quot;&quot;&quot;</span>
+<span class="sd">    (used when no day-resolved `nrftab` is provided).&quot;&quot;&quot;</span>
 
     <span class="n">prf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPRF``. Default recovery fraction [0–1] of applied fertiliser P.&quot;&quot;&quot;</span>
@@ -5192,13 +5192,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFERKTAB``. Optional table of K fertiliser applications.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_fern</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERN``. Scale factor on :attr:`ferntab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERN``. Scale factor on `ferntab` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_ferp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERP``. Scale factor on :attr:`ferptab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERP``. Scale factor on `ferptab` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_ferk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERK``. Scale factor on :attr:`ferktab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERK``. Scale factor on `ferktab` y-values.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 11. Run-control flags (from Lintul5.java)</span>
@@ -5221,13 +5221,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">rootdi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.10</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rdi` — initial rooting depth [m].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rdi` — initial rooting depth [m].&quot;&quot;&quot;</span>
 
     <span class="n">rootdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.20</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rdmcr` — maximum rooting depth [m].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rdmcr` — maximum rooting depth [m].&quot;&quot;&quot;</span>
 
     <span class="n">rrdmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rri` — maximum daily root-depth growth</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rri` — maximum daily root-depth growth</span>
 <span class="sd">    rate [m d⁻¹].&quot;&quot;&quot;</span>
 
     <span class="n">rdrtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
@@ -5236,13 +5236,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
         <span class="p">)</span>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used</span>
-<span class="sd">    by :class:`LeafDynamics` for developmental senescence. Not a direct</span>
+<span class="sd">    by `LeafDynamics` for developmental senescence. Not a direct</span>
 <span class="sd">    SIMPLACE constant (SIMPLACE separates leaf senescence into</span>
-<span class="sd">    :attr:`rdrltb` (vs T), :attr:`rdrrtb` and :attr:`rdrstb` (vs DVS)).&quot;&quot;&quot;</span>
+<span class="sd">    `rdrltb` (vs T), `rdrrtb` and `rdrstb` (vs DVS)).&quot;&quot;&quot;</span>
 
     <span class="n">nmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.050</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold</span>
-<span class="sd">    surrogate of :attr:`nmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    surrogate of `nmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">nmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.020</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max N concentration in stems (≈ ``lsnr × nmaxlv``).&quot;&quot;&quot;</span>
@@ -5252,7 +5252,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">pmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.008</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max P concentration in leaves (scaffold surrogate of</span>
-<span class="sd">    :attr:`pmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    `pmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">pmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.004</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max P concentration in stems (≈ ``lspr × pmaxlv``).&quot;&quot;&quot;</span>
@@ -5262,7 +5262,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">kmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.040</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max K concentration in leaves (scaffold surrogate of</span>
-<span class="sd">    :attr:`kmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    `kmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">kmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.025</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max K concentration in stems (≈ ``lskr × kmaxlv``).&quot;&quot;&quot;</span>
@@ -5272,7 +5272,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">nresid</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.004</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregated residual N concentration [g N · g⁻¹ DM] used by the</span>
-<span class="sd">    scaffold (compare per-organ :attr:`rnflv`/:attr:`rnfst`/:attr:`rnfrt`).&quot;&quot;&quot;</span>
+<span class="sd">    scaffold (compare per-organ `rnflv`/`rnfst`/`rnfrt`).&quot;&quot;&quot;</span>
 
     <span class="n">presid</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.001</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregated residual P concentration.&quot;&quot;&quot;</span>
@@ -5285,9 +5285,9 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
             <span class="p">[(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`tmpftb` (T-response of RUE) used by the</span>
-<span class="sd">    current :class:`Photosynthesis` module. Will be merged with</span>
-<span class="sd">    :attr:`tmpftb` once the full SIMPLACE RUE chain is wired in.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `tmpftb` (T-response of RUE) used by the</span>
+<span class="sd">    current `Photosynthesis` module. Will be merged with</span>
+<span class="sd">    `tmpftb` once the full SIMPLACE RUE chain is wired in.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
@@ -5305,7 +5305,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">            A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">            cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">            are copied through unchanged.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -5345,7 +5345,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <div class="doc doc-contents ">
 
       <p><code>cCO</code>. Atmospheric CO₂ concentration [ppm] used both as input to
-the RUE CO₂ correction (:attr:<code>cotb</code>) and the ET₀ CO₂ correction.
+the RUE CO₂ correction (<code>cotb</code>) and the ET₀ CO₂ correction.
 Default is the original Lintul5 reference.</p>
     </div>
 
@@ -5441,7 +5441,7 @@ air temperature [°C]. Shape <code>[N, 2]</code> with x = T̄, y = ΔTsum/d.</p>
     <div class="doc doc-contents ">
 
       <p><code>cDVSDLT</code>. DVS above which leaf death (controlled by mean
-temperature, see :attr:<code>rdrltb</code>) begins.</p>
+temperature, see <code>rdrltb</code>) begins.</p>
     </div>
 
   </div>
@@ -5854,7 +5854,7 @@ Stored as float so it can be used in masking; cast to int for branching.</p>
     <div class="doc doc-contents ">
 
       <p>Effective canopy light extinction coefficient [-]; scalar fallback
-when :attr:<code>kdiftb</code> is collapsed to a constant.</p>
+when <code>kdiftb</code> is collapsed to a constant.</p>
     </div>
 
   </div>
@@ -5900,7 +5900,7 @@ function of DVS.</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max K concentration in leaves (scaffold surrogate of
-:attr:<code>kmxlv</code> table).</p>
+<code>kmxlv</code> table).</p>
     </div>
 
   </div>
@@ -6123,7 +6123,7 @@ output, persisted here as a parameter for re-init).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLRKR</code>. As :attr:<code>lrnr</code> but for K.</p>
+      <p><code>cLRKR</code>. As <code>lrnr</code> but for K.</p>
     </div>
 
   </div>
@@ -6168,7 +6168,7 @@ fraction of the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLRPR</code>. As :attr:<code>lrnr</code> but for P.</p>
+      <p><code>cLRPR</code>. As <code>lrnr</code> but for P.</p>
     </div>
 
   </div>
@@ -6190,7 +6190,7 @@ fraction of the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLSKR</code>. As :attr:<code>lsnr</code> but for K.</p>
+      <p><code>cLSKR</code>. As <code>lsnr</code> but for K.</p>
     </div>
 
   </div>
@@ -6235,7 +6235,7 @@ the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLSPR</code>. As :attr:<code>lsnr</code> but for P.</p>
+      <p><code>cLSPR</code>. As <code>lsnr</code> but for P.</p>
     </div>
 
   </div>
@@ -6350,7 +6350,7 @@ phase) due to nutrient stress.</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold
-surrogate of :attr:<code>nmxlv</code> table).</p>
+surrogate of <code>nmxlv</code> table).</p>
     </div>
 
   </div>
@@ -6486,7 +6486,7 @@ reduction (re-allocation away from leaves under N deficiency).</p>
     <div class="doc doc-contents ">
 
       <p>Aggregated residual N concentration [g N · g⁻¹ DM] used by the
-scaffold (compare per-organ :attr:<code>rnflv</code>/:attr:<code>rnfst</code>/:attr:<code>rnfrt</code>).</p>
+scaffold (compare per-organ <code>rnflv</code>/<code>rnfst</code>/<code>rnfrt</code>).</p>
     </div>
 
   </div>
@@ -6509,7 +6509,7 @@ scaffold (compare per-organ :attr:<code>rnflv</code>/:attr:<code>rnfst</code>/:a
     <div class="doc doc-contents ">
 
       <p><code>cNRF</code>. Default recovery fraction [0–1] of applied fertiliser N
-(used when no day-resolved :attr:<code>nrftab</code> is provided).</p>
+(used when no day-resolved <code>nrftab</code> is provided).</p>
     </div>
 
   </div>
@@ -6602,7 +6602,7 @@ as a function of day length [h].</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max P concentration in leaves (scaffold surrogate of
-:attr:<code>pmxlv</code> table).</p>
+<code>pmxlv</code> table).</p>
     </div>
 
   </div>
@@ -6916,7 +6916,7 @@ DVS.</p>
     <div class="doc doc-contents ">
 
       <p><code>cRDRSHM</code>. Maximum relative death rate of leaves [d⁻¹] caused by
-shading when LAI &gt; :attr:<code>laicr</code>.</p>
+shading when LAI &gt; <code>laicr</code>.</p>
     </div>
 
   </div>
@@ -6962,9 +6962,9 @@ DVS.</p>
     <div class="doc doc-contents ">
 
       <p>Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used
-by :class:<code>LeafDynamics</code> for developmental senescence. Not a direct
+by <code>LeafDynamics</code> for developmental senescence. Not a direct
 SIMPLACE constant (SIMPLACE separates leaf senescence into
-:attr:<code>rdrltb</code> (vs T), :attr:<code>rdrrtb</code> and :attr:<code>rdrstb</code> (vs DVS)).</p>
+<code>rdrltb</code> (vs T), <code>rdrrtb</code> and <code>rdrstb</code> (vs DVS)).</p>
     </div>
 
   </div>
@@ -7142,7 +7142,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rdi</code> — initial rooting depth [m].</p>
+      <p>Scaffold alias of <code>rdi</code> — initial rooting depth [m].</p>
     </div>
 
   </div>
@@ -7164,7 +7164,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rdmcr</code> — maximum rooting depth [m].</p>
+      <p>Scaffold alias of <code>rdmcr</code> — maximum rooting depth [m].</p>
     </div>
 
   </div>
@@ -7252,7 +7252,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rri</code> — maximum daily root-depth growth
+      <p>Scaffold alias of <code>rri</code> — maximum daily root-depth growth
 rate [m d⁻¹].</p>
     </div>
 
@@ -7298,7 +7298,7 @@ rate [m d⁻¹].</p>
     <div class="doc doc-contents ">
 
       <p><code>cRUETableRUE</code> (scalar surrogate). Reference radiation use
-efficiency [g DM · MJ⁻¹ PAR] used when :attr:<code>ruetb</code> is omitted.
+efficiency [g DM · MJ⁻¹ PAR] used when <code>ruetb</code> is omitted.
 Lintul5 wheat default is 3.0 g · MJ⁻¹.</p>
     </div>
 
@@ -7368,7 +7368,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERK</code>. Scale factor on :attr:<code>ferktab</code> y-values.</p>
+      <p><code>cScaleFactorFERK</code>. Scale factor on <code>ferktab</code> y-values.</p>
     </div>
 
   </div>
@@ -7390,7 +7390,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERN</code>. Scale factor on :attr:<code>ferntab</code> y-values.</p>
+      <p><code>cScaleFactorFERN</code>. Scale factor on <code>ferntab</code> y-values.</p>
     </div>
 
   </div>
@@ -7412,7 +7412,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERP</code>. Scale factor on :attr:<code>ferptab</code> y-values.</p>
+      <p><code>cScaleFactorFERP</code>. Scale factor on <code>ferptab</code> y-values.</p>
     </div>
 
   </div>
@@ -7434,7 +7434,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorKDIF</code>. Scale factor on :attr:<code>kdiftb</code> y-values.</p>
+      <p><code>cScaleFactorKDIF</code>. Scale factor on <code>kdiftb</code> y-values.</p>
     </div>
 
   </div>
@@ -7456,7 +7456,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRLeaves</code>. Scale factor on :attr:<code>rdrltb</code>.</p>
+      <p><code>cScaleFactorRDRLeaves</code>. Scale factor on <code>rdrltb</code>.</p>
     </div>
 
   </div>
@@ -7478,7 +7478,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRRoots</code>. Scale factor on :attr:<code>rdrrtb</code>.</p>
+      <p><code>cScaleFactorRDRRoots</code>. Scale factor on <code>rdrrtb</code>.</p>
     </div>
 
   </div>
@@ -7500,7 +7500,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRStems</code>. Scale factor on :attr:<code>rdrstb</code>.</p>
+      <p><code>cScaleFactorRDRStems</code>. Scale factor on <code>rdrstb</code>.</p>
     </div>
 
   </div>
@@ -7523,7 +7523,7 @@ grain filling).</p>
     <div class="doc doc-contents ">
 
       <p><code>cScaleFactorRUE</code>. Multiplicative scale factor on the y-values of
-:attr:<code>ruetb</code> for sensitivity analysis / calibration.</p>
+<code>ruetb</code> for sensitivity analysis / calibration.</p>
     </div>
 
   </div>
@@ -7545,7 +7545,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorSLA</code>. Scale factor on :attr:<code>slatb</code> y-values.</p>
+      <p><code>cScaleFactorSLA</code>. Scale factor on <code>slatb</code> y-values.</p>
     </div>
 
   </div>
@@ -7568,7 +7568,7 @@ grain filling).</p>
     <div class="doc doc-contents ">
 
       <p>Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback
-used when :attr:<code>slatb</code> is collapsed.</p>
+used when <code>slatb</code> is collapsed.</p>
     </div>
 
   </div>
@@ -7795,9 +7795,9 @@ minimum temperature [°C] (cold-night stress).</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>tmpftb</code> (T-response of RUE) used by the
-current :class:<code>Photosynthesis</code> module. Will be merged with
-:attr:<code>tmpftb</code> once the full SIMPLACE RUE chain is wired in.</p>
+      <p>Scaffold alias of <code>tmpftb</code> (T-response of RUE) used by the
+current <code>Photosynthesis</code> module. Will be merged with
+<code>tmpftb</code> once the full SIMPLACE RUE chain is wired in.</p>
     </div>
 
   </div>
@@ -8006,7 +8006,7 @@ vernalisation factor is applied; beyond this stage VERNFAC = 1.</p>
 
       <p><code>cVERNRT</code> (= <code>cVernalisationTableMeanTemp</code> × <code>cVernalisationTableRate</code>).
 Daily vernal-day rate [-] as a function of mean daily temperature [°C].
-Used only when :attr:<code>idsl</code> ≥ 2.</p>
+Used only when <code>idsl</code> ≥ 2.</p>
     </div>
 
   </div>
@@ -8092,8 +8092,9 @@ vernal days above which the vernalisation factor is fully released
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td><p>cast; non-tensor fields (e.g., optional tables set to <code>None</code>)
+      <td><code>&#39;CropParameters&#39;</code></td>
+      <td><p>A new <code>CropParameters</code> with every tensor field moved /
+cast; non-tensor fields (e.g., optional tables set to <code>None</code>)
 are copied through unchanged.</p></td>
     </tr>
   </tbody>
@@ -8112,7 +8113,7 @@ are copied through unchanged.</p></td>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">        A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">        cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">        are copied through unchanged.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -8186,8 +8187,9 @@ are copied through unchanged.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>cast to <code>dtype</code>.</p></td>
+      <td><code>CropParameters</code></td>
+      <td><p>A fresh <code>CropParameters</code> with the Lintul5 wheat defaults
+cast to <code>dtype</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -8200,7 +8202,7 @@ are copied through unchanged.</p></td>
 <span class="sd">        dtype: Target tensor dtype for all scalar/tabular fields.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`CropParameters` with the Lintul5 wheat defaults</span>
+<span class="sd">        A fresh `CropParameters` with the Lintul5 wheat defaults</span>
 <span class="sd">        cast to ``dtype``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>

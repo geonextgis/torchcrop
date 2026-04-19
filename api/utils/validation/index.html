@@ -2011,13 +2011,13 @@
       <tr>
         <td><code>rtol</code></td>
         <td><code>float</code></td>
-        <td><p>Relative tolerance forwarded to :func:<code>torch.allclose</code>.</p></td>
+        <td><p>Relative tolerance forwarded to <code>torch.allclose</code>.</p></td>
         <td><code>0.0001</code></td>
       </tr>
       <tr>
         <td><code>atol</code></td>
         <td><code>float</code></td>
-        <td><p>Absolute tolerance forwarded to :func:<code>torch.allclose</code>.</p></td>
+        <td><p>Absolute tolerance forwarded to <code>torch.allclose</code>.</p></td>
         <td><code>1e-06</code></td>
       </tr>
   </tbody>
@@ -2037,7 +2037,7 @@
 <li><code>max_abs_error</code> — scalar tensor, maximum absolute error.<ul>
 <li><code>mean_abs_error</code> — scalar tensor, mean absolute error.</li>
 <li><code>max_rel_error</code> — scalar tensor, maximum relative error
-  (using :func:<code>relative_error</code>).</li>
+  (using <code>relative_error</code>).</li>
 <li><code>passed</code> — <code>bool</code>, result of
   <code>torch.allclose(y, y_ref, rtol=rtol, atol=atol)</code>.</li>
 </ul>
@@ -2059,8 +2059,8 @@
 <span class="sd">    Args:</span>
 <span class="sd">        y: Computed trajectory tensor.</span>
 <span class="sd">        y_ref: Reference trajectory tensor broadcastable to ``y``.</span>
-<span class="sd">        rtol: Relative tolerance forwarded to :func:`torch.allclose`.</span>
-<span class="sd">        atol: Absolute tolerance forwarded to :func:`torch.allclose`.</span>
+<span class="sd">        rtol: Relative tolerance forwarded to `torch.allclose`.</span>
+<span class="sd">        atol: Absolute tolerance forwarded to `torch.allclose`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict with the following entries:</span>
@@ -2068,7 +2068,7 @@
 <span class="sd">            * ``max_abs_error`` — scalar tensor, maximum absolute error.</span>
 <span class="sd">            * ``mean_abs_error`` — scalar tensor, mean absolute error.</span>
 <span class="sd">            * ``max_rel_error`` — scalar tensor, maximum relative error</span>
-<span class="sd">              (using :func:`relative_error`).</span>
+<span class="sd">              (using `relative_error`).</span>
 <span class="sd">            * ``passed`` — ``bool``, result of</span>
 <span class="sd">              ``torch.allclose(y, y_ref, rtol=rtol, atol=atol)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2103,9 +2103,10 @@
     <div class="doc doc-contents ">
 
       <p>Compute element-wise relative error.</p>
-<p>.. math::
-    e_i = \frac{|y_i - y_{\text{ref},i}|}{\max(|y_{\text{ref},i}|,
-    \epsilon)}</p>
+<p>$$
+e_i = \frac{|y_i - y_{\text{ref},i}|}{\max(|y_{\text{ref},i}|,
+\epsilon)}
+$$</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2163,9 +2164,10 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute element-wise relative error.</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        e_i = \\frac{|y_i - y_{\\text{ref},i}|}{\\max(|y_{\\text{ref},i}|,</span>
-<span class="sd">        \\epsilon)}</span>
+<span class="sd">    $$</span>
+<span class="sd">    e_i = \\frac{|y_i - y_{\\text{ref},i}|}{\\max(|y_{\\text{ref},i}|,</span>
+<span class="sd">    \\epsilon)}</span>
+<span class="sd">    $$</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        y: Tensor of computed values.</span>

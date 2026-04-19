@@ -2201,7 +2201,7 @@ storage organs, each <code>[B]</code> [g N m⁻²].</p></td>
   </tbody>
 </table>      <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Updates are functional: :meth:<code>replace</code> returns a <em>new</em>
+<p>Updates are functional: <code>replace</code> returns a <em>new</em>
 <code>ModelState</code> rather than mutating in place, so the autograd graph
 is preserved across the explicit-Euler step
 <code>s_{t+1} = s_t + r_t * dt</code>.</p>
@@ -2243,7 +2243,7 @@ is preserved across the explicit-Euler step
 <span class="sd">        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Updates are functional: :meth:`replace` returns a *new*</span>
+<span class="sd">        Updates are functional: `replace` returns a *new*</span>
 <span class="sd">        ``ModelState`` rather than mutating in place, so the autograd graph</span>
 <span class="sd">        is preserved across the explicit-Euler step</span>
 <span class="sd">        ``s_{t+1} = s_t + r_t * dt``.</span>
@@ -2314,7 +2314,7 @@ is preserved across the explicit-Euler step
 <span class="sd">            rootdi: Initial rooting depth [m].</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">            A fresh `ModelState` with all biomass / nutrient pools at</span>
 <span class="sd">            zero and the specified initial values for ``dvs``, ``rootd`` and</span>
 <span class="sd">            ``wa``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2350,14 +2350,14 @@ is preserved across the explicit-Euler step
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            **updates: Field name / tensor pairs to override. Fields not</span>
 <span class="sd">                passed are copied through unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">            A new `ModelState` instance with the updates applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 
@@ -2377,7 +2377,7 @@ is preserved across the explicit-Euler step
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this :class:`ModelState`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this `ModelState`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">f</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2425,7 +2425,7 @@ is preserved across the explicit-Euler step
 
     <div class="doc doc-contents ">
 
-      <p>Names of all tensor fields on this :class:<code>ModelState</code>.</p>
+      <p>Names of all tensor fields on this <code>ModelState</code>.</p>
     </div>
 
   </div>
@@ -2526,8 +2526,9 @@ is preserved across the explicit-Euler step
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
+      <td><code>&#39;ModelState&#39;</code></td>
+      <td><p>A fresh <code>ModelState</code> with all biomass / nutrient pools at
+zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
 <code>wa</code>.</p></td>
     </tr>
   </tbody>
@@ -2555,7 +2556,7 @@ is preserved across the explicit-Euler step
 <span class="sd">        rootdi: Initial rooting depth [m].</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">        A fresh `ModelState` with all biomass / nutrient pools at</span>
 <span class="sd">        zero and the specified initial values for ``dvs``, ``rootd`` and</span>
 <span class="sd">        ``wa``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2609,7 +2610,7 @@ is preserved across the explicit-Euler step
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>ModelState</code> with selected fields replaced.</p>
+      <p>Return a new <code>ModelState</code> with selected fields replaced.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2641,22 +2642,22 @@ passed are copied through unchanged.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;ModelState&#39;</code></td>
+      <td><p>A new <code>ModelState</code> instance with the updates applied.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        **updates: Field name / tensor pairs to override. Fields not</span>
 <span class="sd">            passed are copied through unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">        A new `ModelState` instance with the updates applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 </code></pre></div>

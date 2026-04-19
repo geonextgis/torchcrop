@@ -1985,7 +1985,7 @@
 
       <p>Load a single-site daily weather CSV.</p>
 <p>The CSV must contain the columns listed in
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code> (lowercase) or an
+<code>WEATHER_CHANNELS</code> (lowercase) or an
 explicit <code>columns</code> argument may be passed mapping file columns to the
 expected order.</p>
 
@@ -2011,7 +2011,7 @@ expected order.</p>
         <td><code>Sequence[str] | None</code></td>
         <td><p>Optional override for the expected column names in the
 CSV, in the order used by
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>. If
+<code>WEATHER_CHANNELS</code>. If
 <code>None</code>, <code>WEATHER_CHANNELS</code> is used verbatim.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -2033,8 +2033,9 @@ CSV, in the order used by
   </thead>
   <tbody>
     <tr>
-      <td></td>
-      <td><p><code>[1, T, C]</code> where <code>T</code> is the number of data rows in the CSV.</p></td>
+      <td><code>WeatherDriver</code></td>
+      <td><p><code>WeatherDriver</code> of shape
+<code>[1, T, C]</code> where <code>T</code> is the number of data rows in the CSV.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2050,7 +2051,7 @@ CSV, in the order used by
       <tr>
         <td><code>ValueError</code></td>
         <td><p>If <code>columns</code> has a different length than
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>.</p></td>
+<code>WEATHER_CHANNELS</code>.</p></td>
       </tr>
   </tbody>
 </table>
@@ -2064,7 +2065,7 @@ CSV, in the order used by
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a single-site daily weather CSV.</span>
 
 <span class="sd">    The CSV must contain the columns listed in</span>
-<span class="sd">    :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS` (lowercase) or an</span>
+<span class="sd">    `WEATHER_CHANNELS` (lowercase) or an</span>
 <span class="sd">    explicit ``columns`` argument may be passed mapping file columns to the</span>
 <span class="sd">    expected order.</span>
 
@@ -2072,17 +2073,17 @@ CSV, in the order used by
 <span class="sd">        path: Path to the CSV file. The first line must be a header row.</span>
 <span class="sd">        columns: Optional override for the expected column names in the</span>
 <span class="sd">            CSV, in the order used by</span>
-<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`. If</span>
+<span class="sd">            `WEATHER_CHANNELS`. If</span>
 <span class="sd">            ``None``, ``WEATHER_CHANNELS`` is used verbatim.</span>
 <span class="sd">        dtype: Floating-point dtype for the returned tensor.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        `WeatherDriver` of shape</span>
 <span class="sd">        ``[1, T, C]`` where ``T`` is the number of data rows in the CSV.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``columns`` has a different length than</span>
-<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`.</span>
+<span class="sd">            `WEATHER_CHANNELS`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2218,8 +2219,9 @@ increments by 1 and wraps modulo 365.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td></td>
-      <td><p><code>[B, T, C]</code> with identical rows for every batch element.</p></td>
+      <td><code>WeatherDriver</code></td>
+      <td><p><code>WeatherDriver</code> of shape
+<code>[B, T, C]</code> with identical rows for every batch element.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2257,7 +2259,7 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">        device: Device on which to allocate the tensors.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        `WeatherDriver` of shape</span>
 <span class="sd">        ``[B, T, C]`` with identical rows for every batch element.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">start_doy</span><span class="p">)</span>

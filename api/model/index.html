@@ -2123,7 +2123,7 @@ Lintul5Model            (<span title="torch.nn.modules.module.Module">Module</sp
       <tr>
         <td><code>crop_params</code></td>
         <td><code>CropParameters | None</code></td>
-        <td><p>Crop parameter container (see :mod:<code>torchcrop.parameters</code>).</p></td>
+        <td><p>Crop parameter container (see <code>torchcrop.parameters</code>).</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -2149,7 +2149,7 @@ stage-based branching.</p></td>
         <td><code>stress_module</code></td>
         <td><code>nn.Module | None</code></td>
         <td><p>Optional replacement for the default
-:class:<code>StressFactors</code> combiner.</p></td>
+<code>StressFactors</code> combiner.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -2169,13 +2169,13 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable reimplementation of the Lintul5 crop growth model.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        crop_params: Crop parameter container (see :mod:`torchcrop.parameters`).</span>
+<span class="sd">        crop_params: Crop parameter container (see `torchcrop.parameters`).</span>
 <span class="sd">        soil_params: Soil parameter container.</span>
 <span class="sd">        site_params: Site parameter container (e.g. latitude, altitude).</span>
 <span class="sd">        smooth: If ``True``, use smooth (sigmoid-blend) replacements for</span>
 <span class="sd">            stage-based branching.</span>
 <span class="sd">        stress_module: Optional replacement for the default</span>
-<span class="sd">            :class:`StressFactors` combiner.</span>
+<span class="sd">            `StressFactors` combiner.</span>
 <span class="sd">        residual_modules: Optional neural residual corrections keyed by</span>
 <span class="sd">            process name (``&quot;photosynthesis&quot;`` adds to ``gtotal``;</span>
 <span class="sd">            ``&quot;partitioning&quot;`` adds to the four allocation fractions;</span>
@@ -2235,7 +2235,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="sd">            device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh :class:`ModelState` with initial DVS, root depth, soil</span>
+<span class="sd">            A fresh `ModelState` with initial DVS, root depth, soil</span>
 <span class="sd">            water at field capacity, and a seeded leaf mass so that LAI</span>
 <span class="sd">            growth has a substrate post-emergence.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2268,14 +2268,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">            weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">                daily weather forcing.</span>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
-<span class="sd">            initial_state: Optional pre-built :class:`ModelState`. When</span>
-<span class="sd">                omitted, :meth:`initialize` is called automatically.</span>
+<span class="sd">            initial_state: Optional pre-built `ModelState`. When</span>
+<span class="sd">                omitted, `initialize` is called automatically.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A :class:`ModelOutput` containing the full state/rate trajectories</span>
+<span class="sd">            A `ModelOutput` containing the full state/rate trajectories</span>
 <span class="sd">            and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -2326,9 +2326,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current :class:`ModelState`.</span>
+<span class="sd">            state: Current `ModelState`.</span>
 <span class="sd">            weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">                (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">                (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">            doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
@@ -2353,12 +2353,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current :class:`ModelState`.</span>
-<span class="sd">            rates: Dict of rate tensors produced by :meth:`compute_rates`.</span>
+<span class="sd">            state: Current `ModelState`.</span>
+<span class="sd">            rates: Dict of rate tensors produced by `compute_rates`.</span>
 <span class="sd">            dt: Integration step in days.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`ModelState` advanced by one step.</span>
+<span class="sd">            A new `ModelState` advanced by one step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 
@@ -2519,14 +2519,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named :class:`nn.Parameter` tensors.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
 
 <span class="sd">        Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">        collects every field that is an :class:`nn.Parameter`.</span>
+<span class="sd">        collects every field that is an `nn.Parameter`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">            corresponding :class:`nn.Parameter`.</span>
+<span class="sd">            corresponding `nn.Parameter`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -2583,14 +2583,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>weather_day</code></td>
         <td><code>dict[str, torch.Tensor]</code></td>
         <td><p>Dict of named weather channels for the current day
-(see :data:<code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
+(see <code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2628,9 +2628,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
 <span class="sd">        weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">            (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">            (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">        doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
@@ -2681,7 +2681,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>weather</code></td>
         <td><code>WeatherDriver | torch.Tensor</code></td>
-        <td><p>:class:<code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
+        <td><p><code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
 daily weather forcing.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2694,8 +2694,8 @@ daily weather forcing.</p></td>
       <tr>
         <td><code>initial_state</code></td>
         <td><code>ModelState | None</code></td>
-        <td><p>Optional pre-built :class:<code>ModelState</code>. When
-omitted, :meth:<code>initialize</code> is called automatically.</p></td>
+        <td><p>Optional pre-built <code>ModelState</code>. When
+omitted, <code>initialize</code> is called automatically.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2710,8 +2710,9 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A </code></td>
-      <td><p>and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code>).</p></td>
+      <td><code>ModelOutput</code></td>
+      <td><p>A <code>ModelOutput</code> containing the full state/rate trajectories
+and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code>).</p></td>
     </tr>
   </tbody>
 </table>
@@ -2726,14 +2727,14 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">        weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">            daily weather forcing.</span>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
-<span class="sd">        initial_state: Optional pre-built :class:`ModelState`. When</span>
-<span class="sd">            omitted, :meth:`initialize` is called automatically.</span>
+<span class="sd">        initial_state: Optional pre-built `ModelState`. When</span>
+<span class="sd">            omitted, `initialize` is called automatically.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A :class:`ModelOutput` containing the full state/rate trajectories</span>
+<span class="sd">        A `ModelOutput` containing the full state/rate trajectories</span>
 <span class="sd">        and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -2833,8 +2834,9 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>water at field capacity, and a seeded leaf mass so that LAI
+      <td><code>ModelState</code></td>
+      <td><p>A fresh <code>ModelState</code> with initial DVS, root depth, soil
+water at field capacity, and a seeded leaf mass so that LAI
 growth has a substrate post-emergence.</p></td>
     </tr>
   </tbody>
@@ -2855,7 +2857,7 @@ growth has a substrate post-emergence.</p></td>
 <span class="sd">        device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`ModelState` with initial DVS, root depth, soil</span>
+<span class="sd">        A fresh `ModelState` with initial DVS, root depth, soil</span>
 <span class="sd">        water at field capacity, and a seeded leaf mass so that LAI</span>
 <span class="sd">        growth has a substrate post-emergence.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2898,9 +2900,9 @@ growth has a substrate post-emergence.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Return a dict of named :class:<code>nn.Parameter</code> tensors.</p>
+      <p>Return a dict of named <code>nn.Parameter</code> tensors.</p>
 <p>Walks the <code>crop</code>/<code>soil</code>/<code>site</code> parameter containers and
-collects every field that is an :class:<code>nn.Parameter</code>.</p>
+collects every field that is an <code>nn.Parameter</code>.</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -2912,23 +2914,23 @@ collects every field that is an :class:<code>nn.Parameter</code>.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>Dict keyed by ``&#34;&lt;container&gt;.&lt;field&gt;&#34;`` mapping to the
-corresponding </code></td>
-      <td></td>
+      <td><code>dict[str, Any]</code></td>
+      <td><p>Dict keyed by <code>"&lt;container&gt;.&lt;field&gt;"</code> mapping to the
+corresponding <code>nn.Parameter</code>.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named :class:`nn.Parameter` tensors.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
 
 <span class="sd">    Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">    collects every field that is an :class:`nn.Parameter`.</span>
+<span class="sd">    collects every field that is an `nn.Parameter`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">        corresponding :class:`nn.Parameter`.</span>
+<span class="sd">        corresponding `nn.Parameter`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -2977,13 +2979,13 @@ corresponding </code></td>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>rates</code></td>
         <td><code>dict[str, torch.Tensor]</code></td>
-        <td><p>Dict of rate tensors produced by :meth:<code>compute_rates</code>.</p></td>
+        <td><p>Dict of rate tensors produced by <code>compute_rates</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -3004,8 +3006,8 @@ corresponding </code></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>ModelState</code></td>
+      <td><p>A new <code>ModelState</code> advanced by one step.</p></td>
     </tr>
   </tbody>
 </table>
@@ -3020,12 +3022,12 @@ corresponding </code></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
-<span class="sd">        rates: Dict of rate tensors produced by :meth:`compute_rates`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
+<span class="sd">        rates: Dict of rate tensors produced by `compute_rates`.</span>
 <span class="sd">        dt: Integration step in days.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` advanced by one step.</span>
+<span class="sd">        A new `ModelState` advanced by one step.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </code></pre></div>

@@ -2198,7 +2198,7 @@ PyTorch-friendly dataclass.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Latitude is normally consumed by the
-:class:<code>AstronomicParametersTransformer</code> upstream of Lintul5; we keep it
+<code>AstronomicParametersTransformer</code> upstream of Lintul5; we keep it
 here so torchcrop can compute astronomy and irradiation internally.</p>
 </div>
 
@@ -2261,7 +2261,7 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">370.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCO``. Atmospheric CO₂ concentration [ppm]. Mirrors</span>
-<span class="sd">    :attr:`CropParameters.co2`; provided here so a site-level CO₂ scenario</span>
+<span class="sd">    `CropParameters.co2`; provided here so a site-level CO₂ scenario</span>
 <span class="sd">    can be set independently of the crop default. The Lintul5 ET routine</span>
 <span class="sd">    uses 370 ppm as its reference.&quot;&quot;&quot;</span>
 
@@ -2298,16 +2298,16 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
     <span class="n">plant_at_sowing</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPL``. Boolean flag (0/1) — if 1, the simulation starts at</span>
-<span class="sd">    **planting** (uses :attr:`idpl`); if 0, it starts at **emergence**</span>
-<span class="sd">    (uses :attr:`idem`).&quot;&quot;&quot;</span>
+<span class="sd">    **planting** (uses `idpl`); if 0, it starts at **emergence**</span>
+<span class="sd">    (uses `idem`).&quot;&quot;&quot;</span>
 
     <span class="n">idpl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIDPL``. Day of planting [day-of-year, 0–366]. Used when</span>
-<span class="sd">    :attr:`plant_at_sowing` = 1.&quot;&quot;&quot;</span>
+<span class="sd">    `plant_at_sowing` = 1.&quot;&quot;&quot;</span>
 
     <span class="n">idem</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIDEM``. Day of emergence [day-of-year, 0–366]. Used when</span>
-<span class="sd">    :attr:`plant_at_sowing` = 0 to bypass the temperature-sum-driven</span>
+<span class="sd">    `plant_at_sowing` = 0 to bypass the temperature-sum-driven</span>
 <span class="sd">    emergence calculation.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -2326,7 +2326,7 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">            A new `SiteParameters` with every tensor field moved/cast.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2457,7 +2457,7 @@ transpiration rate (canopy-resistance proxy).</p>
     <div class="doc doc-contents ">
 
       <p><code>cCO</code>. Atmospheric CO₂ concentration [ppm]. Mirrors
-:attr:<code>CropParameters.co2</code>; provided here so a site-level CO₂ scenario
+<code>CropParameters.co2</code>; provided here so a site-level CO₂ scenario
 can be set independently of the crop default. The Lintul5 ET routine
 uses 370 ppm as its reference.</p>
     </div>
@@ -2506,7 +2506,7 @@ of atmospheric CO₂ concentration [ppm] (C3 crops).</p>
     <div class="doc doc-contents ">
 
       <p><code>cIDEM</code>. Day of emergence [day-of-year, 0–366]. Used when
-:attr:<code>plant_at_sowing</code> = 0 to bypass the temperature-sum-driven
+<code>plant_at_sowing</code> = 0 to bypass the temperature-sum-driven
 emergence calculation.</p>
     </div>
 
@@ -2530,7 +2530,7 @@ emergence calculation.</p>
     <div class="doc doc-contents ">
 
       <p><code>cIDPL</code>. Day of planting [day-of-year, 0–366]. Used when
-:attr:<code>plant_at_sowing</code> = 1.</p>
+<code>plant_at_sowing</code> = 1.</p>
     </div>
 
   </div>
@@ -2576,8 +2576,8 @@ astronomical day-length and solar-declination calculations.</p>
     <div class="doc doc-contents ">
 
       <p><code>cPL</code>. Boolean flag (0/1) — if 1, the simulation starts at
-<strong>planting</strong> (uses :attr:<code>idpl</code>); if 0, it starts at <strong>emergence</strong>
-(uses :attr:<code>idem</code>).</p>
+<strong>planting</strong> (uses <code>idpl</code>); if 0, it starts at <strong>emergence</strong>
+(uses <code>idem</code>).</p>
     </div>
 
   </div>
@@ -2639,8 +2639,8 @@ astronomical day-length and solar-declination calculations.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;SiteParameters&#39;</code></td>
+      <td><p>A new <code>SiteParameters</code> with every tensor field moved/cast.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2658,7 +2658,7 @@ astronomical day-length and solar-declination calculations.</p>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">        A new `SiteParameters` with every tensor field moved/cast.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -2014,7 +2014,7 @@
 
       <p>Simulation engine — orchestrates the daily time-stepping loop.</p>
 <p>The engine owns no trainable parameters of its own; it wires together the
-process sub-modules supplied by :class:<code>~torchcrop.model.Lintul5Model</code>.</p>
+process sub-modules supplied by <code>Lintul5Model</code>.</p>
 
 
 
@@ -2139,8 +2139,8 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Initial :class:`ModelState` at day 0.</span>
-<span class="sd">            weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">            state: Initial `ModelState` at day 0.</span>
+<span class="sd">            weather: `WeatherDriver` carrying the daily forcing.</span>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">            crop_params: Species-specific crop parameters.</span>
 <span class="sd">            soil_params: Soil-specific parameters.</span>
@@ -2148,7 +2148,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">            ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">            ``T + 1`` of per-day `ModelState` snapshots (the first</span>
 <span class="sd">            entry is the initial state) and ``rates`` is a list of length</span>
 <span class="sd">            ``T`` of per-day rate dicts.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2217,13 +2217,13 @@ callable <code>update_state(state, rates, dt)</code>.</p>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Initial :class:<code>ModelState</code> at day 0.</p></td>
+        <td><p>Initial <code>ModelState</code> at day 0.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>weather</code></td>
         <td><code>WeatherDriver</code></td>
-        <td><p>:class:<code>WeatherDriver</code> carrying the daily forcing.</p></td>
+        <td><p><code>WeatherDriver</code> carrying the daily forcing.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2262,9 +2262,10 @@ callable <code>update_state(state, rates, dt)</code>.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A ``(states, rates)`` tuple where ``states`` is a list of length
-``T + 1`` of per-day </code></td>
-      <td><p>entry is the initial state) and <code>rates</code> is a list of length
+      <td><code>tuple[list[ModelState], list[dict[str, torch.Tensor]]]</code></td>
+      <td><p>A <code>(states, rates)</code> tuple where <code>states</code> is a list of length
+<code>T + 1</code> of per-day <code>ModelState</code> snapshots (the first
+entry is the initial state) and <code>rates</code> is a list of length
 <code>T</code> of per-day rate dicts.</p></td>
     </tr>
   </tbody>
@@ -2283,8 +2284,8 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Initial :class:`ModelState` at day 0.</span>
-<span class="sd">        weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">        state: Initial `ModelState` at day 0.</span>
+<span class="sd">        weather: `WeatherDriver` carrying the daily forcing.</span>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">        crop_params: Species-specific crop parameters.</span>
 <span class="sd">        soil_params: Soil-specific parameters.</span>
@@ -2292,7 +2293,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">        ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">        ``T + 1`` of per-day `ModelState` snapshots (the first</span>
 <span class="sd">        entry is the initial state) and ``rates`` is a list of length</span>
 <span class="sd">        ``T`` of per-day rate dicts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2368,7 +2369,7 @@ StepResult        </code>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>The updated :class:<code>ModelState</code> after applying the Euler step.</p></td>
+        <td><p>The updated <code>ModelState</code> after applying the Euler step.</p></td>
       </tr>
       <tr>
         <td><code>rates</code></td>
@@ -2385,7 +2386,7 @@ current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Outputs of a single simulation step.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        state: The updated :class:`ModelState` after applying the Euler step.</span>
+<span class="sd">        state: The updated `ModelState` after applying the Euler step.</span>
 <span class="sd">        rates: Dict of rate tensors produced by the process modules for the</span>
 <span class="sd">            current day, keyed by state-field name (e.g. ``dvs_rate``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2435,7 +2436,7 @@ current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Forward-Euler update of a :class:<code>ModelState</code>.</p>
+      <p>Forward-Euler update of a <code>ModelState</code>.</p>
 <p>Rate keys must match state field names with a <code>_rate</code> suffix (e.g.
 <code>dvs_rate</code> updates <code>dvs</code>). Fields without a matching rate are left
 unchanged.</p>
@@ -2454,7 +2455,7 @@ unchanged.</p>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2481,8 +2482,9 @@ unchanged.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td><p><code>rates[field + "_rate"] * dt</code>. Physically non-negative fields are
+      <td><code>ModelState</code></td>
+      <td><p>A new <code>ModelState</code> with all matched fields advanced by
+<code>rates[field + "_rate"] * dt</code>. Physically non-negative fields are
 clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]</code>.</p></td>
     </tr>
   </tbody>
@@ -2490,19 +2492,19 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a :class:`ModelState`.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a `ModelState`.</span>
 
 <span class="sd">    Rate keys must match state field names with a ``_rate`` suffix (e.g.</span>
 <span class="sd">    ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left</span>
 <span class="sd">    unchanged.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
 <span class="sd">        rates: Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;``.</span>
 <span class="sd">        dt: Integration step size in days.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` with all matched fields advanced by</span>
+<span class="sd">        A new `ModelState` with all matched fields advanced by</span>
 <span class="sd">        ``rates[field + &quot;_rate&quot;] * dt``. Physically non-negative fields are</span>
 <span class="sd">        clamped to ``&gt;= 0`` and ``dvs`` is clamped to ``[0, 2]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>

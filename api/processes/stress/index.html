@@ -1974,7 +1974,7 @@
 <p>A light wrapper module that bundles the water-stress factor <code>TRANRF</code> and
 the nutrient-stress factor <code>NSTRESS</code> into a single multiplicative reducer.</p>
 <p>This module is deliberately minimal: the substantive computations live in
-<code>water_balance.py</code> and <code>nutrient_demand.py</code>. Use :class:<code>StressFactors</code>
+<code>water_balance.py</code> and <code>nutrient_demand.py</code>. Use <code>StressFactors</code>
 if you want to swap in a learned alternative via the hybrid API.</p>
 
 
@@ -2018,9 +2018,9 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
 
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">                `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">                `NutrientDemand`, shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,</span>
@@ -2074,14 +2074,14 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
         <td><code>tranrf</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Water-stress factor in <code>[0, 1]</code> from
-:class:<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
+<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
-:class:<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2116,9 +2116,9 @@ therefore propagates into every per-organ rate
 
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">            `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            `NutrientDemand`, shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,</span>

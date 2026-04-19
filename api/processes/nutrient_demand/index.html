@@ -2026,7 +2026,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">            state: Current state (unused in this minimal port but kept for</span>
 <span class="sd">                the uniform process signature).</span>
 <span class="sd">            g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,</span>
-<span class="sd">                from :class:`Partitioning`.</span>
+<span class="sd">                from `Partitioning`.</span>
 <span class="sd">            g_st: Stem biomass growth rate, shape ``[B]``.</span>
 <span class="sd">            g_rt: Root biomass growth rate, shape ``[B]``.</span>
 <span class="sd">            g_so: Storage-organ biomass growth rate, shape ``[B]``.</span>
@@ -2059,7 +2059,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">                * ``nstress`` [-] — Combined nutrient-stress factor in</span>
 <span class="sd">                  ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when</span>
 <span class="sd">                  there is no demand). Multiplies ``gtotal`` in</span>
-<span class="sd">                  :class:`Photosynthesis`.</span>
+<span class="sd">                  `Photosynthesis`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Maximum-demand uptake per organ (fraction of DM growth)</span>
         <span class="n">n_demand</span> <span class="o">=</span> <span class="p">(</span>
@@ -2200,7 +2200,7 @@ the uniform process signature).</p></td>
         <td><code>g_lv</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Leaf biomass growth rate [g DM m⁻² d⁻¹], shape <code>[B]</code>,
-from :class:<code>Partitioning</code>.</p></td>
+from <code>Partitioning</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2276,7 +2276,7 @@ pools)</code></td>
 * ``nstress`` [-] — Combined nutrient-stress factor in
   ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when
   there is no demand). Multiplies ``gtotal`` in
-  :class:`Photosynthesis`.
+  `Photosynthesis`.
 </code></pre></div></td></tr></table></div></td>
     </tr>
   </tbody>
@@ -2299,7 +2299,7 @@ pools)</code></td>
 <span class="sd">        state: Current state (unused in this minimal port but kept for</span>
 <span class="sd">            the uniform process signature).</span>
 <span class="sd">        g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,</span>
-<span class="sd">            from :class:`Partitioning`.</span>
+<span class="sd">            from `Partitioning`.</span>
 <span class="sd">        g_st: Stem biomass growth rate, shape ``[B]``.</span>
 <span class="sd">        g_rt: Root biomass growth rate, shape ``[B]``.</span>
 <span class="sd">        g_so: Storage-organ biomass growth rate, shape ``[B]``.</span>
@@ -2332,7 +2332,7 @@ pools)</code></td>
 <span class="sd">            * ``nstress`` [-] — Combined nutrient-stress factor in</span>
 <span class="sd">              ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when</span>
 <span class="sd">              there is no demand). Multiplies ``gtotal`` in</span>
-<span class="sd">              :class:`Photosynthesis`.</span>
+<span class="sd">              `Photosynthesis`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Maximum-demand uptake per organ (fraction of DM growth)</span>
     <span class="n">n_demand</span> <span class="o">=</span> <span class="p">(</span>

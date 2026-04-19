@@ -1979,9 +1979,10 @@
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Gross biomass growth rate (daily):</p>
-<p>.. math::
-    \text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
-    \text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}</p>
+<p>$$
+\text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
+\text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}
+$$</p>
 <p>where <code>RUE</code> has units of g dry matter per MJ intercepted PAR.</p>
 </div>
 
@@ -2040,7 +2041,7 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
 
-<span class="sd">            Rate variables (consumed by :class:`Partitioning`):</span>
+<span class="sd">            Rate variables (consumed by `Partitioning`):</span>
 
 <span class="sd">                * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
 <span class="sd">                  production rate</span>
@@ -2155,17 +2156,14 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
     <tr>
       <td><code>Dict of ``[B]`` tensors grouped as follows.
 
-Rate variables (consumed by </code></td>
-      <td><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass
-  production rate
-  ``= rue_eff * parint * tranrf * nstress``. Split into
-  organ-specific growth rates ``g_lv``, ``g_st``,
-  ``g_root``, ``g_so`` by the partitioning module.
-</code></pre></div></td></tr></table></div>
+Rate variables (consumed by `Partitioning`)</code></td>
+      <td><ul>
+<li><code>gtotal</code> [g DM m⁻² d⁻¹] — Gross total biomass
+      production rate
+      <code>= rue_eff * parint * tranrf * nstress</code>. Split into
+      organ-specific growth rates <code>g_lv</code>, <code>g_st</code>,
+      <code>g_root</code>, <code>g_so</code> by the partitioning module.</li>
+</ul>
 <p>Diagnostics:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -2207,7 +2205,7 @@ Rate variables (consumed by </code></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
 
-<span class="sd">        Rate variables (consumed by :class:`Partitioning`):</span>
+<span class="sd">        Rate variables (consumed by `Partitioning`):</span>
 
 <span class="sd">            * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
 <span class="sd">              production rate</span>

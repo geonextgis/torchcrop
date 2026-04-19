@@ -1974,12 +1974,17 @@
 <p>A light-weight Priestley–Taylor approximation is implemented by default; this
 is adequate for differentiable experimentation. For operational use, swap in
 a full FAO-56 Penman–Monteith variant (kept as a TODO hook).</p>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
-<p>.. math::
-    ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}</p>
-<p>with :math:<code>\alpha = 1.26</code>, :math:<code>\lambda = 2.45\ \text{MJ kg}^{-1}</code>.</p>
-</div>
+<p>Equations:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
+ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}
+$$
+
+with $\alpha = 1.26$, $\lambda = 2.45\ \text{MJ kg}^{-1}$.
+</code></pre></div></td></tr></table></div>
 
 
 
@@ -2022,7 +2027,7 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
       <tr>
         <td><code>alpha_pt</code></td>
         <td><code>float</code></td>
-        <td><p>Priestley–Taylor coefficient :math:<code>\alpha</code>
+        <td><p>Priestley–Taylor coefficient $\alpha$
 (default 1.26).</p></td>
         <td><code>1.26</code></td>
       </tr>
@@ -2034,7 +2039,7 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Priestley–Taylor reference evapotranspiration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        alpha_pt: Priestley–Taylor coefficient :math:`\\alpha`</span>
+<span class="sd">        alpha_pt: Priestley–Taylor coefficient $\\alpha$</span>
 <span class="sd">            (default 1.26).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -2059,17 +2064,17 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">            integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">            integrated here — `WaterBalance` turns</span>
 <span class="sd">            ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
 
 <span class="sd">                * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
 <span class="sd">                  (Priestley–Taylor).</span>
 <span class="sd">                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
 <span class="sd">                  ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">                  :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">                  `WaterBalance` to compute actual transpiration.</span>
 <span class="sd">                * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">                  ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">                  :class:`WaterBalance`.</span>
+<span class="sd">                  `WaterBalance`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
@@ -2167,24 +2172,20 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
   <tbody>
     <tr>
       <td><code>Dict of ``[B]`` tensors with the potential fluxes (no state is
-integrated here — </code></td>
-      <td><p><code>ptran</code>/<code>pevap</code> into actual <code>tran</code>/<code>evap</code>):</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``et0`` [mm d⁻¹] — Reference evapotranspiration
-  (Priestley–Taylor).
-* ``ptran`` [mm d⁻¹] — Potential canopy transpiration
-  ``= et0 * (1 - exp(-k_ext * lai))``; passed to
-  :class:`WaterBalance` to compute actual transpiration.
-* ``pevap`` [mm d⁻¹] — Potential soil evaporation
-  ``= et0 * exp(-k_ext * lai)``; passed to
-  :class:`WaterBalance`.
-</code></pre></div></td></tr></table></div></td>
+integrated here — `WaterBalance` turns
+``ptran``/``pevap`` into actual ``tran``/``evap``)</code></td>
+      <td><ul>
+<li><code>et0</code> [mm d⁻¹] — Reference evapotranspiration
+      (Priestley–Taylor).<ul>
+<li><code>ptran</code> [mm d⁻¹] — Potential canopy transpiration
+  <code>= et0 * (1 - exp(-k_ext * lai))</code>; passed to
+  <code>WaterBalance</code> to compute actual transpiration.</li>
+<li><code>pevap</code> [mm d⁻¹] — Potential soil evaporation
+  <code>= et0 * exp(-k_ext * lai)</code>; passed to
+  <code>WaterBalance</code>.</li>
+</ul>
+</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -2207,17 +2208,17 @@ integrated here — </code></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">        integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">        integrated here — `WaterBalance` turns</span>
 <span class="sd">        ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
 
 <span class="sd">            * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
 <span class="sd">              (Priestley–Taylor).</span>
 <span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
 <span class="sd">              ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">              :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">              `WaterBalance` to compute actual transpiration.</span>
 <span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">              ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">              :class:`WaterBalance`.</span>
+<span class="sd">              `WaterBalance`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>

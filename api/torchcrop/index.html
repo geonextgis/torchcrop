@@ -8727,7 +8727,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
       <tr>
         <td><code>ValueError</code></td>
         <td><p>If <code>data</code> is not 3-D or does not carry exactly
-:data:<code>N_WEATHER_CHANNELS</code> channels.</p></td>
+<code>N_WEATHER_CHANNELS</code> channels.</p></td>
       </tr>
   </tbody>
 </table>
@@ -8745,7 +8745,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``data`` is not 3-D or does not carry exactly</span>
-<span class="sd">            :data:`N_WEATHER_CHANNELS` channels.</span>
+<span class="sd">            `N_WEATHER_CHANNELS` channels.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -8787,7 +8787,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name: Channel name (see :data:`WEATHER_CHANNELS`).</span>
+<span class="sd">            name: Channel name (see `WEATHER_CHANNELS`).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``[B, T]`` tensor view of the requested channel.</span>
@@ -8802,14 +8802,14 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">idx</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`WeatherDriver` wrapping the cast tensor.</span>
+<span class="sd">            A new `WeatherDriver` wrapping the cast tensor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>
@@ -8906,7 +8906,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
       <tr>
         <td><code>name</code></td>
         <td><code>str</code></td>
-        <td><p>Channel name (see :data:<code>WEATHER_CHANNELS</code>).</p></td>
+        <td><p>Channel name (see <code>WEATHER_CHANNELS</code>).</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -8947,7 +8947,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: Channel name (see :data:`WEATHER_CHANNELS`).</span>
+<span class="sd">        name: Channel name (see `WEATHER_CHANNELS`).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``[B, T]`` tensor view of the requested channel.</span>
@@ -9049,7 +9049,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>WeatherDriver</code> cast/moved to <code>dtype</code>/<code>device</code>.</p>
+      <p>Return a new <code>WeatherDriver</code> cast/moved to <code>dtype</code>/<code>device</code>.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -9086,22 +9086,22 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;WeatherDriver&#39;</code></td>
+      <td><p>A new <code>WeatherDriver</code> wrapping the cast tensor.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`WeatherDriver` wrapping the cast tensor.</span>
+<span class="sd">        A new `WeatherDriver` wrapping the cast tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>
@@ -9158,7 +9158,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
       <p>Simulation engine — orchestrates the daily time-stepping loop.</p>
 <p>The engine owns no trainable parameters of its own; it wires together the
-process sub-modules supplied by :class:<code>~torchcrop.model.Lintul5Model</code>.</p>
+process sub-modules supplied by <code>Lintul5Model</code>.</p>
 
 
 
@@ -9283,8 +9283,8 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Initial :class:`ModelState` at day 0.</span>
-<span class="sd">            weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">            state: Initial `ModelState` at day 0.</span>
+<span class="sd">            weather: `WeatherDriver` carrying the daily forcing.</span>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">            crop_params: Species-specific crop parameters.</span>
 <span class="sd">            soil_params: Soil-specific parameters.</span>
@@ -9292,7 +9292,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">            ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">            ``T + 1`` of per-day `ModelState` snapshots (the first</span>
 <span class="sd">            entry is the initial state) and ``rates`` is a list of length</span>
 <span class="sd">            ``T`` of per-day rate dicts.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -9361,13 +9361,13 @@ callable <code>update_state(state, rates, dt)</code>.</p>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Initial :class:<code>ModelState</code> at day 0.</p></td>
+        <td><p>Initial <code>ModelState</code> at day 0.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>weather</code></td>
         <td><code>WeatherDriver</code></td>
-        <td><p>:class:<code>WeatherDriver</code> carrying the daily forcing.</p></td>
+        <td><p><code>WeatherDriver</code> carrying the daily forcing.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -9406,9 +9406,10 @@ callable <code>update_state(state, rates, dt)</code>.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A ``(states, rates)`` tuple where ``states`` is a list of length
-``T + 1`` of per-day </code></td>
-      <td><p>entry is the initial state) and <code>rates</code> is a list of length
+      <td><code>tuple[list[ModelState], list[dict[str, torch.Tensor]]]</code></td>
+      <td><p>A <code>(states, rates)</code> tuple where <code>states</code> is a list of length
+<code>T + 1</code> of per-day <code>ModelState</code> snapshots (the first
+entry is the initial state) and <code>rates</code> is a list of length
 <code>T</code> of per-day rate dicts.</p></td>
     </tr>
   </tbody>
@@ -9427,8 +9428,8 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Initial :class:`ModelState` at day 0.</span>
-<span class="sd">        weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">        state: Initial `ModelState` at day 0.</span>
+<span class="sd">        weather: `WeatherDriver` carrying the daily forcing.</span>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">        crop_params: Species-specific crop parameters.</span>
 <span class="sd">        soil_params: Soil-specific parameters.</span>
@@ -9436,7 +9437,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">        ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">        ``T + 1`` of per-day `ModelState` snapshots (the first</span>
 <span class="sd">        entry is the initial state) and ``rates`` is a list of length</span>
 <span class="sd">        ``T`` of per-day rate dicts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -9512,7 +9513,7 @@ StepResult        </code>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>The updated :class:<code>ModelState</code> after applying the Euler step.</p></td>
+        <td><p>The updated <code>ModelState</code> after applying the Euler step.</p></td>
       </tr>
       <tr>
         <td><code>rates</code></td>
@@ -9529,7 +9530,7 @@ current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Outputs of a single simulation step.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        state: The updated :class:`ModelState` after applying the Euler step.</span>
+<span class="sd">        state: The updated `ModelState` after applying the Euler step.</span>
 <span class="sd">        rates: Dict of rate tensors produced by the process modules for the</span>
 <span class="sd">            current day, keyed by state-field name (e.g. ``dvs_rate``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -9579,7 +9580,7 @@ current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Forward-Euler update of a :class:<code>ModelState</code>.</p>
+      <p>Forward-Euler update of a <code>ModelState</code>.</p>
 <p>Rate keys must match state field names with a <code>_rate</code> suffix (e.g.
 <code>dvs_rate</code> updates <code>dvs</code>). Fields without a matching rate are left
 unchanged.</p>
@@ -9598,7 +9599,7 @@ unchanged.</p>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -9625,8 +9626,9 @@ unchanged.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td><p><code>rates[field + "_rate"] * dt</code>. Physically non-negative fields are
+      <td><code>ModelState</code></td>
+      <td><p>A new <code>ModelState</code> with all matched fields advanced by
+<code>rates[field + "_rate"] * dt</code>. Physically non-negative fields are
 clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]</code>.</p></td>
     </tr>
   </tbody>
@@ -9634,19 +9636,19 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a :class:`ModelState`.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a `ModelState`.</span>
 
 <span class="sd">    Rate keys must match state field names with a ``_rate`` suffix (e.g.</span>
 <span class="sd">    ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left</span>
 <span class="sd">    unchanged.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
 <span class="sd">        rates: Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;``.</span>
 <span class="sd">        dt: Integration step size in days.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` with all matched fields advanced by</span>
+<span class="sd">        A new `ModelState` with all matched fields advanced by</span>
 <span class="sd">        ``rates[field + &quot;_rate&quot;] * dt``. Physically non-negative fields are</span>
 <span class="sd">        clamped to ``&gt;= 0`` and ``dvs`` is clamped to ``[0, 2]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -9817,8 +9819,8 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>Interpolated values; see </code></td>
-      <td></td>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Interpolated values; see <code>interpolate</code> for details.</p></td>
     </tr>
   </tbody>
 </table>
@@ -9832,7 +9834,7 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
 <span class="sd">        x: Query values.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Interpolated values; see :func:`interpolate` for details.</span>
+<span class="sd">        Interpolated values; see `interpolate` for details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div>
@@ -9892,7 +9894,7 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
         <td><code>smooth</code></td>
         <td><code>bool</code></td>
         <td><p>If <code>True</code>, use a sigmoid blend of sharpness <code>k</code> instead
-of the hard :func:<code>torch.where</code> switch.</p></td>
+of the hard <code>torch.where</code> switch.</p></td>
         <td><code>False</code></td>
       </tr>
       <tr>
@@ -9937,7 +9939,7 @@ of the hard :func:<code>torch.where</code> switch.</p></td>
 <span class="sd">        y1: Value returned when ``x &lt; 0``.</span>
 <span class="sd">        y2: Value returned when ``x &gt;= 0``.</span>
 <span class="sd">        smooth: If ``True``, use a sigmoid blend of sharpness ``k`` instead</span>
-<span class="sd">            of the hard :func:`torch.where` switch.</span>
+<span class="sd">            of the hard `torch.where` switch.</span>
 <span class="sd">        k: Sharpness of the sigmoid blend (only used when ``smooth=True``).</span>
 
 <span class="sd">    Returns:</span>
@@ -10430,8 +10432,8 @@ events in the model.</p>
     <div class="doc doc-contents ">
 
       <p>Differentiable Heaviside step.</p>
-<p>Returns :math:<code>\sigma(k (x - x_0))</code> which tends to 0 for
-:math:<code>x \ll x_0</code> and to 1 for :math:<code>x \gg x_0</code>.</p>
+<p>Returns $\sigma(k (x - x_0))$ which tends to 0 for
+$x \ll x_0$ and to 1 for $x \gg x_0$.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -10488,8 +10490,8 @@ events in the model.</p>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable Heaviside step.</span>
 
-<span class="sd">    Returns :math:`\sigma(k (x - x_0))` which tends to 0 for</span>
-<span class="sd">    :math:`x \ll x_0` and to 1 for :math:`x \gg x_0`.</span>
+<span class="sd">    Returns $\sigma(k (x - x_0))$ which tends to 0 for</span>
+<span class="sd">    $x \ll x_0$ and to 1 for $x \gg x_0$.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: Input tensor.</span>
@@ -10815,7 +10817,7 @@ closely.</p></td>
     <div class="doc doc-contents ">
 
       <p>Differentiable minimum using the log-sum-exp trick.</p>
-<p>:math:<code>\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})</code>.</p>
+<p>$\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -10869,7 +10871,7 @@ closely.</p></td>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_min</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable minimum using the log-sum-exp trick.</span>
 
-<span class="sd">    :math:`\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})`.</span>
+<span class="sd">    $\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a: First input tensor.</span>
@@ -10968,7 +10970,7 @@ Lintul5Model            (<span title="torch.nn.modules.module.Module">Module</sp
       <tr>
         <td><code>crop_params</code></td>
         <td><code>CropParameters | None</code></td>
-        <td><p>Crop parameter container (see :mod:<code>torchcrop.parameters</code>).</p></td>
+        <td><p>Crop parameter container (see <code>torchcrop.parameters</code>).</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -10994,7 +10996,7 @@ stage-based branching.</p></td>
         <td><code>stress_module</code></td>
         <td><code>nn.Module | None</code></td>
         <td><p>Optional replacement for the default
-:class:<code>StressFactors</code> combiner.</p></td>
+<code>StressFactors</code> combiner.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -11014,13 +11016,13 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable reimplementation of the Lintul5 crop growth model.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        crop_params: Crop parameter container (see :mod:`torchcrop.parameters`).</span>
+<span class="sd">        crop_params: Crop parameter container (see `torchcrop.parameters`).</span>
 <span class="sd">        soil_params: Soil parameter container.</span>
 <span class="sd">        site_params: Site parameter container (e.g. latitude, altitude).</span>
 <span class="sd">        smooth: If ``True``, use smooth (sigmoid-blend) replacements for</span>
 <span class="sd">            stage-based branching.</span>
 <span class="sd">        stress_module: Optional replacement for the default</span>
-<span class="sd">            :class:`StressFactors` combiner.</span>
+<span class="sd">            `StressFactors` combiner.</span>
 <span class="sd">        residual_modules: Optional neural residual corrections keyed by</span>
 <span class="sd">            process name (``&quot;photosynthesis&quot;`` adds to ``gtotal``;</span>
 <span class="sd">            ``&quot;partitioning&quot;`` adds to the four allocation fractions;</span>
@@ -11080,7 +11082,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="sd">            device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh :class:`ModelState` with initial DVS, root depth, soil</span>
+<span class="sd">            A fresh `ModelState` with initial DVS, root depth, soil</span>
 <span class="sd">            water at field capacity, and a seeded leaf mass so that LAI</span>
 <span class="sd">            growth has a substrate post-emergence.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -11113,14 +11115,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">            weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">                daily weather forcing.</span>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
-<span class="sd">            initial_state: Optional pre-built :class:`ModelState`. When</span>
-<span class="sd">                omitted, :meth:`initialize` is called automatically.</span>
+<span class="sd">            initial_state: Optional pre-built `ModelState`. When</span>
+<span class="sd">                omitted, `initialize` is called automatically.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A :class:`ModelOutput` containing the full state/rate trajectories</span>
+<span class="sd">            A `ModelOutput` containing the full state/rate trajectories</span>
 <span class="sd">            and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -11171,9 +11173,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current :class:`ModelState`.</span>
+<span class="sd">            state: Current `ModelState`.</span>
 <span class="sd">            weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">                (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">                (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">            doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
@@ -11198,12 +11200,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current :class:`ModelState`.</span>
-<span class="sd">            rates: Dict of rate tensors produced by :meth:`compute_rates`.</span>
+<span class="sd">            state: Current `ModelState`.</span>
+<span class="sd">            rates: Dict of rate tensors produced by `compute_rates`.</span>
 <span class="sd">            dt: Integration step in days.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`ModelState` advanced by one step.</span>
+<span class="sd">            A new `ModelState` advanced by one step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 
@@ -11364,14 +11366,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named :class:`nn.Parameter` tensors.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
 
 <span class="sd">        Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">        collects every field that is an :class:`nn.Parameter`.</span>
+<span class="sd">        collects every field that is an `nn.Parameter`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">            corresponding :class:`nn.Parameter`.</span>
+<span class="sd">            corresponding `nn.Parameter`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -11428,14 +11430,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>weather_day</code></td>
         <td><code>dict[str, torch.Tensor]</code></td>
         <td><p>Dict of named weather channels for the current day
-(see :data:<code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
+(see <code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -11473,9 +11475,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
 <span class="sd">        weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">            (see :data:`WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">            (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">        doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
@@ -11526,7 +11528,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>weather</code></td>
         <td><code>WeatherDriver | torch.Tensor</code></td>
-        <td><p>:class:<code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
+        <td><p><code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
 daily weather forcing.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -11539,8 +11541,8 @@ daily weather forcing.</p></td>
       <tr>
         <td><code>initial_state</code></td>
         <td><code>ModelState | None</code></td>
-        <td><p>Optional pre-built :class:<code>ModelState</code>. When
-omitted, :meth:<code>initialize</code> is called automatically.</p></td>
+        <td><p>Optional pre-built <code>ModelState</code>. When
+omitted, <code>initialize</code> is called automatically.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -11555,8 +11557,9 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A </code></td>
-      <td><p>and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code>).</p></td>
+      <td><code>ModelOutput</code></td>
+      <td><p>A <code>ModelOutput</code> containing the full state/rate trajectories
+and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code>).</p></td>
     </tr>
   </tbody>
 </table>
@@ -11571,14 +11574,14 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weather: :class:`WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">        weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">            daily weather forcing.</span>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
-<span class="sd">        initial_state: Optional pre-built :class:`ModelState`. When</span>
-<span class="sd">            omitted, :meth:`initialize` is called automatically.</span>
+<span class="sd">        initial_state: Optional pre-built `ModelState`. When</span>
+<span class="sd">            omitted, `initialize` is called automatically.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A :class:`ModelOutput` containing the full state/rate trajectories</span>
+<span class="sd">        A `ModelOutput` containing the full state/rate trajectories</span>
 <span class="sd">        and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -11678,8 +11681,9 @@ omitted, :meth:<code>initialize</code> is called automatically.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>water at field capacity, and a seeded leaf mass so that LAI
+      <td><code>ModelState</code></td>
+      <td><p>A fresh <code>ModelState</code> with initial DVS, root depth, soil
+water at field capacity, and a seeded leaf mass so that LAI
 growth has a substrate post-emergence.</p></td>
     </tr>
   </tbody>
@@ -11700,7 +11704,7 @@ growth has a substrate post-emergence.</p></td>
 <span class="sd">        device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`ModelState` with initial DVS, root depth, soil</span>
+<span class="sd">        A fresh `ModelState` with initial DVS, root depth, soil</span>
 <span class="sd">        water at field capacity, and a seeded leaf mass so that LAI</span>
 <span class="sd">        growth has a substrate post-emergence.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -11743,9 +11747,9 @@ growth has a substrate post-emergence.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Return a dict of named :class:<code>nn.Parameter</code> tensors.</p>
+      <p>Return a dict of named <code>nn.Parameter</code> tensors.</p>
 <p>Walks the <code>crop</code>/<code>soil</code>/<code>site</code> parameter containers and
-collects every field that is an :class:<code>nn.Parameter</code>.</p>
+collects every field that is an <code>nn.Parameter</code>.</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -11757,23 +11761,23 @@ collects every field that is an :class:<code>nn.Parameter</code>.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>Dict keyed by ``&#34;&lt;container&gt;.&lt;field&gt;&#34;`` mapping to the
-corresponding </code></td>
-      <td></td>
+      <td><code>dict[str, Any]</code></td>
+      <td><p>Dict keyed by <code>"&lt;container&gt;.&lt;field&gt;"</code> mapping to the
+corresponding <code>nn.Parameter</code>.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named :class:`nn.Parameter` tensors.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
 
 <span class="sd">    Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">    collects every field that is an :class:`nn.Parameter`.</span>
+<span class="sd">    collects every field that is an `nn.Parameter`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">        corresponding :class:`nn.Parameter`.</span>
+<span class="sd">        corresponding `nn.Parameter`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -11822,13 +11826,13 @@ corresponding </code></td>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><p>Current <code>ModelState</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>rates</code></td>
         <td><code>dict[str, torch.Tensor]</code></td>
-        <td><p>Dict of rate tensors produced by :meth:<code>compute_rates</code>.</p></td>
+        <td><p>Dict of rate tensors produced by <code>compute_rates</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -11849,8 +11853,8 @@ corresponding </code></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>ModelState</code></td>
+      <td><p>A new <code>ModelState</code> advanced by one step.</p></td>
     </tr>
   </tbody>
 </table>
@@ -11865,12 +11869,12 @@ corresponding </code></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current :class:`ModelState`.</span>
-<span class="sd">        rates: Dict of rate tensors produced by :meth:`compute_rates`.</span>
+<span class="sd">        state: Current `ModelState`.</span>
+<span class="sd">        rates: Dict of rate tensors produced by `compute_rates`.</span>
 <span class="sd">        dt: Integration step in days.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` advanced by one step.</span>
+<span class="sd">        A new `ModelState` advanced by one step.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </code></pre></div>
@@ -12070,7 +12074,7 @@ the initial condition).</p></td>
 
       <p>Learned stress-factor module.</p>
 <p>Replaces the empirical water-stress curve (<code>TRANRF</code>) with a small MLP that
-maps soil-water descriptors to a stress factor in :math:<code>[0, 1]</code> via a
+maps soil-water descriptors to a stress factor in $[0, 1]$ via a
 sigmoid output.</p>
 
 
@@ -12170,9 +12174,9 @@ axis — typically <code>2 + len(extra)</code> for the mechanistic
 
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">                `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">                `NutrientDemand`, shape ``[B]``.</span>
 <span class="sd">            *extra: Optional additional context tensors, each of shape</span>
 <span class="sd">                ``[B]``.</span>
 
@@ -12229,14 +12233,14 @@ whose scalar output is squashed by a sigmoid.</p>
         <td><code>tranrf</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Water-stress factor in <code>[0, 1]</code> from
-:class:<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
+<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
-:class:<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -12274,9 +12278,9 @@ whose scalar output is squashed by a sigmoid.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">            `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            `NutrientDemand`, shape ``[B]``.</span>
 <span class="sd">        *extra: Optional additional context tensors, each of shape</span>
 <span class="sd">            ``[B]``.</span>
 
@@ -12590,8 +12594,9 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
 
       <p>Bounded additive residual from an MLP.</p>
 <p>The residual output is produced by</p>
-<p>.. math::
-    f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))</p>
+<p>$$
+f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))
+$$</p>
 <p>which keeps the correction bounded to <code>[-scale, +scale]</code> so that the
 learned term cannot overwhelm the mechanistic prediction it augments.</p>
 
@@ -12645,8 +12650,9 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
 
 <span class="sd">    The residual output is produced by</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))</span>
+<span class="sd">    $$</span>
+<span class="sd">    f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))</span>
+<span class="sd">    $$</span>
 
 <span class="sd">    which keeps the correction bounded to ``[-scale, +scale]`` so that the</span>
 <span class="sd">    learned term cannot overwhelm the mechanistic prediction it augments.</span>
@@ -12854,12 +12860,12 @@ in <code>[-scale, +scale]</code>.</p></td>
 <p>This module ports the <strong>constant</strong> crop-level inputs of the SIMPLACE Lintul5
 component family (<code>Lintul5.java</code>, <code>Phenology.java</code>,
 <code>RadiationUseEfficiency.java</code>) to a single PyTorch-friendly dataclass.</p>
-<p>All scalar fields are stored as :class:<code>torch.Tensor</code> so they can be made
-learnable by wrapping them with :class:<code>torch.nn.Parameter</code>. Table fields
+<p>All scalar fields are stored as <code>torch.Tensor</code> so they can be made
+learnable by wrapping them with <code>torch.nn.Parameter</code>. Table fields
 (<code>..._tb</code> / <code>..._table</code>) carry shape <code>[N, 2]</code> (or <code>[B, N, 2]</code> if the
 table itself is batch-varying), where column 0 is the abscissa (DVS or
 temperature) and column 1 is the value. Tables are interpolated by
-:func:<code>torchcrop.functions.interpolate</code>.</p>
+<code>torchcrop.functions.interpolate</code>.</p>
 <p>Naming conventions:
     * Field names follow the original Lintul5 (Wolf, 2012) symbol,
       lowercased.
@@ -12979,7 +12985,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVERNRT`` (= ``cVernalisationTableMeanTemp`` × ``cVernalisationTableRate``).</span>
 <span class="sd">    Daily vernal-day rate [-] as a function of mean daily temperature [°C].</span>
-<span class="sd">    Used only when :attr:`idsl` ≥ 2.&quot;&quot;&quot;</span>
+<span class="sd">    Used only when `idsl` ≥ 2.&quot;&quot;&quot;</span>
 
     <span class="n">vbase</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVBASE``. Vernalisation base [thermal day]: vernal days</span>
@@ -13005,7 +13011,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">360.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCO``. Atmospheric CO₂ concentration [ppm] used both as input to</span>
-<span class="sd">    the RUE CO₂ correction (:attr:`cotb`) and the ET₀ CO₂ correction.</span>
+<span class="sd">    the RUE CO₂ correction (`cotb`) and the ET₀ CO₂ correction.</span>
 <span class="sd">    Default is the original Lintul5 reference.&quot;&quot;&quot;</span>
 
     <span class="n">day_temp_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.25</span><span class="p">))</span>
@@ -13016,7 +13022,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">3.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRUETableRUE`` (scalar surrogate). Reference radiation use</span>
-<span class="sd">    efficiency [g DM · MJ⁻¹ PAR] used when :attr:`ruetb` is omitted.</span>
+<span class="sd">    efficiency [g DM · MJ⁻¹ PAR] used when `ruetb` is omitted.</span>
 <span class="sd">    Lintul5 wheat default is 3.0 g · MJ⁻¹.&quot;&quot;&quot;</span>
 
     <span class="n">ruetb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
@@ -13062,7 +13068,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">scale_factor_rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRUE``. Multiplicative scale factor on the y-values of</span>
-<span class="sd">    :attr:`ruetb` for sensitivity analysis / calibration.&quot;&quot;&quot;</span>
+<span class="sd">    `ruetb` for sensitivity analysis / calibration.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 3. Light interception / canopy (from Lintul5.java)</span>
@@ -13070,7 +13076,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">k</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.60</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Effective canopy light extinction coefficient [-]; scalar fallback</span>
-<span class="sd">    when :attr:`kdiftb` is collapsed to a constant.&quot;&quot;&quot;</span>
+<span class="sd">    when `kdiftb` is collapsed to a constant.&quot;&quot;&quot;</span>
 
     <span class="n">kdiftb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)])</span>
@@ -13079,7 +13085,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    function of DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_kdif</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorKDIF``. Scale factor on :attr:`kdiftb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorKDIF``. Scale factor on `kdiftb` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">laicr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">4.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves</span>
@@ -13112,7 +13118,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">sla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0212</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback</span>
-<span class="sd">    used when :attr:`slatb` is collapsed.&quot;&quot;&quot;</span>
+<span class="sd">    used when `slatb` is collapsed.&quot;&quot;&quot;</span>
 
     <span class="n">slatb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">)])</span>
@@ -13120,7 +13126,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSLATB``. Specific leaf area [m² g⁻¹] as a function of DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_sla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorSLA``. Scale factor on :attr:`slatb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorSLA``. Scale factor on `slatb` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">laii</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``LAII`` initial leaf area index [m² m⁻²] at emergence (Lintul5</span>
@@ -13135,7 +13141,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">rdrshm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.03</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRSHM``. Maximum relative death rate of leaves [d⁻¹] caused by</span>
-<span class="sd">    shading when LAI &gt; :attr:`laicr`.&quot;&quot;&quot;</span>
+<span class="sd">    shading when LAI &gt; `laicr`.&quot;&quot;&quot;</span>
 
     <span class="n">rdrl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRL``. Maximum relative death rate of leaves [d⁻¹] due to</span>
@@ -13170,13 +13176,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    DVS.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_leaves</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRLeaves``. Scale factor on :attr:`rdrltb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRLeaves``. Scale factor on `rdrltb`.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_stems</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRStems``. Scale factor on :attr:`rdrstb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRStems``. Scale factor on `rdrstb`.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_rdr_roots</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRRoots``. Scale factor on :attr:`rdrrtb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRRoots``. Scale factor on `rdrrtb`.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 6. Biomass partitioning (from Lintul5.java)</span>
@@ -13286,20 +13292,20 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">    fraction of the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
 
     <span class="n">lrpr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRPR``. As :attr:`lrnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRPR``. As `lrnr` but for P.&quot;&quot;&quot;</span>
 
     <span class="n">lrkr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRKR``. As :attr:`lrnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRKR``. As `lrnr` but for K.&quot;&quot;&quot;</span>
 
     <span class="n">lsnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSNR``. Maximum N concentration in **stems** as a fraction of</span>
 <span class="sd">    the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
 
     <span class="n">lspr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSPR``. As :attr:`lsnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSPR``. As `lsnr` but for P.&quot;&quot;&quot;</span>
 
     <span class="n">lskr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSKR``. As :attr:`lsnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSKR``. As `lsnr` but for K.&quot;&quot;&quot;</span>
 
     <span class="n">frnx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRNX``. Optimal N concentration as a fraction of the maximum N</span>
@@ -13395,7 +13401,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">dvsdlt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSDLT``. DVS above which leaf death (controlled by mean</span>
-<span class="sd">    temperature, see :attr:`rdrltb`) begins.&quot;&quot;&quot;</span>
+<span class="sd">    temperature, see `rdrltb`) begins.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 10. Fertiliser application &amp; recovery (from Lintul5.java)</span>
@@ -13403,7 +13409,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">nrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.7</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNRF``. Default recovery fraction [0–1] of applied fertiliser N</span>
-<span class="sd">    (used when no day-resolved :attr:`nrftab` is provided).&quot;&quot;&quot;</span>
+<span class="sd">    (used when no day-resolved `nrftab` is provided).&quot;&quot;&quot;</span>
 
     <span class="n">prf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPRF``. Default recovery fraction [0–1] of applied fertiliser P.&quot;&quot;&quot;</span>
@@ -13432,13 +13438,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFERKTAB``. Optional table of K fertiliser applications.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_fern</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERN``. Scale factor on :attr:`ferntab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERN``. Scale factor on `ferntab` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_ferp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERP``. Scale factor on :attr:`ferptab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERP``. Scale factor on `ferptab` y-values.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_ferk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERK``. Scale factor on :attr:`ferktab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERK``. Scale factor on `ferktab` y-values.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 11. Run-control flags (from Lintul5.java)</span>
@@ -13461,13 +13467,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">rootdi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.10</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rdi` — initial rooting depth [m].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rdi` — initial rooting depth [m].&quot;&quot;&quot;</span>
 
     <span class="n">rootdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.20</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rdmcr` — maximum rooting depth [m].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rdmcr` — maximum rooting depth [m].&quot;&quot;&quot;</span>
 
     <span class="n">rrdmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`rri` — maximum daily root-depth growth</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `rri` — maximum daily root-depth growth</span>
 <span class="sd">    rate [m d⁻¹].&quot;&quot;&quot;</span>
 
     <span class="n">rdrtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
@@ -13476,13 +13482,13 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
         <span class="p">)</span>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used</span>
-<span class="sd">    by :class:`LeafDynamics` for developmental senescence. Not a direct</span>
+<span class="sd">    by `LeafDynamics` for developmental senescence. Not a direct</span>
 <span class="sd">    SIMPLACE constant (SIMPLACE separates leaf senescence into</span>
-<span class="sd">    :attr:`rdrltb` (vs T), :attr:`rdrrtb` and :attr:`rdrstb` (vs DVS)).&quot;&quot;&quot;</span>
+<span class="sd">    `rdrltb` (vs T), `rdrrtb` and `rdrstb` (vs DVS)).&quot;&quot;&quot;</span>
 
     <span class="n">nmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.050</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold</span>
-<span class="sd">    surrogate of :attr:`nmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    surrogate of `nmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">nmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.020</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max N concentration in stems (≈ ``lsnr × nmaxlv``).&quot;&quot;&quot;</span>
@@ -13492,7 +13498,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">pmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.008</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max P concentration in leaves (scaffold surrogate of</span>
-<span class="sd">    :attr:`pmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    `pmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">pmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.004</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max P concentration in stems (≈ ``lspr × pmaxlv``).&quot;&quot;&quot;</span>
@@ -13502,7 +13508,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">kmaxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.040</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max K concentration in leaves (scaffold surrogate of</span>
-<span class="sd">    :attr:`kmxlv` table).&quot;&quot;&quot;</span>
+<span class="sd">    `kmxlv` table).&quot;&quot;&quot;</span>
 
     <span class="n">kmaxst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.025</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scalar max K concentration in stems (≈ ``lskr × kmaxlv``).&quot;&quot;&quot;</span>
@@ -13512,7 +13518,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">nresid</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.004</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregated residual N concentration [g N · g⁻¹ DM] used by the</span>
-<span class="sd">    scaffold (compare per-organ :attr:`rnflv`/:attr:`rnfst`/:attr:`rnfrt`).&quot;&quot;&quot;</span>
+<span class="sd">    scaffold (compare per-organ `rnflv`/`rnfst`/`rnfrt`).&quot;&quot;&quot;</span>
 
     <span class="n">presid</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.001</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregated residual P concentration.&quot;&quot;&quot;</span>
@@ -13525,9 +13531,9 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
             <span class="p">[(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of :attr:`tmpftb` (T-response of RUE) used by the</span>
-<span class="sd">    current :class:`Photosynthesis` module. Will be merged with</span>
-<span class="sd">    :attr:`tmpftb` once the full SIMPLACE RUE chain is wired in.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scaffold alias of `tmpftb` (T-response of RUE) used by the</span>
+<span class="sd">    current `Photosynthesis` module. Will be merged with</span>
+<span class="sd">    `tmpftb` once the full SIMPLACE RUE chain is wired in.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
@@ -13545,7 +13551,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">            A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">            cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">            are copied through unchanged.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -13585,7 +13591,7 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <div class="doc doc-contents ">
 
       <p><code>cCO</code>. Atmospheric CO₂ concentration [ppm] used both as input to
-the RUE CO₂ correction (:attr:<code>cotb</code>) and the ET₀ CO₂ correction.
+the RUE CO₂ correction (<code>cotb</code>) and the ET₀ CO₂ correction.
 Default is the original Lintul5 reference.</p>
     </div>
 
@@ -13681,7 +13687,7 @@ air temperature [°C]. Shape <code>[N, 2]</code> with x = T̄, y = ΔTsum/d.</p>
     <div class="doc doc-contents ">
 
       <p><code>cDVSDLT</code>. DVS above which leaf death (controlled by mean
-temperature, see :attr:<code>rdrltb</code>) begins.</p>
+temperature, see <code>rdrltb</code>) begins.</p>
     </div>
 
   </div>
@@ -14094,7 +14100,7 @@ Stored as float so it can be used in masking; cast to int for branching.</p>
     <div class="doc doc-contents ">
 
       <p>Effective canopy light extinction coefficient [-]; scalar fallback
-when :attr:<code>kdiftb</code> is collapsed to a constant.</p>
+when <code>kdiftb</code> is collapsed to a constant.</p>
     </div>
 
   </div>
@@ -14140,7 +14146,7 @@ function of DVS.</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max K concentration in leaves (scaffold surrogate of
-:attr:<code>kmxlv</code> table).</p>
+<code>kmxlv</code> table).</p>
     </div>
 
   </div>
@@ -14363,7 +14369,7 @@ output, persisted here as a parameter for re-init).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLRKR</code>. As :attr:<code>lrnr</code> but for K.</p>
+      <p><code>cLRKR</code>. As <code>lrnr</code> but for K.</p>
     </div>
 
   </div>
@@ -14408,7 +14414,7 @@ fraction of the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLRPR</code>. As :attr:<code>lrnr</code> but for P.</p>
+      <p><code>cLRPR</code>. As <code>lrnr</code> but for P.</p>
     </div>
 
   </div>
@@ -14430,7 +14436,7 @@ fraction of the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLSKR</code>. As :attr:<code>lsnr</code> but for K.</p>
+      <p><code>cLSKR</code>. As <code>lsnr</code> but for K.</p>
     </div>
 
   </div>
@@ -14475,7 +14481,7 @@ the maximum N concentration in leaves [-].</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cLSPR</code>. As :attr:<code>lsnr</code> but for P.</p>
+      <p><code>cLSPR</code>. As <code>lsnr</code> but for P.</p>
     </div>
 
   </div>
@@ -14590,7 +14596,7 @@ phase) due to nutrient stress.</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold
-surrogate of :attr:<code>nmxlv</code> table).</p>
+surrogate of <code>nmxlv</code> table).</p>
     </div>
 
   </div>
@@ -14726,7 +14732,7 @@ reduction (re-allocation away from leaves under N deficiency).</p>
     <div class="doc doc-contents ">
 
       <p>Aggregated residual N concentration [g N · g⁻¹ DM] used by the
-scaffold (compare per-organ :attr:<code>rnflv</code>/:attr:<code>rnfst</code>/:attr:<code>rnfrt</code>).</p>
+scaffold (compare per-organ <code>rnflv</code>/<code>rnfst</code>/<code>rnfrt</code>).</p>
     </div>
 
   </div>
@@ -14749,7 +14755,7 @@ scaffold (compare per-organ :attr:<code>rnflv</code>/:attr:<code>rnfst</code>/:a
     <div class="doc doc-contents ">
 
       <p><code>cNRF</code>. Default recovery fraction [0–1] of applied fertiliser N
-(used when no day-resolved :attr:<code>nrftab</code> is provided).</p>
+(used when no day-resolved <code>nrftab</code> is provided).</p>
     </div>
 
   </div>
@@ -14842,7 +14848,7 @@ as a function of day length [h].</p>
     <div class="doc doc-contents ">
 
       <p>Scalar max P concentration in leaves (scaffold surrogate of
-:attr:<code>pmxlv</code> table).</p>
+<code>pmxlv</code> table).</p>
     </div>
 
   </div>
@@ -15156,7 +15162,7 @@ DVS.</p>
     <div class="doc doc-contents ">
 
       <p><code>cRDRSHM</code>. Maximum relative death rate of leaves [d⁻¹] caused by
-shading when LAI &gt; :attr:<code>laicr</code>.</p>
+shading when LAI &gt; <code>laicr</code>.</p>
     </div>
 
   </div>
@@ -15202,9 +15208,9 @@ DVS.</p>
     <div class="doc doc-contents ">
 
       <p>Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used
-by :class:<code>LeafDynamics</code> for developmental senescence. Not a direct
+by <code>LeafDynamics</code> for developmental senescence. Not a direct
 SIMPLACE constant (SIMPLACE separates leaf senescence into
-:attr:<code>rdrltb</code> (vs T), :attr:<code>rdrrtb</code> and :attr:<code>rdrstb</code> (vs DVS)).</p>
+<code>rdrltb</code> (vs T), <code>rdrrtb</code> and <code>rdrstb</code> (vs DVS)).</p>
     </div>
 
   </div>
@@ -15382,7 +15388,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rdi</code> — initial rooting depth [m].</p>
+      <p>Scaffold alias of <code>rdi</code> — initial rooting depth [m].</p>
     </div>
 
   </div>
@@ -15404,7 +15410,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rdmcr</code> — maximum rooting depth [m].</p>
+      <p>Scaffold alias of <code>rdmcr</code> — maximum rooting depth [m].</p>
     </div>
 
   </div>
@@ -15492,7 +15498,7 @@ leaves [g N · g⁻¹ DM].</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>rri</code> — maximum daily root-depth growth
+      <p>Scaffold alias of <code>rri</code> — maximum daily root-depth growth
 rate [m d⁻¹].</p>
     </div>
 
@@ -15538,7 +15544,7 @@ rate [m d⁻¹].</p>
     <div class="doc doc-contents ">
 
       <p><code>cRUETableRUE</code> (scalar surrogate). Reference radiation use
-efficiency [g DM · MJ⁻¹ PAR] used when :attr:<code>ruetb</code> is omitted.
+efficiency [g DM · MJ⁻¹ PAR] used when <code>ruetb</code> is omitted.
 Lintul5 wheat default is 3.0 g · MJ⁻¹.</p>
     </div>
 
@@ -15608,7 +15614,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERK</code>. Scale factor on :attr:<code>ferktab</code> y-values.</p>
+      <p><code>cScaleFactorFERK</code>. Scale factor on <code>ferktab</code> y-values.</p>
     </div>
 
   </div>
@@ -15630,7 +15636,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERN</code>. Scale factor on :attr:<code>ferntab</code> y-values.</p>
+      <p><code>cScaleFactorFERN</code>. Scale factor on <code>ferntab</code> y-values.</p>
     </div>
 
   </div>
@@ -15652,7 +15658,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorFERP</code>. Scale factor on :attr:<code>ferptab</code> y-values.</p>
+      <p><code>cScaleFactorFERP</code>. Scale factor on <code>ferptab</code> y-values.</p>
     </div>
 
   </div>
@@ -15674,7 +15680,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorKDIF</code>. Scale factor on :attr:<code>kdiftb</code> y-values.</p>
+      <p><code>cScaleFactorKDIF</code>. Scale factor on <code>kdiftb</code> y-values.</p>
     </div>
 
   </div>
@@ -15696,7 +15702,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRLeaves</code>. Scale factor on :attr:<code>rdrltb</code>.</p>
+      <p><code>cScaleFactorRDRLeaves</code>. Scale factor on <code>rdrltb</code>.</p>
     </div>
 
   </div>
@@ -15718,7 +15724,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRRoots</code>. Scale factor on :attr:<code>rdrrtb</code>.</p>
+      <p><code>cScaleFactorRDRRoots</code>. Scale factor on <code>rdrrtb</code>.</p>
     </div>
 
   </div>
@@ -15740,7 +15746,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorRDRStems</code>. Scale factor on :attr:<code>rdrstb</code>.</p>
+      <p><code>cScaleFactorRDRStems</code>. Scale factor on <code>rdrstb</code>.</p>
     </div>
 
   </div>
@@ -15763,7 +15769,7 @@ grain filling).</p>
     <div class="doc doc-contents ">
 
       <p><code>cScaleFactorRUE</code>. Multiplicative scale factor on the y-values of
-:attr:<code>ruetb</code> for sensitivity analysis / calibration.</p>
+<code>ruetb</code> for sensitivity analysis / calibration.</p>
     </div>
 
   </div>
@@ -15785,7 +15791,7 @@ grain filling).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorSLA</code>. Scale factor on :attr:<code>slatb</code> y-values.</p>
+      <p><code>cScaleFactorSLA</code>. Scale factor on <code>slatb</code> y-values.</p>
     </div>
 
   </div>
@@ -15808,7 +15814,7 @@ grain filling).</p>
     <div class="doc doc-contents ">
 
       <p>Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback
-used when :attr:<code>slatb</code> is collapsed.</p>
+used when <code>slatb</code> is collapsed.</p>
     </div>
 
   </div>
@@ -16035,9 +16041,9 @@ minimum temperature [°C] (cold-night stress).</p>
 
     <div class="doc doc-contents ">
 
-      <p>Scaffold alias of :attr:<code>tmpftb</code> (T-response of RUE) used by the
-current :class:<code>Photosynthesis</code> module. Will be merged with
-:attr:<code>tmpftb</code> once the full SIMPLACE RUE chain is wired in.</p>
+      <p>Scaffold alias of <code>tmpftb</code> (T-response of RUE) used by the
+current <code>Photosynthesis</code> module. Will be merged with
+<code>tmpftb</code> once the full SIMPLACE RUE chain is wired in.</p>
     </div>
 
   </div>
@@ -16246,7 +16252,7 @@ vernalisation factor is applied; beyond this stage VERNFAC = 1.</p>
 
       <p><code>cVERNRT</code> (= <code>cVernalisationTableMeanTemp</code> × <code>cVernalisationTableRate</code>).
 Daily vernal-day rate [-] as a function of mean daily temperature [°C].
-Used only when :attr:<code>idsl</code> ≥ 2.</p>
+Used only when <code>idsl</code> ≥ 2.</p>
     </div>
 
   </div>
@@ -16332,8 +16338,9 @@ vernal days above which the vernalisation factor is fully released
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td><p>cast; non-tensor fields (e.g., optional tables set to <code>None</code>)
+      <td><code>&#39;CropParameters&#39;</code></td>
+      <td><p>A new <code>CropParameters</code> with every tensor field moved /
+cast; non-tensor fields (e.g., optional tables set to <code>None</code>)
 are copied through unchanged.</p></td>
     </tr>
   </tbody>
@@ -16352,7 +16359,7 @@ are copied through unchanged.</p></td>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">        A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">        cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">        are copied through unchanged.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -16426,8 +16433,9 @@ are copied through unchanged.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>cast to <code>dtype</code>.</p></td>
+      <td><code>CropParameters</code></td>
+      <td><p>A fresh <code>CropParameters</code> with the Lintul5 wheat defaults
+cast to <code>dtype</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -16440,7 +16448,7 @@ are copied through unchanged.</p></td>
 <span class="sd">        dtype: Target tensor dtype for all scalar/tabular fields.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`CropParameters` with the Lintul5 wheat defaults</span>
+<span class="sd">        A fresh `CropParameters` with the Lintul5 wheat defaults</span>
 <span class="sd">        cast to ``dtype``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
@@ -16484,7 +16492,7 @@ PyTorch-friendly dataclass.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Latitude is normally consumed by the
-:class:<code>AstronomicParametersTransformer</code> upstream of Lintul5; we keep it
+<code>AstronomicParametersTransformer</code> upstream of Lintul5; we keep it
 here so torchcrop can compute astronomy and irradiation internally.</p>
 </div>
 
@@ -16547,7 +16555,7 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">370.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCO``. Atmospheric CO₂ concentration [ppm]. Mirrors</span>
-<span class="sd">    :attr:`CropParameters.co2`; provided here so a site-level CO₂ scenario</span>
+<span class="sd">    `CropParameters.co2`; provided here so a site-level CO₂ scenario</span>
 <span class="sd">    can be set independently of the crop default. The Lintul5 ET routine</span>
 <span class="sd">    uses 370 ppm as its reference.&quot;&quot;&quot;</span>
 
@@ -16584,16 +16592,16 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
     <span class="n">plant_at_sowing</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPL``. Boolean flag (0/1) — if 1, the simulation starts at</span>
-<span class="sd">    **planting** (uses :attr:`idpl`); if 0, it starts at **emergence**</span>
-<span class="sd">    (uses :attr:`idem`).&quot;&quot;&quot;</span>
+<span class="sd">    **planting** (uses `idpl`); if 0, it starts at **emergence**</span>
+<span class="sd">    (uses `idem`).&quot;&quot;&quot;</span>
 
     <span class="n">idpl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIDPL``. Day of planting [day-of-year, 0–366]. Used when</span>
-<span class="sd">    :attr:`plant_at_sowing` = 1.&quot;&quot;&quot;</span>
+<span class="sd">    `plant_at_sowing` = 1.&quot;&quot;&quot;</span>
 
     <span class="n">idem</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIDEM``. Day of emergence [day-of-year, 0–366]. Used when</span>
-<span class="sd">    :attr:`plant_at_sowing` = 0 to bypass the temperature-sum-driven</span>
+<span class="sd">    `plant_at_sowing` = 0 to bypass the temperature-sum-driven</span>
 <span class="sd">    emergence calculation.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -16612,7 +16620,7 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">            A new `SiteParameters` with every tensor field moved/cast.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -16743,7 +16751,7 @@ transpiration rate (canopy-resistance proxy).</p>
     <div class="doc doc-contents ">
 
       <p><code>cCO</code>. Atmospheric CO₂ concentration [ppm]. Mirrors
-:attr:<code>CropParameters.co2</code>; provided here so a site-level CO₂ scenario
+<code>CropParameters.co2</code>; provided here so a site-level CO₂ scenario
 can be set independently of the crop default. The Lintul5 ET routine
 uses 370 ppm as its reference.</p>
     </div>
@@ -16792,7 +16800,7 @@ of atmospheric CO₂ concentration [ppm] (C3 crops).</p>
     <div class="doc doc-contents ">
 
       <p><code>cIDEM</code>. Day of emergence [day-of-year, 0–366]. Used when
-:attr:<code>plant_at_sowing</code> = 0 to bypass the temperature-sum-driven
+<code>plant_at_sowing</code> = 0 to bypass the temperature-sum-driven
 emergence calculation.</p>
     </div>
 
@@ -16816,7 +16824,7 @@ emergence calculation.</p>
     <div class="doc doc-contents ">
 
       <p><code>cIDPL</code>. Day of planting [day-of-year, 0–366]. Used when
-:attr:<code>plant_at_sowing</code> = 1.</p>
+<code>plant_at_sowing</code> = 1.</p>
     </div>
 
   </div>
@@ -16862,8 +16870,8 @@ astronomical day-length and solar-declination calculations.</p>
     <div class="doc doc-contents ">
 
       <p><code>cPL</code>. Boolean flag (0/1) — if 1, the simulation starts at
-<strong>planting</strong> (uses :attr:<code>idpl</code>); if 0, it starts at <strong>emergence</strong>
-(uses :attr:<code>idem</code>).</p>
+<strong>planting</strong> (uses <code>idpl</code>); if 0, it starts at <strong>emergence</strong>
+(uses <code>idem</code>).</p>
     </div>
 
   </div>
@@ -16925,8 +16933,8 @@ astronomical day-length and solar-declination calculations.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;SiteParameters&#39;</code></td>
+      <td><p>A new <code>SiteParameters</code> with every tensor field moved/cast.</p></td>
     </tr>
   </tbody>
 </table>
@@ -16944,7 +16952,7 @@ astronomical day-length and solar-declination calculations.</p>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">        A new `SiteParameters` with every tensor field moved/cast.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -17148,14 +17156,14 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
     <span class="n">irri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIRRI``. Irrigation mode: ``0`` → no irrigation,</span>
 <span class="sd">    ``1`` → automatic (refill to field capacity),</span>
-<span class="sd">    ``2`` → use day-resolved :attr:`irrtab`.&quot;&quot;&quot;</span>
+<span class="sd">    ``2`` → use day-resolved `irrtab`.&quot;&quot;&quot;</span>
 
     <span class="n">irrtab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIRRTAB``. Optional table of effective irrigation applications</span>
 <span class="sd">    [mm d⁻¹] as a function of day number; shape ``[N, 2]``.&quot;&quot;&quot;</span>
 
     <span class="n">scale_factor_irr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorIRR``. Scale factor on :attr:`irrtab` y-values for</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorIRR``. Scale factor on `irrtab` y-values for</span>
 <span class="sd">    sensitivity analysis / calibration.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -17215,7 +17223,7 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 <span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`SoilParameters` with every tensor field moved/cast.</span>
+<span class="sd">            A new `SoilParameters` with every tensor field moved/cast.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -17371,7 +17379,7 @@ not (=0). Stored as float for batch broadcasting.</p>
 
       <p><code>cIRRI</code>. Irrigation mode: <code>0</code> → no irrigation,
 <code>1</code> → automatic (refill to field capacity),
-<code>2</code> → use day-resolved :attr:<code>irrtab</code>.</p>
+<code>2</code> → use day-resolved <code>irrtab</code>.</p>
     </div>
 
   </div>
@@ -17694,7 +17702,7 @@ to surface runoff.</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cScaleFactorIRR</code>. Scale factor on :attr:<code>irrtab</code> y-values for
+      <p><code>cScaleFactorIRR</code>. Scale factor on <code>irrtab</code> y-values for
 sensitivity analysis / calibration.</p>
     </div>
 
@@ -17895,8 +17903,8 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;SoilParameters&#39;</code></td>
+      <td><p>A new <code>SoilParameters</code> with every tensor field moved/cast.</p></td>
     </tr>
   </tbody>
 </table>
@@ -17914,7 +17922,7 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
 <span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`SoilParameters` with every tensor field moved/cast.</span>
+<span class="sd">        A new `SoilParameters` with every tensor field moved/cast.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -17986,8 +17994,9 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>cast to <code>dtype</code>.</p></td>
+      <td><code>SoilParameters</code></td>
+      <td><p>A fresh <code>SoilParameters</code> with the Lintul5 loam defaults
+cast to <code>dtype</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -18000,7 +18009,7 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
 <span class="sd">        dtype: Target tensor dtype for all scalar fields.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`SoilParameters` with the Lintul5 loam defaults</span>
+<span class="sd">        A fresh `SoilParameters` with the Lintul5 loam defaults</span>
 <span class="sd">        cast to ``dtype``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SoilParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
@@ -18111,16 +18120,27 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
     <div class="doc doc-contents ">
 
       <p>Compute solar declination and astronomical daylength.</p>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
-<p>.. math::
-    \delta = -\arcsin!\left[\sin(23.45^\circ) \cos!\left(2\pi \frac{DOY + 10}{365}\right)\right]</p>
-<p>.. math::
-    \cos(H_0) = -\tan(\phi)\tan(\delta)</p>
-<p>where :math:<code>\phi</code> is latitude in radians.</p>
-</div>
+<p>Equations:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
+\delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]
+$$
+
+$$
+\cos(H_0) = -\tan(\phi)\tan(\delta)
+$$
+
+where $\phi$ is latitude in radians.
+</code></pre></div></td></tr></table></div>
 <p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
-a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</p>
+a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/astro.py</code></summary>
@@ -18128,16 +18148,19 @@ a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.</span>
 
 <span class="sd">    Equations:</span>
-<span class="sd">        .. math::</span>
-<span class="sd">            \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]</span>
 
-<span class="sd">        .. math::</span>
-<span class="sd">            \cos(H_0) = -\tan(\phi)\tan(\delta)</span>
+<span class="sd">        $$</span>
+<span class="sd">        \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]</span>
+<span class="sd">        $$</span>
 
-<span class="sd">        where :math:`\phi` is latitude in radians.</span>
+<span class="sd">        $$</span>
+<span class="sd">        \cos(H_0) = -\tan(\phi)\tan(\delta)</span>
+<span class="sd">        $$</span>
+
+<span class="sd">        where $\phi$ is latitude in radians.</span>
 
 <span class="sd">    Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses</span>
-<span class="sd">    a civil-twilight inclusion angle of :math:`-4^\circ` as in Lintul5.</span>
+<span class="sd">    a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -18363,12 +18386,17 @@ a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</
 <p>A light-weight Priestley–Taylor approximation is implemented by default; this
 is adequate for differentiable experimentation. For operational use, swap in
 a full FAO-56 Penman–Monteith variant (kept as a TODO hook).</p>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
-<p>.. math::
-    ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}</p>
-<p>with :math:<code>\alpha = 1.26</code>, :math:<code>\lambda = 2.45\ \text{MJ kg}^{-1}</code>.</p>
-</div>
+<p>Equations:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
+ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}
+$$
+
+with $\alpha = 1.26$, $\lambda = 2.45\ \text{MJ kg}^{-1}$.
+</code></pre></div></td></tr></table></div>
 
 
 
@@ -18411,7 +18439,7 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
       <tr>
         <td><code>alpha_pt</code></td>
         <td><code>float</code></td>
-        <td><p>Priestley–Taylor coefficient :math:<code>\alpha</code>
+        <td><p>Priestley–Taylor coefficient $\alpha$
 (default 1.26).</p></td>
         <td><code>1.26</code></td>
       </tr>
@@ -18423,7 +18451,7 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Priestley–Taylor reference evapotranspiration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        alpha_pt: Priestley–Taylor coefficient :math:`\\alpha`</span>
+<span class="sd">        alpha_pt: Priestley–Taylor coefficient $\\alpha$</span>
 <span class="sd">            (default 1.26).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -18448,17 +18476,17 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">            integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">            integrated here — `WaterBalance` turns</span>
 <span class="sd">            ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
 
 <span class="sd">                * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
 <span class="sd">                  (Priestley–Taylor).</span>
 <span class="sd">                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
 <span class="sd">                  ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">                  :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">                  `WaterBalance` to compute actual transpiration.</span>
 <span class="sd">                * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">                  ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">                  :class:`WaterBalance`.</span>
+<span class="sd">                  `WaterBalance`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
@@ -18556,24 +18584,20 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
   <tbody>
     <tr>
       <td><code>Dict of ``[B]`` tensors with the potential fluxes (no state is
-integrated here — </code></td>
-      <td><p><code>ptran</code>/<code>pevap</code> into actual <code>tran</code>/<code>evap</code>):</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``et0`` [mm d⁻¹] — Reference evapotranspiration
-  (Priestley–Taylor).
-* ``ptran`` [mm d⁻¹] — Potential canopy transpiration
-  ``= et0 * (1 - exp(-k_ext * lai))``; passed to
-  :class:`WaterBalance` to compute actual transpiration.
-* ``pevap`` [mm d⁻¹] — Potential soil evaporation
-  ``= et0 * exp(-k_ext * lai)``; passed to
-  :class:`WaterBalance`.
-</code></pre></div></td></tr></table></div></td>
+integrated here — `WaterBalance` turns
+``ptran``/``pevap`` into actual ``tran``/``evap``)</code></td>
+      <td><ul>
+<li><code>et0</code> [mm d⁻¹] — Reference evapotranspiration
+      (Priestley–Taylor).<ul>
+<li><code>ptran</code> [mm d⁻¹] — Potential canopy transpiration
+  <code>= et0 * (1 - exp(-k_ext * lai))</code>; passed to
+  <code>WaterBalance</code> to compute actual transpiration.</li>
+<li><code>pevap</code> [mm d⁻¹] — Potential soil evaporation
+  <code>= et0 * exp(-k_ext * lai)</code>; passed to
+  <code>WaterBalance</code>.</li>
+</ul>
+</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -18596,17 +18620,17 @@ integrated here — </code></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">        integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">        integrated here — `WaterBalance` turns</span>
 <span class="sd">        ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
 
 <span class="sd">            * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
 <span class="sd">              (Priestley–Taylor).</span>
 <span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
 <span class="sd">              ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">              :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">              `WaterBalance` to compute actual transpiration.</span>
 <span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">              ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">              :class:`WaterBalance`.</span>
+<span class="sd">              `WaterBalance`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
@@ -18678,12 +18702,14 @@ integrated here — </code></td>
 <p class="admonition-title">Equations</p>
 <p>Photosynthetically active radiation fraction of global radiation is
 0.50:</p>
-<p>.. math::
-    \text{PAR} = 0.5 \cdot \text{IRRAD}</p>
+<p>$$
+\text{PAR} = 0.5 \cdot \text{IRRAD}
+$$</p>
 <p>Fraction intercepted by a canopy of index <code>LAI</code> with extinction
 <code>K</code>:</p>
-<p>.. math::
-    \text{frac} = 1 - \exp(-K \cdot \text{LAI})</p>
+<p>$$
+\text{frac} = 1 - \exp(-K \cdot \text{LAI})
+$$</p>
 <p>So intercepted PAR is <code>PARINT = PAR * frac</code> [MJ m⁻² d⁻¹].</p>
 </div>
 
@@ -18741,7 +18767,7 @@ Irradiation            (<span title="torch.nn.modules.module.Module">Module</spa
 <span class="sd">                  radiation at the top of the canopy (``= 0.5 * irrad``).</span>
 <span class="sd">                * ``parint`` [MJ m⁻² d⁻¹] — PAR intercepted by the canopy</span>
 <span class="sd">                  (``= par * frac_intercepted``); used by</span>
-<span class="sd">                  :class:`Photosynthesis` to drive ``gtotal``.</span>
+<span class="sd">                  `Photosynthesis` to drive ``gtotal``.</span>
 <span class="sd">                * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">                  fraction ``1 - exp(-k * lai)`` in ``[0, 1]``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -18827,7 +18853,7 @@ integrated here, they feed photosynthesis and ET)</code></td>
       radiation at the top of the canopy (<code>= 0.5 * irrad</code>).<ul>
 <li><code>parint</code> [MJ m⁻² d⁻¹] — PAR intercepted by the canopy
   (<code>= par * frac_intercepted</code>); used by
-  :class:<code>Photosynthesis</code> to drive <code>gtotal</code>.</li>
+  <code>Photosynthesis</code> to drive <code>gtotal</code>.</li>
 <li><code>frac_intercepted</code> [-] — Beer–Lambert interception
   fraction <code>1 - exp(-k * lai)</code> in <code>[0, 1]</code>.</li>
 </ul>
@@ -18860,7 +18886,7 @@ integrated here, they feed photosynthesis and ET)</code></td>
 <span class="sd">              radiation at the top of the canopy (``= 0.5 * irrad``).</span>
 <span class="sd">            * ``parint`` [MJ m⁻² d⁻¹] — PAR intercepted by the canopy</span>
 <span class="sd">              (``= par * frac_intercepted``); used by</span>
-<span class="sd">              :class:`Photosynthesis` to drive ``gtotal``.</span>
+<span class="sd">              `Photosynthesis` to drive ``gtotal``.</span>
 <span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">              fraction ``1 - exp(-k * lai)`` in ``[0, 1]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -19325,7 +19351,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">            state: Current state (unused in this minimal port but kept for</span>
 <span class="sd">                the uniform process signature).</span>
 <span class="sd">            g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,</span>
-<span class="sd">                from :class:`Partitioning`.</span>
+<span class="sd">                from `Partitioning`.</span>
 <span class="sd">            g_st: Stem biomass growth rate, shape ``[B]``.</span>
 <span class="sd">            g_rt: Root biomass growth rate, shape ``[B]``.</span>
 <span class="sd">            g_so: Storage-organ biomass growth rate, shape ``[B]``.</span>
@@ -19358,7 +19384,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">                * ``nstress`` [-] — Combined nutrient-stress factor in</span>
 <span class="sd">                  ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when</span>
 <span class="sd">                  there is no demand). Multiplies ``gtotal`` in</span>
-<span class="sd">                  :class:`Photosynthesis`.</span>
+<span class="sd">                  `Photosynthesis`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Maximum-demand uptake per organ (fraction of DM growth)</span>
         <span class="n">n_demand</span> <span class="o">=</span> <span class="p">(</span>
@@ -19499,7 +19525,7 @@ the uniform process signature).</p></td>
         <td><code>g_lv</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Leaf biomass growth rate [g DM m⁻² d⁻¹], shape <code>[B]</code>,
-from :class:<code>Partitioning</code>.</p></td>
+from <code>Partitioning</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -19575,7 +19601,7 @@ pools)</code></td>
 * ``nstress`` [-] — Combined nutrient-stress factor in
   ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when
   there is no demand). Multiplies ``gtotal`` in
-  :class:`Photosynthesis`.
+  `Photosynthesis`.
 </code></pre></div></td></tr></table></div></td>
     </tr>
   </tbody>
@@ -19598,7 +19624,7 @@ pools)</code></td>
 <span class="sd">        state: Current state (unused in this minimal port but kept for</span>
 <span class="sd">            the uniform process signature).</span>
 <span class="sd">        g_lv: Leaf biomass growth rate [g DM m⁻² d⁻¹], shape ``[B]``,</span>
-<span class="sd">            from :class:`Partitioning`.</span>
+<span class="sd">            from `Partitioning`.</span>
 <span class="sd">        g_st: Stem biomass growth rate, shape ``[B]``.</span>
 <span class="sd">        g_rt: Root biomass growth rate, shape ``[B]``.</span>
 <span class="sd">        g_so: Storage-organ biomass growth rate, shape ``[B]``.</span>
@@ -19631,7 +19657,7 @@ pools)</code></td>
 <span class="sd">            * ``nstress`` [-] — Combined nutrient-stress factor in</span>
 <span class="sd">              ``[0, 1] = min(uptake/demand)`` across N, P, K (1 when</span>
 <span class="sd">              there is no demand). Multiplies ``gtotal`` in</span>
-<span class="sd">              :class:`Photosynthesis`.</span>
+<span class="sd">              `Photosynthesis`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Maximum-demand uptake per organ (fraction of DM growth)</span>
     <span class="n">n_demand</span> <span class="o">=</span> <span class="p">(</span>
@@ -19829,7 +19855,7 @@ Partitioning            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
 <span class="sd">                  (``= gtotal * fr``); becomes ``wrt_rate``.</span>
 <span class="sd">                * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence;</span>
-<span class="sd">                  :class:`LeafDynamics` converts it into ``wlv_rate`` and</span>
+<span class="sd">                  `LeafDynamics` converts it into ``wlv_rate`` and</span>
 <span class="sd">                  ``lai_rate``.</span>
 <span class="sd">                * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate; becomes</span>
 <span class="sd">                  ``wst_rate`` directly.</span>
@@ -19956,7 +19982,7 @@ and nutrient demand)</code></td>
 <li><code>g_root</code> [g DM m⁻² d⁻¹] — Root biomass growth rate
       (<code>= gtotal * fr</code>); becomes <code>wrt_rate</code>.<ul>
 <li><code>g_lv</code> [g DM m⁻² d⁻¹] — Leaf growth before senescence;
-  :class:<code>LeafDynamics</code> converts it into <code>wlv_rate</code> and
+  <code>LeafDynamics</code> converts it into <code>wlv_rate</code> and
   <code>lai_rate</code>.</li>
 <li><code>g_st</code> [g DM m⁻² d⁻¹] — Stem growth rate; becomes
   <code>wst_rate</code> directly.</li>
@@ -20005,7 +20031,7 @@ and nutrient demand)</code></td>
 <span class="sd">            * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
 <span class="sd">              (``= gtotal * fr``); becomes ``wrt_rate``.</span>
 <span class="sd">            * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence;</span>
-<span class="sd">              :class:`LeafDynamics` converts it into ``wlv_rate`` and</span>
+<span class="sd">              `LeafDynamics` converts it into ``wlv_rate`` and</span>
 <span class="sd">              ``lai_rate``.</span>
 <span class="sd">            * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate; becomes</span>
 <span class="sd">              ``wst_rate`` directly.</span>
@@ -20103,15 +20129,17 @@ and nutrient demand)</code></td>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Effective daily temperature:</p>
-<p>.. math::
-    \text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})</p>
+<p>$$
+\text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})
+$$</p>
 <p>Development rate (pre-emergence, vegetative, generative):</p>
-<p>.. math::
-    \text{DVR} =
-    \begin{cases}
-        \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1}, &amp; 0 \le DVS &lt; 1 \
-        \text{DTSU} / \text{TSUM2}, &amp; 1 \le DVS &lt; 2
-    \end{cases}</p>
+<p>$$
+\text{DVR} =
+\begin{cases}
+    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1}, &amp; 0 \le DVS &lt; 1 \
+    \text{DTSU} / \text{TSUM2}, &amp; 1 \le DVS &lt; 2
+\end{cases}
+$$</p>
 </div>
 
 
@@ -20551,9 +20579,10 @@ Rate variables (consumed by the engine for state update)</code></td>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Gross biomass growth rate (daily):</p>
-<p>.. math::
-    \text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
-    \text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}</p>
+<p>$$
+\text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
+\text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}
+$$</p>
 <p>where <code>RUE</code> has units of g dry matter per MJ intercepted PAR.</p>
 </div>
 
@@ -20612,7 +20641,7 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
 
-<span class="sd">            Rate variables (consumed by :class:`Partitioning`):</span>
+<span class="sd">            Rate variables (consumed by `Partitioning`):</span>
 
 <span class="sd">                * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
 <span class="sd">                  production rate</span>
@@ -20727,17 +20756,14 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
     <tr>
       <td><code>Dict of ``[B]`` tensors grouped as follows.
 
-Rate variables (consumed by </code></td>
-      <td><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass
-  production rate
-  ``= rue_eff * parint * tranrf * nstress``. Split into
-  organ-specific growth rates ``g_lv``, ``g_st``,
-  ``g_root``, ``g_so`` by the partitioning module.
-</code></pre></div></td></tr></table></div>
+Rate variables (consumed by `Partitioning`)</code></td>
+      <td><ul>
+<li><code>gtotal</code> [g DM m⁻² d⁻¹] — Gross total biomass
+      production rate
+      <code>= rue_eff * parint * tranrf * nstress</code>. Split into
+      organ-specific growth rates <code>g_lv</code>, <code>g_st</code>,
+      <code>g_root</code>, <code>g_so</code> by the partitioning module.</li>
+</ul>
 <p>Diagnostics:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
@@ -20779,7 +20805,7 @@ Rate variables (consumed by </code></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
 
-<span class="sd">        Rate variables (consumed by :class:`Partitioning`):</span>
+<span class="sd">        Rate variables (consumed by `Partitioning`):</span>
 
 <span class="sd">            * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
 <span class="sd">              production rate</span>
@@ -21118,7 +21144,7 @@ engine for state update</code></td>
 <p>A light wrapper module that bundles the water-stress factor <code>TRANRF</code> and
 the nutrient-stress factor <code>NSTRESS</code> into a single multiplicative reducer.</p>
 <p>This module is deliberately minimal: the substantive computations live in
-<code>water_balance.py</code> and <code>nutrient_demand.py</code>. Use :class:<code>StressFactors</code>
+<code>water_balance.py</code> and <code>nutrient_demand.py</code>. Use <code>StressFactors</code>
 if you want to swap in a learned alternative via the hybrid API.</p>
 
 
@@ -21162,9 +21188,9 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
 
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">                `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">                `NutrientDemand`, shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,</span>
@@ -21218,14 +21244,14 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
         <td><code>tranrf</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Water-stress factor in <code>[0, 1]</code> from
-:class:<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
+<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
-:class:<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -21260,9 +21286,9 @@ therefore propagates into every per-organ rate
 
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">            `WaterBalance`, shape ``[B]``.</span>
 <span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            `NutrientDemand`, shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Combined stress reducer ``= tranrf * nstress`` in ``[0, 1]``,</span>
@@ -21321,26 +21347,30 @@ therefore propagates into every per-organ rate
 <p>SIMPLACE <code>WaterBalance.java</code>. The simplified bucket implementation
 below tracks a single effective root-zone water storage <code>WA</code> [mm].
 It produces actual transpiration from potential transpiration via a
-linear water-stress response <code>TRANRF</code> in :math:<code>[0, 1]</code>.</p>
+linear water-stress response <code>TRANRF</code> in $[0, 1]$.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Available water, capacity limits at field capacity and wilting point:</p>
-<p>.. math::
-    W_\text{fc}  = 1000 \cdot \theta_\text{fc} \cdot D_\text{root}
-    \qquad
-    W_\text{wp}  = 1000 \cdot \theta_\text{wp} \cdot D_\text{root}</p>
+<p>$$
+W_\text{fc}  = 1000 \cdot \theta_\text{fc} \cdot D_\text{root}
+\qquad
+W_\text{wp}  = 1000 \cdot \theta_\text{wp} \cdot D_\text{root}
+$$</p>
 <p>Water stress reduction factor (linear between wilting and critical
 point):</p>
-<p>.. math::
-    \text{TRANRF} = \text{clip}!\left(\frac{W_a - W_\text{wp}}
-    {W_\text{fc} - W_\text{wp}},\ 0,\ 1\right)</p>
+<p>$$
+\text{TRANRF} = \text{clip}!\left(\frac{W_a - W_\text{wp}}
+{W_\text{fc} - W_\text{wp}},\ 0,\ 1\right)
+$$</p>
 <p>Actual transpiration:</p>
-<p>.. math::
-    T_a = \text{PTRAN} \cdot \text{TRANRF}</p>
+<p>$$
+T_a = \text{PTRAN} \cdot \text{TRANRF}
+$$</p>
 <p>Mass balance update:</p>
-<p>.. math::
-    W_{a,t+1} = W_{a,t} + P - T_a - E_a - \text{drain} - \text{runoff}</p>
+<p>$$
+W_{a,t+1} = W_{a,t} + P - T_a - E_a - \text{drain} - \text{runoff}
+$$</p>
 </div>
 
 
@@ -21413,7 +21443,7 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                  available water above the air-dry threshold.</span>
 <span class="sd">                * ``tranrf`` [-] — Water-stress reduction factor in</span>
 <span class="sd">                  ``[0, 1]``; multiplies ``gtotal`` in</span>
-<span class="sd">                  :class:`Photosynthesis`.</span>
+<span class="sd">                  `Photosynthesis`.</span>
 <span class="sd">                * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
 <span class="sd">                  root zone (includes any over-saturation outflow).</span>
 <span class="sd">                * ``runoff`` [mm d⁻¹] — Surface runoff</span>
@@ -21565,7 +21595,7 @@ Rate variables (consumed by the engine for state update)</code></td>
   available water above the air-dry threshold.
 * ``tranrf`` [-] — Water-stress reduction factor in
   ``[0, 1]``; multiplies ``gtotal`` in
-  :class:`Photosynthesis`.
+  `Photosynthesis`.
 * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the
   root zone (includes any over-saturation outflow).
 * ``runoff`` [mm d⁻¹] — Surface runoff
@@ -21614,7 +21644,7 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">              available water above the air-dry threshold.</span>
 <span class="sd">            * ``tranrf`` [-] — Water-stress reduction factor in</span>
 <span class="sd">              ``[0, 1]``; multiplies ``gtotal`` in</span>
-<span class="sd">              :class:`Photosynthesis`.</span>
+<span class="sd">              `Photosynthesis`.</span>
 <span class="sd">            * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
 <span class="sd">              root zone (includes any over-saturation outflow).</span>
 <span class="sd">            * ``runoff`` [mm d⁻¹] — Surface runoff</span>
@@ -21904,7 +21934,7 @@ storage organs, each <code>[B]</code> [g N m⁻²].</p></td>
   </tbody>
 </table>      <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Updates are functional: :meth:<code>replace</code> returns a <em>new</em>
+<p>Updates are functional: <code>replace</code> returns a <em>new</em>
 <code>ModelState</code> rather than mutating in place, so the autograd graph
 is preserved across the explicit-Euler step
 <code>s_{t+1} = s_t + r_t * dt</code>.</p>
@@ -21946,7 +21976,7 @@ is preserved across the explicit-Euler step
 <span class="sd">        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Updates are functional: :meth:`replace` returns a *new*</span>
+<span class="sd">        Updates are functional: `replace` returns a *new*</span>
 <span class="sd">        ``ModelState`` rather than mutating in place, so the autograd graph</span>
 <span class="sd">        is preserved across the explicit-Euler step</span>
 <span class="sd">        ``s_{t+1} = s_t + r_t * dt``.</span>
@@ -22017,7 +22047,7 @@ is preserved across the explicit-Euler step
 <span class="sd">            rootdi: Initial rooting depth [m].</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">            A fresh `ModelState` with all biomass / nutrient pools at</span>
 <span class="sd">            zero and the specified initial values for ``dvs``, ``rootd`` and</span>
 <span class="sd">            ``wa``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -22053,14 +22083,14 @@ is preserved across the explicit-Euler step
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            **updates: Field name / tensor pairs to override. Fields not</span>
 <span class="sd">                passed are copied through unchanged.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">            A new `ModelState` instance with the updates applied.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 
@@ -22080,7 +22110,7 @@ is preserved across the explicit-Euler step
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this :class:`ModelState`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this `ModelState`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">f</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -22128,7 +22158,7 @@ is preserved across the explicit-Euler step
 
     <div class="doc doc-contents ">
 
-      <p>Names of all tensor fields on this :class:<code>ModelState</code>.</p>
+      <p>Names of all tensor fields on this <code>ModelState</code>.</p>
     </div>
 
   </div>
@@ -22229,8 +22259,9 @@ is preserved across the explicit-Euler step
   </thead>
   <tbody>
     <tr>
-      <td><code>A fresh </code></td>
-      <td><p>zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
+      <td><code>&#39;ModelState&#39;</code></td>
+      <td><p>A fresh <code>ModelState</code> with all biomass / nutrient pools at
+zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
 <code>wa</code>.</p></td>
     </tr>
   </tbody>
@@ -22258,7 +22289,7 @@ is preserved across the explicit-Euler step
 <span class="sd">        rootdi: Initial rooting depth [m].</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">        A fresh `ModelState` with all biomass / nutrient pools at</span>
 <span class="sd">        zero and the specified initial values for ``dvs``, ``rootd`` and</span>
 <span class="sd">        ``wa``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -22312,7 +22343,7 @@ is preserved across the explicit-Euler step
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>ModelState</code> with selected fields replaced.</p>
+      <p>Return a new <code>ModelState</code> with selected fields replaced.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -22344,22 +22375,22 @@ passed are copied through unchanged.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>A new </code></td>
-      <td></td>
+      <td><code>&#39;ModelState&#39;</code></td>
+      <td><p>A new <code>ModelState</code> instance with the updates applied.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        **updates: Field name / tensor pairs to override. Fields not</span>
 <span class="sd">            passed are copied through unchanged.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">        A new `ModelState` instance with the updates applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 </code></pre></div>
@@ -22526,7 +22557,7 @@ laid out in field-definition order.</p></td>
 
       <p>Load a single-site daily weather CSV.</p>
 <p>The CSV must contain the columns listed in
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code> (lowercase) or an
+<code>WEATHER_CHANNELS</code> (lowercase) or an
 explicit <code>columns</code> argument may be passed mapping file columns to the
 expected order.</p>
 
@@ -22552,7 +22583,7 @@ expected order.</p>
         <td><code>Sequence[str] | None</code></td>
         <td><p>Optional override for the expected column names in the
 CSV, in the order used by
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>. If
+<code>WEATHER_CHANNELS</code>. If
 <code>None</code>, <code>WEATHER_CHANNELS</code> is used verbatim.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -22574,8 +22605,9 @@ CSV, in the order used by
   </thead>
   <tbody>
     <tr>
-      <td></td>
-      <td><p><code>[1, T, C]</code> where <code>T</code> is the number of data rows in the CSV.</p></td>
+      <td><code>WeatherDriver</code></td>
+      <td><p><code>WeatherDriver</code> of shape
+<code>[1, T, C]</code> where <code>T</code> is the number of data rows in the CSV.</p></td>
     </tr>
   </tbody>
 </table>
@@ -22591,7 +22623,7 @@ CSV, in the order used by
       <tr>
         <td><code>ValueError</code></td>
         <td><p>If <code>columns</code> has a different length than
-:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>.</p></td>
+<code>WEATHER_CHANNELS</code>.</p></td>
       </tr>
   </tbody>
 </table>
@@ -22605,7 +22637,7 @@ CSV, in the order used by
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a single-site daily weather CSV.</span>
 
 <span class="sd">    The CSV must contain the columns listed in</span>
-<span class="sd">    :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS` (lowercase) or an</span>
+<span class="sd">    `WEATHER_CHANNELS` (lowercase) or an</span>
 <span class="sd">    explicit ``columns`` argument may be passed mapping file columns to the</span>
 <span class="sd">    expected order.</span>
 
@@ -22613,17 +22645,17 @@ CSV, in the order used by
 <span class="sd">        path: Path to the CSV file. The first line must be a header row.</span>
 <span class="sd">        columns: Optional override for the expected column names in the</span>
 <span class="sd">            CSV, in the order used by</span>
-<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`. If</span>
+<span class="sd">            `WEATHER_CHANNELS`. If</span>
 <span class="sd">            ``None``, ``WEATHER_CHANNELS`` is used verbatim.</span>
 <span class="sd">        dtype: Floating-point dtype for the returned tensor.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        `WeatherDriver` of shape</span>
 <span class="sd">        ``[1, T, C]`` where ``T`` is the number of data rows in the CSV.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``columns`` has a different length than</span>
-<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`.</span>
+<span class="sd">            `WEATHER_CHANNELS`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -22759,8 +22791,9 @@ increments by 1 and wraps modulo 365.</p></td>
   </thead>
   <tbody>
     <tr>
-      <td></td>
-      <td><p><code>[B, T, C]</code> with identical rows for every batch element.</p></td>
+      <td><code>WeatherDriver</code></td>
+      <td><p><code>WeatherDriver</code> of shape
+<code>[B, T, C]</code> with identical rows for every batch element.</p></td>
     </tr>
   </tbody>
 </table>
@@ -22798,7 +22831,7 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">        device: Device on which to allocate the tensors.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        `WeatherDriver` of shape</span>
 <span class="sd">        ``[B, T, C]`` with identical rows for every batch element.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">start_doy</span><span class="p">)</span>
@@ -22901,13 +22934,13 @@ increments by 1 and wraps modulo 365.</p></td>
       <tr>
         <td><code>rtol</code></td>
         <td><code>float</code></td>
-        <td><p>Relative tolerance forwarded to :func:<code>torch.allclose</code>.</p></td>
+        <td><p>Relative tolerance forwarded to <code>torch.allclose</code>.</p></td>
         <td><code>0.0001</code></td>
       </tr>
       <tr>
         <td><code>atol</code></td>
         <td><code>float</code></td>
-        <td><p>Absolute tolerance forwarded to :func:<code>torch.allclose</code>.</p></td>
+        <td><p>Absolute tolerance forwarded to <code>torch.allclose</code>.</p></td>
         <td><code>1e-06</code></td>
       </tr>
   </tbody>
@@ -22927,7 +22960,7 @@ increments by 1 and wraps modulo 365.</p></td>
 <li><code>max_abs_error</code> — scalar tensor, maximum absolute error.<ul>
 <li><code>mean_abs_error</code> — scalar tensor, mean absolute error.</li>
 <li><code>max_rel_error</code> — scalar tensor, maximum relative error
-  (using :func:<code>relative_error</code>).</li>
+  (using <code>relative_error</code>).</li>
 <li><code>passed</code> — <code>bool</code>, result of
   <code>torch.allclose(y, y_ref, rtol=rtol, atol=atol)</code>.</li>
 </ul>
@@ -22949,8 +22982,8 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">    Args:</span>
 <span class="sd">        y: Computed trajectory tensor.</span>
 <span class="sd">        y_ref: Reference trajectory tensor broadcastable to ``y``.</span>
-<span class="sd">        rtol: Relative tolerance forwarded to :func:`torch.allclose`.</span>
-<span class="sd">        atol: Absolute tolerance forwarded to :func:`torch.allclose`.</span>
+<span class="sd">        rtol: Relative tolerance forwarded to `torch.allclose`.</span>
+<span class="sd">        atol: Absolute tolerance forwarded to `torch.allclose`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict with the following entries:</span>
@@ -22958,7 +22991,7 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">            * ``max_abs_error`` — scalar tensor, maximum absolute error.</span>
 <span class="sd">            * ``mean_abs_error`` — scalar tensor, mean absolute error.</span>
 <span class="sd">            * ``max_rel_error`` — scalar tensor, maximum relative error</span>
-<span class="sd">              (using :func:`relative_error`).</span>
+<span class="sd">              (using `relative_error`).</span>
 <span class="sd">            * ``passed`` — ``bool``, result of</span>
 <span class="sd">              ``torch.allclose(y, y_ref, rtol=rtol, atol=atol)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -22993,9 +23026,10 @@ increments by 1 and wraps modulo 365.</p></td>
     <div class="doc doc-contents ">
 
       <p>Compute element-wise relative error.</p>
-<p>.. math::
-    e_i = \frac{|y_i - y_{\text{ref},i}|}{\max(|y_{\text{ref},i}|,
-    \epsilon)}</p>
+<p>$$
+e_i = \frac{|y_i - y_{\text{ref},i}|}{\max(|y_{\text{ref},i}|,
+\epsilon)}
+$$</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -23053,9 +23087,10 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute element-wise relative error.</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        e_i = \\frac{|y_i - y_{\\text{ref},i}|}{\\max(|y_{\\text{ref},i}|,</span>
-<span class="sd">        \\epsilon)}</span>
+<span class="sd">    $$</span>
+<span class="sd">    e_i = \\frac{|y_i - y_{\\text{ref},i}|}{\\max(|y_{\\text{ref},i}|,</span>
+<span class="sd">    \\epsilon)}</span>
+<span class="sd">    $$</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        y: Tensor of computed values.</span>
