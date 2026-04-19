@@ -8,10 +8,16 @@
 [![Documentation Status](https://github.com/geonextgis/torchcrop/workflows/docs/badge.svg)](https://geonextgis.github.io/torchcrop)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<div align="center">
+  <a href="https://geonextgis.github.io/torchcrop">
+    <img src="https://raw.githubusercontent.com/geonextgis/torchcrop/main/docs/assets/logo.png" alt="logo" width="250"/>
+  </a>
+</div>
+
 **A PyTorch-native library for hybrid crop modeling.**
 
 `torchcrop` is a fully differentiable reimplementation of the
-[Lintul5](https://models.pps.wur.nl/node/450) crop growth model (Wolf, 2012).
+[LINTUL-5](https://models.pps.wur.nl/lintul-5-crop-growth-simulation-model-potential-water-limited-n-limited-and-npk-limited-conditions) crop growth model (Wolf, 2012).
 Every step of the simulation — from sowing to harvest — produces valid
 `torch.autograd` gradients, so mechanistic crop processes can be combined
 seamlessly with learnable components (neural residuals, learned stress
@@ -126,7 +132,7 @@ pre-commit run --all-files
 ## References
 
 - Wolf, J. (2012). _User guide for LINTUL5_. Wageningen UR.
-  https://models.pps.wur.nl/system/files/LINTUL5-report-vs1_0.zip
+  https://models.pps.wur.nl/lintul-5-crop-growth-simulation-model-potential-water-limited-n-limited-and-npk-limited-conditions
 - WUR-AI. _diffWOFOST — Differentiable WOFOST crop model_.
   https://github.com/WUR-AI/diffWOFOST
 - The SIMPLACE Java reference implementation of Lintul5 (read-only) lives
