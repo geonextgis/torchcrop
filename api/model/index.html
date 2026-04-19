@@ -2080,7 +2080,7 @@
 
       <p>Top-level Lintul5 model.</p>
 <p>Wires all process sub-modules together and provides both a high-level and a
-low-level API (see <code>CLAUDE.md</code>, §7).</p>
+low-level API.</p>
 
 
 
@@ -2380,7 +2380,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">rain</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;rain&quot;</span><span class="p">]</span>
 
         <span class="c1"># 1. Astro</span>
-        <span class="n">lat_b</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span>
+        <span class="n">lat_b</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">else</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span>
+        <span class="p">)</span>
         <span class="n">astro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astro</span><span class="p">(</span><span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="n">lat_b</span><span class="p">)</span>
         <span class="n">ddlp</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;ddlp&quot;</span><span class="p">]</span>
 
@@ -2418,7 +2422,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">nstress</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">),</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">part_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">gtotal</span><span class="o">=</span><span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;gtotal&quot;</span><span class="p">],</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">)</span>
+        <span class="n">part_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">gtotal</span><span class="o">=</span><span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;gtotal&quot;</span><span class="p">],</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span>
+        <span class="p">)</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">g_lv</span><span class="o">=</span><span class="n">part_pre</span><span class="p">[</span><span class="s2">&quot;g_lv&quot;</span><span class="p">],</span>
