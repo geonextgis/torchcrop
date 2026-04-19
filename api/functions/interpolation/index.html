@@ -2033,7 +2033,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     <span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Piecewise-linear interpolation of ``x`` against a breakpoint table.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Piecewise-linear interpolation of ``x`` against a breakpoint table.</span>
 
 <span class="sd">    Equivalent to the Lintul5 ``AFGEN`` function. Outside the support of the</span>
 <span class="sd">    table the output is clamped to the first/last y-value (flat extrapolation),</span>

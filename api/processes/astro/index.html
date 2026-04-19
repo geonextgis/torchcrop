@@ -2006,19 +2006,18 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
       <p>Compute solar declination and astronomical daylength.</p>
 <p>Equations:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
+\delta = -rcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi rac{DOY + 10}{365}
+</code></pre></div></td></tr></table></div>
+<p>ight)
+ight]
+    $$</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span>
-<span class="normal">8</span>
-<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
-\delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]
-$$
-
-$$
-\cos(H_0) = -\tan(\phi)\tan(\delta)
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
+\cos(H_0) = -   an(\phi)        an(\delta)
 $$
 
 where $\phi$ is latitude in radians.
@@ -2029,7 +2028,7 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/astro.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Astro</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.</span>
 
 <span class="sd">    Equations:</span>
 
@@ -2066,19 +2065,30 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
         <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">23.45</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">23.45</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">doy</span> <span class="o">+</span> <span class="mf">10.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">365.0</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="n">sinld</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
         <span class="n">cosld</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
-        <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">sinld</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
+            <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">daylength</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">aob</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
         <span class="c1"># Photoperiodic daylength — civil twilight angle of -4°</span>
         <span class="n">aob_phot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-            <span class="p">(</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">))</span> <span class="o">+</span> <span class="n">sinld</span><span class="p">)</span>
+            <span class="p">(</span>
+                <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">+</span> <span class="n">sinld</span>
+            <span class="p">)</span>
             <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
             <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="mf">1.0</span><span class="p">,</span>
@@ -2087,7 +2097,11 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
         <span class="n">dsinbe</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
             <span class="n">daylength</span> <span class="o">*</span> <span class="p">(</span><span class="n">sinld</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">sinld</span> <span class="o">*</span> <span class="n">sinld</span> <span class="o">+</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">))</span>
-            <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">sinld</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+            <span class="o">+</span> <span class="mf">12.0</span>
+            <span class="o">*</span> <span class="n">cosld</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">sinld</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+            <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2191,19 +2205,30 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
     <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">23.45</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">23.45</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">doy</span> <span class="o">+</span> <span class="mf">10.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">365.0</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="n">sinld</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
     <span class="n">cosld</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat_rad</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span>
-    <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">sinld</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
+        <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">daylength</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">aob</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
     <span class="c1"># Photoperiodic daylength — civil twilight angle of -4°</span>
     <span class="n">aob_phot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-        <span class="p">(</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">))</span> <span class="o">+</span> <span class="n">sinld</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">+</span> <span class="n">sinld</span>
+        <span class="p">)</span>
         <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
         <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="mf">1.0</span><span class="p">,</span>
@@ -2212,7 +2237,11 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
     <span class="n">dsinbe</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
         <span class="n">daylength</span> <span class="o">*</span> <span class="p">(</span><span class="n">sinld</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="p">(</span><span class="n">sinld</span> <span class="o">*</span> <span class="n">sinld</span> <span class="o">+</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">))</span>
-        <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">sinld</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="o">+</span> <span class="mf">12.0</span>
+        <span class="o">*</span> <span class="n">cosld</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="n">sinld</span><span class="p">)</span>
+        <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+        <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>

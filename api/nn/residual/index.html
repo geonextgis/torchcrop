@@ -2002,7 +2002,7 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
       <p>Bounded additive residual from an MLP.</p>
 <p>The residual output is produced by</p>
 <p>$$
-f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))
+f_  heta(\mathbf{x}) =      ext{scale} \cdot        anh(    ext{MLP}(\mathbf{x}))
 $$</p>
 <p>which keeps the correction bounded to <code>[-scale, +scale]</code> so that the
 learned term cannot overwhelm the mechanistic prediction it augments.</p>
@@ -2053,7 +2053,7 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/residual.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">NeuralResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Bounded additive residual from an MLP.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bounded additive residual from an MLP.</span>
 
 <span class="sd">    The residual output is produced by</span>
 

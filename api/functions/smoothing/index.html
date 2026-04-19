@@ -2110,7 +2110,7 @@ $x \ll x_0$ and to 1 for $x \gg x_0$.</p>
     <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable Heaviside step.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable Heaviside step.</span>
 
 <span class="sd">    Returns $\sigma(k (x - x_0))$ which tends to 0 for</span>
 <span class="sd">    $x \ll x_0$ and to 1 for $x \gg x_0$.</span>
@@ -2405,7 +2405,7 @@ closely.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_max</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable maximum using the log-sum-exp trick.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable maximum using the log-sum-exp trick.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a: First input tensor.</span>
@@ -2439,7 +2439,7 @@ closely.</p></td>
     <div class="doc doc-contents ">
 
       <p>Differentiable minimum using the log-sum-exp trick.</p>
-<p>$\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</p>
+<p>$   ext{softmin}(a,b) = -rac{1}{k}\log(e^{-k a} + e^{-k b})$.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2491,7 +2491,7 @@ closely.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_min</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable minimum using the log-sum-exp trick.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable minimum using the log-sum-exp trick.</span>
 
 <span class="sd">    $\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})$.</span>
 
