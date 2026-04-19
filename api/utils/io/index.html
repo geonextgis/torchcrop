@@ -1989,6 +1989,71 @@
 explicit <code>columns</code> argument may be passed mapping file columns to the
 expected order.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>path</code></td>
+        <td><code>str | Path</code></td>
+        <td><p>Path to the CSV file. The first line must be a header row.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>columns</code></td>
+        <td><code>Sequence[str] | None</code></td>
+        <td><p>Optional override for the expected column names in the
+CSV, in the order used by
+:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>. If
+<code>None</code>, <code>WEATHER_CHANNELS</code> is used verbatim.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype</code></td>
+        <td><p>Floating-point dtype for the returned tensor.</p></td>
+        <td><code>torch.float32</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td></td>
+      <td><p><code>[1, T, C]</code> where <code>T</code> is the number of data rows in the CSV.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Exceptions:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ValueError</code></td>
+        <td><p>If <code>columns</code> has a different length than
+:data:<code>~torchcrop.drivers.weather.WEATHER_CHANNELS</code>.</p></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/utils/io.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_weather_csv</span><span class="p">(</span>
@@ -2002,6 +2067,22 @@ expected order.</p>
 <span class="sd">    :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS` (lowercase) or an</span>
 <span class="sd">    explicit ``columns`` argument may be passed mapping file columns to the</span>
 <span class="sd">    expected order.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Path to the CSV file. The first line must be a header row.</span>
+<span class="sd">        columns: Optional override for the expected column names in the</span>
+<span class="sd">            CSV, in the order used by</span>
+<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`. If</span>
+<span class="sd">            ``None``, ``WEATHER_CHANNELS`` is used verbatim.</span>
+<span class="sd">        dtype: Floating-point dtype for the returned tensor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        ``[1, T, C]`` where ``T`` is the number of data rows in the CSV.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``columns`` has a different length than</span>
+<span class="sd">            :data:`~torchcrop.drivers.weather.WEATHER_CHANNELS`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2039,8 +2120,109 @@ expected order.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Synthetic constant weather for quick tests and demos.</p>
+      <p>Build a synthetic constant-weather driver for quick tests and demos.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>batch_size</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of batch elements <code>B</code> in the output driver.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>n_days</code></td>
+        <td><code>int</code></td>
+        <td><p>Simulation length <code>T</code> in days.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>davtmp</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant mean daily temperature [°C].</p></td>
+        <td><code>15.0</code></td>
+      </tr>
+      <tr>
+        <td><code>tmin</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant minimum daily temperature [°C].</p></td>
+        <td><code>10.0</code></td>
+      </tr>
+      <tr>
+        <td><code>tmax</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant maximum daily temperature [°C].</p></td>
+        <td><code>20.0</code></td>
+      </tr>
+      <tr>
+        <td><code>irrad</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant solar radiation [MJ m⁻² d⁻¹].</p></td>
+        <td><code>15.0</code></td>
+      </tr>
+      <tr>
+        <td><code>rain</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant daily precipitation [mm d⁻¹].</p></td>
+        <td><code>2.0</code></td>
+      </tr>
+      <tr>
+        <td><code>vp</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant vapour pressure [kPa].</p></td>
+        <td><code>1.2</code></td>
+      </tr>
+      <tr>
+        <td><code>wind</code></td>
+        <td><code>float</code></td>
+        <td><p>Constant wind speed [m s⁻¹].</p></td>
+        <td><code>2.0</code></td>
+      </tr>
+      <tr>
+        <td><code>start_doy</code></td>
+        <td><code>int</code></td>
+        <td><p>Day of year for the first simulated day; <code>doy</code>
+increments by 1 and wraps modulo 365.</p></td>
+        <td><code>1</code></td>
+      </tr>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype</code></td>
+        <td><p>Floating-point dtype for all tensors.</p></td>
+        <td><code>torch.float32</code></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>torch.device | str</code></td>
+        <td><p>Device on which to allocate the tensors.</p></td>
+        <td><code>&#39;cpu&#39;</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td></td>
+      <td><p><code>[B, T, C]</code> with identical rows for every batch element.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/utils/io.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_constant_weather</span><span class="p">(</span>
@@ -2057,7 +2239,27 @@ expected order.</p>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WeatherDriver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Synthetic constant weather for quick tests and demos.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a synthetic constant-weather driver for quick tests and demos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        batch_size: Number of batch elements ``B`` in the output driver.</span>
+<span class="sd">        n_days: Simulation length ``T`` in days.</span>
+<span class="sd">        davtmp: Constant mean daily temperature [°C].</span>
+<span class="sd">        tmin: Constant minimum daily temperature [°C].</span>
+<span class="sd">        tmax: Constant maximum daily temperature [°C].</span>
+<span class="sd">        irrad: Constant solar radiation [MJ m⁻² d⁻¹].</span>
+<span class="sd">        rain: Constant daily precipitation [mm d⁻¹].</span>
+<span class="sd">        vp: Constant vapour pressure [kPa].</span>
+<span class="sd">        wind: Constant wind speed [m s⁻¹].</span>
+<span class="sd">        start_doy: Day of year for the first simulated day; ``doy``</span>
+<span class="sd">            increments by 1 and wraps modulo 365.</span>
+<span class="sd">        dtype: Floating-point dtype for all tensors.</span>
+<span class="sd">        device: Device on which to allocate the tensors.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        :class:`~torchcrop.drivers.weather.WeatherDriver` of shape</span>
+<span class="sd">        ``[B, T, C]`` with identical rows for every batch element.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">start_doy</span><span class="p">)</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="p">((</span><span class="n">doy</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">365</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">channels</span> <span class="o">=</span> <span class="p">{</span>

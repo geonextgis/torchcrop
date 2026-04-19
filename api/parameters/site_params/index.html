@@ -929,23 +929,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.site_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params--note" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Note
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2036,23 +2019,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.site_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params--note" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Note
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2229,10 +2195,12 @@
 family — primarily <code>PotentialEvapoTranspiration.java</code> (atmosphere) and
 the sowing/emergence-calendar constants of <code>Phenology.java</code> — to a
 PyTorch-friendly dataclass.</p>
-<h3 id="torchcrop.parameters.site_params--note">Note<a class="headerlink" href="#torchcrop.parameters.site_params--note" title="Permanent link">&para;</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Latitude is normally consumed by the
 :class:<code>AstronomicParametersTransformer</code> upstream of Lintul5; we keep it
 here so torchcrop can compute astronomy and irradiation internally.</p>
+</div>
 
 
 
@@ -2351,8 +2319,15 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SiteParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`SiteParameters` with all tensor fields</span>
-<span class="sd">        cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -2627,9 +2602,48 @@ astronomical day-length and solar-declination calculations.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>SiteParameters</code> with all tensor fields
-cast/moved to the requested dtype/device.</p>
+      <p>Cast and/or move all tensor fields to a new dtype/device.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype | None</code></td>
+        <td><p>Target tensor dtype, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>torch.device | str | None</code></td>
+        <td><p>Target torch device, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A new </code></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/site_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
@@ -2637,8 +2651,15 @@ cast/moved to the requested dtype/device.</p>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SiteParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`SiteParameters` with all tensor fields</span>
-<span class="sd">    cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new :class:`SiteParameters` with every tensor field moved/cast.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>

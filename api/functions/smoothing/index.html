@@ -2057,6 +2057,52 @@ events in the model.</p>
 <p>Returns :math:<code>\sigma(k (x - x_0))</code> which tends to 0 for
 :math:<code>x \ll x_0</code> and to 1 for :math:<code>x \gg x_0</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>x0</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Step location (scalar or broadcastable tensor).</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness of the transition; larger <code>k</code> yields a sharper step.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Tensor with the same shape as <code>x</code>, element-wise in <code>(0, 1)</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">smooth_step</span><span class="p">(</span>
@@ -2068,6 +2114,14 @@ events in the model.</p>
 
 <span class="sd">    Returns :math:`\sigma(k (x - x_0))` which tends to 0 for</span>
 <span class="sd">    :math:`x \ll x_0` and to 1 for :math:`x \gg x_0`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Input tensor.</span>
+<span class="sd">        x0: Step location (scalar or broadcastable tensor).</span>
+<span class="sd">        k: Sharpness of the transition; larger ``k`` yields a sharper step.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor with the same shape as ``x``, element-wise in ``(0, 1)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x0</span><span class="p">))</span>
 </code></pre></div>
@@ -2094,6 +2148,59 @@ events in the model.</p>
 <p>The output asymptotes to <code>lo</code> below the lower bound and to <code>hi</code> above
 the upper bound, with a smooth transition of sharpness <code>k</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>lo</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Lower bound (scalar or broadcastable tensor).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>hi</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Upper bound (scalar or broadcastable tensor).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness of the transition at the bounds.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Tensor with the same shape as <code>x</code>, smoothly clamped into
+<code>[lo, hi]</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_clamp</span><span class="p">(</span>
@@ -2106,6 +2213,16 @@ the upper bound, with a smooth transition of sharpness <code>k</code>.</p>
 
 <span class="sd">    The output asymptotes to ``lo`` below the lower bound and to ``hi`` above</span>
 <span class="sd">    the upper bound, with a smooth transition of sharpness ``k``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Input tensor.</span>
+<span class="sd">        lo: Lower bound (scalar or broadcastable tensor).</span>
+<span class="sd">        hi: Upper bound (scalar or broadcastable tensor).</span>
+<span class="sd">        k: Sharpness of the transition at the bounds.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor with the same shape as ``x``, smoothly clamped into</span>
+<span class="sd">        ``[lo, hi]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">softplus</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">softplus</span>
     <span class="n">upper</span> <span class="o">=</span> <span class="n">hi</span> <span class="o">-</span> <span class="n">softplus</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="n">k</span>
@@ -2134,6 +2251,61 @@ the upper bound, with a smooth transition of sharpness <code>k</code>.</p>
 <p>Mirrors the FST <code>INSW</code> function but keeps gradient flow through both
 branches via a sigmoid blend of sharpness <code>k</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>condition</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Selector tensor; the sign (and magnitude) controls the
+sigmoid blend.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>true_val</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Value used when <code>condition &gt;= 0</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>false_val</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Value used when <code>condition &lt; 0</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness of the sigmoid blend.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Sigmoid-blended combination
+<code>sigmoid(k * condition) * true_val +
+(1 - sigmoid(k * condition)) * false_val</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_if</span><span class="p">(</span>
@@ -2146,6 +2318,18 @@ branches via a sigmoid blend of sharpness <code>k</code>.</p>
 
 <span class="sd">    Mirrors the FST ``INSW`` function but keeps gradient flow through both</span>
 <span class="sd">    branches via a sigmoid blend of sharpness ``k``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        condition: Selector tensor; the sign (and magnitude) controls the</span>
+<span class="sd">            sigmoid blend.</span>
+<span class="sd">        true_val: Value used when ``condition &gt;= 0``.</span>
+<span class="sd">        false_val: Value used when ``condition &lt; 0``.</span>
+<span class="sd">        k: Sharpness of the sigmoid blend.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Sigmoid-blended combination</span>
+<span class="sd">        ``sigmoid(k * condition) * true_val +</span>
+<span class="sd">        (1 - sigmoid(k * condition)) * false_val``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">condition</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">true_val</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">false_val</span>
@@ -2171,10 +2355,67 @@ branches via a sigmoid blend of sharpness <code>k</code>.</p>
 
       <p>Differentiable maximum using the log-sum-exp trick.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>a</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>First input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>b</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Second input tensor (same shape as <code>a</code>).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness; larger <code>k</code> approximates the hard maximum more
+closely.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Element-wise smooth maximum of <code>a</code> and <code>b</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_max</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable maximum using the log-sum-exp trick.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable maximum using the log-sum-exp trick.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: First input tensor.</span>
+<span class="sd">        b: Second input tensor (same shape as ``a``).</span>
+<span class="sd">        k: Sharpness; larger ``k`` approximates the hard maximum more</span>
+<span class="sd">            closely.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Element-wise smooth maximum of ``a`` and ``b``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">stacked</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">k</span>
 </code></pre></div>
@@ -2200,12 +2441,68 @@ branches via a sigmoid blend of sharpness <code>k</code>.</p>
       <p>Differentiable minimum using the log-sum-exp trick.</p>
 <p>:math:<code>\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>a</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>First input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>b</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Second input tensor (same shape as <code>a</code>).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness; larger <code>k</code> approximates the hard minimum more
+closely.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Element-wise smooth minimum of <code>a</code> and <code>b</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/smoothing.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">soft_min</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Differentiable minimum using the log-sum-exp trick.</span>
 
 <span class="sd">    :math:`\text{softmin}(a,b) = -\frac{1}{k}\log(e^{-k a} + e^{-k b})`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: First input tensor.</span>
+<span class="sd">        b: Second input tensor (same shape as ``a``).</span>
+<span class="sd">        k: Sharpness; larger ``k`` approximates the hard minimum more</span>
+<span class="sd">            closely.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Element-wise smooth minimum of ``a`` and ``b``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="o">-</span><span class="n">k</span> <span class="o">*</span> <span class="n">stacked</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">k</span>

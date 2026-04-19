@@ -2053,10 +2053,58 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
 
       <p>FST <code>AFGEN</code> alias — piecewise-linear interpolation of <code>x</code> in <code>table</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>table</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Breakpoint table of shape <code>[N, 2]</code> or <code>[B, N, 2]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Query values.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Interpolated values; see </code></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">afgen</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``AFGEN`` alias — piecewise-linear interpolation of ``x`` in ``table``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``AFGEN`` alias — piecewise-linear interpolation of ``x`` in ``table``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        table: Breakpoint table of shape ``[N, 2]`` or ``[B, N, 2]``.</span>
+<span class="sd">        x: Query values.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Interpolated values; see :func:`interpolate` for details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -2082,6 +2130,65 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
 <p>Returns <code>y2</code> when <code>x &gt;= 0</code> and <code>y1</code> otherwise. With <code>smooth=True</code>
 a sigmoid blend is used so that gradient flows through both branches.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Selector tensor; the sign determines the branch.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>y1</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Value returned when <code>x &lt; 0</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>y2</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Value returned when <code>x &gt;= 0</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>smooth</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code>, use a sigmoid blend of sharpness <code>k</code> instead
+of the hard :func:<code>torch.where</code> switch.</p></td>
+        <td><code>False</code></td>
+      </tr>
+      <tr>
+        <td><code>k</code></td>
+        <td><code>float</code></td>
+        <td><p>Sharpness of the sigmoid blend (only used when <code>smooth=True</code>).</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Element-wise selected tensor.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">insw</span><span class="p">(</span>
@@ -2095,6 +2202,17 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
 
 <span class="sd">    Returns ``y2`` when ``x &gt;= 0`` and ``y1`` otherwise. With ``smooth=True``</span>
 <span class="sd">    a sigmoid blend is used so that gradient flows through both branches.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Selector tensor; the sign determines the branch.</span>
+<span class="sd">        y1: Value returned when ``x &lt; 0``.</span>
+<span class="sd">        y2: Value returned when ``x &gt;= 0``.</span>
+<span class="sd">        smooth: If ``True``, use a sigmoid blend of sharpness ``k`` instead</span>
+<span class="sd">            of the hard :func:`torch.where` switch.</span>
+<span class="sd">        k: Sharpness of the sigmoid blend (only used when ``smooth=True``).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Element-wise selected tensor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">smooth</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">soft_if</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
@@ -2121,6 +2239,52 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
 
       <p>Clamp <code>x</code> to <code>[lo, hi]</code> — FST <code>LIMIT</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>lo</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Lower bound (scalar or tensor broadcastable against <code>x</code>).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>hi</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Upper bound (scalar or tensor broadcastable against <code>x</code>).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p><code>x</code> clamped element-wise to <code>[lo, hi]</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">limit</span><span class="p">(</span>
@@ -2128,7 +2292,16 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
     <span class="n">hi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clamp ``x`` to ``[lo, hi]`` — FST ``LIMIT``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clamp ``x`` to ``[lo, hi]`` — FST ``LIMIT``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lo: Lower bound (scalar or tensor broadcastable against ``x``).</span>
+<span class="sd">        hi: Upper bound (scalar or tensor broadcastable against ``x``).</span>
+<span class="sd">        x: Input tensor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``x`` clamped element-wise to ``[lo, hi]``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="n">lo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -2157,12 +2330,59 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
       <p>FST <code>NOTNUL</code> — guarded denominator.</p>
 <p>Returns <code>x</code> where <code>|x| &gt; eps</code> else <code>1</code>, for safe division.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Input tensor.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>eps</code></td>
+        <td><code>float</code></td>
+        <td><p>Threshold below which <code>x</code> is replaced by <code>1</code>.</p></td>
+        <td><code>1e-10</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Tensor of the same shape as <code>x</code> with near-zero entries replaced.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">notnul</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``NOTNUL`` — guarded denominator.</span>
 
 <span class="sd">    Returns ``x`` where ``|x| &gt; eps`` else ``1``, for safe division.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Input tensor.</span>
+<span class="sd">        eps: Threshold below which ``x`` is replaced by ``1``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tensor of the same shape as ``x`` with near-zero entries replaced.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
@@ -2189,6 +2409,56 @@ a sigmoid blend is used so that gradient flows through both branches.</p>
 <p>Returns the element-wise product of real-valued indicator tensors. Useful
 to keep conditions differentiable as soft masks.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>*conditions</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>One or more real-valued indicator tensors
+(element-wise in <code>[0, 1]</code>).</p></td>
+        <td><code>()</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Element-wise product of all arguments (shape of the first).</p></td>
+    </tr>
+  </tbody>
+</table>
+<p><strong>Exceptions:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ValueError</code></td>
+        <td><p>If called with no conditions.</p></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reaand</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -2196,6 +2466,16 @@ to keep conditions differentiable as soft masks.</p>
 
 <span class="sd">    Returns the element-wise product of real-valued indicator tensors. Useful</span>
 <span class="sd">    to keep conditions differentiable as soft masks.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *conditions: One or more real-valued indicator tensors</span>
+<span class="sd">            (element-wise in ``[0, 1]``).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Element-wise product of all arguments (shape of the first).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If called with no conditions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">conditions</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reaand requires at least one condition&quot;</span><span class="p">)</span>

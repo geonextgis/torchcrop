@@ -1597,34 +1597,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.photosynthesis">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.photosynthesis--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.photosynthesis--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1937,34 +1909,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.photosynthesis">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.photosynthesis--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.photosynthesis--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2027,14 +1971,19 @@
     <div class="doc doc-contents first">
 
       <p>Radiation use efficiency and gross assimilation.</p>
-<h3 id="torchcrop.processes.photosynthesis--reference">Reference<a class="headerlink" href="#torchcrop.processes.photosynthesis--reference" title="Permanent link">&para;</a></h3>
-<p>SIMPLACE <code>RadiationUseEfficiency.java</code> and biomass block of <code>Lintul5.java</code>.</p>
-<h3 id="torchcrop.processes.photosynthesis--equations">Equations<a class="headerlink" href="#torchcrop.processes.photosynthesis--equations" title="Permanent link">&para;</a></h3>
-<p>Gross biomass growth rate (daily) is:</p>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<p>SIMPLACE <code>RadiationUseEfficiency.java</code> and biomass block of
+<code>Lintul5.java</code>.</p>
+</div>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
+<p>Gross biomass growth rate (daily):</p>
 <p>.. math::
     \text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
     \text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}</p>
 <p>where <code>RUE</code> has units of g dry matter per MJ intercepted PAR.</p>
+</div>
 
 
 
@@ -2076,6 +2025,38 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute gross daily biomass production.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parint: PAR intercepted by the canopy [MJ m⁻² d⁻¹], shape</span>
+<span class="sd">                ``[B]``.</span>
+<span class="sd">            davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">            tranrf: Water-stress reduction factor in ``[0, 1]``, shape</span>
+<span class="sd">                ``[B]``.</span>
+<span class="sd">            nstress: Nutrient-stress reduction factor in ``[0, 1]``, shape</span>
+<span class="sd">                ``[B]``.</span>
+<span class="sd">            params: Crop parameters; uses ``rue``, ``tmpf_tb``, ``co2``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
+
+<span class="sd">            Rate variables (consumed by :class:`Partitioning`):</span>
+
+<span class="sd">                * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
+<span class="sd">                  production rate</span>
+<span class="sd">                  ``= rue_eff * parint * tranrf * nstress``. Split into</span>
+<span class="sd">                  organ-specific growth rates ``g_lv``, ``g_st``,</span>
+<span class="sd">                  ``g_root``, ``g_so`` by the partitioning module.</span>
+
+<span class="sd">            Diagnostics:</span>
+
+<span class="sd">                * ``rue_eff`` [g MJ⁻¹] — Effective radiation use</span>
+<span class="sd">                  efficiency after temperature and CO₂ adjustments.</span>
+<span class="sd">                * ``tmp_factor`` [-] — Temperature reduction factor on RUE</span>
+<span class="sd">                  from ``AFGEN(tmpf_tb, T_avg)``, in ``[0, 1]``.</span>
+<span class="sd">                * ``co2_factor`` [-] — CO₂ enhancement factor (1.0 at 360</span>
+<span class="sd">                  ppm, up to 1.3 at 700 ppm).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tmp_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmpf_tb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">)</span>
         <span class="c1"># Simple CO2 response (linear around reference 360 ppm, saturates at 700)</span>
         <span class="n">co2_factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">params</span><span class="o">.</span><span class="n">co2</span> <span class="o">-</span> <span class="mf">360.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">700.0</span> <span class="o">-</span> <span class="mf">360.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -2114,14 +2095,93 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
 
     <div class="doc doc-contents ">
 
-      <p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<p>.. note::
-    Although the recipe for forward pass needs to be defined within
-    this function, one should call the :class:<code>Module</code> instance afterwards
-    instead of this since the former takes care of running the
-    registered hooks while the latter silently ignores them.</p>
+      <p>Compute gross daily biomass production.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>parint</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>PAR intercepted by the canopy [MJ m⁻² d⁻¹], shape
+<code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>davtmp</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Mean daily air temperature [°C], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>tranrf</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Water-stress reduction factor in <code>[0, 1]</code>, shape
+<code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>nstress</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Nutrient-stress reduction factor in <code>[0, 1]</code>, shape
+<code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>CropParameters</code></td>
+        <td><p>Crop parameters; uses <code>rue</code>, <code>tmpf_tb</code>, <code>co2</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dict of ``[B]`` tensors grouped as follows.
+
+Rate variables (consumed by </code></td>
+      <td><div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass
+  production rate
+  ``= rue_eff * parint * tranrf * nstress``. Split into
+  organ-specific growth rates ``g_lv``, ``g_st``,
+  ``g_root``, ``g_so`` by the partitioning module.
+</code></pre></div></td></tr></table></div>
+<p>Diagnostics:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``rue_eff`` [g MJ⁻¹] — Effective radiation use
+  efficiency after temperature and CO₂ adjustments.
+* ``tmp_factor`` [-] — Temperature reduction factor on RUE
+  from ``AFGEN(tmpf_tb, T_avg)``, in ``[0, 1]``.
+* ``co2_factor`` [-] — CO₂ enhancement factor (1.0 at 360
+  ppm, up to 1.3 at 700 ppm).
+</code></pre></div></td></tr></table></div></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/photosynthesis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2132,6 +2192,38 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
     <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute gross daily biomass production.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parint: PAR intercepted by the canopy [MJ m⁻² d⁻¹], shape</span>
+<span class="sd">            ``[B]``.</span>
+<span class="sd">        davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">        tranrf: Water-stress reduction factor in ``[0, 1]``, shape</span>
+<span class="sd">            ``[B]``.</span>
+<span class="sd">        nstress: Nutrient-stress reduction factor in ``[0, 1]``, shape</span>
+<span class="sd">            ``[B]``.</span>
+<span class="sd">        params: Crop parameters; uses ``rue``, ``tmpf_tb``, ``co2``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
+
+<span class="sd">        Rate variables (consumed by :class:`Partitioning`):</span>
+
+<span class="sd">            * ``gtotal`` [g DM m⁻² d⁻¹] — Gross total biomass</span>
+<span class="sd">              production rate</span>
+<span class="sd">              ``= rue_eff * parint * tranrf * nstress``. Split into</span>
+<span class="sd">              organ-specific growth rates ``g_lv``, ``g_st``,</span>
+<span class="sd">              ``g_root``, ``g_so`` by the partitioning module.</span>
+
+<span class="sd">        Diagnostics:</span>
+
+<span class="sd">            * ``rue_eff`` [g MJ⁻¹] — Effective radiation use</span>
+<span class="sd">              efficiency after temperature and CO₂ adjustments.</span>
+<span class="sd">            * ``tmp_factor`` [-] — Temperature reduction factor on RUE</span>
+<span class="sd">              from ``AFGEN(tmpf_tb, T_avg)``, in ``[0, 1]``.</span>
+<span class="sd">            * ``co2_factor`` [-] — CO₂ enhancement factor (1.0 at 360</span>
+<span class="sd">              ppm, up to 1.3 at 700 ppm).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tmp_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmpf_tb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">)</span>
     <span class="c1"># Simple CO2 response (linear around reference 360 ppm, saturates at 700)</span>
     <span class="n">co2_factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">params</span><span class="o">.</span><span class="n">co2</span> <span class="o">-</span> <span class="mf">360.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">700.0</span> <span class="o">-</span> <span class="mf">360.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>

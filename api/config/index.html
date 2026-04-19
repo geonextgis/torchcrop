@@ -696,23 +696,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="RunConfig">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.config.RunConfig--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -1918,23 +1901,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="RunConfig">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.config.RunConfig--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -1998,48 +1964,72 @@ RunConfig        </code>
     <div class="doc doc-contents ">
 
       <p>Simulation run configuration.</p>
-<h4 id="torchcrop.config.RunConfig--parameters">Parameters<a class="headerlink" href="#torchcrop.config.RunConfig--parameters" title="Permanent link">&para;</a></h4>
-<p>n_days : int
-    Number of daily time steps <code>T</code> in the simulation.
-start_doy : int
-    Day-of-year of the first simulated day. Used by the astronomical
-    component to compute solar declination and daylength.
-dt : float
-    Integration step in days. Defaults to <code>1.0</code> — the Lintul5 model is
-    formulated for daily forward-Euler integration.
-smooth : bool
-    If <code>True</code> process modules use smooth (sigmoid-blend) replacements
-    for stage-based branching; otherwise <code>torch.where</code> is used.
-dtype : str
-    Tensor dtype for the simulation (<code>"float32"</code> or <code>"float64"</code>).
-    Gradient checks require <code>float64</code>.
-device : str
-    Device string (<code>"cpu"</code>, <code>"cuda"</code>, ...).</p>
 
+<p><strong>Attributes:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>n_days</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of daily time steps <code>T</code> in the simulation.</p></td>
+      </tr>
+      <tr>
+        <td><code>start_doy</code></td>
+        <td><code>int</code></td>
+        <td><p>Day-of-year of the first simulated day. Used by the
+astronomical component to compute solar declination and daylength.</p></td>
+      </tr>
+      <tr>
+        <td><code>dt</code></td>
+        <td><code>float</code></td>
+        <td><p>Integration step in days. Defaults to <code>1.0</code> — the Lintul5 model
+is formulated for daily forward-Euler integration.</p></td>
+      </tr>
+      <tr>
+        <td><code>smooth</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code> process modules use smooth (sigmoid-blend)
+replacements for stage-based branching; otherwise <code>torch.where</code>
+is used.</p></td>
+      </tr>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>str</code></td>
+        <td><p>Tensor dtype for the simulation (<code>"float32"</code> or
+<code>"float64"</code>). Gradient checks require <code>float64</code>.</p></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>str</code></td>
+        <td><p>Device string (<code>"cpu"</code>, <code>"cuda"</code>, ...).</p></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/config.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulation run configuration.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    n_days : int</span>
-<span class="sd">        Number of daily time steps ``T`` in the simulation.</span>
-<span class="sd">    start_doy : int</span>
-<span class="sd">        Day-of-year of the first simulated day. Used by the astronomical</span>
-<span class="sd">        component to compute solar declination and daylength.</span>
-<span class="sd">    dt : float</span>
-<span class="sd">        Integration step in days. Defaults to ``1.0`` — the Lintul5 model is</span>
-<span class="sd">        formulated for daily forward-Euler integration.</span>
-<span class="sd">    smooth : bool</span>
-<span class="sd">        If ``True`` process modules use smooth (sigmoid-blend) replacements</span>
-<span class="sd">        for stage-based branching; otherwise ``torch.where`` is used.</span>
-<span class="sd">    dtype : str</span>
-<span class="sd">        Tensor dtype for the simulation (``&quot;float32&quot;`` or ``&quot;float64&quot;``).</span>
-<span class="sd">        Gradient checks require ``float64``.</span>
-<span class="sd">    device : str</span>
-<span class="sd">        Device string (``&quot;cpu&quot;``, ``&quot;cuda&quot;``, ...).</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_days: Number of daily time steps ``T`` in the simulation.</span>
+<span class="sd">        start_doy: Day-of-year of the first simulated day. Used by the</span>
+<span class="sd">            astronomical component to compute solar declination and daylength.</span>
+<span class="sd">        dt: Integration step in days. Defaults to ``1.0`` — the Lintul5 model</span>
+<span class="sd">            is formulated for daily forward-Euler integration.</span>
+<span class="sd">        smooth: If ``True`` process modules use smooth (sigmoid-blend)</span>
+<span class="sd">            replacements for stage-based branching; otherwise ``torch.where``</span>
+<span class="sd">            is used.</span>
+<span class="sd">        dtype: Tensor dtype for the simulation (``&quot;float32&quot;`` or</span>
+<span class="sd">            ``&quot;float64&quot;``). Gradient checks require ``float64``.</span>
+<span class="sd">        device: Device string (``&quot;cpu&quot;``, ``&quot;cuda&quot;``, ...).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">n_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>

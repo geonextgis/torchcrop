@@ -1429,23 +1429,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.evapotranspiration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1468,34 +1451,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1954,23 +1909,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.evapotranspiration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1993,34 +1931,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -2064,10 +1974,12 @@
 <p>A light-weight Priestley–Taylor approximation is implemented by default; this
 is adequate for differentiable experimentation. For operational use, swap in
 a full FAO-56 Penman–Monteith variant (kept as a TODO hook).</p>
-<h3 id="torchcrop.processes.evapotranspiration--equations">Equations<a class="headerlink" href="#torchcrop.processes.evapotranspiration--equations" title="Permanent link">&para;</a></h3>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
 <p>.. math::
     ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}</p>
 <p>with :math:<code>\alpha = 1.26</code>, :math:<code>\lambda = 2.45\ \text{MJ kg}^{-1}</code>.</p>
+</div>
 
 
 
@@ -2096,10 +2008,35 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
       <p>Priestley–Taylor reference evapotranspiration.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>alpha_pt</code></td>
+        <td><code>float</code></td>
+        <td><p>Priestley–Taylor coefficient :math:<code>\alpha</code>
+(default 1.26).</p></td>
+        <td><code>1.26</code></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PotentialEvapoTranspiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Priestley–Taylor reference evapotranspiration.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Priestley–Taylor reference evapotranspiration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        alpha_pt: Priestley–Taylor coefficient :math:`\\alpha`</span>
+<span class="sd">            (default 1.26).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_pt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.26</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -2112,23 +2049,27 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
         <span class="n">lai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">k_ext</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        davtmp : torch.Tensor</span>
-<span class="sd">            Mean daily air temperature [°C], shape ``[B]``.</span>
-<span class="sd">        irrad : torch.Tensor</span>
-<span class="sd">            Global daily radiation [MJ m-2 d-1], shape ``[B]``.</span>
-<span class="sd">        lai : torch.Tensor</span>
-<span class="sd">            Leaf area index, shape ``[B]``.</span>
-<span class="sd">        k_ext : torch.Tensor</span>
-<span class="sd">            Canopy extinction coefficient.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute reference ET and split it into canopy / soil fluxes.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            ``et0`` [mm d-1], ``pevap`` (potential soil evap), ``ptran``</span>
-<span class="sd">            (potential transpiration).</span>
+<span class="sd">        Args:</span>
+<span class="sd">            davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">            irrad: Global daily radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
+<span class="sd">            lai: Leaf area index, shape ``[B]``.</span>
+<span class="sd">            k_ext: Canopy extinction coefficient.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
+<span class="sd">            integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">            ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
+
+<span class="sd">                * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
+<span class="sd">                  (Priestley–Taylor).</span>
+<span class="sd">                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
+<span class="sd">                  ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
+<span class="sd">                  :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">                * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
+<span class="sd">                  ``= et0 * exp(-k_ext * lai)``; passed to</span>
+<span class="sd">                  :class:`WaterBalance`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
@@ -2176,20 +2117,77 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
     <div class="doc doc-contents ">
 
-      <h5 id="torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--parameters">Parameters<a class="headerlink" href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--parameters" title="Permanent link">&para;</a></h5>
-<p>davtmp : torch.Tensor
-    Mean daily air temperature [°C], shape <code>[B]</code>.
-irrad : torch.Tensor
-    Global daily radiation [MJ m-2 d-1], shape <code>[B]</code>.
-lai : torch.Tensor
-    Leaf area index, shape <code>[B]</code>.
-k_ext : torch.Tensor
-    Canopy extinction coefficient.</p>
-<h5 id="torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--returns">Returns<a class="headerlink" href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward--returns" title="Permanent link">&para;</a></h5>
-<p>dict
-    <code>et0</code> [mm d-1], <code>pevap</code> (potential soil evap), <code>ptran</code>
-    (potential transpiration).</p>
+      <p>Compute reference ET and split it into canopy / soil fluxes.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>davtmp</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Mean daily air temperature [°C], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>irrad</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Global daily radiation [MJ m⁻² d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>lai</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Leaf area index, shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>k_ext</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Canopy extinction coefficient.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dict of ``[B]`` tensors with the potential fluxes (no state is
+integrated here — </code></td>
+      <td><p><code>ptran</code>/<code>pevap</code> into actual <code>tran</code>/<code>evap</code>):</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``et0`` [mm d⁻¹] — Reference evapotranspiration
+  (Priestley–Taylor).
+* ``ptran`` [mm d⁻¹] — Potential canopy transpiration
+  ``= et0 * (1 - exp(-k_ext * lai))``; passed to
+  :class:`WaterBalance` to compute actual transpiration.
+* ``pevap`` [mm d⁻¹] — Potential soil evaporation
+  ``= et0 * exp(-k_ext * lai)``; passed to
+  :class:`WaterBalance`.
+</code></pre></div></td></tr></table></div></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2199,23 +2197,27 @@ k_ext : torch.Tensor
     <span class="n">lai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">k_ext</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    davtmp : torch.Tensor</span>
-<span class="sd">        Mean daily air temperature [°C], shape ``[B]``.</span>
-<span class="sd">    irrad : torch.Tensor</span>
-<span class="sd">        Global daily radiation [MJ m-2 d-1], shape ``[B]``.</span>
-<span class="sd">    lai : torch.Tensor</span>
-<span class="sd">        Leaf area index, shape ``[B]``.</span>
-<span class="sd">    k_ext : torch.Tensor</span>
-<span class="sd">        Canopy extinction coefficient.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute reference ET and split it into canopy / soil fluxes.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        ``et0`` [mm d-1], ``pevap`` (potential soil evap), ``ptran``</span>
-<span class="sd">        (potential transpiration).</span>
+<span class="sd">    Args:</span>
+<span class="sd">        davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">        irrad: Global daily radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
+<span class="sd">        lai: Leaf area index, shape ``[B]``.</span>
+<span class="sd">        k_ext: Canopy extinction coefficient.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
+<span class="sd">        integrated here — :class:`WaterBalance` turns</span>
+<span class="sd">        ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
+
+<span class="sd">            * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
+<span class="sd">              (Priestley–Taylor).</span>
+<span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
+<span class="sd">              ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
+<span class="sd">              :class:`WaterBalance` to compute actual transpiration.</span>
+<span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
+<span class="sd">              ``= et0 * exp(-k_ext * lai)``; passed to</span>
+<span class="sd">              :class:`WaterBalance`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
     <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>

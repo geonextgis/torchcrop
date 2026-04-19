@@ -1681,34 +1681,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.water_balance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1731,34 +1703,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance.WaterBalance.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance.WaterBalance.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1965,34 +1909,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.water_balance">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2015,34 +1931,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance.WaterBalance.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.water_balance.WaterBalance.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -2083,18 +1971,22 @@
     <div class="doc doc-contents first">
 
       <p>Soil water balance — single-layer bucket model.</p>
-<h3 id="torchcrop.processes.water_balance--reference">Reference<a class="headerlink" href="#torchcrop.processes.water_balance--reference" title="Permanent link">&para;</a></h3>
-<p>SIMPLACE <code>WaterBalance.java</code>. The simplified bucket implementation below
-tracks a single effective root-zone water storage <code>WA</code> [mm]. It produces
-actual transpiration from potential transpiration via a linear water-stress
-response <code>TRANRF</code> in :math:<code>[0, 1]</code>.</p>
-<h3 id="torchcrop.processes.water_balance--equations">Equations<a class="headerlink" href="#torchcrop.processes.water_balance--equations" title="Permanent link">&para;</a></h3>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<p>SIMPLACE <code>WaterBalance.java</code>. The simplified bucket implementation
+below tracks a single effective root-zone water storage <code>WA</code> [mm].
+It produces actual transpiration from potential transpiration via a
+linear water-stress response <code>TRANRF</code> in :math:<code>[0, 1]</code>.</p>
+</div>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
 <p>Available water, capacity limits at field capacity and wilting point:</p>
 <p>.. math::
     W_\text{fc}  = 1000 \cdot \theta_\text{fc} \cdot D_\text{root}
     \qquad
     W_\text{wp}  = 1000 \cdot \theta_\text{wp} \cdot D_\text{root}</p>
-<p>Water stress reduction factor (linear between wilting and critical point):</p>
+<p>Water stress reduction factor (linear between wilting and critical
+point):</p>
 <p>.. math::
     \text{TRANRF} = \text{clip}!\left(\frac{W_a - W_\text{wp}}
     {W_\text{fc} - W_\text{wp}},\ 0,\ 1\right)</p>
@@ -2104,6 +1996,7 @@ response <code>TRANRF</code> in :math:<code>[0, 1]</code>.</p>
 <p>Mass balance update:</p>
 <p>.. math::
     W_{a,t+1} = W_{a,t} + P - T_a - E_a - \text{drain} - \text{runoff}</p>
+</div>
 
 
 
@@ -2145,22 +2038,41 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        rain : torch.Tensor</span>
-<span class="sd">            Daily precipitation [mm d-1], shape ``[B]``.</span>
-<span class="sd">        pevap : torch.Tensor</span>
-<span class="sd">            Potential soil evaporation [mm d-1], shape ``[B]``.</span>
-<span class="sd">        ptran : torch.Tensor</span>
-<span class="sd">            Potential transpiration [mm d-1], shape ``[B]``.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily soil-water balance and stress factor.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            ``wa_rate`` [mm d-1], ``tran`` actual transpiration,</span>
-<span class="sd">            ``evap`` actual evap, ``tranrf`` water-stress factor in [0, 1],</span>
-<span class="sd">            ``drain`` drainage losses, ``runoff``.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            state: Current state; uses ``state.wa`` and ``state.rootd``.</span>
+<span class="sd">            rain: Daily precipitation [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">            pevap: Potential soil evaporation [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">            ptran: Potential transpiration [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">            params: Soil parameters (water-content limits, drainage,</span>
+<span class="sd">                runoff).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
+
+<span class="sd">            Rate variables (consumed by the engine for state update):</span>
+
+<span class="sd">                * ``wa_rate`` [mm d⁻¹] — Net daily change in root-zone</span>
+<span class="sd">                  soil water storage</span>
+<span class="sd">                  ``= infiltration - tran - evap - drain`` (with an extra</span>
+<span class="sd">                  outflow ``over_sat`` if storage would exceed</span>
+<span class="sd">                  saturation). Integrated as</span>
+<span class="sd">                  ``wa_{t+1} = wa_t + wa_rate``.</span>
+
+<span class="sd">            Diagnostics / fluxes used by other processes:</span>
+
+<span class="sd">                * ``tran`` [mm d⁻¹] — Actual transpiration</span>
+<span class="sd">                  ``= ptran * tranrf``.</span>
+<span class="sd">                * ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by</span>
+<span class="sd">                  available water above the air-dry threshold.</span>
+<span class="sd">                * ``tranrf`` [-] — Water-stress reduction factor in</span>
+<span class="sd">                  ``[0, 1]``; multiplies ``gtotal`` in</span>
+<span class="sd">                  :class:`Photosynthesis`.</span>
+<span class="sd">                * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
+<span class="sd">                  root zone (includes any over-saturation outflow).</span>
+<span class="sd">                * ``runoff`` [mm d⁻¹] — Surface runoff</span>
+<span class="sd">                  ``= runfr * rain``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">wfc</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
         <span class="n">wwp</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
@@ -2224,19 +2136,99 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
 
     <div class="doc doc-contents ">
 
-      <h5 id="torchcrop.processes.water_balance.WaterBalance.forward--parameters">Parameters<a class="headerlink" href="#torchcrop.processes.water_balance.WaterBalance.forward--parameters" title="Permanent link">&para;</a></h5>
-<p>rain : torch.Tensor
-    Daily precipitation [mm d-1], shape <code>[B]</code>.
-pevap : torch.Tensor
-    Potential soil evaporation [mm d-1], shape <code>[B]</code>.
-ptran : torch.Tensor
-    Potential transpiration [mm d-1], shape <code>[B]</code>.</p>
-<h5 id="torchcrop.processes.water_balance.WaterBalance.forward--returns">Returns<a class="headerlink" href="#torchcrop.processes.water_balance.WaterBalance.forward--returns" title="Permanent link">&para;</a></h5>
-<p>dict
-    <code>wa_rate</code> [mm d-1], <code>tran</code> actual transpiration,
-    <code>evap</code> actual evap, <code>tranrf</code> water-stress factor in [0, 1],
-    <code>drain</code> drainage losses, <code>runoff</code>.</p>
+      <p>Compute the daily soil-water balance and stress factor.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>state</code></td>
+        <td><code>ModelState</code></td>
+        <td><p>Current state; uses <code>state.wa</code> and <code>state.rootd</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>rain</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Daily precipitation [mm d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>pevap</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Potential soil evaporation [mm d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>ptran</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Potential transpiration [mm d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>SoilParameters</code></td>
+        <td><p>Soil parameters (water-content limits, drainage,
+runoff).</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dict of ``[B]`` tensors grouped as follows.
+
+Rate variables (consumed by the engine for state update)</code></td>
+      <td><ul>
+<li><code>wa_rate</code> [mm d⁻¹] — Net daily change in root-zone
+      soil water storage
+      <code>= infiltration - tran - evap - drain</code> (with an extra
+      outflow <code>over_sat</code> if storage would exceed
+      saturation). Integrated as
+      <code>wa_{t+1} = wa_t + wa_rate</code>.</li>
+</ul>
+<p>Diagnostics / fluxes used by other processes:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``tran`` [mm d⁻¹] — Actual transpiration
+  ``= ptran * tranrf``.
+* ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by
+  available water above the air-dry threshold.
+* ``tranrf`` [-] — Water-stress reduction factor in
+  ``[0, 1]``; multiplies ``gtotal`` in
+  :class:`Photosynthesis`.
+* ``drain`` [mm d⁻¹] — Drainage out of the bottom of the
+  root zone (includes any over-saturation outflow).
+* ``runoff`` [mm d⁻¹] — Surface runoff
+  ``= runfr * rain``.
+</code></pre></div></td></tr></table></div></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/water_balance.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2247,22 +2239,41 @@ ptran : torch.Tensor
     <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    rain : torch.Tensor</span>
-<span class="sd">        Daily precipitation [mm d-1], shape ``[B]``.</span>
-<span class="sd">    pevap : torch.Tensor</span>
-<span class="sd">        Potential soil evaporation [mm d-1], shape ``[B]``.</span>
-<span class="sd">    ptran : torch.Tensor</span>
-<span class="sd">        Potential transpiration [mm d-1], shape ``[B]``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily soil-water balance and stress factor.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        ``wa_rate`` [mm d-1], ``tran`` actual transpiration,</span>
-<span class="sd">        ``evap`` actual evap, ``tranrf`` water-stress factor in [0, 1],</span>
-<span class="sd">        ``drain`` drainage losses, ``runoff``.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        state: Current state; uses ``state.wa`` and ``state.rootd``.</span>
+<span class="sd">        rain: Daily precipitation [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">        pevap: Potential soil evaporation [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">        ptran: Potential transpiration [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">        params: Soil parameters (water-content limits, drainage,</span>
+<span class="sd">            runoff).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
+
+<span class="sd">        Rate variables (consumed by the engine for state update):</span>
+
+<span class="sd">            * ``wa_rate`` [mm d⁻¹] — Net daily change in root-zone</span>
+<span class="sd">              soil water storage</span>
+<span class="sd">              ``= infiltration - tran - evap - drain`` (with an extra</span>
+<span class="sd">              outflow ``over_sat`` if storage would exceed</span>
+<span class="sd">              saturation). Integrated as</span>
+<span class="sd">              ``wa_{t+1} = wa_t + wa_rate``.</span>
+
+<span class="sd">        Diagnostics / fluxes used by other processes:</span>
+
+<span class="sd">            * ``tran`` [mm d⁻¹] — Actual transpiration</span>
+<span class="sd">              ``= ptran * tranrf``.</span>
+<span class="sd">            * ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by</span>
+<span class="sd">              available water above the air-dry threshold.</span>
+<span class="sd">            * ``tranrf`` [-] — Water-stress reduction factor in</span>
+<span class="sd">              ``[0, 1]``; multiplies ``gtotal`` in</span>
+<span class="sd">              :class:`Photosynthesis`.</span>
+<span class="sd">            * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
+<span class="sd">              root zone (includes any over-saturation outflow).</span>
+<span class="sd">            * ``runoff`` [mm d⁻¹] — Surface runoff</span>
+<span class="sd">              ``= runfr * rain``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">wfc</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
     <span class="n">wwp</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>

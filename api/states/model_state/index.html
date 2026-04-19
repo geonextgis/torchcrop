@@ -1055,6 +1055,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.ModelState.field_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        field_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState.initial" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1946,6 +1957,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.ModelState.field_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        field_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState.initial" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2018,6 +2040,30 @@
 <p>Every field has shape <code>[B]</code> for scalar-per-batch quantities. The container
 is a simple <code>@dataclass</code>; all operations that "update" state return a new
 <code>ModelState</code> instance so the computation graph is preserved for autograd.</p>
+<div class="admonition terminology">
+<p class="admonition-title">Terminology</p>
+<ul>
+<li><strong>State variables</strong>: quantities that persist across time steps and
+  define the system at a given instant (e.g., <code>dvs</code>, <code>lai</code>, <code>wlv</code>,
+  <code>wa</code>). They are integrated over time via explicit Euler updates.</li>
+<li><strong>Rate variables</strong>: time derivatives of states (units of state-unit per
+  day) computed by the process modules each step (e.g., <code>dvs_rate</code>,
+  <code>wlv_rate</code>, <code>lai_rate</code>). Rates are <em>not</em> stored on <code>ModelState</code>;
+  they are produced by process <code>forward()</code> calls and consumed by the
+  state update step <code>s_{t+1} = s_t + r_t * dt</code>.</li>
+<li><strong>Output variables</strong>: per-step snapshots of selected states /
+  diagnostics collected by the engine and returned by <code>Lintul5Model</code>
+  as a <code>ModelOutput</code> (e.g., trajectories of <code>dvs</code>, <code>lai</code>, total
+  biomass, and final <code>yield_ = wso</code> at maturity).</li>
+</ul>
+</div>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<ul>
+<li>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.</li>
+<li>SIMPLACE reference: <code>simplace/sim/components/models/lintul5/</code>.</li>
+</ul>
+</div>
 
 
 
@@ -2047,7 +2093,119 @@ ModelState        </code>
     <div class="doc doc-contents ">
 
       <p>Full Lintul5 state vector.</p>
-<p>Units follow Wolf (2012).</p>
+<p>Holds every persistent quantity advanced by the simulation engine. All
+fields are <code>torch.Tensor</code> of shape <code>[B]</code> (one scalar per batch
+element) and units follow Wolf (2012). The container is purely a <em>state</em>
+snapshot — daily <em>rates</em> are produced by the process modules and the
+<em>outputs</em> (per-step trajectories, final yield, etc.) are assembled by the
+engine; see the module docstring for the full catalogue.</p>
+
+<p><strong>Attributes:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dvs</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Development stage in <code>[0, 2]</code> (0=emergence, 1=anthesis,
+2=maturity), <code>[B]</code>, dimensionless.</p></td>
+      </tr>
+      <tr>
+        <td><code>tsum</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Thermal time accumulated since emergence, <code>[B]</code> [°C d].</p></td>
+      </tr>
+      <tr>
+        <td><code>tsump</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Thermal time accumulated since sowing, <code>[B]</code> [°C d].</p></td>
+      </tr>
+      <tr>
+        <td><code>vern</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Vernalisation days accumulated, <code>[B]</code> [d].</p></td>
+      </tr>
+      <tr>
+        <td><code>wlv</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Green leaf dry weight, <code>[B]</code> [g m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>wlvd</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Dead leaf dry weight (senesced), <code>[B]</code> [g m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>wst</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Stem dry weight, <code>[B]</code> [g m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>wrt</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Root dry weight, <code>[B]</code> [g m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>wso</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Storage organ dry weight (drives final yield), <code>[B]</code>
+[g m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>lai</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Leaf area index, <code>[B]</code> [m² m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>rootd</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Rooting depth, <code>[B]</code> [m].</p></td>
+      </tr>
+      <tr>
+        <td><code>wa</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Actual soil water in the root zone, <code>[B]</code> [mm].</p></td>
+      </tr>
+      <tr>
+        <td><code>anlv,</code></td>
+        <td><code>anst, anrt, anso</code></td>
+        <td><p>Nitrogen pools in leaves, stems, roots,
+storage organs, each <code>[B]</code> [g N m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>aplv,</code></td>
+        <td><code>apst, aprt, apso</code></td>
+        <td><p>Phosphorus pools, each <code>[B]</code> [g P m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>aklv,</code></td>
+        <td><code>akst, akrt, akso</code></td>
+        <td><p>Potassium pools, each <code>[B]</code> [g K m⁻²].</p></td>
+      </tr>
+      <tr>
+        <td><code>tran_cum</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Cumulative actual transpiration, <code>[B]</code> [mm].</p></td>
+      </tr>
+      <tr>
+        <td><code>evap_cum</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Cumulative soil evaporation, <code>[B]</code> [mm].</p></td>
+      </tr>
+  </tbody>
+</table>      <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Updates are functional: :meth:<code>replace</code> returns a <em>new</em>
+<code>ModelState</code> rather than mutating in place, so the autograd graph
+is preserved across the explicit-Euler step
+<code>s_{t+1} = s_t + r_t * dt</code>.</p>
+</div>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
@@ -2055,7 +2213,40 @@ ModelState        </code>
 <span class="k">class</span><span class="w"> </span><span class="nc">ModelState</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Full Lintul5 state vector.</span>
 
-<span class="sd">    Units follow Wolf (2012).</span>
+<span class="sd">    Holds every persistent quantity advanced by the simulation engine. All</span>
+<span class="sd">    fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per batch</span>
+<span class="sd">    element) and units follow Wolf (2012). The container is purely a *state*</span>
+<span class="sd">    snapshot — daily *rates* are produced by the process modules and the</span>
+<span class="sd">    *outputs* (per-step trajectories, final yield, etc.) are assembled by the</span>
+<span class="sd">    engine; see the module docstring for the full catalogue.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        dvs: Development stage in ``[0, 2]`` (0=emergence, 1=anthesis,</span>
+<span class="sd">            2=maturity), ``[B]``, dimensionless.</span>
+<span class="sd">        tsum: Thermal time accumulated since emergence, ``[B]`` [°C d].</span>
+<span class="sd">        tsump: Thermal time accumulated since sowing, ``[B]`` [°C d].</span>
+<span class="sd">        vern: Vernalisation days accumulated, ``[B]`` [d].</span>
+<span class="sd">        wlv: Green leaf dry weight, ``[B]`` [g m⁻²].</span>
+<span class="sd">        wlvd: Dead leaf dry weight (senesced), ``[B]`` [g m⁻²].</span>
+<span class="sd">        wst: Stem dry weight, ``[B]`` [g m⁻²].</span>
+<span class="sd">        wrt: Root dry weight, ``[B]`` [g m⁻²].</span>
+<span class="sd">        wso: Storage organ dry weight (drives final yield), ``[B]``</span>
+<span class="sd">            [g m⁻²].</span>
+<span class="sd">        lai: Leaf area index, ``[B]`` [m² m⁻²].</span>
+<span class="sd">        rootd: Rooting depth, ``[B]`` [m].</span>
+<span class="sd">        wa: Actual soil water in the root zone, ``[B]`` [mm].</span>
+<span class="sd">        anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,</span>
+<span class="sd">            storage organs, each ``[B]`` [g N m⁻²].</span>
+<span class="sd">        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].</span>
+<span class="sd">        aklv, akst, akrt, akso: Potassium pools, each ``[B]`` [g K m⁻²].</span>
+<span class="sd">        tran_cum: Cumulative actual transpiration, ``[B]`` [mm].</span>
+<span class="sd">        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Updates are functional: :meth:`replace` returns a *new*</span>
+<span class="sd">        ``ModelState`` rather than mutating in place, so the autograd graph</span>
+<span class="sd">        is preserved across the explicit-Euler step</span>
+<span class="sd">        ``s_{t+1} = s_t + r_t * dt``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Phenology</span>
@@ -2112,7 +2303,21 @@ ModelState        </code>
         <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
         <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Number of parallel simulation instances ``B``.</span>
+<span class="sd">            dtype: Tensor dtype.</span>
+<span class="sd">            device: Torch device.</span>
+<span class="sd">            dvsi: Initial development stage ``DVSI``.</span>
+<span class="sd">            wai: Initial soil water content in the root zone [mm].</span>
+<span class="sd">            rootdi: Initial rooting depth [m].</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">            zero and the specified initial values for ``dvs``, ``rootd`` and</span>
+<span class="sd">            ``wa``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -2145,11 +2350,24 @@ ModelState        </code>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Functional update — returns a new ``ModelState`` with fields replaced.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **updates: Field name / tensor pairs to override. Fields not</span>
+<span class="sd">                passed are copied through unchanged.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into ``[B, C]`` for logging.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A ``[B, C]`` tensor where ``C`` is the number of tensor fields,</span>
+<span class="sd">            laid out in field-definition order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2159,6 +2377,7 @@ ModelState        </code>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this :class:`ModelState`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">f</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -2188,6 +2407,28 @@ ModelState        </code>
 
 
 
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="torchcrop.states.model_state.ModelState.field_names" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">field_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#torchcrop.states.model_state.ModelState.field_names" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Names of all tensor fields on this :class:<code>ModelState</code>.</p>
+    </div>
+
+  </div>
 
 
 
@@ -2226,6 +2467,71 @@ ModelState        </code>
 
       <p>Construct a zeroed initial state for a batch.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>batch_size</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of parallel simulation instances <code>B</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype</code></td>
+        <td><p>Tensor dtype.</p></td>
+        <td><code>torch.float32</code></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>torch.device | str</code></td>
+        <td><p>Torch device.</p></td>
+        <td><code>&#39;cpu&#39;</code></td>
+      </tr>
+      <tr>
+        <td><code>dvsi</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial development stage <code>DVSI</code>.</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>wai</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial soil water content in the root zone [mm].</p></td>
+        <td><code>60.0</code></td>
+      </tr>
+      <tr>
+        <td><code>rootdi</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial rooting depth [m].</p></td>
+        <td><code>0.1</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A fresh </code></td>
+      <td><p>zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
+<code>wa</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@classmethod</span>
@@ -2238,7 +2544,21 @@ ModelState        </code>
     <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
     <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        batch_size: Number of parallel simulation instances ``B``.</span>
+<span class="sd">        dtype: Tensor dtype.</span>
+<span class="sd">        device: Torch device.</span>
+<span class="sd">        dvsi: Initial development stage ``DVSI``.</span>
+<span class="sd">        wai: Initial soil water content in the root zone [mm].</span>
+<span class="sd">        rootdi: Initial rooting depth [m].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A fresh :class:`ModelState` with all biomass / nutrient pools at</span>
+<span class="sd">        zero and the specified initial values for ``dvs``, ``rootd`` and</span>
+<span class="sd">        ``wa``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -2289,12 +2609,55 @@ ModelState        </code>
 
     <div class="doc doc-contents ">
 
-      <p>Functional update — returns a new <code>ModelState</code> with fields replaced.</p>
+      <p>Return a new :class:<code>ModelState</code> with selected fields replaced.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>**updates</code></td>
+        <td><code>Any</code></td>
+        <td><p>Field name / tensor pairs to override. Fields not
+passed are copied through unchanged.</p></td>
+        <td><code>{}</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A new </code></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Functional update — returns a new ``ModelState`` with fields replaced.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`ModelState` with selected fields replaced.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        **updates: Field name / tensor pairs to override. Fields not</span>
+<span class="sd">            passed are copied through unchanged.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new :class:`ModelState` instance with the updates applied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -2316,12 +2679,33 @@ ModelState        </code>
 
     <div class="doc doc-contents ">
 
-      <p>Stack all scalar-per-batch tensors into <code>[B, C]</code> for logging.</p>
+      <p>Stack all scalar-per-batch tensors into a single <code>[B, C]</code> tensor.</p>
 
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>A <code>[B, C]</code> tensor where <code>C</code> is the number of tensor fields,
+laid out in field-definition order.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into ``[B, C]`` for logging.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ``[B, C]`` tensor where ``C`` is the number of tensor fields,</span>
+<span class="sd">        laid out in field-definition order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>

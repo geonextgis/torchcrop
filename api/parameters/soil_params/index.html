@@ -957,34 +957,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.soil_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params--shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shapes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -998,17 +970,6 @@
   
     <nav class="md-nav" aria-label="SoilParameters">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters--notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.cfev" class="md-nav__link">
@@ -2245,34 +2206,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.soil_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params--shapes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Shapes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2286,17 +2219,6 @@
   
     <nav class="md-nav" aria-label="SoilParameters">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters--notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.cfev" class="md-nav__link">
@@ -2645,15 +2567,24 @@
       <p>Soil-specific parameters for the Lintul5 water balance.</p>
 <p>Ports the <strong>constant</strong> soil-level inputs of the SIMPLACE
 <code>WaterBalance.java</code> component to a PyTorch-friendly dataclass.</p>
-<h3 id="torchcrop.parameters.soil_params--shapes">Shapes<a class="headerlink" href="#torchcrop.parameters.soil_params--shapes" title="Permanent link">&para;</a></h3>
-<p>Scalar per batch: <code>[B]</code> or <code>[]</code> (broadcastable).
-Multi-layer (optional, for future extensions): <code>[B, N_layers]</code>.</p>
+<div class="admonition shapes">
+<p class="admonition-title">Shapes</p>
+<ul>
+<li>Scalar per batch: <code>[B]</code> or <code>[]</code> (broadcastable).</li>
+<li>Multi-layer (optional, for future extensions): <code>[B, N_layers]</code>.</li>
+</ul>
+</div>
 <p>The naming convention follows Lintul5: <code>cSM*</code> (volumetric soil moisture
 contents) drop the <code>cSM</code> prefix and become <code>wc*</code> (water content); other
 constants drop the <code>c</code> prefix.</p>
-<h3 id="torchcrop.parameters.soil_params--reference">Reference<a class="headerlink" href="#torchcrop.parameters.soil_params--reference" title="Permanent link">&para;</a></h3>
-<p>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.
-SIMPLACE source: <code>simplace/sim/components/models/lintul5/WaterBalance.java</code>.</p>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<ul>
+<li>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.</li>
+<li>SIMPLACE source:
+  <code>simplace/sim/components/models/lintul5/WaterBalance.java</code>.</li>
+</ul>
+</div>
 
 
 
@@ -2683,10 +2614,12 @@ SoilParameters        </code>
     <div class="doc doc-contents ">
 
       <p>Soil hydraulic and water-balance parameters.</p>
-<h4 id="torchcrop.parameters.soil_params.SoilParameters--notes">Notes<a class="headerlink" href="#torchcrop.parameters.soil_params.SoilParameters--notes" title="Permanent link">&para;</a></h4>
-<p>Only a single-layer bucket model is implemented in the initial scaffold;
-the containers accept either <code>[B]</code> (single-layer) or <code>[B, N_layers]</code>
-tensors for future multi-layer extensions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only a single-layer bucket model is implemented in the initial
+scaffold; the containers accept either <code>[B]</code> (single-layer) or
+<code>[B, N_layers]</code> tensors for future multi-layer extensions.</p>
+</div>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
@@ -2694,11 +2627,10 @@ tensors for future multi-layer extensions.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">SoilParameters</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Soil hydraulic and water-balance parameters.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Only a single-layer bucket model is implemented in the initial scaffold;</span>
-<span class="sd">    the containers accept either ``[B]`` (single-layer) or ``[B, N_layers]``</span>
-<span class="sd">    tensors for future multi-layer extensions.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        Only a single-layer bucket model is implemented in the initial</span>
+<span class="sd">        scaffold; the containers accept either ``[B]`` (single-layer) or</span>
+<span class="sd">        ``[B, N_layers]`` tensors for future multi-layer extensions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -2843,8 +2775,15 @@ tensors for future multi-layer extensions.</p>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SoilParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`SoilParameters` with all tensor fields</span>
-<span class="sd">        cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new :class:`SoilParameters` with every tensor field moved/cast.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -3486,9 +3425,48 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>SoilParameters</code> with all tensor fields
-cast/moved to the requested dtype/device.</p>
+      <p>Cast and/or move all tensor fields to a new dtype/device.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype | None</code></td>
+        <td><p>Target tensor dtype, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>torch.device | str | None</code></td>
+        <td><p>Target torch device, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A new </code></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
@@ -3496,8 +3474,15 @@ cast/moved to the requested dtype/device.</p>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SoilParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`SoilParameters` with all tensor fields</span>
-<span class="sd">    cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new :class:`SoilParameters` with every tensor field moved/cast.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -3539,10 +3524,52 @@ cast/moved to the requested dtype/device.</p>
 
       <p>Return the SIMPLACE Lintul5 default loam-like soil parameter set.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype</code></td>
+        <td><p>Target tensor dtype for all scalar fields.</p></td>
+        <td><code>torch.float32</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A fresh </code></td>
+      <td><p>cast to <code>dtype</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_loam_params</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SoilParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 default loam-like soil parameter set.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 default loam-like soil parameter set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype: Target tensor dtype for all scalar fields.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A fresh :class:`SoilParameters` with the Lintul5 loam defaults</span>
+<span class="sd">        cast to ``dtype``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SoilParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>

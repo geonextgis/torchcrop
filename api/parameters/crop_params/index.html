@@ -901,34 +901,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.crop_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params--naming-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Naming conventions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -3257,34 +3229,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.parameters.crop_params">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params--naming-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Naming conventions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -4676,15 +4620,16 @@ learnable by wrapping them with :class:<code>torch.nn.Parameter</code>. Table fi
 table itself is batch-varying), where column 0 is the abscissa (DVS or
 temperature) and column 1 is the value. Tables are interpolated by
 :func:<code>torchcrop.functions.interpolate</code>.</p>
-<h3 id="torchcrop.parameters.crop_params--naming-conventions">Naming conventions<a class="headerlink" href="#torchcrop.parameters.crop_params--naming-conventions" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Field names follow the original Lintul5 (Wolf, 2012) symbol, lowercased.</li>
-<li>Constants prefixed with <code>c</code> in SIMPLACE drop the <code>c</code> prefix here.</li>
-<li>Tables originally named <code>cXxxTableY</code> are concatenated into a single
-  two-column tensor named <code>xxx_tb</code> (or <code>xxx_table</code>).</li>
-</ul>
-<h3 id="torchcrop.parameters.crop_params--reference">Reference<a class="headerlink" href="#torchcrop.parameters.crop_params--reference" title="Permanent link">&para;</a></h3>
+<p>Naming conventions:
+    * Field names follow the original Lintul5 (Wolf, 2012) symbol,
+      lowercased.
+    * Constants prefixed with <code>c</code> in SIMPLACE drop the <code>c</code> prefix here.
+    * Tables originally named <code>cXxxTableY</code> are concatenated into a single
+      two-column tensor named <code>xxx_tb</code> (or <code>xxx_table</code>).</p>
+<div class="admonition references">
+<p class="admonition-title">References</p>
 <p>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.</p>
+</div>
 
 
 
@@ -5353,8 +5298,17 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new :class:`CropParameters` with all tensor fields</span>
-<span class="sd">        cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">            device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">            cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
+<span class="sd">            are copied through unchanged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -8101,9 +8055,49 @@ vernal days above which the vernalisation factor is fully released
 
     <div class="doc doc-contents ">
 
-      <p>Return a new :class:<code>CropParameters</code> with all tensor fields
-cast/moved to the requested dtype/device.</p>
+      <p>Cast and/or move all tensor fields to a new dtype/device.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype | None</code></td>
+        <td><p>Target tensor dtype, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>device</code></td>
+        <td><code>torch.device | str | None</code></td>
+        <td><p>Target torch device, or <code>None</code> to leave unchanged.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A new </code></td>
+      <td><p>cast; non-tensor fields (e.g., optional tables set to <code>None</code>)
+are copied through unchanged.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
@@ -8111,8 +8105,17 @@ cast/moved to the requested dtype/device.</p>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new :class:`CropParameters` with all tensor fields</span>
-<span class="sd">    cast/moved to the requested dtype/device.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
+<span class="sd">        device: Target torch device, or ``None`` to leave unchanged.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new :class:`CropParameters` with every tensor field moved /</span>
+<span class="sd">        cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
+<span class="sd">        are copied through unchanged.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -8154,10 +8157,52 @@ cast/moved to the requested dtype/device.</p>
 
       <p>Return the SIMPLACE Lintul5 wheat-like default parameter set.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>dtype</code></td>
+        <td><code>torch.dtype</code></td>
+        <td><p>Target tensor dtype for all scalar/tabular fields.</p></td>
+        <td><code>torch.float32</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A fresh </code></td>
+      <td><p>cast to <code>dtype</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_wheat_params</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CropParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 wheat-like default parameter set.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 wheat-like default parameter set.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dtype: Target tensor dtype for all scalar/tabular fields.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A fresh :class:`CropParameters` with the Lintul5 wheat defaults</span>
+<span class="sd">        cast to ``dtype``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>

@@ -2046,6 +2046,39 @@ SimulationEngine            (<span title="torch.nn.modules.module.Module">Module
 returning a dict of rate tensors indexed by state-field name, plus a
 callable <code>update_state(state, rates, dt)</code>.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>compute_rates</code></td>
+        <td><code>Callable[..., dict[str, torch.Tensor]]</code></td>
+        <td><p>Callable returning per-day rate tensors for a given
+<code>(state, weather_day, doy, params...)</code> tuple.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>update_state</code></td>
+        <td><code>Callable[..., ModelState]</code></td>
+        <td><p>Callable applying an integration step
+<code>(state, rates, dt) -&gt; ModelState</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dt</code></td>
+        <td><code>float</code></td>
+        <td><p>Integration step size in days. Defaults to <code>1.0</code>.</p></td>
+        <td><code>1.0</code></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SimulationEngine</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -2054,6 +2087,13 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="sd">    The engine expects a callable ``compute_rates(state, weather_day, doy)``</span>
 <span class="sd">    returning a dict of rate tensors indexed by state-field name, plus a</span>
 <span class="sd">    callable ``update_state(state, rates, dt)``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        compute_rates: Callable returning per-day rate tensors for a given</span>
+<span class="sd">            ``(state, weather_day, doy, params...)`` tuple.</span>
+<span class="sd">        update_state: Callable applying an integration step</span>
+<span class="sd">            ``(state, rates, dt) -&gt; ModelState``.</span>
+<span class="sd">        dt: Integration step size in days. Defaults to ``1.0``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2096,7 +2136,22 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory, returning per-day state and rate lists.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state: Initial :class:`ModelState` at day 0.</span>
+<span class="sd">            weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
+<span class="sd">            crop_params: Species-specific crop parameters.</span>
+<span class="sd">            soil_params: Soil-specific parameters.</span>
+<span class="sd">            site_params: Site-level parameters (e.g. latitude).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A ``(states, rates)`` tuple where ``states`` is a list of length</span>
+<span class="sd">            ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">            entry is the initial state) and ``rates`` is a list of length</span>
+<span class="sd">            ``T`` of per-day rate dicts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
         <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -2146,8 +2201,74 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Run the full trajectory, returning per-day state and rate lists.</p>
+      <p>Run the full trajectory.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>state</code></td>
+        <td><code>ModelState</code></td>
+        <td><p>Initial :class:<code>ModelState</code> at day 0.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>weather</code></td>
+        <td><code>WeatherDriver</code></td>
+        <td><p>:class:<code>WeatherDriver</code> carrying the daily forcing.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>start_doy</code></td>
+        <td><code>int</code></td>
+        <td><p>Day-of-year of the first simulated day.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>crop_params</code></td>
+        <td><code>CropParameters</code></td>
+        <td><p>Species-specific crop parameters.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>soil_params</code></td>
+        <td><code>SoilParameters</code></td>
+        <td><p>Soil-specific parameters.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>site_params</code></td>
+        <td><code>SiteParameters</code></td>
+        <td><p>Site-level parameters (e.g. latitude).</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A ``(states, rates)`` tuple where ``states`` is a list of length
+``T + 1`` of per-day </code></td>
+      <td><p>entry is the initial state) and <code>rates</code> is a list of length
+<code>T</code> of per-day rate dicts.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
@@ -2159,7 +2280,22 @@ callable <code>update_state(state, rates, dt)</code>.</p>
     <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory, returning per-day state and rate lists.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: Initial :class:`ModelState` at day 0.</span>
+<span class="sd">        weather: :class:`WeatherDriver` carrying the daily forcing.</span>
+<span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
+<span class="sd">        crop_params: Species-specific crop parameters.</span>
+<span class="sd">        soil_params: Soil-specific parameters.</span>
+<span class="sd">        site_params: Site-level parameters (e.g. latitude).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ``(states, rates)`` tuple where ``states`` is a list of length</span>
+<span class="sd">        ``T + 1`` of per-day :class:`ModelState` snapshots (the first</span>
+<span class="sd">        entry is the initial state) and ``rates`` is a list of length</span>
+<span class="sd">        ``T`` of per-day rate dicts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
     <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -2219,11 +2355,40 @@ StepResult        </code>
 
       <p>Outputs of a single simulation step.</p>
 
+<p><strong>Attributes:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>state</code></td>
+        <td><code>ModelState</code></td>
+        <td><p>The updated :class:<code>ModelState</code> after applying the Euler step.</p></td>
+      </tr>
+      <tr>
+        <td><code>rates</code></td>
+        <td><code>dict</code></td>
+        <td><p>Dict of rate tensors produced by the process modules for the
+current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">StepResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Outputs of a single simulation step.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Outputs of a single simulation step.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        state: The updated :class:`ModelState` after applying the Euler step.</span>
+<span class="sd">        rates: Dict of rate tensors produced by the process modules for the</span>
+<span class="sd">            current day, keyed by state-field name (e.g. ``dvs_rate``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span>
     <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
@@ -2270,19 +2435,76 @@ StepResult        </code>
 
     <div class="doc doc-contents ">
 
-      <p>Forward-Euler update of a :class:<code>ModelState</code> from a dict of rate tensors.</p>
+      <p>Forward-Euler update of a :class:<code>ModelState</code>.</p>
 <p>Rate keys must match state field names with a <code>_rate</code> suffix (e.g.
 <code>dvs_rate</code> updates <code>dvs</code>). Fields without a matching rate are left
 unchanged.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>state</code></td>
+        <td><code>ModelState</code></td>
+        <td><p>Current :class:<code>ModelState</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>rates</code></td>
+        <td><code>dict[str, torch.Tensor]</code></td>
+        <td><p>Dict of rate tensors keyed by <code>"&lt;field&gt;_rate"</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dt</code></td>
+        <td><code>float</code></td>
+        <td><p>Integration step size in days.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>A new </code></td>
+      <td><p><code>rates[field + "_rate"] * dt</code>. Physically non-negative fields are
+clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a :class:`ModelState` from a dict of rate tensors.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a :class:`ModelState`.</span>
 
 <span class="sd">    Rate keys must match state field names with a ``_rate`` suffix (e.g.</span>
 <span class="sd">    ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left</span>
 <span class="sd">    unchanged.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        state: Current :class:`ModelState`.</span>
+<span class="sd">        rates: Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;``.</span>
+<span class="sd">        dt: Integration step size in days.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A new :class:`ModelState` with all matched fields advanced by</span>
+<span class="sd">        ``rates[field + &quot;_rate&quot;] * dt``. Physically non-negative fields are</span>
+<span class="sd">        clamped to ``&gt;= 0`` and ``dvs`` is clamped to ``[0, 2]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>

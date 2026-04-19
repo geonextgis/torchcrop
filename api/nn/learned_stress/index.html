@@ -2002,10 +2002,51 @@ LearnedStressFactor            (<span title="torch.nn.modules.module.Module">Mod
 
       <p>MLP-based replacement for empirical water-stress curves.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>input_dim</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of scalar inputs concatenated along the feature
+axis — typically <code>2 + len(extra)</code> for the mechanistic
+<code>tranrf</code>/<code>nstress</code> pair plus optional context tensors.</p></td>
+        <td><code>4</code></td>
+      </tr>
+      <tr>
+        <td><code>hidden_dim</code></td>
+        <td><code>int</code></td>
+        <td><p>Hidden-layer width.</p></td>
+        <td><code>32</code></td>
+      </tr>
+      <tr>
+        <td><code>n_hidden</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of hidden layers (each followed by <code>Tanh</code>).</p></td>
+        <td><code>2</code></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/learned_stress.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LearnedStressFactor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;MLP-based replacement for empirical water-stress curves.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MLP-based replacement for empirical water-stress curves.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dim: Number of scalar inputs concatenated along the feature</span>
+<span class="sd">            axis — typically ``2 + len(extra)`` for the mechanistic</span>
+<span class="sd">            ``tranrf``/``nstress`` pair plus optional context tensors.</span>
+<span class="sd">        hidden_dim: Hidden-layer width.</span>
+<span class="sd">        n_hidden: Number of hidden layers (each followed by ``Tanh``).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2025,9 +2066,20 @@ LearnedStressFactor            (<span title="torch.nn.modules.module.Module">Mod
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">*</span><span class="n">extra</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a combined stress factor in ``[0, 1]``.</span>
 
-<span class="sd">        The mechanistic inputs (``tranrf``, ``nstress``) are concatenated with</span>
-<span class="sd">        any extra context tensors and passed through the MLP, which outputs</span>
-<span class="sd">        a single sigmoid-scaled factor.</span>
+<span class="sd">        The mechanistic inputs (``tranrf``, ``nstress``) are stacked with any</span>
+<span class="sd">        extra context tensors along the last axis and passed through the MLP,</span>
+<span class="sd">        whose scalar output is squashed by a sigmoid.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
+<span class="sd">                :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
+<span class="sd">                :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            *extra: Optional additional context tensors, each of shape</span>
+<span class="sd">                ``[B]``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Combined stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="o">*</span><span class="n">extra</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">stacked</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
@@ -2060,18 +2112,78 @@ LearnedStressFactor            (<span title="torch.nn.modules.module.Module">Mod
     <div class="doc doc-contents ">
 
       <p>Return a combined stress factor in <code>[0, 1]</code>.</p>
-<p>The mechanistic inputs (<code>tranrf</code>, <code>nstress</code>) are concatenated with
-any extra context tensors and passed through the MLP, which outputs
-a single sigmoid-scaled factor.</p>
+<p>The mechanistic inputs (<code>tranrf</code>, <code>nstress</code>) are stacked with any
+extra context tensors along the last axis and passed through the MLP,
+whose scalar output is squashed by a sigmoid.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tranrf</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Water-stress factor in <code>[0, 1]</code> from
+:class:<code>WaterBalance</code>, shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>nstress</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
+:class:<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>*extra</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Optional additional context tensors, each of shape
+<code>[B]</code>.</p></td>
+        <td><code>()</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Combined stress factor in <code>[0, 1]</code>, shape <code>[B]</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/learned_stress.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">*</span><span class="n">extra</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a combined stress factor in ``[0, 1]``.</span>
 
-<span class="sd">    The mechanistic inputs (``tranrf``, ``nstress``) are concatenated with</span>
-<span class="sd">    any extra context tensors and passed through the MLP, which outputs</span>
-<span class="sd">    a single sigmoid-scaled factor.</span>
+<span class="sd">    The mechanistic inputs (``tranrf``, ``nstress``) are stacked with any</span>
+<span class="sd">    extra context tensors along the last axis and passed through the MLP,</span>
+<span class="sd">    whose scalar output is squashed by a sigmoid.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
+<span class="sd">            :class:`WaterBalance`, shape ``[B]``.</span>
+<span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
+<span class="sd">            :class:`NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">        *extra: Optional additional context tensors, each of shape</span>
+<span class="sd">            ``[B]``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Combined stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="o">*</span><span class="n">extra</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">stacked</span><span class="p">))</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>

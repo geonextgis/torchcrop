@@ -2000,16 +2000,74 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
     <div class="doc doc-contents ">
 
       <p>Bounded additive residual from an MLP.</p>
+<p>The residual output is produced by</p>
 <p>.. math::
     f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))</p>
+<p>which keeps the correction bounded to <code>[-scale, +scale]</code> so that the
+learned term cannot overwhelm the mechanistic prediction it augments.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>input_dim</code></td>
+        <td><code>int</code></td>
+        <td><p>Size of the context feature vector fed to the MLP.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>output_dim</code></td>
+        <td><code>int</code></td>
+        <td><p>Dimensionality of the residual correction (default 1).</p></td>
+        <td><code>1</code></td>
+      </tr>
+      <tr>
+        <td><code>hidden_dim</code></td>
+        <td><code>int</code></td>
+        <td><p>Hidden-layer width.</p></td>
+        <td><code>32</code></td>
+      </tr>
+      <tr>
+        <td><code>n_hidden</code></td>
+        <td><code>int</code></td>
+        <td><p>Number of hidden layers (each followed by <code>Tanh</code>).</p></td>
+        <td><code>2</code></td>
+      </tr>
+      <tr>
+        <td><code>scale</code></td>
+        <td><code>float</code></td>
+        <td><p>Magnitude cap on the residual output.</p></td>
+        <td><code>1.0</code></td>
+      </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/residual.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">NeuralResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Bounded additive residual from an MLP.</span>
 
+<span class="sd">    The residual output is produced by</span>
+
 <span class="sd">    .. math::</span>
 <span class="sd">        f_\theta(\mathbf{x}) = \text{scale} \cdot \tanh(\text{MLP}(\mathbf{x}))</span>
+
+<span class="sd">    which keeps the correction bounded to ``[-scale, +scale]`` so that the</span>
+<span class="sd">    learned term cannot overwhelm the mechanistic prediction it augments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_dim: Size of the context feature vector fed to the MLP.</span>
+<span class="sd">        output_dim: Dimensionality of the residual correction (default 1).</span>
+<span class="sd">        hidden_dim: Hidden-layer width.</span>
+<span class="sd">        n_hidden: Number of hidden layers (each followed by ``Tanh``).</span>
+<span class="sd">        scale: Magnitude cap on the residual output.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2031,6 +2089,15 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the bounded residual correction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x: Context feature tensor of shape ``[..., input_dim]``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Residual correction of shape ``[..., output_dim]`` with values</span>
+<span class="sd">            in ``[-scale, +scale]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
         </details>
@@ -2060,17 +2127,55 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
 
     <div class="doc doc-contents ">
 
-      <p>Define the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
-<p>.. note::
-    Although the recipe for forward pass needs to be defined within
-    this function, one should call the :class:<code>Module</code> instance afterwards
-    instead of this since the former takes care of running the
-    registered hooks while the latter silently ignores them.</p>
+      <p>Compute the bounded residual correction.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>x</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Context feature tensor of shape <code>[..., input_dim]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Residual correction of shape <code>[..., output_dim]</code> with values
+in <code>[-scale, +scale]</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/residual.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the bounded residual correction.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: Context feature tensor of shape ``[..., input_dim]``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Residual correction of shape ``[..., output_dim]`` with values</span>
+<span class="sd">        in ``[-scale, +scale]``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
         </details>

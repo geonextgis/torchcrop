@@ -1961,8 +1961,62 @@ lazily and raise a helpful error if it is not installed.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Plot one or more trajectories of shape <code>[B, T]</code> or <code>[T]</code>.</p>
+      <p>Plot one or more trajectories.</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>traj</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Trajectory tensor of shape <code>[T]</code> (single series) or
+<code>[B, T]</code> (batched series — one line per batch element).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td><code>str</code></td>
+        <td><p>Figure title.</p></td>
+        <td><code>&#39;&#39;</code></td>
+      </tr>
+      <tr>
+        <td><code>ylabel</code></td>
+        <td><code>str</code></td>
+        <td><p>Y-axis label.</p></td>
+        <td><code>&#39;&#39;</code></td>
+      </tr>
+      <tr>
+        <td><code>labels</code></td>
+        <td><code>Iterable[str] | None</code></td>
+        <td><p>Optional iterable of legend labels, one per batch element.
+Ignored for 1-D input. Defaults to <code>"batch i"</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td></td>
+      <td><p>Tuple <code>(fig, ax)</code> of the created Matplotlib figure and axes.</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/utils/vis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_trajectories</span><span class="p">(</span>
@@ -1971,7 +2025,19 @@ lazily and raise a helpful error if it is not installed.</p>
     <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">labels</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot one or more trajectories of shape ``[B, T]`` or ``[T]``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot one or more trajectories.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        traj: Trajectory tensor of shape ``[T]`` (single series) or</span>
+<span class="sd">            ``[B, T]`` (batched series — one line per batch element).</span>
+<span class="sd">        title: Figure title.</span>
+<span class="sd">        ylabel: Y-axis label.</span>
+<span class="sd">        labels: Optional iterable of legend labels, one per batch element.</span>
+<span class="sd">            Ignored for 1-D input. Defaults to ``&quot;batch i&quot;``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple ``(fig, ax)`` of the created Matplotlib figure and axes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">plt</span> <span class="o">=</span> <span class="n">_require_matplotlib</span><span class="p">()</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>

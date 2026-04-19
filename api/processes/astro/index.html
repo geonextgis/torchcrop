@@ -1401,23 +1401,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.astro">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1433,17 +1416,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.processes.astro.Astro.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1451,34 +1423,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1965,23 +1909,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="torchcrop.processes.astro">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro--reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -1997,17 +1924,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro--equations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Equations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.processes.astro.Astro.forward" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2015,34 +1931,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="forward()">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro.forward--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.processes.astro.Astro.forward--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Returns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -2083,10 +1971,12 @@
     <div class="doc doc-contents first">
 
       <p>Astronomical parameters: solar declination, daylength, extraterrestrial radiation.</p>
-<h3 id="torchcrop.processes.astro--reference">Reference<a class="headerlink" href="#torchcrop.processes.astro--reference" title="Permanent link">&para;</a></h3>
+<div class="admonition references">
+<p class="admonition-title">References</p>
 <p>Goudriaan, J. &amp; van Laar, H.H. (1994). <em>Modelling potential crop growth
 processes</em> — the daylength formulation used by the SIMPLACE
 <code>AstronomicParametersTransformer</code>.</p>
+</div>
 
 
 
@@ -2114,12 +2004,14 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
     <div class="doc doc-contents ">
 
       <p>Compute solar declination and astronomical daylength.</p>
-<h4 id="torchcrop.processes.astro.Astro--equations">Equations<a class="headerlink" href="#torchcrop.processes.astro.Astro--equations" title="Permanent link">&para;</a></h4>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
 <p>.. math::
     \delta = -\arcsin!\left[\sin(23.45^\circ) \cos!\left(2\pi \frac{DOY + 10}{365}\right)\right]</p>
 <p>.. math::
     \cos(H_0) = -\tan(\phi)\tan(\delta)</p>
 <p>where :math:<code>\phi</code> is latitude in radians.</p>
+</div>
 <p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
 a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</p>
 
@@ -2128,15 +2020,14 @@ a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Astro</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.</span>
 
-<span class="sd">    Equations</span>
-<span class="sd">    ---------</span>
-<span class="sd">    .. math::</span>
-<span class="sd">        \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]</span>
+<span class="sd">    Equations:</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]</span>
 
-<span class="sd">    .. math::</span>
-<span class="sd">        \cos(H_0) = -\tan(\phi)\tan(\delta)</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \cos(H_0) = -\tan(\phi)\tan(\delta)</span>
 
-<span class="sd">    where :math:`\phi` is latitude in radians.</span>
+<span class="sd">        where :math:`\phi` is latitude in radians.</span>
 
 <span class="sd">    Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses</span>
 <span class="sd">    a civil-twilight inclusion angle of :math:`-4^\circ` as in Lintul5.</span>
@@ -2149,18 +2040,15 @@ a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        doy : torch.Tensor</span>
-<span class="sd">            Day of year, shape ``[B]``.</span>
-<span class="sd">        latitude : torch.Tensor</span>
-<span class="sd">            Latitude in degrees, shape ``[B]`` or ``[]`` (broadcastable).</span>
+<span class="sd">        Args:</span>
+<span class="sd">            doy: Day of year, shape ``[B]``.</span>
+<span class="sd">            latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
+<span class="sd">                (broadcastable).</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        dict</span>
-<span class="sd">            ``declination`` [rad], ``daylength`` [h], ``ddlp`` [h] (photoperiod),</span>
-<span class="sd">            ``sinld``/``cosld``/``dsinbe`` (used by irradiation).</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
+<span class="sd">            ``ddlp`` [h] (photoperiod), and ``sinld``/``cosld``/``dsinbe``</span>
+<span class="sd">            (used by irradiation).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
         <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
@@ -2224,16 +2112,50 @@ a civil-twilight inclusion angle of :math:<code>-4^\circ</code> as in Lintul5.</
     <div class="doc doc-contents ">
 
       <p>Compute astronomical parameters.</p>
-<h5 id="torchcrop.processes.astro.Astro.forward--parameters">Parameters<a class="headerlink" href="#torchcrop.processes.astro.Astro.forward--parameters" title="Permanent link">&para;</a></h5>
-<p>doy : torch.Tensor
-    Day of year, shape <code>[B]</code>.
-latitude : torch.Tensor
-    Latitude in degrees, shape <code>[B]</code> or <code>[]</code> (broadcastable).</p>
-<h5 id="torchcrop.processes.astro.Astro.forward--returns">Returns<a class="headerlink" href="#torchcrop.processes.astro.Astro.forward--returns" title="Permanent link">&para;</a></h5>
-<p>dict
-    <code>declination</code> [rad], <code>daylength</code> [h], <code>ddlp</code> [h] (photoperiod),
-    <code>sinld</code>/<code>cosld</code>/<code>dsinbe</code> (used by irradiation).</p>
 
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>doy</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Day of year, shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>latitude</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Latitude in degrees, shape <code>[B]</code> or <code>[]</code>
+(broadcastable).</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>dict[str, torch.Tensor]</code></td>
+      <td><p>Dict with keys <code>declination</code> [rad], <code>daylength</code> [h],
+<code>ddlp</code> [h] (photoperiod), and <code>sinld</code>/<code>cosld</code>/<code>dsinbe</code>
+(used by irradiation).</p></td>
+    </tr>
+  </tbody>
+</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/astro.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2243,18 +2165,15 @@ latitude : torch.Tensor
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    doy : torch.Tensor</span>
-<span class="sd">        Day of year, shape ``[B]``.</span>
-<span class="sd">    latitude : torch.Tensor</span>
-<span class="sd">        Latitude in degrees, shape ``[B]`` or ``[]`` (broadcastable).</span>
+<span class="sd">    Args:</span>
+<span class="sd">        doy: Day of year, shape ``[B]``.</span>
+<span class="sd">        latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
+<span class="sd">            (broadcastable).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        ``declination`` [rad], ``daylength`` [h], ``ddlp`` [h] (photoperiod),</span>
-<span class="sd">        ``sinld``/``cosld``/``dsinbe`` (used by irradiation).</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
+<span class="sd">        ``ddlp`` [h] (photoperiod), and ``sinld``/``cosld``/``dsinbe``</span>
+<span class="sd">        (used by irradiation).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
     <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
