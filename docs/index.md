@@ -24,7 +24,6 @@ seamlessly with learnable components (neural residuals, learned stress
 responses, parameter networks) and calibrated end-to-end with standard
 `torch.optim` optimizers.
 
-- Free software: MIT License
 - Documentation: https://geonextgis.github.io/torchcrop
 
 ## Features
