@@ -14,7 +14,7 @@
   </a>
 </div>
 
-**A PyTorch-native library for hybrid crop modeling.**
+## Introduction
 
 `torchcrop` is a fully differentiable reimplementation of the
 [LINTUL-5](https://models.pps.wur.nl/lintul-5-crop-growth-simulation-model-potential-water-limited-n-limited-and-npk-limited-conditions) crop growth model (Wolf, 2012).
@@ -23,8 +23,6 @@ Every step of the simulation — from sowing to harvest — produces valid
 seamlessly with learnable components (neural residuals, learned stress
 responses, parameter networks) and calibrated end-to-end with standard
 `torch.optim` optimizers.
-
-- Documentation: https://geonextgis.github.io/torchcrop
 
 ## Features
 
