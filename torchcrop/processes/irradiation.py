@@ -1,7 +1,7 @@
 """Radiation interception by the canopy.
 
 References:
-    SIMPLACE ``Irradiation.java``; Monsi–Saeki extinction law.
+    SIMPLACE ``Irradiation.java``.
 
 Equations:
     Daily total irradiation (AVRAD) computed from solar geometry and
