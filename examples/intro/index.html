@@ -2555,13 +2555,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -2601,14 +2601,29 @@ print(output.dvs.shape)  # [B, T+1] development stage trajectory</div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>tensor([916.7202, 916.7202])
+torch.Size([2, 151])
+torch.Size([2, 151])
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [6]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -2621,41 +2636,133 @@ print(output.dvs.shape)  # [B, T+1] development stage trajectory</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lintul5Model</span><span class="p">,</span> <span class="n">CropParameters</span>
 
 <span class="n">crop</span> <span class="o">=</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-<span class="n">crop</span><span class="o">.</span><span class="n">rue</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+<span class="n">crop</span><span class="o">.</span><span class="n">tsum1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">900</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">crop_params</span><span class="o">=</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">crop</span><span class="o">.</span><span class="n">rue</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">)</span>
 
-<span class="n">observed_yield</span> <span class="o">=</span> <span class="mi">300</span>
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+<span class="n">observed_yield</span> <span class="o">=</span> <span class="mi">1200</span>
+
+<span class="c1"># Add gradient inspection                                                                                                                                                         </span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>                                                                                                                                                           
     <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">weather</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span> <span class="o">-</span> <span class="n">observed_yield</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
-    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span> <span class="o">-</span> <span class="n">observed_yield</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>                                                                                                                              
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>                                                                                                                                                               
+                                                                                                                                                                                      
+    <span class="c1"># Check gradient magnitude                                                                                                                                                    </span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">tsum1</span><span class="o">.</span><span class="n">grad</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Iter </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: loss=</span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, yield=</span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, grad=</span><span class="si">{</span><span class="n">grad</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                                                                                                                                                                                      
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">import torch.nn as nn
+<div class="clipboard-copy-txt" id="cell-2">import torch
+import torch.nn as nn
 from torchcrop import Lintul5Model, CropParameters
 
 crop = CropParameters().to(dtype=torch.float64)
-crop.rue = nn.Parameter(torch.tensor(3.0, dtype=torch.float64))
+crop.tsum1 = nn.Parameter(torch.tensor(900, dtype=torch.float64))
 
 model = Lintul5Model(crop_params=crop).double()
 optimizer = torch.optim.Adam([crop.rue], lr=1e-1)
 
-observed_yield = 300
-for _ in range(50):
-    optimizer.zero_grad()
+observed_yield = 1200
+
+# Add gradient inspection                                                                                                                                                         
+for i in range(50):
+    optimizer.zero_grad()                                                                                                                                                           
     out = model(weather.to(torch.float64), start_doy=60)
-    loss = ((out.yield_ - observed_yield) ** 2).mean()
-    print(loss)
-    loss.backward()
+    loss = ((out.yield_ - observed_yield) ** 2).mean()                                                                                                                              
+    loss.backward()                                                                                                                                                               
+                                                                                                                                                                                      
+    # Check gradient magnitude                                                                                                                                                    
+    grad = crop.tsum1.grad
+    print(f"Iter {i}: loss={loss:.6f}, yield={out.yield_.mean():.2f}, grad={grad:.6e}")
+                                                                                                                                                                                      
     optimizer.step()</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Iter 0: loss=80193.629776, yield=916.82, grad=6.030610e+02
+Iter 1: loss=80193.629776, yield=916.82, grad=1.206122e+03
+Iter 2: loss=80193.629776, yield=916.82, grad=1.809183e+03
+Iter 3: loss=80193.629776, yield=916.82, grad=2.412244e+03
+Iter 4: loss=80193.629776, yield=916.82, grad=3.015305e+03
+Iter 5: loss=80193.629776, yield=916.82, grad=3.618366e+03
+Iter 6: loss=80193.629776, yield=916.82, grad=4.221427e+03
+Iter 7: loss=80193.629776, yield=916.82, grad=4.824488e+03
+Iter 8: loss=80193.629776, yield=916.82, grad=5.427549e+03
+Iter 9: loss=80193.629776, yield=916.82, grad=6.030610e+03
+Iter 10: loss=80193.629776, yield=916.82, grad=6.633670e+03
+Iter 11: loss=80193.629776, yield=916.82, grad=7.236731e+03
+Iter 12: loss=80193.629776, yield=916.82, grad=7.839792e+03
+Iter 13: loss=80193.629776, yield=916.82, grad=8.442853e+03
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
+Cell <span class="ansi-green-fg">In[6], line 18</span>
+<span class="ansi-green-intense-fg ansi-bold">     16</span> out <span style="color: rgb(98,98,98)">=</span> model(weather<span style="color: rgb(98,98,98)">.</span>to(torch<span style="color: rgb(98,98,98)">.</span>float64), start_doy<span style="color: rgb(98,98,98)">=</span><span style="color: rgb(98,98,98)">60</span>)
+<span class="ansi-green-intense-fg ansi-bold">     17</span> loss <span style="color: rgb(98,98,98)">=</span> ((out<span style="color: rgb(98,98,98)">.</span>yield_ <span style="color: rgb(98,98,98)">-</span> observed_yield) <span style="color: rgb(98,98,98)">*</span><span style="color: rgb(98,98,98)">*</span> <span style="color: rgb(98,98,98)">2</span>)<span style="color: rgb(98,98,98)">.</span>mean()                                                                                                                              
+<span class="ansi-green-fg">---&gt; 18</span> <span class="ansi-yellow-bg">loss</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">backward</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">)</span>                                                                                                                                                               
+<span class="ansi-green-intense-fg ansi-bold">     20</span> <span style="color: rgb(95,135,135)"># Check gradient magnitude                                                                                                                                                    </span>
+<span class="ansi-green-intense-fg ansi-bold">     21</span> grad <span style="color: rgb(98,98,98)">=</span> crop<span style="color: rgb(98,98,98)">.</span>tsum1<span style="color: rgb(98,98,98)">.</span>grad
+
+File <span class="ansi-green-fg">~/miniforge3/envs/torchcrop/lib/python3.10/site-packages/torch/_tensor.py:631</span>, in <span class="ansi-cyan-fg">Tensor.backward</span><span class="ansi-blue-fg">(self, gradient, retain_graph, create_graph, inputs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    621</span> <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> has_torch_function_unary(<span style="color: rgb(0,135,0)">self</span>):
+<span class="ansi-green-intense-fg ansi-bold">    622</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> handle_torch_function(
+<span class="ansi-green-intense-fg ansi-bold">    623</span>         Tensor<span style="color: rgb(98,98,98)">.</span>backward,
+<span class="ansi-green-intense-fg ansi-bold">    624</span>         (<span style="color: rgb(0,135,0)">self</span>,),
+<span class="ansi-green-fg">   (...)</span>
+<span class="ansi-green-intense-fg ansi-bold">    629</span>         inputs<span style="color: rgb(98,98,98)">=</span>inputs,
+<span class="ansi-green-intense-fg ansi-bold">    630</span>     )
+<span class="ansi-green-fg">--&gt; 631</span> <span class="ansi-yellow-bg">torch</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">autograd</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">backward</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-intense-fg ansi-bold">    632</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg" style="color: rgb(0,135,0)">self</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">gradient</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">retain_graph</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">create_graph</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg">inputs</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg">inputs</span>
+<span class="ansi-green-intense-fg ansi-bold">    633</span> <span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/miniforge3/envs/torchcrop/lib/python3.10/site-packages/torch/autograd/__init__.py:381</span>, in <span class="ansi-cyan-fg">backward</span><span class="ansi-blue-fg">(tensors, grad_tensors, retain_graph, create_graph, grad_variables, inputs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    376</span>     retain_graph <span style="color: rgb(98,98,98)">=</span> create_graph
+<span class="ansi-green-intense-fg ansi-bold">    378</span> <span style="color: rgb(95,135,135)"># The reason we repeat the same comment below is that</span>
+<span class="ansi-green-intense-fg ansi-bold">    379</span> <span style="color: rgb(95,135,135)"># some Python versions print out the first line of a multi-line function</span>
+<span class="ansi-green-intense-fg ansi-bold">    380</span> <span style="color: rgb(95,135,135)"># calls in the traceback and some print out the last line</span>
+<span class="ansi-green-fg">--&gt; 381</span> <span class="ansi-yellow-bg">_engine_run_backward</span><span class="ansi-yellow-bg">(</span>
+<span class="ansi-green-intense-fg ansi-bold">    382</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">tensors</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    383</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">grad_tensors_</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    384</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">retain_graph</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    385</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">create_graph</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    386</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">inputs_tuple</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    387</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">allow_unreachable</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    388</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">accumulate_grad</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">=</span><span class="ansi-yellow-bg ansi-bold" style="color: rgb(0,135,0)">True</span><span class="ansi-yellow-bg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    389</span> <span class="ansi-yellow-bg">)</span>
+
+File <span class="ansi-green-fg">~/miniforge3/envs/torchcrop/lib/python3.10/site-packages/torch/autograd/graph.py:869</span>, in <span class="ansi-cyan-fg">_engine_run_backward</span><span class="ansi-blue-fg">(t_outputs, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    867</span>     unregister_hooks <span style="color: rgb(98,98,98)">=</span> _register_logging_hooks_on_whole_graph(t_outputs)
+<span class="ansi-green-intense-fg ansi-bold">    868</span> <span class="ansi-bold" style="color: rgb(0,135,0)">try</span>:
+<span class="ansi-green-fg">--&gt; 869</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">return</span> <span class="ansi-yellow-bg">Variable</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">_execution_engine</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">.</span><span class="ansi-yellow-bg">run_backward</span><span class="ansi-yellow-bg">(</span><span class="ansi-yellow-bg">  </span><span class="ansi-yellow-bg" style="color: rgb(95,135,135)"># Calls into the C++ engine to run the backward pass</span>
+<span class="ansi-green-intense-fg ansi-bold">    870</span> <span class="ansi-yellow-bg">        </span><span class="ansi-yellow-bg">t_outputs</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">args</span><span class="ansi-yellow-bg">,</span><span class="ansi-yellow-bg"> </span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg" style="color: rgb(98,98,98)">*</span><span class="ansi-yellow-bg">kwargs</span>
+<span class="ansi-green-intense-fg ansi-bold">    871</span> <span class="ansi-yellow-bg">    </span><span class="ansi-yellow-bg">)</span>  <span style="color: rgb(95,135,135)"># Calls into the C++ engine to run the backward pass</span>
+<span class="ansi-green-intense-fg ansi-bold">    872</span> <span class="ansi-bold" style="color: rgb(0,135,0)">finally</span>:
+<span class="ansi-green-intense-fg ansi-bold">    873</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">if</span> attach_logging_hooks:
+
+<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
 </div>
 </div>
 </div>
@@ -2691,7 +2798,7 @@ for _ in range(50):
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 20, 2026 21:27:28 UTC"><span class="timeago" datetime="2026-04-20T21:27:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 20, 2026 21:27:28 UTC">2026-04-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 20, 2026 23:57:08 UTC"><span class="timeago" datetime="2026-04-20T23:57:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 20, 2026 23:57:08 UTC">2026-04-20</span>
   </span>
 
     
