@@ -2628,7 +2628,7 @@ print(output.dvs.shape)  # [B, T+1] development stage trajectory</div>
 <span class="n">crop</span><span class="o">.</span><span class="n">rue</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">crop_params</span><span class="o">=</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">crop</span><span class="o">.</span><span class="n">rue</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">crop</span><span class="o">.</span><span class="n">rue</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">)</span>
 
 <span class="n">observed_yield</span> <span class="o">=</span> <span class="mi">300</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
@@ -2646,7 +2646,7 @@ crop = CropParameters().to(dtype=torch.float64)
 crop.rue = nn.Parameter(torch.tensor(3.0, dtype=torch.float64))
 
 model = Lintul5Model(crop_params=crop).double()
-optimizer = torch.optim.Adam([crop.rue], lr=1e-2)
+optimizer = torch.optim.Adam([crop.rue], lr=1e-1)
 
 observed_yield = 300
 for _ in range(50):
@@ -2691,7 +2691,7 @@ for _ in range(50):
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 19, 2026 09:56:12 UTC"><span class="timeago" datetime="2026-04-19T09:56:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 19, 2026 09:56:12 UTC">2026-04-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 20, 2026 21:27:28 UTC"><span class="timeago" datetime="2026-04-20T21:27:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 20, 2026 21:27:28 UTC">2026-04-20</span>
   </span>
 
     

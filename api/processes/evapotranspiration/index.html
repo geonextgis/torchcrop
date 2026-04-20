@@ -1971,19 +1971,54 @@
     <div class="doc doc-contents first">
 
       <p>Potential evapotranspiration.</p>
-<p>A light-weight Priestley–Taylor approximation is implemented by default; this
-is adequate for differentiable experimentation. For operational use, swap in
-a full FAO-56 Penman–Monteith variant (kept as a TODO hook).</p>
+<p>Implements the PENMAN formula for computing potential evaporation from water
+and soil surfaces, and potential transpiration of a closed crop canopy,
+accounting for CO2 effects.</p>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<p>SIMPLACE <code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.
+Based on Penman (1948) with modifications by van Kraalingen.</p>
+</div>
 <p>Equations:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
-ET_0 = \alpha \cdot \frac{\Delta}{\Delta + \gamma} \cdot \frac{R_n}{\lambda}
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code>See PENMAN method for detailed derivations. Key outputs:
+
+- E0: Potential evaporation from open water surface [mm d⁻¹]
+- ES0: Potential evaporation from bare soil [mm d⁻¹]
+- ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]
+
+Potential transpiration rate:
+
+$$
+P_t = \text{CFET} \cdot ETC \cdot F_{INT}
 $$
 
-with $\alpha = 1.26$, $\lambda = 2.45\ \text{MJ kg}^{-1}$.
+Potential soil evaporation:
+
+$$
+P_s = ES_0 \cdot (1 - F_{INT})
+$$
+
+where CFET is a crop-specific correction factor and F_INT is fractional
+light interception.
 </code></pre></div></td></tr></table></div>
 
 
@@ -2011,7 +2046,10 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
     <div class="doc doc-contents ">
 
-      <p>Priestley–Taylor reference evapotranspiration.</p>
+      <p>PENMAN-based potential evapotranspiration calculation.</p>
+<p>Implements the full PENMAN formula per SIMPLACE PotentialEvapoTranspiration.java.
+Outputs reference ET (E0, ES0, ETC) which are then split into potential
+transpiration and soil evaporation based on light interception.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2025,75 +2063,206 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
   </thead>
   <tbody>
       <tr>
-        <td><code>alpha_pt</code></td>
+        <td><code>altitude</code></td>
         <td><code>float</code></td>
-        <td><p>Priestley–Taylor coefficient $\alpha$
-(default 1.26).</p></td>
-        <td><code>1.26</code></td>
+        <td><p>Station altitude [m] (default 0).</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>cfet</code></td>
+        <td><code>float</code></td>
+        <td><p>Crop-specific correction factor for transpiration (default 1.0).</p></td>
+        <td><code>1.0</code></td>
+      </tr>
+      <tr>
+        <td><code>co2</code></td>
+        <td><code>float</code></td>
+        <td><p>Atmospheric CO2 concentration [ppm] (default 370).</p></td>
+        <td><code>370.0</code></td>
       </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PotentialEvapoTranspiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Priestley–Taylor reference evapotranspiration.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PENMAN-based potential evapotranspiration calculation.</span>
+
+<span class="sd">    Implements the full PENMAN formula per SIMPLACE PotentialEvapoTranspiration.java.</span>
+<span class="sd">    Outputs reference ET (E0, ES0, ETC) which are then split into potential</span>
+<span class="sd">    transpiration and soil evaporation based on light interception.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        alpha_pt: Priestley–Taylor coefficient $\\alpha$</span>
-<span class="sd">            (default 1.26).</span>
+<span class="sd">        altitude: Station altitude [m] (default 0).</span>
+<span class="sd">        cfet: Crop-specific correction factor for transpiration (default 1.0).</span>
+<span class="sd">        co2: Atmospheric CO2 concentration [ppm] (default 370).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha_pt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.26</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">altitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">cfet</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">co2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_pt</span> <span class="o">=</span> <span class="n">alpha_pt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">=</span> <span class="n">altitude</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">=</span> <span class="n">cfet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">co2</span> <span class="o">=</span> <span class="n">co2</span>
+
+        <span class="c1"># CO2 correction table (x: CO2 ppm, y: correction factor)</span>
+        <span class="c1"># From SIMPLACE cET0CorrectionTableCo2 and cET0CorrectionTableFactor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="mf">720.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_interpolate_co2_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2_val</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear interpolation of CO2 correction factor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            co2_val: CO2 concentration [ppm], shape ``[B]``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CO2 correction factor, shape ``[B]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Simple linear interpolation between table points</span>
+        <span class="c1"># Find bracketing indices</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_x</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_y</span>
+
+        <span class="c1"># Clamp to table bounds</span>
+        <span class="n">co2_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">co2_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">max</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Find indices for interpolation</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">co2_clamped</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">in_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">co2_clamped</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">co2_clamped</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">in_range</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="c1"># Linear interpolation</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="n">co2_clamped</span><span class="p">[</span><span class="n">in_range</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">factor</span><span class="p">[</span><span class="n">in_range</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">factor</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">irrad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">lai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">k_ext</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">wind</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">vap</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">avrad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">atmtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">frac_int</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute reference ET and split it into canopy / soil fluxes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
-<span class="sd">            irrad: Global daily radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
-<span class="sd">            lai: Leaf area index, shape ``[B]``.</span>
-<span class="sd">            k_ext: Canopy extinction coefficient.</span>
+<span class="sd">            tmin: Minimum daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">            tmax: Maximum daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">            wind: Average wind speed [m s⁻¹], shape ``[B]``.</span>
+<span class="sd">            vap: Vapour pressure [kPa], shape ``[B]``.</span>
+<span class="sd">            avrad: Daily total irradiation [J m⁻² d⁻¹], shape ``[B]``.</span>
+<span class="sd">            atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
+<span class="sd">            frac_int: Fractional light interception [-], shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">            integrated here — `WaterBalance` turns</span>
-<span class="sd">            ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
+<span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">                * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
-<span class="sd">                  (Priestley–Taylor).</span>
+<span class="sd">                * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
+<span class="sd">                * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
+<span class="sd">                * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
 <span class="sd">                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
-<span class="sd">                  ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">                  `WaterBalance` to compute actual transpiration.</span>
+<span class="sd">                  (= CFET * ETC * frac_int).</span>
 <span class="sd">                * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
-<span class="sd">                  ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">                  `WaterBalance`.</span>
+<span class="sd">                  (= ES0 * (1 - frac_int)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
-        <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="mf">4098.0</span>
-            <span class="o">*</span> <span class="p">(</span><span class="mf">0.6108</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">17.27</span> <span class="o">*</span> <span class="n">davtmp</span> <span class="o">/</span> <span class="p">(</span><span class="n">davtmp</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">)))</span>
-            <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">davtmp</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">,</span> <span class="mf">0.067</span><span class="p">)</span>  <span class="c1"># psychrometric constant [kPa K-1]</span>
-        <span class="n">lambda_v</span> <span class="o">=</span> <span class="mf">2.45</span>  <span class="c1"># latent heat of vaporization [MJ kg-1]</span>
+        <span class="c1"># Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="mf">0.56</span>
+        <span class="n">REFCFW</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># Albedo for water</span>
+        <span class="n">REFCFS</span> <span class="o">=</span> <span class="mf">0.15</span>  <span class="c1"># Albedo for soil</span>
+        <span class="n">REFCFC</span> <span class="o">=</span> <span class="mf">0.25</span>  <span class="c1"># Albedo for canopy</span>
+        <span class="n">LHVAP</span> <span class="o">=</span> <span class="mf">2.45e6</span>  <span class="c1"># Latent heat of evaporation [J kg-1]</span>
+        <span class="n">STBC</span> <span class="o">=</span> <span class="mf">4.9e-3</span>  <span class="c1"># Stefan-Boltzmann constant [J m-2 d-1 K-4]</span>
+        <span class="n">PSYCON</span> <span class="o">=</span> <span class="mf">0.000662</span>  <span class="c1"># Psychrometric constant [K-1]</span>
 
-        <span class="n">rn</span> <span class="o">=</span> <span class="mf">0.75</span> <span class="o">*</span> <span class="n">irrad</span>  <span class="c1"># crude net radiation estimate (albedo 0.25)</span>
-        <span class="n">et0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_pt</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta</span> <span class="o">/</span> <span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">))</span> <span class="o">*</span> <span class="n">rn</span> <span class="o">/</span> <span class="n">lambda_v</span>
+        <span class="c1"># Convert vapour pressure from kPa to mbar (1 kPa = 10 mbar)</span>
+        <span class="n">vap_mbar</span> <span class="o">=</span> <span class="n">vap</span> <span class="o">*</span> <span class="mf">10.0</span>
+
+        <span class="c1"># Average daily temperature</span>
+        <span class="n">tmpa</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmin</span> <span class="o">+</span> <span class="n">tmax</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="c1"># Temperature difference</span>
+        <span class="n">tdif</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span>
+
+        <span class="c1"># Wind function coefficient (depends on temperature range)</span>
+        <span class="n">bu</span> <span class="o">=</span> <span class="mf">0.54</span> <span class="o">+</span> <span class="mf">0.35</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tdif</span> <span class="o">-</span> <span class="mf">12.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="c1"># Barometric pressure [mbar]</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
+
+        <span class="c1"># Psychrometric constant [mbar K-1]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">PSYCON</span> <span class="o">*</span> <span class="n">pbar</span>
+
+        <span class="c1"># Saturated vapour pressure [mbar] per Goudriaan (1977)</span>
+        <span class="n">svap</span> <span class="o">=</span> <span class="mf">6.11</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">17.4</span> <span class="o">*</span> <span class="n">tmpa</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">239.0</span><span class="p">))</span>
+
+        <span class="c1"># Measured vapour pressure should not exceed saturated vapour pressure</span>
+        <span class="n">vap_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">vap_mbar</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">svap</span><span class="p">)</span>
+
+        <span class="c1"># Slope of saturation vapour pressure curve [mbar K-1]</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="mf">239.0</span> <span class="o">*</span> <span class="mf">17.4</span> <span class="o">*</span> <span class="n">svap</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">239.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+
+        <span class="c1"># Relative sunshine duration (from Angstrom formula)</span>
+        <span class="n">relssd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">atmtr</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">B</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="c1"># Net outgoing long-wave radiation [J m-2 d-1]</span>
+        <span class="n">rb</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">STBC</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mf">0.56</span> <span class="o">-</span> <span class="mf">0.079</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">vap_clamped</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)))</span>
+            <span class="o">*</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">relssd</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Net absorbed radiation [J m-2 d-1]</span>
+        <span class="n">rnw</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFW</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+        <span class="n">rns</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFS</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+        <span class="n">rnc</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFC</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+
+        <span class="c1"># Evaporative demand of atmosphere [mm d-1]</span>
+        <span class="n">ea</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+        <span class="n">eac</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+
+        <span class="c1"># PENMAN formula [mm d-1]</span>
+        <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+        <span class="p">)</span>
+        <span class="n">es0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rns</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+        <span class="p">)</span>
+        <span class="n">et0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnc</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">eac</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Ensure non-negative</span>
+        <span class="n">e0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">es0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">es0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k_ext</span> <span class="o">*</span> <span class="n">lai</span><span class="p">)</span>
-        <span class="n">ptran</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">frac</span>
-        <span class="n">pevap</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac</span><span class="p">)</span>
+        <span class="c1"># CO2 correction for ET0</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;et0&quot;</span><span class="p">:</span> <span class="n">et0</span><span class="p">,</span> <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span> <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">}</span>
+        <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
+        <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+        <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;e0&quot;</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
+            <span class="s2">&quot;es0&quot;</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
+            <span class="s2">&quot;etc&quot;</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
+            <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
+            <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
+        <span class="p">}</span>
 </code></pre></div>
         </details>
 
@@ -2115,14 +2284,14 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 
 
 <h3 id="torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">irrad</span><span class="p">,</span> <span class="n">lai</span><span class="p">,</span> <span class="n">k_ext</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">wind</span><span class="p">,</span> <span class="n">vap</span><span class="p">,</span> <span class="n">avrad</span><span class="p">,</span> <span class="n">atmtr</span><span class="p">,</span> <span class="n">frac_int</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Compute reference ET and split it into canopy / soil fluxes.</p>
+      <p>Compute PENMAN potential ET and split into canopy/soil fluxes.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2136,27 +2305,45 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
   </thead>
   <tbody>
       <tr>
-        <td><code>davtmp</code></td>
+        <td><code>tmin</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Mean daily air temperature [°C], shape <code>[B]</code>.</p></td>
+        <td><p>Minimum daily air temperature [°C], shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>irrad</code></td>
+        <td><code>tmax</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Global daily radiation [MJ m⁻² d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><p>Maximum daily air temperature [°C], shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>lai</code></td>
+        <td><code>wind</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Leaf area index, shape <code>[B]</code>.</p></td>
+        <td><p>Average wind speed [m s⁻¹], shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>k_ext</code></td>
+        <td><code>vap</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Canopy extinction coefficient.</p></td>
+        <td><p>Vapour pressure [kPa], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>avrad</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Daily total irradiation [J m⁻² d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>atmtr</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Atmospheric transmission fraction [-], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>frac_int</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Fractional light interception [-], shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2171,18 +2358,15 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
   </thead>
   <tbody>
     <tr>
-      <td><code>Dict of ``[B]`` tensors with the potential fluxes (no state is
-integrated here — `WaterBalance` turns
-``ptran``/``pevap`` into actual ``tran``/``evap``)</code></td>
+      <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>et0</code> [mm d⁻¹] — Reference evapotranspiration
-      (Priestley–Taylor).<ul>
+<li><code>e0</code> [mm d⁻¹] — Potential evaporation from open water.<ul>
+<li><code>es0</code> [mm d⁻¹] — Potential evaporation from bare soil.</li>
+<li><code>etc</code> [mm d⁻¹] — Potential transpiration (CO2-corrected).</li>
 <li><code>ptran</code> [mm d⁻¹] — Potential canopy transpiration
-  <code>= et0 * (1 - exp(-k_ext * lai))</code>; passed to
-  <code>WaterBalance</code> to compute actual transpiration.</li>
+  (= CFET * ETC * frac_int).</li>
 <li><code>pevap</code> [mm d⁻¹] — Potential soil evaporation
-  <code>= et0 * exp(-k_ext * lai)</code>; passed to
-  <code>WaterBalance</code>.</li>
+  (= ES0 * (1 - frac_int)).</li>
 </ul>
 </li>
 </ul></td>
@@ -2193,51 +2377,126 @@ integrated here — `WaterBalance` turns
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">irrad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">lai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">k_ext</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">wind</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">vap</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">avrad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">atmtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">frac_int</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute reference ET and split it into canopy / soil fluxes.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
-<span class="sd">        irrad: Global daily radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
-<span class="sd">        lai: Leaf area index, shape ``[B]``.</span>
-<span class="sd">        k_ext: Canopy extinction coefficient.</span>
+<span class="sd">        tmin: Minimum daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">        tmax: Maximum daily air temperature [°C], shape ``[B]``.</span>
+<span class="sd">        wind: Average wind speed [m s⁻¹], shape ``[B]``.</span>
+<span class="sd">        vap: Vapour pressure [kPa], shape ``[B]``.</span>
+<span class="sd">        avrad: Daily total irradiation [J m⁻² d⁻¹], shape ``[B]``.</span>
+<span class="sd">        atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
+<span class="sd">        frac_int: Fractional light interception [-], shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of ``[B]`` tensors with the potential fluxes (no state is</span>
-<span class="sd">        integrated here — `WaterBalance` turns</span>
-<span class="sd">        ``ptran``/``pevap`` into actual ``tran``/``evap``):</span>
+<span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``et0`` [mm d⁻¹] — Reference evapotranspiration</span>
-<span class="sd">              (Priestley–Taylor).</span>
+<span class="sd">            * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
+<span class="sd">            * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
+<span class="sd">            * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
 <span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
-<span class="sd">              ``= et0 * (1 - exp(-k_ext * lai))``; passed to</span>
-<span class="sd">              `WaterBalance` to compute actual transpiration.</span>
+<span class="sd">              (= CFET * ETC * frac_int).</span>
 <span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
-<span class="sd">              ``= et0 * exp(-k_ext * lai)``; passed to</span>
-<span class="sd">              `WaterBalance`.</span>
+<span class="sd">              (= ES0 * (1 - frac_int)).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Slope of saturation vapour pressure curve [kPa K-1]</span>
-    <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="mf">4098.0</span>
-        <span class="o">*</span> <span class="p">(</span><span class="mf">0.6108</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">17.27</span> <span class="o">*</span> <span class="n">davtmp</span> <span class="o">/</span> <span class="p">(</span><span class="n">davtmp</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">)))</span>
-        <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">davtmp</span> <span class="o">+</span> <span class="mf">237.3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">gamma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">,</span> <span class="mf">0.067</span><span class="p">)</span>  <span class="c1"># psychrometric constant [kPa K-1]</span>
-    <span class="n">lambda_v</span> <span class="o">=</span> <span class="mf">2.45</span>  <span class="c1"># latent heat of vaporization [MJ kg-1]</span>
+    <span class="c1"># Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="mf">0.56</span>
+    <span class="n">REFCFW</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># Albedo for water</span>
+    <span class="n">REFCFS</span> <span class="o">=</span> <span class="mf">0.15</span>  <span class="c1"># Albedo for soil</span>
+    <span class="n">REFCFC</span> <span class="o">=</span> <span class="mf">0.25</span>  <span class="c1"># Albedo for canopy</span>
+    <span class="n">LHVAP</span> <span class="o">=</span> <span class="mf">2.45e6</span>  <span class="c1"># Latent heat of evaporation [J kg-1]</span>
+    <span class="n">STBC</span> <span class="o">=</span> <span class="mf">4.9e-3</span>  <span class="c1"># Stefan-Boltzmann constant [J m-2 d-1 K-4]</span>
+    <span class="n">PSYCON</span> <span class="o">=</span> <span class="mf">0.000662</span>  <span class="c1"># Psychrometric constant [K-1]</span>
 
-    <span class="n">rn</span> <span class="o">=</span> <span class="mf">0.75</span> <span class="o">*</span> <span class="n">irrad</span>  <span class="c1"># crude net radiation estimate (albedo 0.25)</span>
-    <span class="n">et0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_pt</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta</span> <span class="o">/</span> <span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">))</span> <span class="o">*</span> <span class="n">rn</span> <span class="o">/</span> <span class="n">lambda_v</span>
+    <span class="c1"># Convert vapour pressure from kPa to mbar (1 kPa = 10 mbar)</span>
+    <span class="n">vap_mbar</span> <span class="o">=</span> <span class="n">vap</span> <span class="o">*</span> <span class="mf">10.0</span>
+
+    <span class="c1"># Average daily temperature</span>
+    <span class="n">tmpa</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmin</span> <span class="o">+</span> <span class="n">tmax</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="c1"># Temperature difference</span>
+    <span class="n">tdif</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span>
+
+    <span class="c1"># Wind function coefficient (depends on temperature range)</span>
+    <span class="n">bu</span> <span class="o">=</span> <span class="mf">0.54</span> <span class="o">+</span> <span class="mf">0.35</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tdif</span> <span class="o">-</span> <span class="mf">12.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># Barometric pressure [mbar]</span>
+    <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
+
+    <span class="c1"># Psychrometric constant [mbar K-1]</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">PSYCON</span> <span class="o">*</span> <span class="n">pbar</span>
+
+    <span class="c1"># Saturated vapour pressure [mbar] per Goudriaan (1977)</span>
+    <span class="n">svap</span> <span class="o">=</span> <span class="mf">6.11</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">17.4</span> <span class="o">*</span> <span class="n">tmpa</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">239.0</span><span class="p">))</span>
+
+    <span class="c1"># Measured vapour pressure should not exceed saturated vapour pressure</span>
+    <span class="n">vap_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">vap_mbar</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">svap</span><span class="p">)</span>
+
+    <span class="c1"># Slope of saturation vapour pressure curve [mbar K-1]</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="mf">239.0</span> <span class="o">*</span> <span class="mf">17.4</span> <span class="o">*</span> <span class="n">svap</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">239.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+
+    <span class="c1"># Relative sunshine duration (from Angstrom formula)</span>
+    <span class="n">relssd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">atmtr</span> <span class="o">-</span> <span class="n">A</span><span class="p">)</span> <span class="o">/</span> <span class="n">B</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># Net outgoing long-wave radiation [J m-2 d-1]</span>
+    <span class="n">rb</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">STBC</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">4</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mf">0.56</span> <span class="o">-</span> <span class="mf">0.079</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">vap_clamped</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)))</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">relssd</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Net absorbed radiation [J m-2 d-1]</span>
+    <span class="n">rnw</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFW</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+    <span class="n">rns</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFS</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+    <span class="n">rnc</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">REFCFC</span><span class="p">)</span> <span class="o">-</span> <span class="n">rb</span>
+
+    <span class="c1"># Evaporative demand of atmosphere [mm d-1]</span>
+    <span class="n">ea</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+    <span class="n">eac</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
+
+    <span class="c1"># PENMAN formula [mm d-1]</span>
+    <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+    <span class="p">)</span>
+    <span class="n">es0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rns</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+    <span class="p">)</span>
+    <span class="n">et0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnc</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">eac</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Ensure non-negative</span>
+    <span class="n">e0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">es0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">es0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-    <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">k_ext</span> <span class="o">*</span> <span class="n">lai</span><span class="p">)</span>
-    <span class="n">ptran</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">frac</span>
-    <span class="n">pevap</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac</span><span class="p">)</span>
+    <span class="c1"># CO2 correction for ET0</span>
+    <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;et0&quot;</span><span class="p">:</span> <span class="n">et0</span><span class="p">,</span> <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span> <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">}</span>
+    <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
+    <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+    <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;e0&quot;</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
+        <span class="s2">&quot;es0&quot;</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
+        <span class="s2">&quot;etc&quot;</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
+        <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
+        <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
+    <span class="p">}</span>
 </code></pre></div>
         </details>
     </div>

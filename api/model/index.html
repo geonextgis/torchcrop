@@ -2375,31 +2375,56 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="c1"># Extract weather variables (SIMPLACE order)</span>
         <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
-        <span class="n">irrad</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;irrad&quot;</span><span class="p">]</span>
+        <span class="n">tmin</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmin&quot;</span><span class="p">]</span>
+        <span class="n">tmax</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmax&quot;</span><span class="p">]</span>
+        <span class="n">dtr</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;irrad&quot;</span><span class="p">]</span>
         <span class="n">rain</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;rain&quot;</span><span class="p">]</span>
+        <span class="n">vap</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;vp&quot;</span><span class="p">]</span>  <span class="c1"># [kPa] from weather</span>
+        <span class="n">wind</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span>
 
-        <span class="c1"># 1. Astro</span>
+        <span class="c1"># 1. Astro — solar declination, daylength</span>
         <span class="n">lat_b</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
             <span class="k">else</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span>
         <span class="p">)</span>
         <span class="n">astro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astro</span><span class="p">(</span><span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="n">lat_b</span><span class="p">)</span>
+        <span class="n">dayl</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;daylength&quot;</span><span class="p">]</span>
+        <span class="n">sinld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;sinld&quot;</span><span class="p">]</span>
+        <span class="n">cosld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;cosld&quot;</span><span class="p">]</span>
         <span class="n">ddlp</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;ddlp&quot;</span><span class="p">]</span>
 
-        <span class="c1"># 2. Phenology</span>
+        <span class="c1"># 2. Irradiation — daily total irradiation and PAR interception</span>
+        <span class="n">irrad_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">irradiation</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
+            <span class="n">dayl</span><span class="o">=</span><span class="n">dayl</span><span class="p">,</span>
+            <span class="n">sinld</span><span class="o">=</span><span class="n">sinld</span><span class="p">,</span>
+            <span class="n">cosld</span><span class="o">=</span><span class="n">cosld</span><span class="p">,</span>
+            <span class="n">dtr</span><span class="o">=</span><span class="n">dtr</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">avrad</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;avrad&quot;</span><span class="p">]</span>
+        <span class="n">atmtr</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;atmtr&quot;</span><span class="p">]</span>
+        <span class="n">frac_int</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;frac_intercepted&quot;</span><span class="p">]</span>
+
+        <span class="c1"># 3. Phenology</span>
         <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">)</span>
 
-        <span class="c1"># 3. Evapotranspiration</span>
+        <span class="c1"># 4. Evapotranspiration — PENMAN formula</span>
         <span class="n">et</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">(</span>
-            <span class="n">davtmp</span><span class="o">=</span><span class="n">davtmp</span><span class="p">,</span>
-            <span class="n">irrad</span><span class="o">=</span><span class="n">irrad</span><span class="p">,</span>
-            <span class="n">lai</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span>
-            <span class="n">k_ext</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
+            <span class="n">wind</span><span class="o">=</span><span class="n">wind</span><span class="p">,</span>
+            <span class="n">vap</span><span class="o">=</span><span class="n">vap</span><span class="p">,</span>
+            <span class="n">avrad</span><span class="o">=</span><span class="n">avrad</span><span class="p">,</span>
+            <span class="n">atmtr</span><span class="o">=</span><span class="n">atmtr</span><span class="p">,</span>
+            <span class="n">frac_int</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># 4. Water balance (uses current LAI and root depth)</span>
+        <span class="c1"># 5. Water balance (uses current LAI and root depth)</span>
         <span class="n">water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">water_balance</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
@@ -2408,9 +2433,6 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span>
-
-        <span class="c1"># 5. Irradiation — PAR intercepted</span>
-        <span class="n">irrad_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">irradiation</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">irrad</span><span class="o">=</span><span class="n">irrad</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">)</span>
 
         <span class="c1"># 6+7. Nutrient preliminary step — we first estimate partitioning</span>
         <span class="c1">#      using a &quot;no nutrient stress&quot; GTOTAL to compute demand, then</span>
@@ -2449,7 +2471,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="c1"># Residual correction on gtotal</span>
         <span class="k">if</span> <span class="s2">&quot;photosynthesis&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">:</span>
             <span class="n">ctx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">irrad</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span><span class="p">,</span> <span class="n">doy</span><span class="p">],</span>
+                <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">dtr</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span><span class="p">,</span> <span class="n">doy</span><span class="p">],</span>
                 <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">[</span><span class="s2">&quot;photosynthesis&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
