@@ -266,31 +266,56 @@ class Lintul5Model(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
     ) -> dict[str, torch.Tensor]:
+        # Extract weather variables (SIMPLACE order)
         davtmp = weather_day["davtmp"]
-        irrad = weather_day["irrad"]
+        tmin = weather_day["tmin"]
+        tmax = weather_day["tmax"]
+        dtr = weather_day["irrad"]
         rain = weather_day["rain"]
+        vap = weather_day["vp"]  # [kPa] from weather
+        wind = weather_day["wind"]
 
-        # 1. Astro
+        # 1. Astro — solar declination, daylength
         lat_b = (
             site_params.latitude.expand_as(doy)
             if site_params.latitude.dim() > 0
             else site_params.latitude
         )
         astro = self.astro(doy=doy, latitude=lat_b)
+        dayl = astro["daylength"]
+        sinld = astro["sinld"]
+        cosld = astro["cosld"]
         ddlp = astro["ddlp"]
 
-        # 2. Phenology
+        # 2. Irradiation — daily total irradiation and PAR interception
+        irrad_out = self.irradiation(
+            state=state,
+            doy=doy.float(),
+            dayl=dayl,
+            sinld=sinld,
+            cosld=cosld,
+            dtr=dtr,
+            params=crop_params,
+        )
+        avrad = irrad_out["avrad"]
+        atmtr = irrad_out["atmtr"]
+        frac_int = irrad_out["frac_intercepted"]
+
+        # 3. Phenology
         pheno = self.phenology(state, davtmp, ddlp, crop_params)
 
-        # 3. Evapotranspiration
+        # 4. Evapotranspiration — PENMAN formula
         et = self.evapotranspiration(
-            davtmp=davtmp,
-            irrad=irrad,
-            lai=state.lai,
-            k_ext=crop_params.k,
+            tmin=tmin,
+            tmax=tmax,
+            wind=wind,
+            vap=vap,
+            avrad=avrad,
+            atmtr=atmtr,
+            frac_int=frac_int,
         )
 
-        # 4. Water balance (uses current LAI and root depth)
+        # 5. Water balance (uses current LAI and root depth)
         water = self.water_balance(
             state=state,
             rain=rain,
@@ -299,9 +324,6 @@ class Lintul5Model(nn.Module):
             params=soil_params,
         )
         tranrf = water["tranrf"]
-
-        # 5. Irradiation — PAR intercepted
-        irrad_out = self.irradiation(state=state, irrad=irrad, params=crop_params)
 
         # 6+7. Nutrient preliminary step — we first estimate partitioning
         #      using a "no nutrient stress" GTOTAL to compute demand, then
@@ -340,7 +362,7 @@ class Lintul5Model(nn.Module):
         # Residual correction on gtotal
         if "photosynthesis" in self.residual_modules:
             ctx = torch.stack(
-                [state.lai, state.dvs, davtmp, irrad, tranrf, nstress, state.wa, doy],
+                [state.lai, state.dvs, davtmp, dtr, tranrf, nstress, state.wa, doy],
                 dim=-1,
             )
             gtotal = gtotal + self.residual_modules["photosynthesis"](ctx).squeeze(-1)
