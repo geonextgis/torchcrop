@@ -2231,9 +2231,7 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">eac</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
 
         <span class="c1"># PENMAN formula [mm d-1]</span>
-        <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-            <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
-        <span class="p">)</span>
+        <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
         <span class="n">es0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rns</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
             <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
         <span class="p">)</span>
@@ -2247,9 +2245,7 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># CO2 correction for ET0</span>
-        <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
         <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
         <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
@@ -2465,9 +2461,7 @@ transpiration and soil evaporation based on light interception.</p>
     <span class="n">eac</span> <span class="o">=</span> <span class="mf">0.26</span> <span class="o">*</span> <span class="p">(</span><span class="n">svap</span> <span class="o">-</span> <span class="n">vap_clamped</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">bu</span> <span class="o">*</span> <span class="n">wind</span><span class="p">)</span>
 
     <span class="c1"># PENMAN formula [mm d-1]</span>
-    <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-        <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
-    <span class="p">)</span>
+    <span class="n">e0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rnw</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
     <span class="n">es0</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">rns</span> <span class="o">/</span> <span class="n">LHVAP</span><span class="p">)</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">ea</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
         <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span>
     <span class="p">)</span>
@@ -2481,9 +2475,7 @@ transpiration and soil evaporation based on light interception.</p>
     <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="c1"># CO2 correction for ET0</span>
-    <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
     <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
     <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
@@ -2628,6 +2620,8 @@ transpiration and soil evaporation based on light interception.</p>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
       
     
   </body>
