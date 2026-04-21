@@ -1980,32 +1980,32 @@
 <p>Daily total irradiation (AVRAD) computed from solar geometry and
 atmospheric transmission:</p>
 <p>$$
-SC = 1370 \cdot (1 + 0.033 \cos(2\pi        ext{DOY}/365))
+SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
 $$</p>
 <p>$$
-A_0 =       ext{LIMIT}(-1, 1,       ext{SINLD}/     ext{COSLD})
+A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
 $$</p>
 <p>$$
-    ext{DSINB} = 3600 \cdot (       ext{DAYL} \cdot         ext{SINLD} +
-24 \cdot    ext{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
+\text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
+24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
 $$</p>
 <p>$$
-    ext{ANGOT} =    ext{max}(0.0001, SC \cdot       ext{DSINB})
+\text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
 $$</p>
 <p>$$
-    ext{AVRAD} =    ext{min}(0.80 \cdot     ext{ANGOT},     ext{DTR})
+\text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
 $$</p>
 <p>Photosynthetically active radiation is 0.50 of global radiation:</p>
 <p>$$
-    ext{PAR} = 0.5 \cdot    ext{AVRAD}
+\text{PAR} = 0.5 \cdot \text{AVRAD}
 $$</p>
 <p>Fraction intercepted by canopy (Beer-Lambert law):</p>
 <p>$$
-    ext{frac} = 1 - \exp(-K \cdot   ext{LAI})
+\text{frac} = 1 - \exp(-K \cdot \text{LAI})
 $$</p>
 <p>Intercepted PAR:</p>
 <p>$$
-    ext{PARINT} =   ext{PAR} \cdot  ext{frac}
+\text{PARINT} = \text{PAR} \cdot \text{frac}
 $$</p>
 </div>
 
