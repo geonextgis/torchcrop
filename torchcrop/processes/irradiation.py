@@ -1,4 +1,4 @@
-"""Radiation interception by the canopy.
+r"""Radiation interception by the canopy.
 
 References:
     SIMPLACE ``Irradiation.java``.
