@@ -1,4 +1,4 @@
-r"""Radiation interception by the canopy.
+"""Radiation interception by the canopy.
 
 References:
     SIMPLACE ``Irradiation.java``.
@@ -8,42 +8,42 @@ Equations:
     atmospheric transmission:
 
     $$
-    SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
+    SC = 1370 \\cdot (1 + 0.033 \\cos(2\\pi \\text{DOY}/365))
     $$
 
     $$
-    A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
+    A_0 = \\text{LIMIT}(-1, 1, \\text{SINLD}/\\text{COSLD})
     $$
 
     $$
-    \text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
-    24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
+    \\text{DSINB} = 3600 \\cdot (\\text{DAYL} \\cdot \\text{SINLD} +
+    24 \\cdot \\text{COSLD} \\cdot \\sqrt{1 - A_0^2} / \\pi)
     $$
 
     $$
-    \text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
+    \\text{ANGOT} = \\text{max}(0.0001, SC \\cdot \\text{DSINB})
     $$
 
     $$
-    \text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
+    \\text{AVRAD} = \\text{min}(0.80 \\cdot \\text{ANGOT}, \\text{DTR})
     $$
 
     Photosynthetically active radiation is 0.50 of global radiation:
 
     $$
-    \text{PAR} = 0.5 \cdot \text{AVRAD}
+    \\text{PAR} = 0.5 \\cdot \\text{AVRAD}
     $$
 
     Fraction intercepted by canopy (Beer-Lambert law):
 
     $$
-    \text{frac} = 1 - \exp(-K \cdot \text{LAI})
+    \\text{frac} = 1 - \\exp(-K \\cdot \\text{LAI})
     $$
 
     Intercepted PAR:
 
     $$
-    \text{PARINT} = \text{PAR} \cdot \text{frac}
+    \\text{PARINT} = \\text{PAR} \\cdot \\text{frac}
     $$
 """
 

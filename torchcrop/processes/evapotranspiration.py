@@ -1,4 +1,4 @@
-r"""Potential evapotranspiration.
+"""Potential evapotranspiration.
 
 Implements the PENMAN formula for computing potential evaporation from water
 and soil surfaces, and potential transpiration of a closed crop canopy,
@@ -19,13 +19,13 @@ Equations:
     Potential transpiration rate:
 
     $$
-    P_t = \text{CFET} \cdot ETC \cdot F_{INT}
+    P_t = \\text{CFET} \\cdot ETC \\cdot F_{INT}
     $$
 
     Potential soil evaporation:
 
     $$
-    P_s = ES_0 \cdot (1 - F_{INT})
+    P_s = ES_0 \\cdot (1 - F_{INT})
     $$
 
     where CFET is a crop-specific correction factor and F_INT is fractional
