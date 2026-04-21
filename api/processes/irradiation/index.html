@@ -1980,32 +1980,32 @@
 <p>Daily total irradiation (AVRAD) computed from solar geometry and
 atmospheric transmission:</p>
 <p>$$
-SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
+SC = 1370 \cdot (1 + 0.033 \cos(2\pi        ext{DOY}/365))
 $$</p>
 <p>$$
-A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
+A_0 =       ext{LIMIT}(-1, 1,       ext{SINLD}/     ext{COSLD})
 $$</p>
 <p>$$
-\text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
-24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
+    ext{DSINB} = 3600 \cdot (       ext{DAYL} \cdot         ext{SINLD} +
+24 \cdot    ext{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
 $$</p>
 <p>$$
-\text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
+    ext{ANGOT} =    ext{max}(0.0001, SC \cdot       ext{DSINB})
 $$</p>
 <p>$$
-\text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
+    ext{AVRAD} =    ext{min}(0.80 \cdot     ext{ANGOT},     ext{DTR})
 $$</p>
 <p>Photosynthetically active radiation is 0.50 of global radiation:</p>
 <p>$$
-\text{PAR} = 0.5 \cdot \text{AVRAD}
+    ext{PAR} = 0.5 \cdot    ext{AVRAD}
 $$</p>
 <p>Fraction intercepted by canopy (Beer-Lambert law):</p>
 <p>$$
-\text{frac} = 1 - \exp(-K \cdot \text{LAI})
+    ext{frac} = 1 - \exp(-K \cdot   ext{LAI})
 $$</p>
 <p>Intercepted PAR:</p>
 <p>$$
-\text{PARINT} = \text{PAR} \cdot \text{frac}
+    ext{PARINT} =   ext{PAR} \cdot  ext{frac}
 $$</p>
 </div>
 
@@ -2091,8 +2091,7 @@ Beer-Lambert extinction law.</p>
         <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">cosld</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="n">dsinb</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
             <span class="n">dayl</span> <span class="o">*</span> <span class="n">sinld</span>
-            <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
-            <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+            <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
         <span class="p">)</span>
 
         <span class="c1"># Solar constant [W m⁻²] as function of day of year</span>
@@ -2277,8 +2276,7 @@ coefficient).</p></td>
     <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">cosld</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="n">dsinb</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
         <span class="n">dayl</span> <span class="o">*</span> <span class="n">sinld</span>
-        <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
-        <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
     <span class="p">)</span>
 
     <span class="c1"># Solar constant [W m⁻²] as function of day of year</span>
