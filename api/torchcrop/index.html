@@ -18466,8 +18466,7 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Potential evapotranspiration.</p>
-<p>Implements the PENMAN formula for computing potential evaporation from water
+      <p>PENMAN formula for computing potential evaporation from water
 and soil surfaces, and potential transpiration of a closed crop canopy,
 accounting for CO2 effects.</p>
 <div class="admonition references">
@@ -18475,47 +18474,23 @@ accounting for CO2 effects.</p>
 <p>SIMPLACE <code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.
 Based on Penman (1948) with modifications by van Kraalingen.</p>
 </div>
-<p>Equations:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code>See PENMAN method for detailed derivations. Key outputs:
-
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
+<p>See PENMAN method for detailed derivations. Key outputs:
 - E0: Potential evaporation from open water surface [mm d⁻¹]
 - ES0: Potential evaporation from bare soil [mm d⁻¹]
-- ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]
-
-Potential transpiration rate:
-
-$$
+- ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]</p>
+<p>Potential transpiration rate:</p>
+<p>$$
 P_t = \text{CFET} \cdot ETC \cdot F_{INT}
-$$
-
-Potential soil evaporation:
-
-$$
+$$</p>
+<p>Potential soil evaporation:</p>
+<p>$$
 P_s = ES_0 \cdot (1 - F_{INT})
-$$
-
-where CFET is a crop-specific correction factor and F_INT is fractional
-light interception.
-</code></pre></div></td></tr></table></div>
+$$</p>
+<p>where CFET is a crop-specific correction factor and F_INT is fractional
+light interception.</p>
+</div>
 
 
 

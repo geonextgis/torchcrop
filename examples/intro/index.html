@@ -2555,13 +2555,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -2601,21 +2601,6 @@ print(output.dvs.shape)  # [B, T+1] development stage trajectory</div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>tensor([916.7202, 916.7202])
-torch.Size([2, 151])
-torch.Size([2, 151])
-</pre>
-</div>
-</div>
-</div>
-</div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
@@ -2623,7 +2608,7 @@ torch.Size([2, 151])
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -2636,55 +2621,55 @@ torch.Size([2, 151])
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># import torch</span>
-<span class="c1"># import torch.nn as nn</span>
-<span class="c1"># from torchcrop import Lintul5Model, CropParameters</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lintul5Model</span><span class="p">,</span> <span class="n">CropParameters</span>
 
-<span class="c1"># crop = CropParameters().to(dtype=torch.float64)</span>
-<span class="c1"># crop.tsum1 = nn.Parameter(torch.tensor(900, dtype=torch.float64))</span>
+<span class="n">crop</span> <span class="o">=</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="n">crop</span><span class="o">.</span><span class="n">tsum1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">900</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
 
-<span class="c1"># model = Lintul5Model(crop_params=crop).double()</span>
-<span class="c1"># optimizer = torch.optim.Adam([crop.rue], lr=1e-1)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">crop_params</span><span class="o">=</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">crop</span><span class="o">.</span><span class="n">rue</span><span class="p">],</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">)</span>
 
-<span class="c1"># observed_yield = 1200</span>
+<span class="n">observed_yield</span> <span class="o">=</span> <span class="mi">1200</span>
 
-<span class="c1"># # Add gradient inspection</span>
-<span class="c1"># for i in range(50):</span>
-<span class="c1">#     optimizer.zero_grad()</span>
-<span class="c1">#     out = model(weather.to(torch.float64), start_doy=60)</span>
-<span class="c1">#     loss = ((out.yield_ - observed_yield) ** 2).mean()</span>
-<span class="c1">#     loss.backward()</span>
+<span class="c1"># Add gradient inspection</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">weather</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">((</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span> <span class="o">-</span> <span class="n">observed_yield</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 
-<span class="c1">#     # Check gradient magnitude</span>
-<span class="c1">#     grad = crop.tsum1.grad</span>
-<span class="c1">#     print(f"Iter {i}: loss={loss:.6f}, yield={out.yield_.mean():.2f}, grad={grad:.6e}")</span>
+    <span class="c1"># Check gradient magnitude</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="n">crop</span><span class="o">.</span><span class="n">tsum1</span><span class="o">.</span><span class="n">grad</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Iter </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: loss=</span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, yield=</span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">yield_</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, grad=</span><span class="si">{</span><span class="n">grad</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1">#     optimizer.step()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># import torch
-# import torch.nn as nn
-# from torchcrop import Lintul5Model, CropParameters
+<div class="clipboard-copy-txt" id="cell-2">import torch
+import torch.nn as nn
+from torchcrop import Lintul5Model, CropParameters
 
-# crop = CropParameters().to(dtype=torch.float64)
-# crop.tsum1 = nn.Parameter(torch.tensor(900, dtype=torch.float64))
+crop = CropParameters().to(dtype=torch.float64)
+crop.tsum1 = nn.Parameter(torch.tensor(900, dtype=torch.float64))
 
-# model = Lintul5Model(crop_params=crop).double()
-# optimizer = torch.optim.Adam([crop.rue], lr=1e-1)
+model = Lintul5Model(crop_params=crop).double()
+optimizer = torch.optim.Adam([crop.rue], lr=1e-1)
 
-# observed_yield = 1200
+observed_yield = 1200
 
-# # Add gradient inspection
-# for i in range(50):
-#     optimizer.zero_grad()
-#     out = model(weather.to(torch.float64), start_doy=60)
-#     loss = ((out.yield_ - observed_yield) ** 2).mean()
-#     loss.backward()
+# Add gradient inspection
+for i in range(50):
+    optimizer.zero_grad()
+    out = model(weather.to(torch.float64), start_doy=60)
+    loss = ((out.yield_ - observed_yield) ** 2).mean()
+    loss.backward()
 
-#     # Check gradient magnitude
-#     grad = crop.tsum1.grad
-#     print(f"Iter {i}: loss={loss:.6f}, yield={out.yield_.mean():.2f}, grad={grad:.6e}")
+    # Check gradient magnitude
+    grad = crop.tsum1.grad
+    print(f"Iter {i}: loss={loss:.6f}, yield={out.yield_.mean():.2f}, grad={grad:.6e}")
 
-#     optimizer.step()</div>
+    optimizer.step()</div>
 </div>
 </div>
 </div>
@@ -2720,7 +2705,7 @@ torch.Size([2, 151])
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 22, 2026 21:57:53 UTC"><span class="timeago" datetime="2026-04-22T21:57:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 22, 2026 21:57:53 UTC">2026-04-22</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 22, 2026 22:08:39 UTC"><span class="timeago" datetime="2026-04-22T22:08:39+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 22, 2026 22:08:39 UTC">2026-04-22</span>
   </span>
 
     
