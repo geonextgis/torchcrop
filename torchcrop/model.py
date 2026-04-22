@@ -135,6 +135,12 @@ class Lintul5Model(nn.Module):
         # Initialise at field capacity × initial rooting depth (mm)
         wfc = float(self.soil_params.wcfc.detach().cpu().item())
         wai = 1000.0 * wfc * rootdi
+        # Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI
+        rdmso = float(self.soil_params.rdmso.detach().cpu().item())
+        rdmcr = float(self.crop_params.rdmcr.detach().cpu().item())
+        rdm_val = min(rdmso, rdmcr)
+        wci_lower = float(self.soil_params.wci_lower.detach().cpu().item())
+        wa_lower_i = 1000.0 * max(rdm_val - rootdi, 1e-4) * wci_lower
         state = ModelState.initial(
             batch_size=batch_size,
             dtype=dtype,
@@ -142,6 +148,9 @@ class Lintul5Model(nn.Module):
             dvsi=dvsi,
             wai=wai,
             rootdi=rootdi,
+            wa_lower_i=wa_lower_i,
+            dslri=3.0,
+            dsosi=0.0,
         )
         # Seed leaf mass so that LAI growth has a substrate post-emergence
         laii = float(self.crop_params.laii.detach().cpu().item())
@@ -315,13 +324,20 @@ class Lintul5Model(nn.Module):
             frac_int=frac_int,
         )
 
-        # 5. Water balance (uses current LAI and root depth)
+        # 5. Water balance (two-zone, with SIMPLACE percolation cascade)
+        rdm = torch.minimum(
+            soil_params.rdmso + torch.zeros_like(state.rootd),
+            crop_params.rdmcr + torch.zeros_like(state.rootd),
+        )
         water = self.water_balance(
             state=state,
             rain=rain,
             pevap=et["pevap"],
             ptran=et["ptran"],
             params=soil_params,
+            rdm=rdm,
+            etc=et["etc"],
+            doy=doy,
         )
         tranrf = water["tranrf"]
 
@@ -406,6 +422,9 @@ class Lintul5Model(nn.Module):
             "lai_rate": gate(leaf["lai_rate"]),
             "rootd_rate": root["rootd_rate"],
             "wa_rate": water["wa_rate"],
+            "wa_lower_rate": water["wa_lower_rate"],
+            "dslr_rate": water["dslr_rate"],
+            "dsos_rate": water["dsos_rate"],
             "anlv_rate": gate(nut["n_lv_rate"]),
             "anst_rate": gate(nut["n_st_rate"]),
             "anrt_rate": gate(nut["n_rt_rate"]),

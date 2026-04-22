@@ -56,7 +56,13 @@ class ModelState:
             [g m⁻²].
         lai: Leaf area index, ``[B]`` [m² m⁻²].
         rootd: Rooting depth, ``[B]`` [m].
-        wa: Actual soil water in the root zone, ``[B]`` [mm].
+        wa: Total soil water in the rooted zone, ``[B]`` [mm].
+        wa_lower: Total soil water in the lower zone (between ``rootd`` and
+            the maximum rooting depth ``rdm``), ``[B]`` [mm].
+        dslr: Days since last (infiltrating) rain event, ``[B]`` [d];
+            drives the Stroosnijder soil-evaporation model.
+        dsos: Days of oxygen shortage, ``[B]`` [d], clipped to ``[0, 4]``;
+            drives the time-dependent ``RWET`` waterlogging factor.
         anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,
             storage organs, each ``[B]`` [g N m⁻²].
         aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].
@@ -90,8 +96,11 @@ class ModelState:
     # Roots
     rootd: torch.Tensor  # [B] m
 
-    # Water
-    wa: torch.Tensor  # [B] mm — actual soil water in root zone
+    # Water — two-zone bucket (SIMPLACE WATBALS)
+    wa: torch.Tensor  # [B] mm — total water in rooted zone
+    wa_lower: torch.Tensor  # [B] mm — total water in lower zone (between rootd and rdm)
+    dslr: torch.Tensor  # [B] d — days since last rain (Stroosnijder evap model)
+    dsos: torch.Tensor  # [B] d — days of oxygen shortage (0–4, RWET model)
 
     # Nitrogen pools [g N m-2]
     anlv: torch.Tensor
@@ -124,6 +133,9 @@ class ModelState:
         dvsi: float = 0.0,
         wai: float = 60.0,
         rootdi: float = 0.10,
+        wa_lower_i: float = 400.0,
+        dslri: float = 3.0,
+        dsosi: float = 0.0,
     ) -> "ModelState":
         """Construct a zeroed initial state for a batch.
 
@@ -155,6 +167,9 @@ class ModelState:
             lai=zeros.clone(),
             rootd=full(rootdi),
             wa=full(wai),
+            wa_lower=full(wa_lower_i),
+            dslr=full(dslri),
+            dsos=full(dsosi),
             anlv=zeros.clone(),
             anst=zeros.clone(),
             anrt=zeros.clone(),
