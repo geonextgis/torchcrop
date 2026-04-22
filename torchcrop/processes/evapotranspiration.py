@@ -1,6 +1,4 @@
-"""Potential evapotranspiration.
-
-Implements the PENMAN formula for computing potential evaporation from water
+"""PENMAN formula for computing potential evaporation from water
 and soil surfaces, and potential transpiration of a closed crop canopy,
 accounting for CO2 effects.
 
@@ -9,9 +7,7 @@ References:
     Based on Penman (1948) with modifications by van Kraalingen.
 
 Equations:
-
     See PENMAN method for detailed derivations. Key outputs:
-
     - E0: Potential evaporation from open water surface [mm d⁻¹]
     - ES0: Potential evaporation from bare soil [mm d⁻¹]
     - ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]
