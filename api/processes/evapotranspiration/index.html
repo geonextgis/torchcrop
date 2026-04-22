@@ -2108,38 +2108,19 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">=</span> <span class="n">cfet</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">co2</span> <span class="o">=</span> <span class="n">co2</span>
 
-        <span class="c1"># CO2 correction table (x: CO2 ppm, y: correction factor)</span>
-        <span class="c1"># From SIMPLACE cET0CorrectionTableCo2 and cET0CorrectionTableFactor</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">,</span> <span class="mf">720.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="mf">2000.0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">])</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_interpolate_co2_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2_val</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear interpolation of CO2 correction factor.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            co2_val: CO2 concentration [ppm], shape ``[B]``.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            CO2 correction factor, shape ``[B]``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Simple linear interpolation between table points</span>
-        <span class="c1"># Find bracketing indices</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_x</span>
-        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_table_y</span>
-
-        <span class="c1"># Clamp to table bounds</span>
-        <span class="n">co2_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">co2_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">max</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-
-        <span class="c1"># Find indices for interpolation</span>
-        <span class="n">factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">co2_clamped</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">in_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">co2_clamped</span> <span class="o">&gt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">co2_clamped</span> <span class="o">&lt;=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">in_range</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="c1"># Linear interpolation</span>
-                <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="n">co2_clamped</span><span class="p">[</span><span class="n">in_range</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                <span class="n">factor</span><span class="p">[</span><span class="n">in_range</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="n">factor</span>
+        <span class="c1"># CO2 correction table from SIMPLACE cET0CorrectionTableCo2 / cET0CorrectionTableFactor.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
+            <span class="s2">&quot;co2_table&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="p">[</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">],</span>
+                <span class="p">]</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2245,7 +2226,7 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># CO2 correction for ET0</span>
-        <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">co2_table</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
         <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
         <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
@@ -2475,7 +2456,7 @@ transpiration and soil evaporation based on light interception.</p>
     <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="c1"># CO2 correction for ET0</span>
-    <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interpolate_co2_factor</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
+    <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">co2_table</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2</span><span class="p">))</span>
     <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
     <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
