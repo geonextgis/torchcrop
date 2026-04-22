@@ -39,6 +39,8 @@ import math
 import torch
 import torch.nn as nn
 
+from torchcrop.functions.interpolation import interpolate
+
 
 class PotentialEvapoTranspiration(nn.Module):
     """PENMAN-based potential evapotranspiration calculation.
@@ -64,38 +66,19 @@ class PotentialEvapoTranspiration(nn.Module):
         self.cfet = cfet
         self.co2 = co2
 
-        # CO2 correction table (x: CO2 ppm, y: correction factor)
-        # From SIMPLACE cET0CorrectionTableCo2 and cET0CorrectionTableFactor
-        self.co2_table_x = torch.tensor([40.0, 360.0, 720.0, 1000.0, 2000.0])
-        self.co2_table_y = torch.tensor([1.05, 1.00, 0.95, 0.92, 0.92])
-
-    def _interpolate_co2_factor(self, co2_val: torch.Tensor) -> torch.Tensor:
-        """Linear interpolation of CO2 correction factor.
-
-        Args:
-            co2_val: CO2 concentration [ppm], shape ``[B]``.
-
-        Returns:
-            CO2 correction factor, shape ``[B]``.
-        """
-        # Simple linear interpolation between table points
-        # Find bracketing indices
-        x = self.co2_table_x
-        y = self.co2_table_y
-
-        # Clamp to table bounds
-        co2_clamped = torch.clamp(co2_val, min=x[0], max=x[-1])
-
-        # Find indices for interpolation
-        factor = torch.ones_like(co2_clamped)
-        for i in range(len(x) - 1):
-            in_range = (co2_clamped >= x[i]) & (co2_clamped <= x[i + 1])
-            if in_range.any():
-                # Linear interpolation
-                alpha = (co2_clamped[in_range] - x[i]) / (x[i + 1] - x[i])
-                factor[in_range] = (1.0 - alpha) * y[i] + alpha * y[i + 1]
-
-        return factor
+        # CO2 correction table from SIMPLACE cET0CorrectionTableCo2 / cET0CorrectionTableFactor.
+        self.register_buffer(
+            "co2_table",
+            torch.tensor(
+                [
+                    [40.0, 1.05],
+                    [360.0, 1.00],
+                    [720.0, 0.95],
+                    [1000.0, 0.92],
+                    [2000.0, 0.92],
+                ]
+            ),
+        )
 
     def forward(
         self,
@@ -201,7 +184,7 @@ class PotentialEvapoTranspiration(nn.Module):
         et0 = torch.clamp(et0, min=0.0)
 
         # CO2 correction for ET0
-        co2_factor = self._interpolate_co2_factor(torch.full_like(e0, self.co2))
+        co2_factor = interpolate(self.co2_table, torch.full_like(e0, self.co2))
         etc = et0 * co2_factor
 
         # Potential transpiration and soil evaporation split by light interception
