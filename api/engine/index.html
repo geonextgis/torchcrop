@@ -2527,6 +2527,7 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
                 <span class="s2">&quot;lai&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;rootd&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;wa&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;wa_lower&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;anlv&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;anst&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;anrt&quot;</span><span class="p">,</span>
@@ -2545,6 +2546,10 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dvs&quot;</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dslr&quot;</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dsos&quot;</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
             <span class="n">updates</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_val</span>
     <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 </code></pre></div>

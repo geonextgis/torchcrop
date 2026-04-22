@@ -1970,35 +1970,109 @@
 <a id="torchcrop.processes.water_balance"></a>
     <div class="doc doc-contents first">
 
-      <p>Soil water balance — single-layer bucket model.</p>
+      <p>Soil water balance — two-zone port of SIMPLACE <code>WaterBalance.java</code>.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>WaterBalance.java</code>. The simplified bucket implementation
-below tracks a single effective root-zone water storage <code>WA</code> [mm].
-It produces actual transpiration from potential transpiration via a
-linear water-stress response <code>TRANRF</code> in $[0, 1]$.</p>
+<p>SIMPLACE <code>WaterBalance.java</code> (the <code>WATBALS</code> routine) and
+<code>LintulFunctions.SWEAF</code>.</p>
 </div>
+<div class="admonition design">
+<p class="admonition-title">Design</p>
+<p>The implementation faithfully ports the SIMPLACE two-zone bucket model.</p>
+<p><strong>Zones.</strong> The soil column is split into (i) a rooted zone of depth
+<code>rootd</code> storing <code>wa</code> [mm] and (ii) a lower zone of depth
+<code>rdm - rootd</code> storing <code>wa_lower</code> [mm], where <code>rdm = min(rdmso,
+rdmcr)</code> is the soil-/crop-limited maximum rooting depth. Root-front
+advance <code>rr</code> moves water with content <code>SMACTL</code> from the lower zone
+into the rooted zone via the <code>WDR</code>/<code>WDRA</code> fluxes.</p>
+<p><strong>Percolation cascade.</strong> Net infiltration (after evaporation and
+transpiration) flows into the rooted zone (<code>PERC1</code>); excess above
+field capacity trickles to the lower zone (<code>PERC2</code>); excess below the
+lower zone's field capacity leaves the profile as deep drainage
+(<code>PERC3</code>). All three are rate-limited by <code>KSUB</code> and by the free
+pore space of the receiving layer, exactly as in SIMPLACE.</p>
+<p><strong>Stress factors.</strong> Transpiration is reduced multiplicatively by a
+drought factor <code>RDRY</code> and (for non-rice crops) an oxygen-shortage
+factor <code>RWET</code>. <code>RWET</code> ramps with <code>DSOS</code> (days of oxygen shortage,
+persistent across days, clipped to <code>[0, 4]</code>).</p>
+<p><strong>Soil evaporation.</strong> Stroosnijder model: if infiltration ≥ 5 mm d⁻¹
+the evaporation is reset to the potential rate and <code>DSLR</code> to 1,
+otherwise <code>DSLR</code> increments and evaporation follows the
+<code>sqrt(DSLR) - sqrt(DSLR-1)</code> decay, capped by air-dry capacity.</p>
+<p><strong>Irrigation.</strong> Supports the three SIMPLACE modes controlled by
+<code>params.irri</code>: 0 = none, 1 = automatic refill when <code>SMACT</code> falls
+below <code>SMCR + 0.02</code> and rain &lt; 10 mm, 2 = table look-up of
+<code>irrtab</code> scaled by <code>scale_factor_irr</code>.</p>
+</div>
+<p>Numerical properties:
+    * <strong>Differentiable.</strong> All branches use <code>torch.where</code> / <code>torch.clamp</code>
+      / <code>torch.minimum</code>; no <code>.item()</code> or Python-level <code>if</code> on tensor
+      values. <code>sqrt</code> inputs are clamped away from zero.
+    * <strong>Batch-compatible.</strong> All operations are element-wise; scalar
+      parameters broadcast across <code>[B]</code>.
+    * <strong>Mass-conservative.</strong> In the absence of boundary artefacts we have
+      <code>d(wa + wa_lower)/dt = perc1 − perc3</code> and, after a day,
+      <code>rain + irrig − runoff − evap − tran − perc3 = Δ(wa + wa_lower)</code>.</p>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Available water, capacity limits at field capacity and wilting point:</p>
+<p>Actual soil-moisture contents [m³ m⁻³]:</p>
 <p>$$
-W_\text{fc}  = 1000 \cdot \theta_\text{fc} \cdot D_\text{root}
+\theta = \frac{W_a}{1000 \cdot D_\text{root}},
 \qquad
-W_\text{wp}  = 1000 \cdot \theta_\text{wp} \cdot D_\text{root}
+\theta_\ell = \frac{W_{a,\ell}}{1000 \cdot (D_\text{rdm} -
+D_\text{root})}
 $$</p>
-<p>Water stress reduction factor (linear between wilting and critical
-point):</p>
+<p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and critical content:</p>
 <p>$$
-\text{TRANRF} = \text{clip}!\left(\frac{W_a - W_\text{wp}}
-{W_\text{fc} - W_\text{wp}},\ 0,\ 1\right)
+f_\text{eaw} = \mathrm{clip}!\left(\frac{1}{A + B\,\text{ETC}<em>
+\text{cm}} - (5-\text{DEPNR})\cdot 0.10,\ 0.10,\ 0.95\right),
+$$
+$$
+\theta</em>\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
+\theta_\text{wp}) + \theta_\text{wp}.
 $$</p>
-<p>Actual transpiration:</p>
+<p>Drought and oxygen reductions:</p>
 <p>$$
-T_a = \text{PTRAN} \cdot \text{TRANRF}
+R_\text{dry} = \mathrm{clip}!\left(
+\frac{\theta - \theta_\text{wp}}{\theta_\text{crit} -
+\theta_\text{wp}},\ 0,\ 1\right),
+$$
+$$
+R_\text{wet,max} = \mathrm{clip}!\left(
+\frac{\theta_\text{sat} - \theta}{\theta_\text{sat} -
+\theta_\text{air}},\ 0,\ 1\right),
+\quad
+R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
+\right)(1 - R_\text{wet,max}).
 $$</p>
-<p>Mass balance update:</p>
+<p>Root-front water transfer:</p>
 <p>$$
-W_{a,t+1} = W_{a,t} + P - T_a - E_a - \text{drain} - \text{runoff}
+\text{WDR} = 1000 \cdot r_r \cdot \theta_\ell,
+\qquad
+\text{WDRA} = 1000 \cdot r_r \cdot (\theta_\ell -
+\theta_\text{wp})_+.
+$$</p>
+<p>Percolation cascade (subscripts <code>0</code> denote saturation-capacity
+headroom and unlabelled ones field-capacity headroom):</p>
+<p>$$
+\begin{aligned}
+\text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\
+\text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\
+\text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}<em>0,\ \text{PERC1P}),\
+\text{RUNOFF} &amp;= \text{RUNFR}\cdot \text{RAIN} + (\text{PERC1P}
+- \text{PERC1})</em>+,\
+\text{PERC2} &amp;= \mathbb{1}<em _ell_0="\ell,0">{\text{CAP}\le \text{PERC1}}\cdot
+\min(\text{KSUB} + \text{CAP}</em> -
+\text{CAP})},\ (\text{PERC1<em _text_CAP="\text{CAP">+),\
+\text{PERC3} &amp;= \mathbb{1}</em><em>\ell\le \text{PERC2}}\cdot
+\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}</em>\ell)_+).
+\end{aligned}
+$$</p>
+<p>Rates (integrated with forward Euler, <code>dt = 1</code> d):</p>
+<p>$$
+\dot W_a = \text{PERC1} - \text{PERC2} + \text{WDR},
+\qquad
+\dot W_{a,\ell} = \text{PERC2} - \text{PERC3} - \text{WDR}.
 $$</p>
 </div>
 
@@ -2027,12 +2101,22 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
 
     <div class="doc doc-contents ">
 
-      <p>Single-layer bucket water balance.</p>
+      <p>Two-zone port of SIMPLACE Lintul5 <code>WATBALS</code>.</p>
+<p>Computes daily water fluxes (transpiration, evaporation, runoff,
+drainage), stress factors (<code>TRANRF</code>), and rate variables for the
+rooted / lower / Stroosnijder / oxygen states, in a fully batched
+and autograd-safe manner.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/water_balance.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">WaterBalance</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Single-layer bucket water balance.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Two-zone port of SIMPLACE Lintul5 ``WATBALS``.</span>
+
+<span class="sd">    Computes daily water fluxes (transpiration, evaporation, runoff,</span>
+<span class="sd">    drainage), stress factors (``TRANRF``), and rate variables for the</span>
+<span class="sd">    rooted / lower / Stroosnijder / oxygen states, in a fully batched</span>
+<span class="sd">    and autograd-safe manner.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2041,77 +2125,217 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">pevap</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
+        <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily soil-water balance and stress factor.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current state; uses ``state.wa`` and ``state.rootd``.</span>
+<span class="sd">            state: Current `ModelState`; uses ``wa``, ``wa_lower``,</span>
+<span class="sd">                ``rootd``, ``dslr``, ``dsos``.</span>
 <span class="sd">            rain: Daily precipitation [mm d⁻¹], shape ``[B]``.</span>
 <span class="sd">            pevap: Potential soil evaporation [mm d⁻¹], shape ``[B]``.</span>
 <span class="sd">            ptran: Potential transpiration [mm d⁻¹], shape ``[B]``.</span>
-<span class="sd">            params: Soil parameters (water-content limits, drainage,</span>
-<span class="sd">                runoff).</span>
+<span class="sd">            params: Soil parameter container.</span>
+<span class="sd">            rdm: Soil-/crop-limited maximum rooting depth</span>
+<span class="sd">                ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
+<span class="sd">            etc: CO2-corrected reference canopy ET [mm d⁻¹], shape ``[B]``;</span>
+<span class="sd">                falls back to ``ptran`` when ``None``.</span>
+<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``; ``None`` → 0</span>
+<span class="sd">                (no root-front water transfer).</span>
+<span class="sd">            irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
+<span class="sd">                overrides ``params.irri`` mode.</span>
+<span class="sd">            doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
+<span class="sd">                look-up; shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
+<span class="sd">            Dict of ``[B]`` tensors.</span>
 
-<span class="sd">            Rate variables (consumed by the engine for state update):</span>
+<span class="sd">            **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">                * ``wa_rate`` [mm d⁻¹] — Net daily change in root-zone</span>
-<span class="sd">                  soil water storage</span>
-<span class="sd">                  ``= infiltration - tran - evap - drain`` (with an extra</span>
-<span class="sd">                  outflow ``over_sat`` if storage would exceed</span>
-<span class="sd">                  saturation). Integrated as</span>
-<span class="sd">                  ``wa_{t+1} = wa_t + wa_rate``.</span>
+<span class="sd">                * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">                * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
+<span class="sd">                * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
+<span class="sd">                * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
 
-<span class="sd">            Diagnostics / fluxes used by other processes:</span>
+<span class="sd">            **Fluxes / diagnostics**:</span>
 
-<span class="sd">                * ``tran`` [mm d⁻¹] — Actual transpiration</span>
-<span class="sd">                  ``= ptran * tranrf``.</span>
-<span class="sd">                * ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by</span>
-<span class="sd">                  available water above the air-dry threshold.</span>
-<span class="sd">                * ``tranrf`` [-] — Water-stress reduction factor in</span>
-<span class="sd">                  ``[0, 1]``; multiplies ``gtotal`` in</span>
-<span class="sd">                  `Photosynthesis`.</span>
-<span class="sd">                * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
-<span class="sd">                  root zone (includes any over-saturation outflow).</span>
-<span class="sd">                * ``runoff`` [mm d⁻¹] — Surface runoff</span>
-<span class="sd">                  ``= runfr * rain``.</span>
+<span class="sd">                * ``tran``   — actual transpiration [mm d⁻¹].</span>
+<span class="sd">                * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
+<span class="sd">                * ``runoff`` — surface runoff (preliminary + rejected</span>
+<span class="sd">                  infiltration) [mm d⁻¹].</span>
+<span class="sd">                * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
+<span class="sd">                * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
+<span class="sd">                  [mm d⁻¹].</span>
+<span class="sd">                * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
+<span class="sd">                  rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">                * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">                * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
+<span class="sd">                * ``smact`` / ``smactl`` — soil-moisture contents</span>
+<span class="sd">                  [m³ m⁻³].</span>
+<span class="sd">                * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
+<span class="sd">                * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
+<span class="sd">                  factors in ``[0, 1]``.</span>
+<span class="sd">                * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
+<span class="sd">                  (should be ≈ 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">wfc</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-        <span class="n">wwp</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-        <span class="n">wst_capacity</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
+        <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+        <span class="n">rdm_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">rootd</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">)</span>
+        <span class="n">rd_lower</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 
-        <span class="n">denom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">wfc</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-        <span class="n">tranrf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 1. Actual volumetric soil-moisture contents [m³ m⁻³]</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">smact</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span><span class="p">)</span>
+        <span class="n">smactl</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa_lower</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span><span class="p">)</span>
 
-        <span class="n">tran</span> <span class="o">=</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">tranrf</span>
-        <span class="c1"># Evaporation limited by water content above the air-dry value</span>
-        <span class="n">wad</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-        <span class="n">evap_capacity</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">evap_capacity</span><span class="p">)</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 2. Critical moisture content and drought reduction factor</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">etc_eff</span> <span class="o">=</span> <span class="n">ptran</span> <span class="k">if</span> <span class="n">etc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">etc</span>
+        <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">depnr</span><span class="p">)</span>
+        <span class="n">smcr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">sweaf</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span>
+        <span class="n">rdry</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">smcr</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">))</span>
 
-        <span class="n">runoff</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
-        <span class="n">infiltration</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">-</span> <span class="n">runoff</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 3. Oxygen-shortage factor with DSOS accumulator</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">smair</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">crairc</span>
+        <span class="n">rwetmx</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smair</span><span class="p">))</span>
+        <span class="n">dsos_new</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">smact</span> <span class="o">&gt;=</span> <span class="n">smair</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">4.0</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">rwet_nonrice</span> <span class="o">=</span> <span class="n">rwetmx</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">dsos_new</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">rwetmx</span><span class="p">)</span>
+        <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">rwet</span> <span class="o">=</span> <span class="n">is_aquatic</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">is_aquatic</span><span class="p">)</span> <span class="o">*</span> <span class="n">rwet_nonrice</span>
+        <span class="n">rwet</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rwet</span><span class="p">)</span>
 
-        <span class="c1"># Available water after inputs and losses — then drain the excess above WFC</span>
-        <span class="n">wa_tentative</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">+</span> <span class="n">infiltration</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">evap</span>
-        <span class="n">excess</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">wa_tentative</span> <span class="o">-</span> <span class="n">wfc</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">drain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">excess</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">drate</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">excess</span><span class="p">))</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 4. Actual transpiration and water-stress factor</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">wwp</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">wavt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">tranrf</span> <span class="o">=</span> <span class="n">tran</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">ptran</span><span class="p">)</span>
 
-        <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">infiltration</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">drain</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">*</span> <span class="mf">0.0</span>  <span class="c1"># runoff already removed</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 5. Irrigation demand</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">rirr</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">smact</span><span class="o">=</span><span class="n">smact</span><span class="p">,</span>
+            <span class="n">smcr</span><span class="o">=</span><span class="n">smcr</span><span class="p">,</span>
+            <span class="n">wavt</span><span class="o">=</span><span class="n">wavt</span><span class="p">,</span>
+            <span class="n">rootd</span><span class="o">=</span><span class="n">rootd</span><span class="p">,</span>
+            <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
+            <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
+            <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="c1"># Cap at saturation capacity (soft by using a drain-like outflow)</span>
-        <span class="n">over_sat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">+</span> <span class="n">wa_rate</span> <span class="o">-</span> <span class="n">wst_capacity</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">wa_rate</span> <span class="o">-</span> <span class="n">over_sat</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 6. Stroosnijder soil evaporation with DSLR accumulator</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">perc</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span><span class="p">)</span> <span class="o">*</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span>
+        <span class="n">runofp</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
+
+        <span class="n">wet_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">perc</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
+        <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">))</span>
+        <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
+        <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
+        <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">evap_dry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evmaxt</span> <span class="o">+</span> <span class="n">perc</span><span class="p">,</span> <span class="n">evap_cap</span><span class="p">)),</span>
+            <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">evap_wet</span> <span class="o">=</span> <span class="n">pevap</span>
+        <span class="n">evap</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">evap_wet</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">evap_dry</span>
+        <span class="c1"># Final safety clamp by available water above air-dry content</span>
+        <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
+        <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">smactl</span>
+        <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">cap0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">capl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+        <span class="n">capl0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+
+        <span class="n">perc1p</span> <span class="o">=</span> <span class="n">perc</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span>
+        <span class="n">perc1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">cap0</span><span class="p">,</span> <span class="n">perc1p</span><span class="p">)</span>
+        <span class="n">extra_runoff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1p</span> <span class="o">-</span> <span class="n">perc1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">runoff</span> <span class="o">=</span> <span class="n">runofp</span> <span class="o">+</span> <span class="n">extra_runoff</span>
+
+        <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">perc2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">perc1</span><span class="p">,</span> <span class="n">perc2_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc1</span><span class="p">))</span>
+
+        <span class="n">perc3_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
+
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 9. Rate variables</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
+        <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
+        <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
+        <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
+
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 10. Mass-balance residual for diagnostics</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="n">wbal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span>
+            <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
+            <span class="c1"># rates</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
+            <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
+            <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
+            <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
+            <span class="c1"># fluxes</span>
             <span class="s2">&quot;tran&quot;</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
             <span class="s2">&quot;evap&quot;</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
-            <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-            <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">drain</span> <span class="o">+</span> <span class="n">over_sat</span><span class="p">,</span>
             <span class="s2">&quot;runoff&quot;</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
+            <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+            <span class="s2">&quot;perc1&quot;</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
+            <span class="s2">&quot;perc2&quot;</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
+            <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+            <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
+            <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+            <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+            <span class="c1"># stress factors / diagnostics</span>
+            <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
+            <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
+            <span class="s2">&quot;smactl&quot;</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
+            <span class="s2">&quot;smcr&quot;</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
+            <span class="s2">&quot;rdry&quot;</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
+            <span class="s2">&quot;rwet&quot;</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
+            <span class="s2">&quot;wbal&quot;</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -2133,14 +2357,14 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
 
 
 <h3 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Compute the daily soil-water balance and stress factor.</p>
+      <p>Compute one day of water-balance rates and fluxes.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2156,7 +2380,8 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current state; uses <code>state.wa</code> and <code>state.rootd</code>.</p></td>
+        <td><p>Current <code>ModelState</code>; uses <code>wa</code>, <code>wa_lower</code>,
+<code>rootd</code>, <code>dslr</code>, <code>dsos</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2180,9 +2405,43 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
       <tr>
         <td><code>params</code></td>
         <td><code>SoilParameters</code></td>
-        <td><p>Soil parameters (water-content limits, drainage,
-runoff).</p></td>
+        <td><p>Soil parameter container.</p></td>
         <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>rdm</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Soil-/crop-limited maximum rooting depth
+<code>min(rdmso, rdmcr)</code> [m], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>etc</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>CO2-corrected reference canopy ET [mm d⁻¹], shape <code>[B]</code>;
+falls back to <code>ptran</code> when <code>None</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>rr</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>; <code>None</code> → 0
+(no root-front water transfer).</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>irrigation</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Externally supplied irrigation [mm d⁻¹] that
+overrides <code>params.irri</code> mode.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>doy</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Day-of-year tensor needed by the <code>IRRI = 2</code> table
+look-up; shape <code>[B]</code>.</p></td>
+        <td><code>None</code></td>
       </tr>
   </tbody>
 </table>
@@ -2196,18 +2455,18 @@ runoff).</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>Dict of ``[B]`` tensors grouped as follows.
+      <td><code>Dict of ``[B]`` tensors.
 
-Rate variables (consumed by the engine for state update)</code></td>
+**Rate variables** (consumed by the engine)</code></td>
       <td><ul>
-<li><code>wa_rate</code> [mm d⁻¹] — Net daily change in root-zone
-      soil water storage
-      <code>= infiltration - tran - evap - drain</code> (with an extra
-      outflow <code>over_sat</code> if storage would exceed
-      saturation). Integrated as
-      <code>wa_{t+1} = wa_t + wa_rate</code>.</li>
+<li><code>wa_rate</code>       — <code>perc1 - perc2 + wdr</code> [mm d⁻¹].<ul>
+<li><code>wa_lower_rate</code> — <code>perc2 - perc3 - wdr</code> [mm d⁻¹].</li>
+<li><code>dslr_rate</code>     — <code>dslr_new - dslr</code> [d d⁻¹].</li>
+<li><code>dsos_rate</code>     — <code>dsos_new - dsos</code> [d d⁻¹].</li>
 </ul>
-<p>Diagnostics / fluxes used by other processes:</p>
+</li>
+</ul>
+<p><strong>Fluxes / diagnostics</strong>:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
@@ -2218,17 +2477,31 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
-<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``tran`` [mm d⁻¹] — Actual transpiration
-  ``= ptran * tranrf``.
-* ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by
-  available water above the air-dry threshold.
-* ``tranrf`` [-] — Water-stress reduction factor in
-  ``[0, 1]``; multiplies ``gtotal`` in
-  `Photosynthesis`.
-* ``drain`` [mm d⁻¹] — Drainage out of the bottom of the
-  root zone (includes any over-saturation outflow).
-* ``runoff`` [mm d⁻¹] — Surface runoff
-  ``= runfr * rain``.
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``tran``   — actual transpiration [mm d⁻¹].
+* ``evap``   — actual soil evaporation [mm d⁻¹].
+* ``runoff`` — surface runoff (preliminary + rejected
+  infiltration) [mm d⁻¹].
+* ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].
+* ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes
+  [mm d⁻¹].
+* ``wdr`` / ``wdra`` — root-front water transfer to the
+  rooted zone (total / available) [mm d⁻¹].
+* ``rirr``   — effective irrigation [mm d⁻¹].
+* ``tranrf`` — water-stress factor in ``[0, 1]``.
+* ``smact`` / ``smactl`` — soil-moisture contents
+  [m³ m⁻³].
+* ``smcr``   — critical soil-moisture content [m³ m⁻³].
+* ``rdry`` / ``rwet`` — drought / oxygen reduction
+  factors in ``[0, 1]``.
+* ``wbal``   — rooted-zone mass-balance residual [mm]
+  (should be ≈ 0).
 </code></pre></div></td></tr></table></div></td>
     </tr>
   </tbody>
@@ -2242,77 +2515,217 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">pevap</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
+    <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily soil-water balance and stress factor.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current state; uses ``state.wa`` and ``state.rootd``.</span>
+<span class="sd">        state: Current `ModelState`; uses ``wa``, ``wa_lower``,</span>
+<span class="sd">            ``rootd``, ``dslr``, ``dsos``.</span>
 <span class="sd">        rain: Daily precipitation [mm d⁻¹], shape ``[B]``.</span>
 <span class="sd">        pevap: Potential soil evaporation [mm d⁻¹], shape ``[B]``.</span>
 <span class="sd">        ptran: Potential transpiration [mm d⁻¹], shape ``[B]``.</span>
-<span class="sd">        params: Soil parameters (water-content limits, drainage,</span>
-<span class="sd">            runoff).</span>
+<span class="sd">        params: Soil parameter container.</span>
+<span class="sd">        rdm: Soil-/crop-limited maximum rooting depth</span>
+<span class="sd">            ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
+<span class="sd">        etc: CO2-corrected reference canopy ET [mm d⁻¹], shape ``[B]``;</span>
+<span class="sd">            falls back to ``ptran`` when ``None``.</span>
+<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``; ``None`` → 0</span>
+<span class="sd">            (no root-front water transfer).</span>
+<span class="sd">        irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
+<span class="sd">            overrides ``params.irri`` mode.</span>
+<span class="sd">        doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
+<span class="sd">            look-up; shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
+<span class="sd">        Dict of ``[B]`` tensors.</span>
 
-<span class="sd">        Rate variables (consumed by the engine for state update):</span>
+<span class="sd">        **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">            * ``wa_rate`` [mm d⁻¹] — Net daily change in root-zone</span>
-<span class="sd">              soil water storage</span>
-<span class="sd">              ``= infiltration - tran - evap - drain`` (with an extra</span>
-<span class="sd">              outflow ``over_sat`` if storage would exceed</span>
-<span class="sd">              saturation). Integrated as</span>
-<span class="sd">              ``wa_{t+1} = wa_t + wa_rate``.</span>
+<span class="sd">            * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
+<span class="sd">            * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
 
-<span class="sd">        Diagnostics / fluxes used by other processes:</span>
+<span class="sd">        **Fluxes / diagnostics**:</span>
 
-<span class="sd">            * ``tran`` [mm d⁻¹] — Actual transpiration</span>
-<span class="sd">              ``= ptran * tranrf``.</span>
-<span class="sd">            * ``evap`` [mm d⁻¹] — Actual soil evaporation, capped by</span>
-<span class="sd">              available water above the air-dry threshold.</span>
-<span class="sd">            * ``tranrf`` [-] — Water-stress reduction factor in</span>
-<span class="sd">              ``[0, 1]``; multiplies ``gtotal`` in</span>
-<span class="sd">              `Photosynthesis`.</span>
-<span class="sd">            * ``drain`` [mm d⁻¹] — Drainage out of the bottom of the</span>
-<span class="sd">              root zone (includes any over-saturation outflow).</span>
-<span class="sd">            * ``runoff`` [mm d⁻¹] — Surface runoff</span>
-<span class="sd">              ``= runfr * rain``.</span>
+<span class="sd">            * ``tran``   — actual transpiration [mm d⁻¹].</span>
+<span class="sd">            * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
+<span class="sd">            * ``runoff`` — surface runoff (preliminary + rejected</span>
+<span class="sd">              infiltration) [mm d⁻¹].</span>
+<span class="sd">            * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
+<span class="sd">            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
+<span class="sd">              [mm d⁻¹].</span>
+<span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
+<span class="sd">              rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
+<span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents</span>
+<span class="sd">              [m³ m⁻³].</span>
+<span class="sd">            * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
+<span class="sd">            * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
+<span class="sd">              factors in ``[0, 1]``.</span>
+<span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
+<span class="sd">              (should be ≈ 0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">wfc</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-    <span class="n">wwp</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-    <span class="n">wst_capacity</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
+    <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+    <span class="n">rdm_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">rootd</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">)</span>
+    <span class="n">rd_lower</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 
-    <span class="n">denom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">wfc</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-    <span class="n">tranrf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 1. Actual volumetric soil-moisture contents [m³ m⁻³]</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">smact</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span><span class="p">)</span>
+    <span class="n">smactl</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa_lower</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span><span class="p">)</span>
 
-    <span class="n">tran</span> <span class="o">=</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">tranrf</span>
-    <span class="c1"># Evaporation limited by water content above the air-dry value</span>
-    <span class="n">wad</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
-    <span class="n">evap_capacity</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">evap_capacity</span><span class="p">)</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 2. Critical moisture content and drought reduction factor</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">etc_eff</span> <span class="o">=</span> <span class="n">ptran</span> <span class="k">if</span> <span class="n">etc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">etc</span>
+    <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">depnr</span><span class="p">)</span>
+    <span class="n">smcr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">sweaf</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span>
+    <span class="n">rdry</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">smcr</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">))</span>
 
-    <span class="n">runoff</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
-    <span class="n">infiltration</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">-</span> <span class="n">runoff</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 3. Oxygen-shortage factor with DSOS accumulator</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">smair</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">crairc</span>
+    <span class="n">rwetmx</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smair</span><span class="p">))</span>
+    <span class="n">dsos_new</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">smact</span> <span class="o">&gt;=</span> <span class="n">smair</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">4.0</span><span class="p">),</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">rwet_nonrice</span> <span class="o">=</span> <span class="n">rwetmx</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">dsos_new</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">rwetmx</span><span class="p">)</span>
+    <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">rwet</span> <span class="o">=</span> <span class="n">is_aquatic</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">is_aquatic</span><span class="p">)</span> <span class="o">*</span> <span class="n">rwet_nonrice</span>
+    <span class="n">rwet</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rwet</span><span class="p">)</span>
 
-    <span class="c1"># Available water after inputs and losses — then drain the excess above WFC</span>
-    <span class="n">wa_tentative</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">+</span> <span class="n">infiltration</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">evap</span>
-    <span class="n">excess</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">wa_tentative</span> <span class="o">-</span> <span class="n">wfc</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">drain</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">excess</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">drate</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">excess</span><span class="p">))</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 4. Actual transpiration and water-stress factor</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">wwp</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">wavt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">tranrf</span> <span class="o">=</span> <span class="n">tran</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">ptran</span><span class="p">)</span>
 
-    <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">infiltration</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">drain</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">*</span> <span class="mf">0.0</span>  <span class="c1"># runoff already removed</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 5. Irrigation demand</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">rirr</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="n">smact</span><span class="o">=</span><span class="n">smact</span><span class="p">,</span>
+        <span class="n">smcr</span><span class="o">=</span><span class="n">smcr</span><span class="p">,</span>
+        <span class="n">wavt</span><span class="o">=</span><span class="n">wavt</span><span class="p">,</span>
+        <span class="n">rootd</span><span class="o">=</span><span class="n">rootd</span><span class="p">,</span>
+        <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
+        <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
+        <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="c1"># Cap at saturation capacity (soft by using a drain-like outflow)</span>
-    <span class="n">over_sat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">+</span> <span class="n">wa_rate</span> <span class="o">-</span> <span class="n">wst_capacity</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">wa_rate</span> <span class="o">-</span> <span class="n">over_sat</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 6. Stroosnijder soil evaporation with DSLR accumulator</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">perc</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span><span class="p">)</span> <span class="o">*</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span>
+    <span class="n">runofp</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
+
+    <span class="n">wet_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">perc</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
+    <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">))</span>
+    <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
+    <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
+    <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">evap_dry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evmaxt</span> <span class="o">+</span> <span class="n">perc</span><span class="p">,</span> <span class="n">evap_cap</span><span class="p">)),</span>
+        <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">evap_wet</span> <span class="o">=</span> <span class="n">pevap</span>
+    <span class="n">evap</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">evap_wet</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">evap_dry</span>
+    <span class="c1"># Final safety clamp by available water above air-dry content</span>
+    <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
+
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
+    <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">smactl</span>
+    <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">cap0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">capl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+    <span class="n">capl0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+
+    <span class="n">perc1p</span> <span class="o">=</span> <span class="n">perc</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span>
+    <span class="n">perc1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">cap0</span><span class="p">,</span> <span class="n">perc1p</span><span class="p">)</span>
+    <span class="n">extra_runoff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1p</span> <span class="o">-</span> <span class="n">perc1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">runoff</span> <span class="o">=</span> <span class="n">runofp</span> <span class="o">+</span> <span class="n">extra_runoff</span>
+
+    <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">perc2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">perc1</span><span class="p">,</span> <span class="n">perc2_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc1</span><span class="p">))</span>
+
+    <span class="n">perc3_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
+
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 9. Rate variables</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
+    <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
+    <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
+    <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
+
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 10. Mass-balance residual for diagnostics</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="n">wbal</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span>
+        <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
+        <span class="c1"># rates</span>
         <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
+        <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
+        <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
+        <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
+        <span class="c1"># fluxes</span>
         <span class="s2">&quot;tran&quot;</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
         <span class="s2">&quot;evap&quot;</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
-        <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-        <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">drain</span> <span class="o">+</span> <span class="n">over_sat</span><span class="p">,</span>
         <span class="s2">&quot;runoff&quot;</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
+        <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+        <span class="s2">&quot;perc1&quot;</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
+        <span class="s2">&quot;perc2&quot;</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
+        <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+        <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
+        <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+        <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+        <span class="c1"># stress factors / diagnostics</span>
+        <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
+        <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
+        <span class="s2">&quot;smactl&quot;</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
+        <span class="s2">&quot;smcr&quot;</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
+        <span class="s2">&quot;rdry&quot;</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
+        <span class="s2">&quot;rwet&quot;</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
+        <span class="s2">&quot;wbal&quot;</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

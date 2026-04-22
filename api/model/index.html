@@ -2244,6 +2244,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="c1"># Initialise at field capacity × initial rooting depth (mm)</span>
         <span class="n">wfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">wfc</span> <span class="o">*</span> <span class="n">rootdi</span>
+        <span class="c1"># Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI</span>
+        <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
+        <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -2251,6 +2257,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">dvsi</span><span class="o">=</span><span class="n">dvsi</span><span class="p">,</span>
             <span class="n">wai</span><span class="o">=</span><span class="n">wai</span><span class="p">,</span>
             <span class="n">rootdi</span><span class="o">=</span><span class="n">rootdi</span><span class="p">,</span>
+            <span class="n">wa_lower_i</span><span class="o">=</span><span class="n">wa_lower_i</span><span class="p">,</span>
+            <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+            <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Seed leaf mass so that LAI growth has a substrate post-emergence</span>
         <span class="n">laii</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">laii</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -2424,13 +2433,20 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">frac_int</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># 5. Water balance (uses current LAI and root depth)</span>
+        <span class="c1"># 5. Water balance (two-zone, with SIMPLACE percolation cascade)</span>
+        <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+            <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
+            <span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
+        <span class="p">)</span>
         <span class="n">water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">water_balance</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
             <span class="n">pevap</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;pevap&quot;</span><span class="p">],</span>
             <span class="n">ptran</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">],</span>
             <span class="n">params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
+            <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
+            <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
+            <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span>
 
@@ -2515,6 +2531,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;rootd_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]),</span>
@@ -2888,6 +2907,12 @@ growth has a substrate post-emergence.</p></td>
     <span class="c1"># Initialise at field capacity × initial rooting depth (mm)</span>
     <span class="n">wfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">wfc</span> <span class="o">*</span> <span class="n">rootdi</span>
+    <span class="c1"># Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI</span>
+    <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
+    <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
         <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -2895,6 +2920,9 @@ growth has a substrate post-emergence.</p></td>
         <span class="n">dvsi</span><span class="o">=</span><span class="n">dvsi</span><span class="p">,</span>
         <span class="n">wai</span><span class="o">=</span><span class="n">wai</span><span class="p">,</span>
         <span class="n">rootdi</span><span class="o">=</span><span class="n">rootdi</span><span class="p">,</span>
+        <span class="n">wa_lower_i</span><span class="o">=</span><span class="n">wa_lower_i</span><span class="p">,</span>
+        <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Seed leaf mass so that LAI growth has a substrate post-emergence</span>
     <span class="n">laii</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">laii</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>

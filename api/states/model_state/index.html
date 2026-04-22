@@ -2170,7 +2170,25 @@ engine; see the module docstring for the full catalogue.</p>
       <tr>
         <td><code>wa</code></td>
         <td><code>Tensor</code></td>
-        <td><p>Actual soil water in the root zone, <code>[B]</code> [mm].</p></td>
+        <td><p>Total soil water in the rooted zone, <code>[B]</code> [mm].</p></td>
+      </tr>
+      <tr>
+        <td><code>wa_lower</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Total soil water in the lower zone (between <code>rootd</code> and
+the maximum rooting depth <code>rdm</code>), <code>[B]</code> [mm].</p></td>
+      </tr>
+      <tr>
+        <td><code>dslr</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Days since last (infiltrating) rain event, <code>[B]</code> [d];
+drives the Stroosnijder soil-evaporation model.</p></td>
+      </tr>
+      <tr>
+        <td><code>dsos</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Days of oxygen shortage, <code>[B]</code> [d], clipped to <code>[0, 4]</code>;
+drives the time-dependent <code>RWET</code> waterlogging factor.</p></td>
       </tr>
       <tr>
         <td><code>anlv,</code></td>
@@ -2234,7 +2252,13 @@ is preserved across the explicit-Euler step
 <span class="sd">            [g m⁻²].</span>
 <span class="sd">        lai: Leaf area index, ``[B]`` [m² m⁻²].</span>
 <span class="sd">        rootd: Rooting depth, ``[B]`` [m].</span>
-<span class="sd">        wa: Actual soil water in the root zone, ``[B]`` [mm].</span>
+<span class="sd">        wa: Total soil water in the rooted zone, ``[B]`` [mm].</span>
+<span class="sd">        wa_lower: Total soil water in the lower zone (between ``rootd`` and</span>
+<span class="sd">            the maximum rooting depth ``rdm``), ``[B]`` [mm].</span>
+<span class="sd">        dslr: Days since last (infiltrating) rain event, ``[B]`` [d];</span>
+<span class="sd">            drives the Stroosnijder soil-evaporation model.</span>
+<span class="sd">        dsos: Days of oxygen shortage, ``[B]`` [d], clipped to ``[0, 4]``;</span>
+<span class="sd">            drives the time-dependent ``RWET`` waterlogging factor.</span>
 <span class="sd">        anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,</span>
 <span class="sd">            storage organs, each ``[B]`` [g N m⁻²].</span>
 <span class="sd">        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].</span>
@@ -2268,8 +2292,11 @@ is preserved across the explicit-Euler step
     <span class="c1"># Roots</span>
     <span class="n">rootd</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] m</span>
 
-    <span class="c1"># Water</span>
-    <span class="n">wa</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] mm — actual soil water in root zone</span>
+    <span class="c1"># Water — two-zone bucket (SIMPLACE WATBALS)</span>
+    <span class="n">wa</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] mm — total water in rooted zone</span>
+    <span class="n">wa_lower</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] mm — total water in lower zone (between rootd and rdm)</span>
+    <span class="n">dslr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] d — days since last rain (Stroosnijder evap model)</span>
+    <span class="n">dsos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] d — days of oxygen shortage (0–4, RWET model)</span>
 
     <span class="c1"># Nitrogen pools [g N m-2]</span>
     <span class="n">anlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -2302,6 +2329,9 @@ is preserved across the explicit-Euler step
         <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
         <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
+        <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
+        <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
@@ -2333,6 +2363,9 @@ is preserved across the explicit-Euler step
             <span class="n">lai</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">rootd</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">rootdi</span><span class="p">),</span>
             <span class="n">wa</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">wai</span><span class="p">),</span>
+            <span class="n">wa_lower</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">wa_lower_i</span><span class="p">),</span>
+            <span class="n">dslr</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dslri</span><span class="p">),</span>
+            <span class="n">dsos</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dsosi</span><span class="p">),</span>
             <span class="n">anlv</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">anst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">anrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
@@ -2409,6 +2442,8 @@ is preserved across the explicit-Euler step
 
 
 
+
+
   <div class="doc doc-object doc-attribute">
 
 
@@ -2450,12 +2485,13 @@ is preserved across the explicit-Euler step
 
 
 
+
   <div class="doc doc-object doc-method">
 
 
 
 <h3 id="torchcrop.states.model_state.ModelState.initial" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wa_lower_i</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
@@ -2544,6 +2580,9 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
     <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
     <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
+    <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
+    <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
@@ -2575,6 +2614,9 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
         <span class="n">lai</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">rootd</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">rootdi</span><span class="p">),</span>
         <span class="n">wa</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">wai</span><span class="p">),</span>
+        <span class="n">wa_lower</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">wa_lower_i</span><span class="p">),</span>
+        <span class="n">dslr</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dslri</span><span class="p">),</span>
+        <span class="n">dsos</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dsosi</span><span class="p">),</span>
         <span class="n">anlv</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">anst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">anrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
