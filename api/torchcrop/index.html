@@ -21800,15 +21800,6 @@ otherwise <code>DSLR</code> increments and evaporation follows the
 below <code>SMCR + 0.02</code> and rain &lt; 10 mm, 2 = table look-up of
 <code>irrtab</code> scaled by <code>scale_factor_irr</code>.</p>
 </div>
-<p>Numerical properties:
-    * <strong>Differentiable.</strong> All branches use <code>torch.where</code> / <code>torch.clamp</code>
-      / <code>torch.minimum</code>; no <code>.item()</code> or Python-level <code>if</code> on tensor
-      values. <code>sqrt</code> inputs are clamped away from zero.
-    * <strong>Batch-compatible.</strong> All operations are element-wise; scalar
-      parameters broadcast across <code>[B]</code>.
-    * <strong>Mass-conservative.</strong> In the absence of boundary artefacts we have
-      <code>d(wa + wa_lower)/dt = perc1 − perc3</code> and, after a day,
-      <code>rain + irrig − runoff − evap − tran − perc3 = Δ(wa + wa_lower)</code>.</p>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Actual soil-moisture contents [m³ m⁻³]:</p>
@@ -22041,12 +22032,12 @@ and autograd-safe manner.</p>
         <span class="n">runofp</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
 
         <span class="n">wet_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">perc</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
-            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span>
+        <span class="p">)</span>
         <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
         <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">))</span>
+        <span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">)</span>
         <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
         <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
         <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -22102,10 +22093,7 @@ and autograd-safe manner.</p>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 10. Mass-balance residual for diagnostics</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="n">wbal</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span>
-            <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="c1"># rates</span>
@@ -22431,12 +22419,12 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="n">runofp</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">runfr</span> <span class="o">*</span> <span class="n">rain</span>
 
     <span class="n">wet_day</span> <span class="o">=</span> <span class="p">(</span><span class="n">perc</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
-        <span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span>
-    <span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span>
+    <span class="p">)</span>
     <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
     <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">))</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">)</span>
     <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
     <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
     <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -22492,10 +22480,7 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 10. Mass-balance residual for diagnostics</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="n">wbal</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span>
-        <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
         <span class="c1"># rates</span>
