@@ -36,16 +36,6 @@ Design:
     below ``SMCR + 0.02`` and rain < 10 mm, 2 = table look-up of
     ``irrtab`` scaled by ``scale_factor_irr``.
 
-Numerical properties:
-    * **Differentiable.** All branches use `torch.where` / `torch.clamp`
-      / `torch.minimum`; no ``.item()`` or Python-level ``if`` on tensor
-      values. ``sqrt`` inputs are clamped away from zero.
-    * **Batch-compatible.** All operations are element-wise; scalar
-      parameters broadcast across ``[B]``.
-    * **Mass-conservative.** In the absence of boundary artefacts we have
-      ``d(wa + wa_lower)/dt = perc1 − perc3`` and, after a day,
-      ``rain + irrig − runoff − evap − tran − perc3 = Δ(wa + wa_lower)``.
-
 Equations:
     Actual soil-moisture contents [m³ m⁻³]:
 
@@ -129,7 +119,6 @@ from torchcrop.functions.interpolation import interpolate
 from torchcrop.parameters.soil_params import SoilParameters
 from torchcrop.states.model_state import ModelState
 
-
 # ---------------------------------------------------------------------------- #
 # SIMPLACE helper: fraction of easily-available soil water (SWEAF)
 # ---------------------------------------------------------------------------- #
@@ -142,7 +131,7 @@ def _sweaf(etc: torch.Tensor, depnr: torch.Tensor) -> torch.Tensor:
         etc: CO2-corrected potential canopy evapotranspiration [mm d⁻¹],
             shape ``[B]``.
         depnr: Crop-group depletion number ``cDEPNR`` in ``[1, 5]``,
-            broadcastable to ``[B]``.
+            broadcastable to ``[B]``. (from 1 (=drought-sensitive) to 5 (=drought-resistent)).
 
     Returns:
         Easily-available fraction of soil water in ``[0.10, 0.95]``.
@@ -197,9 +186,7 @@ def _irrigation_demand(
     # --- Mode 1: automatic refill ---
     auto_condition = (smact <= (smcr + 0.02)) & (rain < 10.0)
     auto_dose = limit(0.0, 10.0, 0.7 * (wavfc - wavt))
-    dirr_auto = torch.where(
-        auto_condition, auto_dose, torch.zeros_like(auto_dose)
-    )
+    dirr_auto = torch.where(auto_condition, auto_dose, torch.zeros_like(auto_dose))
     # --- Mode 2: table look-up scaled by scale_factor_irr ---
     if params.irrtab is not None and doy is not None:
         table_value = interpolate(params.irrtab, doy.to(wavfc.dtype))
@@ -333,7 +320,7 @@ class WaterBalance(nn.Module):
         is_aquatic = (params.iairdu > 0.5).to(rwet_nonrice.dtype)
         rwet = is_aquatic + (1.0 - is_aquatic) * rwet_nonrice
         rwet = limit(0.0, 1.0, rwet)
-
+        
         # ---------------------------------------------------------------- #
         # 4. Actual transpiration and water-stress factor
         # ---------------------------------------------------------------- #
@@ -363,12 +350,12 @@ class WaterBalance(nn.Module):
         runofp = params.runfr * rain
 
         wet_day = (perc >= 5.0).to(state.dslr.dtype)
-        dslr_new = wet_day * torch.ones_like(state.dslr) + (
-            1.0 - wet_day
-        ) * (state.dslr + 1.0)
+        dslr_new = wet_day * torch.ones_like(state.dslr) + (1.0 - wet_day) * (
+            state.dslr + 1.0
+        )
         # Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)
         dslr_prev = torch.clamp(dslr_new - 1.0, min=0.0)
-        decay = (torch.sqrt(torch.clamp(dslr_new, min=1e-8)) - torch.sqrt(dslr_prev))
+        decay = torch.sqrt(torch.clamp(dslr_new, min=1e-8)) - torch.sqrt(dslr_prev)
         evmaxt = pevap * limit(0.0, 1.0, decay * params.cfev)
         # Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))
         evap_cap = 100.0 * torch.clamp(smact - params.wcad, min=0.0)
@@ -424,10 +411,7 @@ class WaterBalance(nn.Module):
         # ---------------------------------------------------------------- #
         # 10. Mass-balance residual for diagnostics
         # ---------------------------------------------------------------- #
-        wbal = (
-            rain + rirr - runoff - evap - tran - perc3
-            - (wa_rate + wa_lower_rate)
-        )
+        wbal = rain + rirr - runoff - evap - tran - perc3 - (wa_rate + wa_lower_rate)
 
         return {
             # rates
