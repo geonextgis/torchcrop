@@ -102,13 +102,11 @@ class PotentialEvapoTranspiration(nn.Module):
         Returns:
             Dict of ``[B]`` tensors:
 
-                * ``e0`` [mm d⁻¹] — Potential evaporation from open water.
-                * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.
-                * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).
-                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration
-                  (= CFET * ETC * frac_int).
-                * ``pevap`` [mm d⁻¹] — Potential soil evaporation
-                  (= ES0 * (1 - frac_int)).
+            * ``e0`` [mm d⁻¹] — Potential evaporation from open water.
+            * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.
+            * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).
+            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration (= CFET * ETC * frac_int).
+            * ``pevap`` [mm d⁻¹] — Potential soil evaporation (= ES0 * (1 - frac_int)).
         """
         # Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)
         A = 0.20
