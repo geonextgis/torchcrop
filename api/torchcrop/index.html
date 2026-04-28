@@ -18141,24 +18141,32 @@ cast to <code>dtype</code>.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Astronomical parameters: solar declination, daylength, extraterrestrial radiation.</p>
+      <p>Solar geometry: declination, daylength, and daily insolation integrals.</p>
+<p>Provides the astronomical quantities consumed by <code>Irradiation</code> and
+<code>Phenology</code>: solar declination <span class="arithmatex">\(\delta\)</span>, astronomical and photoperiodic
+daylengths, and the integrals <code>sinld</code>, <code>cosld</code>, <code>dsinbe</code> used to
+derive extraterrestrial radiation.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <p>Goudriaan, J. &amp; van Laar, H.H. (1994). <em>Modelling potential crop growth
-processes</em> — the daylength formulation used by the SIMPLACE
+processes</em>. Matches the formulation in SIMPLACE
 <code>AstronomicParametersTransformer</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
+<p>Solar declination (radians) for day of year <span class="arithmatex">\(\text{DOY}\)</span>:</p>
 <div class="arithmatex">\[
-\delta = -\arcsin\left[\sin(23.45^\circ) \cos\left(2\pi \frac{DOY + 10}{365}\right)\right]
+\delta = -\arcsin\left[\sin(23.45^\circ)\,
+\cos\left(2\pi \frac{\text{DOY} + 10}{365}\right)\right]
 \]</div>
+<p>Sunrise hour angle at latitude <span class="arithmatex">\(\phi\)</span> (radians):</p>
 <div class="arithmatex">\[
-\cos(H_0) = -\tan(\phi)\tan(\delta)
+\cos H_0 = -\tan\phi \, \tan\delta
 \]</div>
-<p>where <span class="arithmatex">\(\phi\)</span> is latitude in radians.</p>
-<p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
-a civil-twilight inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> as in Lintul5.</p>
+<p>Astronomical daylength is returned in hours. Photoperiodic daylength
+<code>DDLP</code> uses a sun-inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> (civil twilight, as
+in Lintul5) so that low-light dawn and dusk count toward the
+photoperiodic response.</p>
 </div>
 
 
@@ -18454,30 +18462,36 @@ photoperiodic daylength calculation. Defaults to <code>-4.0</code>
 
     <div class="doc doc-contents ">
 
-      <p>PENMAN formula for computing potential evaporation from water
-and soil surfaces, and potential transpiration of a closed crop canopy,
-accounting for CO2 effects.</p>
+      <p>PENMAN potential evaporation and transpiration with CO₂ correction.</p>
+<p>Computes Penman reference fluxes for an open-water, bare-soil, and closed
+canopy reference, then partitions them into potential canopy transpiration
+and potential soil evaporation according to the fraction of incoming light
+intercepted by the crop.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.
-Based on Penman (1948) with modifications by van Kraalingen.</p>
+<p>Penman (1948) with the van Kraalingen modifications used by SIMPLACE
+<code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.</p>
+</div>
+<div class="admonition outputs">
+<p class="admonition-title">Outputs</p>
+<ul>
+<li><code>E0</code>  — potential evaporation from open water [mm d⁻¹]</li>
+<li><code>ES0</code> — potential evaporation from bare soil [mm d⁻¹]</li>
+<li><code>ETC</code> — potential transpiration of a closed canopy, CO₂-corrected
+  [mm d⁻¹]</li>
+</ul>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>See PENMAN method for detailed derivations. Key outputs:
-- E0: Potential evaporation from open water surface [mm d⁻¹]
-- ES0: Potential evaporation from bare soil [mm d⁻¹]
-- ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]</p>
-<p>Potential transpiration rate:</p>
+<p>Canopy transpiration and soil evaporation are split by the fractional
+light interception <span class="arithmatex">\(F_{\text{INT}}\)</span>:</p>
 <div class="arithmatex">\[
-P_t = \text{CFET} \cdot ETC \cdot F_{INT}
+P_t = \text{CFET} \cdot \text{ETC} \cdot F_{\text{INT}}
 \]</div>
-<p>Potential soil evaporation:</p>
 <div class="arithmatex">\[
-P_s = ES_0 \cdot (1 - F_{INT})
+P_s = \text{ES}_0 \cdot (1 - F_{\text{INT}})
 \]</div>
-<p>where CFET is a crop-specific correction factor and F_INT is fractional
-light interception.</p>
+<p>where <code>CFET</code> is a crop-specific transpiration correction factor.</p>
 </div>
 
 
@@ -18972,42 +18986,42 @@ transpiration and soil evaporation based on light interception.</p>
 
     <div class="doc doc-contents ">
 
-      <p>Radiation interception by the canopy.</p>
+      <p>Daily solar irradiation and PAR interception by the canopy.</p>
+<p>Combines solar geometry with measured radiation to obtain the daily total
+irradiation <code>AVRAD</code>, then applies Beer–Lambert extinction to give the
+fraction of PAR captured by the canopy.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <p>SIMPLACE <code>Irradiation.java</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Daily total irradiation (AVRAD) computed from solar geometry and
-atmospheric transmission:</p>
+<p>Solar constant adjusted for Earth–Sun distance:</p>
 <div class="arithmatex">\[
-SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
+SC = 1370 \cdot (1 + 0.033 \cos(2\pi \, \text{DOY}/365))
 \]</div>
+<p>Daily integral of <span class="arithmatex">\(\sin\beta\)</span> (solar elevation) over the daylight
+period:</p>
 <div class="arithmatex">\[
 A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
 \]</div>
 <div class="arithmatex">\[
-\text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
-24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
+\text{DSINB} = 3600 \left(\text{DAYL} \cdot \text{SINLD}
++ \frac{24}{\pi} \, \text{COSLD} \sqrt{1 - A_0^2}\right)
+\]</div>
+<p>Extraterrestrial radiation, with the daily total capped at 80 % of the
+extraterrestrial value:</p>
+<div class="arithmatex">\[
+\text{ANGOT} = \max(10^{-4},\; SC \cdot \text{DSINB})
 \]</div>
 <div class="arithmatex">\[
-\text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
+\text{AVRAD} = \min(0.80 \cdot \text{ANGOT},\; \text{DTR})
 \]</div>
+<p>PAR is taken as 50 % of global radiation and intercepted following
+Beer–Lambert extinction with coefficient <span class="arithmatex">\(K\)</span>:</p>
 <div class="arithmatex">\[
-\text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
-\]</div>
-<p>Photosynthetically active radiation is 0.50 of global radiation:</p>
-<div class="arithmatex">\[
-\text{PAR} = 0.5 \cdot \text{AVRAD}
-\]</div>
-<p>Fraction intercepted by canopy (Beer-Lambert law):</p>
-<div class="arithmatex">\[
-\text{frac} = 1 - \exp(-K \cdot \text{LAI})
-\]</div>
-<p>Intercepted PAR:</p>
-<div class="arithmatex">\[
-\text{PARINT} = \text{PAR} \cdot \text{frac}
+\text{PAR} = 0.5 \cdot \text{AVRAD}, \qquad
+\text{PARINT} = \text{PAR} \cdot \bigl(1 - e^{-K \, \text{LAI}}\bigr)
 \]</div>
 </div>
 

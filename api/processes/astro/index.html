@@ -1970,24 +1970,32 @@
 <a id="torchcrop.processes.astro"></a>
     <div class="doc doc-contents first">
 
-      <p>Astronomical parameters: solar declination, daylength, extraterrestrial radiation.</p>
+      <p>Solar geometry: declination, daylength, and daily insolation integrals.</p>
+<p>Provides the astronomical quantities consumed by <code>Irradiation</code> and
+<code>Phenology</code>: solar declination <span class="arithmatex">\(\delta\)</span>, astronomical and photoperiodic
+daylengths, and the integrals <code>sinld</code>, <code>cosld</code>, <code>dsinbe</code> used to
+derive extraterrestrial radiation.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <p>Goudriaan, J. &amp; van Laar, H.H. (1994). <em>Modelling potential crop growth
-processes</em> — the daylength formulation used by the SIMPLACE
+processes</em>. Matches the formulation in SIMPLACE
 <code>AstronomicParametersTransformer</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
+<p>Solar declination (radians) for day of year <span class="arithmatex">\(\text{DOY}\)</span>:</p>
 <div class="arithmatex">\[
-\delta = -\arcsin\left[\sin(23.45^\circ) \cos\left(2\pi \frac{DOY + 10}{365}\right)\right]
+\delta = -\arcsin\left[\sin(23.45^\circ)\,
+\cos\left(2\pi \frac{\text{DOY} + 10}{365}\right)\right]
 \]</div>
+<p>Sunrise hour angle at latitude <span class="arithmatex">\(\phi\)</span> (radians):</p>
 <div class="arithmatex">\[
-\cos(H_0) = -\tan(\phi)\tan(\delta)
+\cos H_0 = -\tan\phi \, \tan\delta
 \]</div>
-<p>where <span class="arithmatex">\(\phi\)</span> is latitude in radians.</p>
-<p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
-a civil-twilight inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> as in Lintul5.</p>
+<p>Astronomical daylength is returned in hours. Photoperiodic daylength
+<code>DDLP</code> uses a sun-inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> (civil twilight, as
+in Lintul5) so that low-light dawn and dusk count toward the
+photoperiodic response.</p>
 </div>
 
 

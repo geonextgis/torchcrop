@@ -1970,30 +1970,36 @@
 <a id="torchcrop.processes.evapotranspiration"></a>
     <div class="doc doc-contents first">
 
-      <p>PENMAN formula for computing potential evaporation from water
-and soil surfaces, and potential transpiration of a closed crop canopy,
-accounting for CO2 effects.</p>
+      <p>PENMAN potential evaporation and transpiration with CO₂ correction.</p>
+<p>Computes Penman reference fluxes for an open-water, bare-soil, and closed
+canopy reference, then partitions them into potential canopy transpiration
+and potential soil evaporation according to the fraction of incoming light
+intercepted by the crop.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.
-Based on Penman (1948) with modifications by van Kraalingen.</p>
+<p>Penman (1948) with the van Kraalingen modifications used by SIMPLACE
+<code>PotentialEvapoTranspiration.java</code> and <code>LintulFunctions.PENMAN</code>.</p>
+</div>
+<div class="admonition outputs">
+<p class="admonition-title">Outputs</p>
+<ul>
+<li><code>E0</code>  — potential evaporation from open water [mm d⁻¹]</li>
+<li><code>ES0</code> — potential evaporation from bare soil [mm d⁻¹]</li>
+<li><code>ETC</code> — potential transpiration of a closed canopy, CO₂-corrected
+  [mm d⁻¹]</li>
+</ul>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>See PENMAN method for detailed derivations. Key outputs:
-- E0: Potential evaporation from open water surface [mm d⁻¹]
-- ES0: Potential evaporation from bare soil [mm d⁻¹]
-- ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]</p>
-<p>Potential transpiration rate:</p>
+<p>Canopy transpiration and soil evaporation are split by the fractional
+light interception <span class="arithmatex">\(F_{\text{INT}}\)</span>:</p>
 <div class="arithmatex">\[
-P_t = \text{CFET} \cdot ETC \cdot F_{INT}
+P_t = \text{CFET} \cdot \text{ETC} \cdot F_{\text{INT}}
 \]</div>
-<p>Potential soil evaporation:</p>
 <div class="arithmatex">\[
-P_s = ES_0 \cdot (1 - F_{INT})
+P_s = \text{ES}_0 \cdot (1 - F_{\text{INT}})
 \]</div>
-<p>where CFET is a crop-specific correction factor and F_INT is fractional
-light interception.</p>
+<p>where <code>CFET</code> is a crop-specific transpiration correction factor.</p>
 </div>
 
 
