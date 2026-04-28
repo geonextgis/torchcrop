@@ -2127,13 +2127,11 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">                * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
-<span class="sd">                * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
-<span class="sd">                * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
-<span class="sd">                * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
-<span class="sd">                  (= CFET * ETC * frac_int).</span>
-<span class="sd">                * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
-<span class="sd">                  (= ES0 * (1 - frac_int)).</span>
+<span class="sd">            * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
+<span class="sd">            * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
+<span class="sd">            * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
+<span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration (= CFET * ETC * frac_int).</span>
+<span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation (= ES0 * (1 - frac_int)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)</span>
         <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
@@ -2318,15 +2316,11 @@ transpiration and soil evaporation based on light interception.</p>
     <tr>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>e0</code> [mm d⁻¹] — Potential evaporation from open water.<ul>
+<li><code>e0</code> [mm d⁻¹] — Potential evaporation from open water.</li>
 <li><code>es0</code> [mm d⁻¹] — Potential evaporation from bare soil.</li>
 <li><code>etc</code> [mm d⁻¹] — Potential transpiration (CO2-corrected).</li>
-<li><code>ptran</code> [mm d⁻¹] — Potential canopy transpiration
-  (= CFET * ETC * frac_int).</li>
-<li><code>pevap</code> [mm d⁻¹] — Potential soil evaporation
-  (= ES0 * (1 - frac_int)).</li>
-</ul>
-</li>
+<li><code>ptran</code> [mm d⁻¹] — Potential canopy transpiration (= CFET * ETC * frac_int).</li>
+<li><code>pevap</code> [mm d⁻¹] — Potential soil evaporation (= ES0 * (1 - frac_int)).</li>
 </ul></td>
     </tr>
   </tbody>
@@ -2357,13 +2351,11 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
-<span class="sd">            * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
-<span class="sd">            * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
-<span class="sd">            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration</span>
-<span class="sd">              (= CFET * ETC * frac_int).</span>
-<span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
-<span class="sd">              (= ES0 * (1 - frac_int)).</span>
+<span class="sd">        * ``e0`` [mm d⁻¹] — Potential evaporation from open water.</span>
+<span class="sd">        * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.</span>
+<span class="sd">        * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).</span>
+<span class="sd">        * ``ptran`` [mm d⁻¹] — Potential canopy transpiration (= CFET * ETC * frac_int).</span>
+<span class="sd">        * ``pevap`` [mm d⁻¹] — Potential soil evaporation (= ES0 * (1 - frac_int)).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)</span>
     <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
