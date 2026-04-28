@@ -2007,64 +2007,64 @@ below <code>SMCR + 0.02</code> and rain &lt; 10 mm, 2 = table look-up of
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Actual soil-moisture contents [m³ m⁻³]:</p>
-<p>$$
+<div class="arithmatex">\[
 \theta = \frac{W_a}{1000 \cdot D_\text{root}},
 \qquad
 \theta_\ell = \frac{W_{a,\ell}}{1000 \cdot (D_\text{rdm} -
 D_\text{root})}
-$$</p>
+\]</div>
 <p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and critical content:</p>
-<p>$$
-f_\text{eaw} = \mathrm{clip}!\left(\frac{1}{A + B\,\text{ETC}<em>
+<div class="arithmatex">\[
+f_\text{eaw} = \mathrm{clip}\!\left(\frac{1}{A + B\,\text{ETC}_
 \text{cm}} - (5-\text{DEPNR})\cdot 0.10,\ 0.10,\ 0.95\right),
 $$
 $$
-\theta</em>\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
+\theta_\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
 \theta_\text{wp}) + \theta_\text{wp}.
-$$</p>
+\]</div>
 <p>Drought and oxygen reductions:</p>
-<p>$$
-R_\text{dry} = \mathrm{clip}!\left(
+<div class="arithmatex">\[
+R_\text{dry} = \mathrm{clip}\!\left(
 \frac{\theta - \theta_\text{wp}}{\theta_\text{crit} -
 \theta_\text{wp}},\ 0,\ 1\right),
 $$
 $$
-R_\text{wet,max} = \mathrm{clip}!\left(
+R_\text{wet,max} = \mathrm{clip}\!\left(
 \frac{\theta_\text{sat} - \theta}{\theta_\text{sat} -
 \theta_\text{air}},\ 0,\ 1\right),
 \quad
 R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
 \right)(1 - R_\text{wet,max}).
-$$</p>
+\]</div>
 <p>Root-front water transfer:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{WDR} = 1000 \cdot r_r \cdot \theta_\ell,
 \qquad
 \text{WDRA} = 1000 \cdot r_r \cdot (\theta_\ell -
 \theta_\text{wp})_+.
-$$</p>
+\]</div>
 <p>Percolation cascade (subscripts <code>0</code> denote saturation-capacity
 headroom and unlabelled ones field-capacity headroom):</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{aligned}
-\text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\
-\text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\
-\text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}<em>0,\ \text{PERC1P}),\
+\text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\\
+\text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\\
+\text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}_0,\ \text{PERC1P}),\\
 \text{RUNOFF} &amp;= \text{RUNFR}\cdot \text{RAIN} + (\text{PERC1P}
-- \text{PERC1})</em>+,\
-\text{PERC2} &amp;= \mathbb{1}<em _ell_0="\ell,0">{\text{CAP}\le \text{PERC1}}\cdot
-\min(\text{KSUB} + \text{CAP}</em> -
-\text{CAP})},\ (\text{PERC1<em _text_CAP="\text{CAP">+),\
-\text{PERC3} &amp;= \mathbb{1}</em><em>\ell\le \text{PERC2}}\cdot
-\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}</em>\ell)_+).
+- \text{PERC1})_+,\\
+\text{PERC2} &amp;= \mathbb{1}_{\text{CAP}\le \text{PERC1}}\cdot
+\min(\text{KSUB} + \text{CAP}_{\ell,0},\ (\text{PERC1} -
+\text{CAP})_+),\\
+\text{PERC3} &amp;= \mathbb{1}_{\text{CAP}_\ell\le \text{PERC2}}\cdot
+\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}_\ell)_+).
 \end{aligned}
-$$</p>
+\]</div>
 <p>Rates (integrated with forward Euler, <code>dt = 1</code> d):</p>
-<p>$$
+<div class="arithmatex">\[
 \dot W_a = \text{PERC1} - \text{PERC2} + \text{WDR},
 \qquad
 \dot W_{a,\ell} = \text{PERC2} - \text{PERC3} - \text{WDR}.
-$$</p>
+\]</div>
 </div>
 
 

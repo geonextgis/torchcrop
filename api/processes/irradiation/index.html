@@ -1979,34 +1979,34 @@
 <p class="admonition-title">Equations</p>
 <p>Daily total irradiation (AVRAD) computed from solar geometry and
 atmospheric transmission:</p>
-<p>$$
+<div class="arithmatex">\[
 SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
 24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
-$$</p>
+\]</div>
 <p>Photosynthetically active radiation is 0.50 of global radiation:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{PAR} = 0.5 \cdot \text{AVRAD}
-$$</p>
+\]</div>
 <p>Fraction intercepted by canopy (Beer-Lambert law):</p>
-<p>$$
+<div class="arithmatex">\[
 \text{frac} = 1 - \exp(-K \cdot \text{LAI})
-$$</p>
+\]</div>
 <p>Intercepted PAR:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{PARINT} = \text{PAR} \cdot \text{frac}
-$$</p>
+\]</div>
 </div>
 
 

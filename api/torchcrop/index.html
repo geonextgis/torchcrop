@@ -10437,8 +10437,8 @@ events in the model.</p>
     <div class="doc doc-contents ">
 
       <p>Differentiable Heaviside step.</p>
-<p>Returns $\sigma(k (x - x_0))$ which tends to 0 for
-$x \ll x_0$ and to 1 for $x \gg x_0$.</p>
+<p>Returns <span class="arithmatex">\(\sigma(k (x - x_0))\)</span> which tends to 0 for
+<span class="arithmatex">\(x \ll x_0\)</span> and to 1 for <span class="arithmatex">\(x \gg x_0\)</span>.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -12129,7 +12129,7 @@ the initial condition).</p></td>
 
       <p>Learned stress-factor module.</p>
 <p>Replaces the empirical water-stress curve (<code>TRANRF</code>) with a small MLP that
-maps soil-water descriptors to a stress factor in $[0, 1]$ via a
+maps soil-water descriptors to a stress factor in <span class="arithmatex">\([0, 1]\)</span> via a
 sigmoid output.</p>
 
 
@@ -12649,9 +12649,9 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
 
       <p>Bounded additive residual from an MLP.</p>
 <p>The residual output is produced by</p>
-<p>$$
+<div class="arithmatex">\[
 f_  heta(\mathbf{x}) =      ext{scale} \cdot        anh(    ext{MLP}(\mathbf{x}))
-$$</p>
+\]</div>
 <p>which keeps the correction bounded to <code>[-scale, +scale]</code> so that the
 learned term cannot overwhelm the mechanistic prediction it augments.</p>
 
@@ -18150,15 +18150,15 @@ processes</em> — the daylength formulation used by the SIMPLACE
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>$$
+<div class="arithmatex">\[
 \delta = -\arcsin\left[\sin(23.45^\circ) \cos\left(2\pi \frac{DOY + 10}{365}\right)\right]
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \cos(H_0) = -\tan(\phi)\tan(\delta)
-$$</p>
-<p>where $$\phi$$ is latitude in radians.</p>
+\]</div>
+<p>where <span class="arithmatex">\(\phi\)</span> is latitude in radians.</p>
 <p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
-a civil-twilight inclusion angle of $$-4^\circ$$ as in Lintul5.</p>
+a civil-twilight inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> as in Lintul5.</p>
 </div>
 
 
@@ -18469,13 +18469,13 @@ Based on Penman (1948) with modifications by van Kraalingen.</p>
 - ES0: Potential evaporation from bare soil [mm d⁻¹]
 - ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]</p>
 <p>Potential transpiration rate:</p>
-<p>$$
+<div class="arithmatex">\[
 P_t = \text{CFET} \cdot ETC \cdot F_{INT}
-$$</p>
+\]</div>
 <p>Potential soil evaporation:</p>
-<p>$$
+<div class="arithmatex">\[
 P_s = ES_0 \cdot (1 - F_{INT})
-$$</p>
+\]</div>
 <p>where CFET is a crop-specific correction factor and F_INT is fractional
 light interception.</p>
 </div>
@@ -18981,34 +18981,34 @@ transpiration and soil evaporation based on light interception.</p>
 <p class="admonition-title">Equations</p>
 <p>Daily total irradiation (AVRAD) computed from solar geometry and
 atmospheric transmission:</p>
-<p>$$
+<div class="arithmatex">\[
 SC = 1370 \cdot (1 + 0.033 \cos(2\pi \text{DOY}/365))
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{DSINB} = 3600 \cdot (\text{DAYL} \cdot \text{SINLD} +
 24 \cdot \text{COSLD} \cdot \sqrt{1 - A_0^2} / \pi)
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{ANGOT} = \text{max}(0.0001, SC \cdot \text{DSINB})
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 \text{AVRAD} = \text{min}(0.80 \cdot \text{ANGOT}, \text{DTR})
-$$</p>
+\]</div>
 <p>Photosynthetically active radiation is 0.50 of global radiation:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{PAR} = 0.5 \cdot \text{AVRAD}
-$$</p>
+\]</div>
 <p>Fraction intercepted by canopy (Beer-Lambert law):</p>
-<p>$$
+<div class="arithmatex">\[
 \text{frac} = 1 - \exp(-K \cdot \text{LAI})
-$$</p>
+\]</div>
 <p>Intercepted PAR:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{PARINT} = \text{PAR} \cdot \text{frac}
-$$</p>
+\]</div>
 </div>
 
 
@@ -20542,17 +20542,17 @@ and nutrient demand)</code></td>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Effective daily temperature:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})
-$$</p>
+\]</div>
 <p>Development rate (pre-emergence, vegetative, generative):</p>
-<p>$$
+<div class="arithmatex">\[
 \text{DVR} =
 \begin{cases}
-    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1}, &amp; 0 \le DVS &lt; 1 \
+    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1}, &amp; 0 \le DVS &lt; 1 \\
     \text{DTSU} / \text{TSUM2}, &amp; 1 \le DVS &lt; 2
 \end{cases}
-$$</p>
+\]</div>
 </div>
 
 
@@ -20992,10 +20992,10 @@ Rate variables (consumed by the engine for state update)</code></td>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Gross biomass growth rate (daily):</p>
-<p>$$
+<div class="arithmatex">\[
 \text{GTOTAL} = \text{RUE} \cdot f_T(T) \cdot f_{CO_2} \cdot
 \text{NSTRESS} \cdot \text{TRANRF} \cdot \text{PARINT}
-$$</p>
+\]</div>
 <p>where <code>RUE</code> has units of g dry matter per MJ intercepted PAR.</p>
 </div>
 
@@ -21791,64 +21791,64 @@ below <code>SMCR + 0.02</code> and rain &lt; 10 mm, 2 = table look-up of
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
 <p>Actual soil-moisture contents [m³ m⁻³]:</p>
-<p>$$
+<div class="arithmatex">\[
 \theta = \frac{W_a}{1000 \cdot D_\text{root}},
 \qquad
 \theta_\ell = \frac{W_{a,\ell}}{1000 \cdot (D_\text{rdm} -
 D_\text{root})}
-$$</p>
+\]</div>
 <p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and critical content:</p>
-<p>$$
-f_\text{eaw} = \mathrm{clip}!\left(\frac{1}{A + B\,\text{ETC}<em>
+<div class="arithmatex">\[
+f_\text{eaw} = \mathrm{clip}\!\left(\frac{1}{A + B\,\text{ETC}_
 \text{cm}} - (5-\text{DEPNR})\cdot 0.10,\ 0.10,\ 0.95\right),
 $$
 $$
-\theta</em>\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
+\theta_\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
 \theta_\text{wp}) + \theta_\text{wp}.
-$$</p>
+\]</div>
 <p>Drought and oxygen reductions:</p>
-<p>$$
-R_\text{dry} = \mathrm{clip}!\left(
+<div class="arithmatex">\[
+R_\text{dry} = \mathrm{clip}\!\left(
 \frac{\theta - \theta_\text{wp}}{\theta_\text{crit} -
 \theta_\text{wp}},\ 0,\ 1\right),
 $$
 $$
-R_\text{wet,max} = \mathrm{clip}!\left(
+R_\text{wet,max} = \mathrm{clip}\!\left(
 \frac{\theta_\text{sat} - \theta}{\theta_\text{sat} -
 \theta_\text{air}},\ 0,\ 1\right),
 \quad
 R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
 \right)(1 - R_\text{wet,max}).
-$$</p>
+\]</div>
 <p>Root-front water transfer:</p>
-<p>$$
+<div class="arithmatex">\[
 \text{WDR} = 1000 \cdot r_r \cdot \theta_\ell,
 \qquad
 \text{WDRA} = 1000 \cdot r_r \cdot (\theta_\ell -
 \theta_\text{wp})_+.
-$$</p>
+\]</div>
 <p>Percolation cascade (subscripts <code>0</code> denote saturation-capacity
 headroom and unlabelled ones field-capacity headroom):</p>
-<p>$$
+<div class="arithmatex">\[
 \begin{aligned}
-\text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\
-\text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\
-\text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}<em>0,\ \text{PERC1P}),\
+\text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\\
+\text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\\
+\text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}_0,\ \text{PERC1P}),\\
 \text{RUNOFF} &amp;= \text{RUNFR}\cdot \text{RAIN} + (\text{PERC1P}
-- \text{PERC1})</em>+,\
-\text{PERC2} &amp;= \mathbb{1}<em _ell_0="\ell,0">{\text{CAP}\le \text{PERC1}}\cdot
-\min(\text{KSUB} + \text{CAP}</em> -
-\text{CAP})},\ (\text{PERC1<em _text_CAP="\text{CAP">+),\
-\text{PERC3} &amp;= \mathbb{1}</em><em>\ell\le \text{PERC2}}\cdot
-\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}</em>\ell)_+).
+- \text{PERC1})_+,\\
+\text{PERC2} &amp;= \mathbb{1}_{\text{CAP}\le \text{PERC1}}\cdot
+\min(\text{KSUB} + \text{CAP}_{\ell,0},\ (\text{PERC1} -
+\text{CAP})_+),\\
+\text{PERC3} &amp;= \mathbb{1}_{\text{CAP}_\ell\le \text{PERC2}}\cdot
+\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}_\ell)_+).
 \end{aligned}
-$$</p>
+\]</div>
 <p>Rates (integrated with forward Euler, <code>dt = 1</code> d):</p>
-<p>$$
+<div class="arithmatex">\[
 \dot W_a = \text{PERC1} - \text{PERC2} + \text{WDR},
 \qquad
 \dot W_{a,\ell} = \text{PERC2} - \text{PERC3} - \text{WDR}.
-$$</p>
+\]</div>
 </div>
 
 
@@ -23879,10 +23879,10 @@ increments by 1 and wraps modulo 365.</p></td>
     <div class="doc doc-contents ">
 
       <p>Compute element-wise relative error.</p>
-<p>$$
+<div class="arithmatex">\[
 e_i = \frac{|y_i - y_{\text{ref},i}|}{\max(|y_{\text{ref},i}|,
 \epsilon)}
-$$</p>
+\]</div>
 
 <p><strong>Parameters:</strong></p>
 <table>

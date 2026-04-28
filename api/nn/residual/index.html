@@ -2001,9 +2001,9 @@ NeuralResidual            (<span title="torch.nn.modules.module.Module">Module</
 
       <p>Bounded additive residual from an MLP.</p>
 <p>The residual output is produced by</p>
-<p>$$
+<div class="arithmatex">\[
 f_  heta(\mathbf{x}) =      ext{scale} \cdot        anh(    ext{MLP}(\mathbf{x}))
-$$</p>
+\]</div>
 <p>which keeps the correction bounded to <code>[-scale, +scale]</code> so that the
 learned term cannot overwhelm the mechanistic prediction it augments.</p>
 
