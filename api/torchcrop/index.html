@@ -19083,14 +19083,11 @@ Beer-Lambert extinction law.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">                * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation</span>
-<span class="sd">                  (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
-<span class="sd">                * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
-<span class="sd">                * ``par`` [J m⁻² d⁻¹] — Photosynthetically active</span>
-<span class="sd">                  radiation (0.5 * avrad).</span>
-<span class="sd">                * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
-<span class="sd">                * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
-<span class="sd">                  fraction.</span>
+<span class="sd">            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
+<span class="sd">            * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
+<span class="sd">            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</span>
+<span class="sd">            * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
+<span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation</span>
         <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
@@ -19226,16 +19223,11 @@ coefficient).</p></td>
     <tr>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>avrad</code> [J m⁻² d⁻¹] — Daily total irradiation
-      (computed from solar geometry; converted from input MJ m⁻² d⁻¹).<ul>
+<li><code>avrad</code> [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</li>
 <li><code>atmtr</code> [-] — Atmospheric transmission fraction.</li>
-<li><code>par</code> [J m⁻² d⁻¹] — Photosynthetically active
-  radiation (0.5 * avrad).</li>
+<li><code>par</code> [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</li>
 <li><code>parint</code> [J m⁻² d⁻¹] — PAR intercepted by canopy.</li>
-<li><code>frac_intercepted</code> [-] — Beer–Lambert interception
-  fraction.</li>
-</ul>
-</li>
+<li><code>frac_intercepted</code> [-] — Beer–Lambert interception fraction.</li>
 </ul></td>
     </tr>
   </tbody>
@@ -19268,14 +19260,11 @@ coefficient).</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation</span>
-<span class="sd">              (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
-<span class="sd">            * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
-<span class="sd">            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active</span>
-<span class="sd">              radiation (0.5 * avrad).</span>
-<span class="sd">            * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
-<span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
-<span class="sd">              fraction.</span>
+<span class="sd">        * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
+<span class="sd">        * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
+<span class="sd">        * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</span>
+<span class="sd">        * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
+<span class="sd">        * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation</span>
     <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
