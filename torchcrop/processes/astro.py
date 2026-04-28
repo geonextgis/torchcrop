@@ -7,7 +7,7 @@ References:
 
 Equations:
     $$
-    \\delta = -\\arcsin\left[\\sin(23.45^\\circ) \\cos\left(2\\pi \\frac{DOY + 10}{365}\\right)\\right]
+    \\delta = -\\arcsin\\left[\\sin(23.45^\\circ) \\cos\\left(2\\pi \\frac{DOY + 10}{365}\\right)\\right]
     $$
 
     $$
