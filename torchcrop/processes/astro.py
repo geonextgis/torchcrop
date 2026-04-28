@@ -7,17 +7,17 @@ References:
 
 Equations:
     $$
-    \\delta = -\\arcsin\\!\\left[\\sin(23.45^\\circ) \\cos\\!\\left(2\\pi \\frac{DOY + 10}{365}\\right)\\right]
+    \\delta = -\\arcsin\\left[\\sin(23.45^\\circ) \\cos\\left(2\\pi \\frac{DOY + 10}{365}\\right)\\right]
     $$
 
     $$
     \\cos(H_0) = -\\tan(\\phi)\\tan(\\delta)
     $$
 
-    where $\\phi$ is latitude in radians.
+    where $$\\phi$$ is latitude in radians.
 
     Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses
-    a civil-twilight inclusion angle of $-4^\\circ$ as in Lintul5.
+    a civil-twilight inclusion angle of $$-4^\\circ$$ as in Lintul5.
 """
 
 from __future__ import annotations
