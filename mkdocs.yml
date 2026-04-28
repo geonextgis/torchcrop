@@ -67,6 +67,8 @@ markdown_extensions:
     - pymdownx.superfences
     - pymdownx.highlight:
           linenums: true
+    - pymdownx.arithmatex:
+          generic: true
     - toc:
           permalink: true
 
