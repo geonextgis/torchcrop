@@ -18148,6 +18148,18 @@ cast to <code>dtype</code>.</p></td>
 processes</em> — the daylength formulation used by the SIMPLACE
 <code>AstronomicParametersTransformer</code>.</p>
 </div>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
+<p>$$
+\delta = -\arcsin!\left[\sin(23.45^\circ) \cos!\left(2\pi \frac{DOY + 10}{365}\right)\right]
+$$</p>
+<p>$$
+\cos(H_0) = -\tan(\phi)\tan(\delta)
+$$</p>
+<p>where $\phi$ is latitude in radians.</p>
+<p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
+a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
+</div>
 
 
 
@@ -18175,47 +18187,11 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
     <div class="doc doc-contents ">
 
       <p>Compute solar declination and astronomical daylength.</p>
-<p>Equations:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
-\delta = -rcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi rac{DOY + 10}{365}
-</code></pre></div></td></tr></table></div>
-<p>ight)
-ight]
-    $$</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>$$
-\cos(H_0) = -   an(\phi)        an(\delta)
-$$
-
-where $\phi$ is latitude in radians.
-</code></pre></div></td></tr></table></div>
-<p>Daylength <code>DDLP</code> is returned in hours; the photoperiodic daylength uses
-a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/astro.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Astro</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.</span>
-
-<span class="sd">    Equations:</span>
-
-<span class="sd">        $$</span>
-<span class="sd">        \delta = -\arcsin\!\left[\sin(23.45^\circ) \cos\!\left(2\pi \frac{DOY + 10}{365}\right)\right]</span>
-<span class="sd">        $$</span>
-
-<span class="sd">        $$</span>
-<span class="sd">        \cos(H_0) = -\tan(\phi)\tan(\delta)</span>
-<span class="sd">        $$</span>
-
-<span class="sd">        where $\phi$ is latitude in radians.</span>
-
-<span class="sd">    Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses</span>
-<span class="sd">    a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
