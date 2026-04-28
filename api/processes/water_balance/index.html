@@ -2049,7 +2049,7 @@ R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
 <p>Percolation cascade (subscript <code>0</code> = saturation-capacity headroom;
 unlabelled = field-capacity headroom):</p>
 <div class="arithmatex">\[
-\begin{aligned}
+\begin{gather}
 \text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\\
 \text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\\
 \text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}_0,\ \text{PERC1P}),\\
@@ -2060,7 +2060,7 @@ unlabelled = field-capacity headroom):</p>
 \text{CAP})_+),\\
 \text{PERC3} &amp;= \mathbb{1}_{\text{CAP}_\ell\le \text{PERC2}}\cdot
 \min(\text{KSUB},\ (\text{PERC2} - \text{CAP}_\ell)_+).
-\end{aligned}
+\end{gather}
 \]</div>
 <p>State rates (forward Euler, <code>dt = 1</code> d):</p>
 <div class="arithmatex">\[
