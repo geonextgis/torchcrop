@@ -89,6 +89,7 @@ Equations:
     unlabelled = field-capacity headroom):
 
     $$
+    \\begin{aligned}
     \\text{PERC} &= (1 - \\text{RUNFR})\\cdot \\text{RAIN} + \\text{RIRR},\\\\
     \\text{PERC1P} &= \\text{PERC} - E_a - T_a,\\\\
     \\text{PERC1} &= \\min(\\text{KSUB} + \\text{CAP}_0,\\ \\text{PERC1P}),\\\\
@@ -99,6 +100,7 @@ Equations:
     \\text{CAP})_+),\\\\
     \\text{PERC3} &= \\mathbb{1}_{\\text{CAP}_\\ell\\le \\text{PERC2}}\\cdot
     \\min(\\text{KSUB},\\ (\\text{PERC2} - \\text{CAP}_\\ell)_+).
+    \\end{aligned}
     $$
 
     State rates (forward Euler, ``dt = 1`` d):
