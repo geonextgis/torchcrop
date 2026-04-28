@@ -91,14 +91,11 @@ class Irradiation(nn.Module):
         Returns:
             Dict of ``[B]`` tensors:
 
-                * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation
-                  (computed from solar geometry; converted from input MJ m⁻² d⁻¹).
-                * ``atmtr`` [-] — Atmospheric transmission fraction.
-                * ``par`` [J m⁻² d⁻¹] — Photosynthetically active
-                  radiation (0.5 * avrad).
-                * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.
-                * ``frac_intercepted`` [-] — Beer–Lambert interception
-                  fraction.
+            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).
+            * ``atmtr`` [-] — Atmospheric transmission fraction.
+            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).
+            * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.
+            * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.
         """
         # Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation
         dtr_j = dtr * 1e6
