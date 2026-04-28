@@ -1970,83 +1970,85 @@
 <a id="torchcrop.processes.water_balance"></a>
     <div class="doc doc-contents first">
 
-      <p>Soil water balance — two-zone port of SIMPLACE <code>WaterBalance.java</code>.</p>
+      <p>Two-zone soil water balance for Lintul5.</p>
+<p>A faithful port of the SIMPLACE <code>WATBALS</code> routine: tracks water storage
+in a rooted zone and a lower zone, runs a percolation cascade to deep
+drainage, and produces the water-stress factor <code>TRANRF</code> that gates crop
+growth.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>WaterBalance.java</code> (the <code>WATBALS</code> routine) and
+<p>SIMPLACE <code>WaterBalance.java</code> (<code>WATBALS</code> routine) and
 <code>LintulFunctions.SWEAF</code>.</p>
 </div>
 <div class="admonition design">
 <p class="admonition-title">Design</p>
-<p>The implementation faithfully ports the SIMPLACE two-zone bucket model.</p>
-<p><strong>Zones.</strong> The soil column is split into (i) a rooted zone of depth
-<code>rootd</code> storing <code>wa</code> [mm] and (ii) a lower zone of depth
-<code>rdm - rootd</code> storing <code>wa_lower</code> [mm], where <code>rdm = min(rdmso,
-rdmcr)</code> is the soil-/crop-limited maximum rooting depth. Root-front
-advance <code>rr</code> moves water with content <code>SMACTL</code> from the lower zone
-into the rooted zone via the <code>WDR</code>/<code>WDRA</code> fluxes.</p>
+<p><strong>Zones.</strong> The soil column is split into a rooted zone of depth
+<code>rootd</code> storing <code>wa</code> [mm] and a lower zone of depth
+<code>rdm - rootd</code> storing <code>wa_lower</code> [mm], where
+<code>rdm = min(rdmso, rdmcr)</code> is the soil-/crop-limited maximum rooting
+depth. Root-front advance <code>rr</code> moves water at content <code>SMACTL</code>
+from the lower zone into the rooted zone via the <code>WDR</code>/<code>WDRA</code>
+fluxes.</p>
 <p><strong>Percolation cascade.</strong> Net infiltration (after evaporation and
-transpiration) flows into the rooted zone (<code>PERC1</code>); excess above
-field capacity trickles to the lower zone (<code>PERC2</code>); excess below the
-lower zone's field capacity leaves the profile as deep drainage
-(<code>PERC3</code>). All three are rate-limited by <code>KSUB</code> and by the free
-pore space of the receiving layer, exactly as in SIMPLACE.</p>
+transpiration) enters the rooted zone as <code>PERC1</code>; excess above
+field capacity descends to the lower zone as <code>PERC2</code>; excess below
+the lower zone's field capacity leaves the profile as deep drainage
+<code>PERC3</code>. Each step is rate-limited by <code>KSUB</code> and by the free pore
+space of the receiving layer.</p>
 <p><strong>Stress factors.</strong> Transpiration is reduced multiplicatively by a
-drought factor <code>RDRY</code> and (for non-rice crops) an oxygen-shortage
-factor <code>RWET</code>. <code>RWET</code> ramps with <code>DSOS</code> (days of oxygen shortage,
-persistent across days, clipped to <code>[0, 4]</code>).</p>
-<p><strong>Soil evaporation.</strong> Stroosnijder model: if infiltration ≥ 5 mm d⁻¹
-the evaporation is reset to the potential rate and <code>DSLR</code> to 1,
-otherwise <code>DSLR</code> increments and evaporation follows the
+drought factor <code>RDRY</code> and (for non-rice crops) an oxygen factor
+<code>RWET</code> that ramps with <code>DSOS</code> — days of oxygen shortage,
+persistent across days and clipped to <code>[0, 4]</code>.</p>
+<p><strong>Soil evaporation.</strong> Stroosnijder model: when infiltration
+≥ 5 mm d⁻¹, evaporation is reset to the potential rate and <code>DSLR</code>
+to 1; otherwise <code>DSLR</code> increments and evaporation follows the
 <code>sqrt(DSLR) - sqrt(DSLR-1)</code> decay, capped by air-dry capacity.</p>
-<p><strong>Irrigation.</strong> Supports the three SIMPLACE modes controlled by
-<code>params.irri</code>: 0 = none, 1 = automatic refill when <code>SMACT</code> falls
-below <code>SMCR + 0.02</code> and rain &lt; 10 mm, 2 = table look-up of
-<code>irrtab</code> scaled by <code>scale_factor_irr</code>.</p>
+<p><strong>Irrigation.</strong> Three modes selected by <code>params.irri</code>: 0 = none;
+1 = automatic refill when <code>SMACT</code> falls below <code>SMCR + 0.02</code> and
+rain &lt; 10 mm; 2 = table look-up of <code>irrtab</code> scaled by
+<code>scale_factor_irr</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Actual soil-moisture contents [m³ m⁻³]:</p>
+<p>Volumetric soil-moisture contents [m³ m⁻³]:</p>
 <div class="arithmatex">\[
 \theta = \frac{W_a}{1000 \cdot D_\text{root}},
 \qquad
 \theta_\ell = \frac{W_{a,\ell}}{1000 \cdot (D_\text{rdm} -
 D_\text{root})}
 \]</div>
-<p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and critical content:</p>
+<p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and the critical
+moisture content below which transpiration starts to decline:</p>
 <div class="arithmatex">\[
-f_\text{eaw} = \mathrm{clip}\!\left(\frac{1}{A + B\,\text{ETC}_
+f_\text{eaw} = \mathrm{clip}\left(\frac{1}{A + B\,\text{ETC}_
 \text{cm}} - (5-\text{DEPNR})\cdot 0.10,\ 0.10,\ 0.95\right),
-$$
-$$
+\qquad
 \theta_\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
 \theta_\text{wp}) + \theta_\text{wp}.
 \]</div>
-<p>Drought and oxygen reductions:</p>
+<p>Drought and oxygen reduction factors:</p>
 <div class="arithmatex">\[
-R_\text{dry} = \mathrm{clip}\!\left(
+R_\text{dry} = \mathrm{clip}\left(
 \frac{\theta - \theta_\text{wp}}{\theta_\text{crit} -
 \theta_\text{wp}},\ 0,\ 1\right),
-$$
-$$
-R_\text{wet,max} = \mathrm{clip}\!\left(
+\quad
+R_\text{wet,max} = \mathrm{clip}\left(
 \frac{\theta_\text{sat} - \theta}{\theta_\text{sat} -
 \theta_\text{air}},\ 0,\ 1\right),
 \quad
 R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
 \right)(1 - R_\text{wet,max}).
 \]</div>
-<p>Root-front water transfer:</p>
+<p>Root-front water transfer (total / above wilting point):</p>
 <div class="arithmatex">\[
 \text{WDR} = 1000 \cdot r_r \cdot \theta_\ell,
 \qquad
 \text{WDRA} = 1000 \cdot r_r \cdot (\theta_\ell -
 \theta_\text{wp})_+.
 \]</div>
-<p>Percolation cascade (subscripts <code>0</code> denote saturation-capacity
-headroom and unlabelled ones field-capacity headroom):</p>
+<p>Percolation cascade (subscript <code>0</code> = saturation-capacity headroom;
+unlabelled = field-capacity headroom):</p>
 <div class="arithmatex">\[
-\begin{aligned}
 \text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\\
 \text{PERC1P} &amp;= \text{PERC} - E_a - T_a,\\
 \text{PERC1} &amp;= \min(\text{KSUB} + \text{CAP}_0,\ \text{PERC1P}),\\
@@ -2057,9 +2059,8 @@ headroom and unlabelled ones field-capacity headroom):</p>
 \text{CAP})_+),\\
 \text{PERC3} &amp;= \mathbb{1}_{\text{CAP}_\ell\le \text{PERC2}}\cdot
 \min(\text{KSUB},\ (\text{PERC2} - \text{CAP}_\ell)_+).
-\end{aligned}
 \]</div>
-<p>Rates (integrated with forward Euler, <code>dt = 1</code> d):</p>
+<p>State rates (forward Euler, <code>dt = 1</code> d):</p>
 <div class="arithmatex">\[
 \dot W_a = \text{PERC1} - \text{PERC2} + \text{WDR},
 \qquad
@@ -2147,31 +2148,25 @@ and autograd-safe manner.</p>
 
 <span class="sd">            **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">                * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
-<span class="sd">                * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
-<span class="sd">                * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
-<span class="sd">                * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
+<span class="sd">            * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
+<span class="sd">            * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
 
 <span class="sd">            **Fluxes / diagnostics**:</span>
 
-<span class="sd">                * ``tran``   — actual transpiration [mm d⁻¹].</span>
-<span class="sd">                * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
-<span class="sd">                * ``runoff`` — surface runoff (preliminary + rejected</span>
-<span class="sd">                  infiltration) [mm d⁻¹].</span>
-<span class="sd">                * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
-<span class="sd">                * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
-<span class="sd">                  [mm d⁻¹].</span>
-<span class="sd">                * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
-<span class="sd">                  rooted zone (total / available) [mm d⁻¹].</span>
-<span class="sd">                * ``rirr``   — effective irrigation [mm d⁻¹].</span>
-<span class="sd">                * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
-<span class="sd">                * ``smact`` / ``smactl`` — soil-moisture contents</span>
-<span class="sd">                  [m³ m⁻³].</span>
-<span class="sd">                * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
-<span class="sd">                * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
-<span class="sd">                  factors in ``[0, 1]``.</span>
-<span class="sd">                * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
-<span class="sd">                  (should be ≈ 0).</span>
+<span class="sd">            * ``tran``   — actual transpiration [mm d⁻¹].</span>
+<span class="sd">            * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
+<span class="sd">            * ``runoff`` — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</span>
+<span class="sd">            * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
+<span class="sd">            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes [mm d⁻¹].</span>
+<span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
+<span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents [m³ m⁻³].</span>
+<span class="sd">            * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
+<span class="sd">            * ``rdry`` / ``rwet`` — drought / oxygen reduction factors in ``[0, 1]``.</span>
+<span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
         <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
@@ -2447,50 +2442,26 @@ look-up; shape <code>[B]</code>.</p></td>
 
 **Rate variables** (consumed by the engine)</code></td>
       <td><ul>
-<li><code>wa_rate</code>       — <code>perc1 - perc2 + wdr</code> [mm d⁻¹].<ul>
+<li><code>wa_rate</code>       — <code>perc1 - perc2 + wdr</code> [mm d⁻¹].</li>
 <li><code>wa_lower_rate</code> — <code>perc2 - perc3 - wdr</code> [mm d⁻¹].</li>
 <li><code>dslr_rate</code>     — <code>dslr_new - dslr</code> [d d⁻¹].</li>
 <li><code>dsos_rate</code>     — <code>dsos_new - dsos</code> [d d⁻¹].</li>
 </ul>
-</li>
-</ul>
 <p><strong>Fluxes / diagnostics</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``tran``   — actual transpiration [mm d⁻¹].
-* ``evap``   — actual soil evaporation [mm d⁻¹].
-* ``runoff`` — surface runoff (preliminary + rejected
-  infiltration) [mm d⁻¹].
-* ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].
-* ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes
-  [mm d⁻¹].
-* ``wdr`` / ``wdra`` — root-front water transfer to the
-  rooted zone (total / available) [mm d⁻¹].
-* ``rirr``   — effective irrigation [mm d⁻¹].
-* ``tranrf`` — water-stress factor in ``[0, 1]``.
-* ``smact`` / ``smactl`` — soil-moisture contents
-  [m³ m⁻³].
-* ``smcr``   — critical soil-moisture content [m³ m⁻³].
-* ``rdry`` / ``rwet`` — drought / oxygen reduction
-  factors in ``[0, 1]``.
-* ``wbal``   — rooted-zone mass-balance residual [mm]
-  (should be ≈ 0).
-</code></pre></div></td></tr></table></div></td>
+<ul>
+<li><code>tran</code>   — actual transpiration [mm d⁻¹].</li>
+<li><code>evap</code>   — actual soil evaporation [mm d⁻¹].</li>
+<li><code>runoff</code> — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</li>
+<li><code>drain</code>  — deep drainage = <code>perc3</code> [mm d⁻¹].</li>
+<li><code>perc1</code> / <code>perc2</code> / <code>perc3</code> — cascade fluxes [mm d⁻¹].</li>
+<li><code>wdr</code> / <code>wdra</code> — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</li>
+<li><code>rirr</code>   — effective irrigation [mm d⁻¹].</li>
+<li><code>tranrf</code> — water-stress factor in <code>[0, 1]</code>.</li>
+<li><code>smact</code> / <code>smactl</code> — soil-moisture contents [m³ m⁻³].</li>
+<li><code>smcr</code>   — critical soil-moisture content [m³ m⁻³].</li>
+<li><code>rdry</code> / <code>rwet</code> — drought / oxygen reduction factors in <code>[0, 1]</code>.</li>
+<li><code>wbal</code>   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -2534,31 +2505,25 @@ look-up; shape <code>[B]</code>.</p></td>
 
 <span class="sd">        **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">            * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
-<span class="sd">            * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
-<span class="sd">            * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
-<span class="sd">            * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
+<span class="sd">        * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">        * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
+<span class="sd">        * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
+<span class="sd">        * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
 
 <span class="sd">        **Fluxes / diagnostics**:</span>
 
-<span class="sd">            * ``tran``   — actual transpiration [mm d⁻¹].</span>
-<span class="sd">            * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
-<span class="sd">            * ``runoff`` — surface runoff (preliminary + rejected</span>
-<span class="sd">              infiltration) [mm d⁻¹].</span>
-<span class="sd">            * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
-<span class="sd">            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
-<span class="sd">              [mm d⁻¹].</span>
-<span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
-<span class="sd">              rooted zone (total / available) [mm d⁻¹].</span>
-<span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
-<span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
-<span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents</span>
-<span class="sd">              [m³ m⁻³].</span>
-<span class="sd">            * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
-<span class="sd">            * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
-<span class="sd">              factors in ``[0, 1]``.</span>
-<span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
-<span class="sd">              (should be ≈ 0).</span>
+<span class="sd">        * ``tran``   — actual transpiration [mm d⁻¹].</span>
+<span class="sd">        * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
+<span class="sd">        * ``runoff`` — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</span>
+<span class="sd">        * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
+<span class="sd">        * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes [mm d⁻¹].</span>
+<span class="sd">        * ``wdr`` / ``wdra`` — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">        * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">        * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
+<span class="sd">        * ``smact`` / ``smactl`` — soil-moisture contents [m³ m⁻³].</span>
+<span class="sd">        * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
+<span class="sd">        * ``rdry`` / ``rwet`` — drought / oxygen reduction factors in ``[0, 1]``.</span>
+<span class="sd">        * ``wbal``   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
     <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
@@ -2843,6 +2808,8 @@ look-up; shape <code>[B]</code>.</p></td>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
       
     
   </body>
