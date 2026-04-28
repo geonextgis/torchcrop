@@ -18221,6 +18221,7 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">latitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">inclination</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
 
@@ -18228,6 +18229,9 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 <span class="sd">            doy: Day of year, shape ``[B]``.</span>
 <span class="sd">            latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
 <span class="sd">                (broadcastable).</span>
+<span class="sd">            inclination: Sun inclination angle in degrees used for the</span>
+<span class="sd">                photoperiodic daylength calculation. Defaults to ``-4.0``</span>
+<span class="sd">                (civil-twilight value used in Lintul5).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
@@ -18252,14 +18256,12 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
         <span class="n">daylength</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">aob</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
-        <span class="c1"># Photoperiodic daylength — civil twilight angle of -4°</span>
+        <span class="c1"># Photoperiodic daylength — configurable sun inclination angle</span>
+        <span class="n">inclination_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+            <span class="n">inclination</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
         <span class="n">aob_phot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-            <span class="p">(</span>
-                <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
-                    <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="p">)</span>
-                <span class="o">+</span> <span class="n">sinld</span>
-            <span class="p">)</span>
+            <span class="p">(</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inclination_tensor</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">)</span> <span class="o">+</span> <span class="n">sinld</span><span class="p">)</span>
             <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
             <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
             <span class="mf">1.0</span><span class="p">,</span>
@@ -18303,7 +18305,7 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
 
 <h5 id="torchcrop.processes.astro.Astro.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">latitude</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">latitude</span><span class="p">,</span> <span class="n">inclination</span><span class="o">=-</span><span class="mf">4.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.astro.Astro.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -18336,6 +18338,14 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 (broadcastable).</p></td>
         <td><em>required</em></td>
       </tr>
+      <tr>
+        <td><code>inclination</code></td>
+        <td><code>float | torch.Tensor</code></td>
+        <td><p>Sun inclination angle in degrees used for the
+photoperiodic daylength calculation. Defaults to <code>-4.0</code>
+(civil-twilight value used in Lintul5).</p></td>
+        <td><code>-4.0</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -18361,6 +18371,7 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">latitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">inclination</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
 
@@ -18368,6 +18379,9 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 <span class="sd">        doy: Day of year, shape ``[B]``.</span>
 <span class="sd">        latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
 <span class="sd">            (broadcastable).</span>
+<span class="sd">        inclination: Sun inclination angle in degrees used for the</span>
+<span class="sd">            photoperiodic daylength calculation. Defaults to ``-4.0``</span>
+<span class="sd">            (civil-twilight value used in Lintul5).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
@@ -18392,14 +18406,12 @@ a civil-twilight inclusion angle of $-4^\circ$ as in Lintul5.</p>
 
     <span class="n">daylength</span> <span class="o">=</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">aob</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
 
-    <span class="c1"># Photoperiodic daylength — civil twilight angle of -4°</span>
+    <span class="c1"># Photoperiodic daylength — configurable sun inclination angle</span>
+    <span class="n">inclination_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span>
+        <span class="n">inclination</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span>
+    <span class="p">)</span>
     <span class="n">aob_phot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-        <span class="p">(</span>
-            <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">doy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="p">)</span>
-            <span class="o">+</span> <span class="n">sinld</span>
-        <span class="p">)</span>
+        <span class="p">(</span><span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">inclination_tensor</span> <span class="o">*</span> <span class="n">_DEG2RAD</span><span class="p">)</span> <span class="o">+</span> <span class="n">sinld</span><span class="p">)</span>
         <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cosld</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">1e-12</span><span class="p">,</span> <span class="n">cosld</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cosld</span><span class="p">)),</span>
         <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="mf">1.0</span><span class="p">,</span>
