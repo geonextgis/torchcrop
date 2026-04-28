@@ -1,23 +1,33 @@
-"""Astronomical parameters: solar declination, daylength, extraterrestrial radiation.
+"""Solar geometry: declination, daylength, and daily insolation integrals.
+
+Provides the astronomical quantities consumed by ``Irradiation`` and
+``Phenology``: solar declination $\\delta$, astronomical and photoperiodic
+daylengths, and the integrals ``sinld``, ``cosld``, ``dsinbe`` used to
+derive extraterrestrial radiation.
 
 References:
     Goudriaan, J. & van Laar, H.H. (1994). *Modelling potential crop growth
-    processes* — the daylength formulation used by the SIMPLACE
+    processes*. Matches the formulation in SIMPLACE
     ``AstronomicParametersTransformer``.
 
 Equations:
-    $$
-    \\delta = -\\arcsin\\left[\\sin(23.45^\\circ) \\cos\\left(2\\pi \\frac{DOY + 10}{365}\\right)\\right]
-    $$
+    Solar declination (radians) for day of year $\\text{DOY}$:
 
     $$
-    \\cos(H_0) = -\\tan(\\phi)\\tan(\\delta)
+    \\delta = -\\arcsin\\left[\\sin(23.45^\\circ)\\,
+    \\cos\\left(2\\pi \\frac{\\text{DOY} + 10}{365}\\right)\\right]
     $$
 
-    where $\phi$ is latitude in radians.
+    Sunrise hour angle at latitude $\\phi$ (radians):
 
-    Daylength ``DDLP`` is returned in hours; the photoperiodic daylength uses
-    a civil-twilight inclusion angle of $-4^\\circ$ as in Lintul5.
+    $$
+    \\cos H_0 = -\\tan\\phi \\, \\tan\\delta
+    $$
+
+    Astronomical daylength is returned in hours. Photoperiodic daylength
+    ``DDLP`` uses a sun-inclusion angle of $-4^\\circ$ (civil twilight, as
+    in Lintul5) so that low-light dawn and dusk count toward the
+    photoperiodic response.
 """
 
 from __future__ import annotations

@@ -1,49 +1,48 @@
-"""Radiation interception by the canopy.
+"""Daily solar irradiation and PAR interception by the canopy.
+
+Combines solar geometry with measured radiation to obtain the daily total
+irradiation ``AVRAD``, then applies Beer–Lambert extinction to give the
+fraction of PAR captured by the canopy.
 
 References:
     SIMPLACE ``Irradiation.java``.
 
 Equations:
-    Daily total irradiation (AVRAD) computed from solar geometry and
-    atmospheric transmission:
+    Solar constant adjusted for Earth–Sun distance:
 
     $$
-    SC = 1370 \\cdot (1 + 0.033 \\cos(2\\pi \\text{DOY}/365))
+    SC = 1370 \\cdot (1 + 0.033 \\cos(2\\pi \\, \\text{DOY}/365))
     $$
+
+    Daily integral of $\\sin\\beta$ (solar elevation) over the daylight
+    period:
 
     $$
     A_0 = \\text{LIMIT}(-1, 1, \\text{SINLD}/\\text{COSLD})
     $$
 
     $$
-    \\text{DSINB} = 3600 \\cdot (\\text{DAYL} \\cdot \\text{SINLD} +
-    24 \\cdot \\text{COSLD} \\cdot \\sqrt{1 - A_0^2} / \\pi)
+    \\text{DSINB} = 3600 \\left(\\text{DAYL} \\cdot \\text{SINLD}
+    + \\frac{24}{\\pi} \\, \\text{COSLD} \\sqrt{1 - A_0^2}\\right)
+    $$
+
+    Extraterrestrial radiation, with the daily total capped at 80 % of the
+    extraterrestrial value:
+
+    $$
+    \\text{ANGOT} = \\max(10^{-4},\\; SC \\cdot \\text{DSINB})
     $$
 
     $$
-    \\text{ANGOT} = \\text{max}(0.0001, SC \\cdot \\text{DSINB})
+    \\text{AVRAD} = \\min(0.80 \\cdot \\text{ANGOT},\\; \\text{DTR})
     $$
 
-    $$
-    \\text{AVRAD} = \\text{min}(0.80 \\cdot \\text{ANGOT}, \\text{DTR})
-    $$
-
-    Photosynthetically active radiation is 0.50 of global radiation:
+    PAR is taken as 50 % of global radiation and intercepted following
+    Beer–Lambert extinction with coefficient $K$:
 
     $$
-    \\text{PAR} = 0.5 \\cdot \\text{AVRAD}
-    $$
-
-    Fraction intercepted by canopy (Beer-Lambert law):
-
-    $$
-    \\text{frac} = 1 - \\exp(-K \\cdot \\text{LAI})
-    $$
-
-    Intercepted PAR:
-
-    $$
-    \\text{PARINT} = \\text{PAR} \\cdot \\text{frac}
+    \\text{PAR} = 0.5 \\cdot \\text{AVRAD}, \\qquad
+    \\text{PARINT} = \\text{PAR} \\cdot \\bigl(1 - e^{-K \\, \\text{LAI}}\\bigr)
     $$
 """
 

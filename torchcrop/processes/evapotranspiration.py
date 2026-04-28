@@ -1,31 +1,33 @@
-"""PENMAN formula for computing potential evaporation from water
-and soil surfaces, and potential transpiration of a closed crop canopy,
-accounting for CO2 effects.
+"""PENMAN potential evaporation and transpiration with CO₂ correction.
+
+Computes Penman reference fluxes for an open-water, bare-soil, and closed
+canopy reference, then partitions them into potential canopy transpiration
+and potential soil evaporation according to the fraction of incoming light
+intercepted by the crop.
 
 References:
-    SIMPLACE ``PotentialEvapoTranspiration.java`` and ``LintulFunctions.PENMAN``.
-    Based on Penman (1948) with modifications by van Kraalingen.
+    Penman (1948) with the van Kraalingen modifications used by SIMPLACE
+    ``PotentialEvapoTranspiration.java`` and ``LintulFunctions.PENMAN``.
+
+Outputs:
+    - ``E0``  — potential evaporation from open water [mm d⁻¹]
+    - ``ES0`` — potential evaporation from bare soil [mm d⁻¹]
+    - ``ETC`` — potential transpiration of a closed canopy, CO₂-corrected
+      [mm d⁻¹]
 
 Equations:
-    See PENMAN method for detailed derivations. Key outputs:
-    - E0: Potential evaporation from open water surface [mm d⁻¹]
-    - ES0: Potential evaporation from bare soil [mm d⁻¹]
-    - ETC: Potential transpiration of closed canopy (CO2-corrected) [mm d⁻¹]
-
-    Potential transpiration rate:
+    Canopy transpiration and soil evaporation are split by the fractional
+    light interception $F_{\\text{INT}}$:
 
     $$
-    P_t = \\text{CFET} \\cdot ETC \\cdot F_{INT}
+    P_t = \\text{CFET} \\cdot \\text{ETC} \\cdot F_{\\text{INT}}
     $$
 
-    Potential soil evaporation:
-
     $$
-    P_s = ES_0 \\cdot (1 - F_{INT})
+    P_s = \\text{ES}_0 \\cdot (1 - F_{\\text{INT}})
     $$
 
-    where CFET is a crop-specific correction factor and F_INT is fractional
-    light interception.
+    where ``CFET`` is a crop-specific transpiration correction factor.
 """
 
 from __future__ import annotations
