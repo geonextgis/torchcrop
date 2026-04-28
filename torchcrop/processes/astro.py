@@ -39,6 +39,7 @@ class Astro(nn.Module):
         self,
         doy: torch.Tensor,
         latitude: torch.Tensor,
+        inclination: float | torch.Tensor = -4.0,
     ) -> dict[str, torch.Tensor]:
         """Compute astronomical parameters.
 
@@ -46,6 +47,9 @@ class Astro(nn.Module):
             doy: Day of year, shape ``[B]``.
             latitude: Latitude in degrees, shape ``[B]`` or ``[]``
                 (broadcastable).
+            inclination: Sun inclination angle in degrees used for the
+                photoperiodic daylength calculation. Defaults to ``-4.0``
+                (civil-twilight value used in Lintul5).
 
         Returns:
             Dict with keys ``declination`` [rad], ``daylength`` [h],
@@ -70,14 +74,12 @@ class Astro(nn.Module):
 
         daylength = 12.0 * (1.0 + 2.0 * torch.asin(aob) / math.pi)
 
-        # Photoperiodic daylength — civil twilight angle of -4°
+        # Photoperiodic daylength — configurable sun inclination angle
+        inclination_tensor = torch.as_tensor(
+            inclination, dtype=doy.dtype, device=doy.device
+        )
         aob_phot = torch.clamp(
-            (
-                -torch.sin(
-                    torch.tensor(-4.0 * _DEG2RAD, dtype=doy.dtype, device=doy.device)
-                )
-                + sinld
-            )
+            (-torch.sin(inclination_tensor * _DEG2RAD) + sinld)
             / torch.where(cosld.abs() > 1e-12, cosld, torch.ones_like(cosld)),
             -1.0,
             1.0,
