@@ -1970,23 +1970,56 @@
 <a id="torchcrop.processes.phenology"></a>
     <div class="doc doc-contents first">
 
-      <p>Phenological development — DVS accumulation, thermal time, vernalisation.</p>
+      <p>Phenological development: thermal time, daylength, vernalisation, DVS.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <p>Wolf (2012), Section 3.2; SIMPLACE <code>Phenology.java</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Effective daily temperature:</p>
+<p>Effective daily thermal time:</p>
 <div class="arithmatex">\[
 \text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})
 \]</div>
-<p>Development rate (pre-emergence, vegetative, generative):</p>
+<p>Development rate (vegetative, generative):</p>
 <div class="arithmatex">\[
 \text{DVR} =
 \begin{cases}
-    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1}, &amp; 0 \le DVS &lt; 1 \\
-    \text{DTSU} / \text{TSUM2}, &amp; 1 \le DVS &lt; 2
+    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} / \text{TSUM1},
+        &amp; 0 \le \text{DVS} &lt; 1 \\
+    \text{DTSU} / \text{TSUM2},
+        &amp; 1 \le \text{DVS} &lt; 2
+\end{cases}
+\]</div>
+<p>Photoperiod factor (active when <code>IDSL &gt;= 1</code>):</p>
+<div class="arithmatex">\[
+\text{PHOTFAC} =
+\begin{cases}
+    \text{AFGEN}(\text{PHOTTB}, \text{DDLP}), &amp; \text{IDSL} \ge 1 \\
+    1, &amp; \text{otherwise}
+\end{cases}
+\]</div>
+<p>Vernalisation (active when <code>IDSL = 2</code>). With
+<span class="arithmatex">\(V_\text{dvs}\)</span> = <code>vernalisation_devstage</code>,
+<span class="arithmatex">\(V_\text{base}\)</span> = <code>VBASE</code>, <span class="arithmatex">\(V_\text{sat}\)</span> = <code>VERSAT</code>,
+<span class="arithmatex">\(V_\text{min}\)</span> = <code>cMinimalVernalisationFactor</code>:</p>
+<div class="arithmatex">\[
+\text{VERNR} = \text{AFGEN}(\text{VERNRT}, T_\text{avg})
+\]</div>
+<div class="arithmatex">\[
+\text{VERN}_\text{rate} =
+\begin{cases}
+    \text{VERNR}, &amp; \text{DVS} &lt; V_\text{dvs} \\
+    0,            &amp; \text{otherwise}
+\end{cases}
+\]</div>
+<div class="arithmatex">\[
+\text{VERNFAC} =
+\begin{cases}
+    \text{LIMIT}\!\left(V_\text{min},\, 1,\,
+        \dfrac{\text{VERN} - V_\text{base}}{V_\text{sat} - V_\text{base}}\right),
+        &amp; \text{DVS} &lt; V_\text{dvs},\ V_\text{sat} \neq V_\text{base} \\
+    1, &amp; \text{otherwise}
 \end{cases}
 \]</div>
 </div>
@@ -2032,15 +2065,14 @@ Phenology            (<span title="torch.nn.modules.module.Module">Module</span>
       <tr>
         <td><code>smooth</code></td>
         <td><code>bool</code></td>
-        <td><p>If <code>True</code>, use sigmoid blends (sharpness <code>k_sharp</code>) in
-place of hard stage-based branches for smoother gradients.</p></td>
+        <td><p>If <code>True</code>, replace hard stage branches with sigmoid
+blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <td><code>False</code></td>
       </tr>
       <tr>
         <td><code>k_sharp</code></td>
         <td><code>float</code></td>
-        <td><p>Sharpness of the sigmoid blends (ignored when
-<code>smooth=False</code>).</p></td>
+        <td><p>Sigmoid sharpness; ignored when <code>smooth=False</code>.</p></td>
         <td><code>50.0</code></td>
       </tr>
   </tbody>
@@ -2051,10 +2083,9 @@ place of hard stage-based branches for smoother gradients.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Development-stage rate calculation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        smooth: If ``True``, use sigmoid blends (sharpness ``k_sharp``) in</span>
-<span class="sd">            place of hard stage-based branches for smoother gradients.</span>
-<span class="sd">        k_sharp: Sharpness of the sigmoid blends (ignored when</span>
-<span class="sd">            ``smooth=False``).</span>
+<span class="sd">        smooth: If ``True``, replace hard stage branches with sigmoid</span>
+<span class="sd">            blends of sharpness ``k_sharp`` for smoother gradients.</span>
+<span class="sd">        k_sharp: Sigmoid sharpness; ignored when ``smooth=False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">k_sharp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2075,37 +2106,28 @@ place of hard stage-based branches for smoother gradients.</p></td>
 <span class="sd">            state: Current state; uses ``state.dvs`` and ``state.tsump``.</span>
 <span class="sd">            davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
 <span class="sd">            ddlp: Photoperiodic daylength [h], shape ``[B]``.</span>
-<span class="sd">            params: Crop parameters; uses the temperature and photoperiod</span>
-<span class="sd">                tables plus ``tsum1`` / ``tsum2`` / ``tsumem``.</span>
+<span class="sd">            params: Crop parameters; uses ``dtsmtb``, ``phottb``,</span>
+<span class="sd">                ``tsum1``, ``tsum2``, ``tsumem``, ``tbasem``, ``teffmx``,</span>
+<span class="sd">                and the vernalisation block (``idsl``, ``vernrt``,</span>
+<span class="sd">                ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
+<span class="sd">                ``minimal_vernalisation_factor``).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
+<span class="sd">            Dict of ``[B]`` tensors.</span>
 
-<span class="sd">            Rate variables (consumed by the engine for state update):</span>
+<span class="sd">            Rates (integrated by the engine):</span>
 
-<span class="sd">                * ``dvs_rate`` [d⁻¹] — Daily increment of development</span>
-<span class="sd">                  stage ``dvs``. Piecewise on DVS:</span>
-<span class="sd">                  ``dtsu * photofac * vernfac / tsum1`` while ``dvs &lt; 1``;</span>
-<span class="sd">                  ``dtsu / tsum2`` while ``1 &lt;= dvs &lt; 2``; gated to zero</span>
-<span class="sd">                  pre-emergence and post-maturity.</span>
-<span class="sd">                * ``tsum_rate`` [°C d d⁻¹] — Effective thermal-time</span>
-<span class="sd">                  accumulation since emergence (``= dtsu`` once emerged,</span>
-<span class="sd">                  else 0).</span>
-<span class="sd">                * ``tsump_rate`` [°C d d⁻¹] — Thermal-time accumulation</span>
-<span class="sd">                  since sowing (``max(0, T_avg - tbasem)`` capped at</span>
-<span class="sd">                  ``teffmx - tbasem``).</span>
-<span class="sd">                * ``vern_rate`` [d d⁻¹] — Vernalisation accumulation rate</span>
-<span class="sd">                  (placeholder = 0 in this minimal port).</span>
+<span class="sd">            * ``dvs_rate`` [d⁻¹] — DVS increment; gated to zero pre-emergence and post-maturity.</span>
+<span class="sd">            * ``tsum_rate`` [°C d d⁻¹] — ``dtsu`` once emerged, else 0.</span>
+<span class="sd">            * ``tsump_rate`` [°C d d⁻¹] — ``max(0, T_avg - tbasem)`` capped at ``teffmx - tbasem``.</span>
+<span class="sd">            * ``vern_rate`` [d d⁻¹] — ``AFGEN(vernrt, T_avg)``, zero when ``idsl &lt; 2`` or ``dvs &gt;= vernalisation_devstage``.</span>
 
-<span class="sd">            Diagnostics (passed downstream, not integrated):</span>
+<span class="sd">            Diagnostics:</span>
 
-<span class="sd">                * ``photofac`` [-] — Photoperiod reduction factor in</span>
-<span class="sd">                  ``[0, 1]``.</span>
-<span class="sd">                * ``vernfac`` [-] — Vernalisation factor in ``[0, 1]``.</span>
-<span class="sd">                * ``emerged`` [-] — Hard mask (or smooth sigmoid) of</span>
-<span class="sd">                  ``tsump &gt;= tsumem``.</span>
-<span class="sd">                * ``dtsu`` [°C d d⁻¹] — Effective thermal time from</span>
-<span class="sd">                  ``AFGEN(dtsmtb, T_avg)``.</span>
+<span class="sd">            * ``photofac`` [-] — equals ``1`` when ``idsl &lt; 1``.</span>
+<span class="sd">            * ``vernfac`` [-] — in ``[minimal_vernalisation_factor, 1]``; equals ``1`` when ``idsl &lt; 2`` or ``dvs &gt;= vernalisation_devstage``.</span>
+<span class="sd">            * ``emerged`` [-] — hard (or smooth) mask of ``tsump &gt;= tsumem``.</span>
+<span class="sd">            * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Effective thermal time</span>
         <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2116,12 +2138,48 @@ place of hard stage-based branches for smoother gradients.</p></td>
         <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
 
-        <span class="c1"># Photoperiod factor (reduction of dev rate pre-anthesis)</span>
-        <span class="n">photofac</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">phottb</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">)</span>
+        <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
+        <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
+        <span class="c1">#   1 -&gt; temperature + daylength (photofac from PHOTTB, vernfac = 1)</span>
+        <span class="c1">#   2 -&gt; temperature + daylength + vernalisation (both active)</span>
+        <span class="n">idsl_photo_active</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">idsl</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">idsl_active</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">idsl</span> <span class="o">&gt;=</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="c1"># Vernalisation factor (1.0 here — extended model applies interp table)</span>
-        <span class="n">vernfac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
-        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+        <span class="c1"># Photoperiod factor (reduction of dev rate pre-anthesis), gated by IDSL.</span>
+        <span class="n">photofac_raw</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">phottb</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">)</span>
+        <span class="n">ones_photo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">photofac_raw</span><span class="p">)</span>
+        <span class="n">photofac</span> <span class="o">=</span> <span class="n">photofac_raw</span> <span class="o">*</span> <span class="n">idsl_photo_active</span> <span class="o">+</span> <span class="n">ones_photo</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">idsl_photo_active</span><span class="p">)</span>
+
+        <span class="c1"># Vernal-day rate from the temperature-driven interpolation table.</span>
+        <span class="n">vernr</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">vernrt</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">)</span>
+
+        <span class="c1"># Mask: vernalisation is only applied while DVS &lt; vernalisation_devstage.</span>
+        <span class="n">vern_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">vernalisation_devstage</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
+            <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">vern_devstage</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+
+        <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
+        <span class="c1"># When VERSAT == VBASE the SIMPLACE code keeps VERNF = 1 to dodge</span>
+        <span class="c1"># division by zero; we replicate that with a soft fallback.</span>
+        <span class="n">versat_minus_vbase</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">versat</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">vbase</span>
+        <span class="n">vernf_raw</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">vern</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">vbase</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">versat_minus_vbase</span><span class="p">)</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">vernf_raw</span><span class="p">)</span>
+        <span class="n">vernf_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">minimal_vernalisation_factor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">vernf_raw</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">vernf_raw</span><span class="p">,</span> <span class="n">ones</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">denom_zero</span> <span class="o">=</span> <span class="p">(</span><span class="n">versat_minus_vbase</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mf">1e-10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">vernf_raw</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">vernf</span> <span class="o">=</span> <span class="n">vernf_clamped</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">denom_zero</span><span class="p">)</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="n">denom_zero</span>
+
+        <span class="c1"># INSW(DVS - VernDvs, VERNF, 1): apply VERNF only while DVS &lt; VernDvs.</span>
+        <span class="n">vernf_pheno_gated</span> <span class="o">=</span> <span class="n">vernf</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">pre_vern_dvs</span><span class="p">)</span>
+
+        <span class="c1"># Gate the entire vernalisation effect by IDSL (vernfac = 1 when off).</span>
+        <span class="n">vernfac</span> <span class="o">=</span> <span class="n">vernf_pheno_gated</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">idsl_active</span><span class="p">)</span>
 
         <span class="c1"># Pre-emergence: DVS stays 0 until thermal sum reaches TSUMEM</span>
         <span class="c1"># We encode emergence by letting DVS start growing once TSUM &gt;= TSUMEM.</span>
@@ -2222,8 +2280,11 @@ place of hard stage-based branches for smoother gradients.</p></td>
       <tr>
         <td><code>params</code></td>
         <td><code>CropParameters</code></td>
-        <td><p>Crop parameters; uses the temperature and photoperiod
-tables plus <code>tsum1</code> / <code>tsum2</code> / <code>tsumem</code>.</p></td>
+        <td><p>Crop parameters; uses <code>dtsmtb</code>, <code>phottb</code>,
+<code>tsum1</code>, <code>tsum2</code>, <code>tsumem</code>, <code>tbasem</code>, <code>teffmx</code>,
+and the vernalisation block (<code>idsl</code>, <code>vernrt</code>,
+<code>vbase</code>, <code>versat</code>, <code>vernalisation_devstage</code>,
+<code>minimal_vernalisation_factor</code>).</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2238,41 +2299,22 @@ tables plus <code>tsum1</code> / <code>tsum2</code> / <code>tsumem</code>.</p></
   </thead>
   <tbody>
     <tr>
-      <td><code>Dict of ``[B]`` tensors grouped as follows.
+      <td><code>Dict of ``[B]`` tensors.
 
-Rate variables (consumed by the engine for state update)</code></td>
+Rates (integrated by the engine)</code></td>
       <td><ul>
-<li><code>dvs_rate</code> [d⁻¹] — Daily increment of development
-      stage <code>dvs</code>. Piecewise on DVS:
-      <code>dtsu * photofac * vernfac / tsum1</code> while <code>dvs &lt; 1</code>;
-      <code>dtsu / tsum2</code> while <code>1 &lt;= dvs &lt; 2</code>; gated to zero
-      pre-emergence and post-maturity.<ul>
-<li><code>tsum_rate</code> [°C d d⁻¹] — Effective thermal-time
-  accumulation since emergence (<code>= dtsu</code> once emerged,
-  else 0).</li>
-<li><code>tsump_rate</code> [°C d d⁻¹] — Thermal-time accumulation
-  since sowing (<code>max(0, T_avg - tbasem)</code> capped at
-  <code>teffmx - tbasem</code>).</li>
-<li><code>vern_rate</code> [d d⁻¹] — Vernalisation accumulation rate
-  (placeholder = 0 in this minimal port).</li>
+<li><code>dvs_rate</code> [d⁻¹] — DVS increment; gated to zero pre-emergence and post-maturity.</li>
+<li><code>tsum_rate</code> [°C d d⁻¹] — <code>dtsu</code> once emerged, else 0.</li>
+<li><code>tsump_rate</code> [°C d d⁻¹] — <code>max(0, T_avg - tbasem)</code> capped at <code>teffmx - tbasem</code>.</li>
+<li><code>vern_rate</code> [d d⁻¹] — <code>AFGEN(vernrt, T_avg)</code>, zero when <code>idsl &lt; 2</code> or <code>dvs &gt;= vernalisation_devstage</code>.</li>
 </ul>
-</li>
-</ul>
-<p>Diagnostics (passed downstream, not integrated):</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``photofac`` [-] — Photoperiod reduction factor in
-  ``[0, 1]``.
-* ``vernfac`` [-] — Vernalisation factor in ``[0, 1]``.
-* ``emerged`` [-] — Hard mask (or smooth sigmoid) of
-  ``tsump &gt;= tsumem``.
-* ``dtsu`` [°C d d⁻¹] — Effective thermal time from
-  ``AFGEN(dtsmtb, T_avg)``.
-</code></pre></div></td></tr></table></div></td>
+<p>Diagnostics:</p>
+<ul>
+<li><code>photofac</code> [-] — equals <code>1</code> when <code>idsl &lt; 1</code>.</li>
+<li><code>vernfac</code> [-] — in <code>[minimal_vernalisation_factor, 1]</code>; equals <code>1</code> when <code>idsl &lt; 2</code> or <code>dvs &gt;= vernalisation_devstage</code>.</li>
+<li><code>emerged</code> [-] — hard (or smooth) mask of <code>tsump &gt;= tsumem</code>.</li>
+<li><code>dtsu</code> [°C d d⁻¹] — <code>AFGEN(dtsmtb, T_avg)</code>.</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -2291,37 +2333,28 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">        state: Current state; uses ``state.dvs`` and ``state.tsump``.</span>
 <span class="sd">        davtmp: Mean daily air temperature [°C], shape ``[B]``.</span>
 <span class="sd">        ddlp: Photoperiodic daylength [h], shape ``[B]``.</span>
-<span class="sd">        params: Crop parameters; uses the temperature and photoperiod</span>
-<span class="sd">            tables plus ``tsum1`` / ``tsum2`` / ``tsumem``.</span>
+<span class="sd">        params: Crop parameters; uses ``dtsmtb``, ``phottb``,</span>
+<span class="sd">            ``tsum1``, ``tsum2``, ``tsumem``, ``tbasem``, ``teffmx``,</span>
+<span class="sd">            and the vernalisation block (``idsl``, ``vernrt``,</span>
+<span class="sd">            ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
+<span class="sd">            ``minimal_vernalisation_factor``).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
+<span class="sd">        Dict of ``[B]`` tensors.</span>
 
-<span class="sd">        Rate variables (consumed by the engine for state update):</span>
+<span class="sd">        Rates (integrated by the engine):</span>
 
-<span class="sd">            * ``dvs_rate`` [d⁻¹] — Daily increment of development</span>
-<span class="sd">              stage ``dvs``. Piecewise on DVS:</span>
-<span class="sd">              ``dtsu * photofac * vernfac / tsum1`` while ``dvs &lt; 1``;</span>
-<span class="sd">              ``dtsu / tsum2`` while ``1 &lt;= dvs &lt; 2``; gated to zero</span>
-<span class="sd">              pre-emergence and post-maturity.</span>
-<span class="sd">            * ``tsum_rate`` [°C d d⁻¹] — Effective thermal-time</span>
-<span class="sd">              accumulation since emergence (``= dtsu`` once emerged,</span>
-<span class="sd">              else 0).</span>
-<span class="sd">            * ``tsump_rate`` [°C d d⁻¹] — Thermal-time accumulation</span>
-<span class="sd">              since sowing (``max(0, T_avg - tbasem)`` capped at</span>
-<span class="sd">              ``teffmx - tbasem``).</span>
-<span class="sd">            * ``vern_rate`` [d d⁻¹] — Vernalisation accumulation rate</span>
-<span class="sd">              (placeholder = 0 in this minimal port).</span>
+<span class="sd">        * ``dvs_rate`` [d⁻¹] — DVS increment; gated to zero pre-emergence and post-maturity.</span>
+<span class="sd">        * ``tsum_rate`` [°C d d⁻¹] — ``dtsu`` once emerged, else 0.</span>
+<span class="sd">        * ``tsump_rate`` [°C d d⁻¹] — ``max(0, T_avg - tbasem)`` capped at ``teffmx - tbasem``.</span>
+<span class="sd">        * ``vern_rate`` [d d⁻¹] — ``AFGEN(vernrt, T_avg)``, zero when ``idsl &lt; 2`` or ``dvs &gt;= vernalisation_devstage``.</span>
 
-<span class="sd">        Diagnostics (passed downstream, not integrated):</span>
+<span class="sd">        Diagnostics:</span>
 
-<span class="sd">            * ``photofac`` [-] — Photoperiod reduction factor in</span>
-<span class="sd">              ``[0, 1]``.</span>
-<span class="sd">            * ``vernfac`` [-] — Vernalisation factor in ``[0, 1]``.</span>
-<span class="sd">            * ``emerged`` [-] — Hard mask (or smooth sigmoid) of</span>
-<span class="sd">              ``tsump &gt;= tsumem``.</span>
-<span class="sd">            * ``dtsu`` [°C d d⁻¹] — Effective thermal time from</span>
-<span class="sd">              ``AFGEN(dtsmtb, T_avg)``.</span>
+<span class="sd">        * ``photofac`` [-] — equals ``1`` when ``idsl &lt; 1``.</span>
+<span class="sd">        * ``vernfac`` [-] — in ``[minimal_vernalisation_factor, 1]``; equals ``1`` when ``idsl &lt; 2`` or ``dvs &gt;= vernalisation_devstage``.</span>
+<span class="sd">        * ``emerged`` [-] — hard (or smooth) mask of ``tsump &gt;= tsumem``.</span>
+<span class="sd">        * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Effective thermal time</span>
     <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2332,12 +2365,48 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
 
-    <span class="c1"># Photoperiod factor (reduction of dev rate pre-anthesis)</span>
-    <span class="n">photofac</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">phottb</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">)</span>
+    <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
+    <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
+    <span class="c1">#   1 -&gt; temperature + daylength (photofac from PHOTTB, vernfac = 1)</span>
+    <span class="c1">#   2 -&gt; temperature + daylength + vernalisation (both active)</span>
+    <span class="n">idsl_photo_active</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">idsl</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">idsl_active</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">idsl</span> <span class="o">&gt;=</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="c1"># Vernalisation factor (1.0 here — extended model applies interp table)</span>
-    <span class="n">vernfac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
-    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+    <span class="c1"># Photoperiod factor (reduction of dev rate pre-anthesis), gated by IDSL.</span>
+    <span class="n">photofac_raw</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">phottb</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">)</span>
+    <span class="n">ones_photo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">photofac_raw</span><span class="p">)</span>
+    <span class="n">photofac</span> <span class="o">=</span> <span class="n">photofac_raw</span> <span class="o">*</span> <span class="n">idsl_photo_active</span> <span class="o">+</span> <span class="n">ones_photo</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">idsl_photo_active</span><span class="p">)</span>
+
+    <span class="c1"># Vernal-day rate from the temperature-driven interpolation table.</span>
+    <span class="n">vernr</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">vernrt</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">)</span>
+
+    <span class="c1"># Mask: vernalisation is only applied while DVS &lt; vernalisation_devstage.</span>
+    <span class="n">vern_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">vernalisation_devstage</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
+        <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">vern_devstage</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+
+    <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
+    <span class="c1"># When VERSAT == VBASE the SIMPLACE code keeps VERNF = 1 to dodge</span>
+    <span class="c1"># division by zero; we replicate that with a soft fallback.</span>
+    <span class="n">versat_minus_vbase</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">versat</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">vbase</span>
+    <span class="n">vernf_raw</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">vern</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">vbase</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">versat_minus_vbase</span><span class="p">)</span>
+    <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">vernf_raw</span><span class="p">)</span>
+    <span class="n">vernf_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">minimal_vernalisation_factor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">vernf_raw</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">vernf_raw</span><span class="p">,</span> <span class="n">ones</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">denom_zero</span> <span class="o">=</span> <span class="p">(</span><span class="n">versat_minus_vbase</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mf">1e-10</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">vernf_raw</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">vernf</span> <span class="o">=</span> <span class="n">vernf_clamped</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">denom_zero</span><span class="p">)</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="n">denom_zero</span>
+
+    <span class="c1"># INSW(DVS - VernDvs, VERNF, 1): apply VERNF only while DVS &lt; VernDvs.</span>
+    <span class="n">vernf_pheno_gated</span> <span class="o">=</span> <span class="n">vernf</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">pre_vern_dvs</span><span class="p">)</span>
+
+    <span class="c1"># Gate the entire vernalisation effect by IDSL (vernfac = 1 when off).</span>
+    <span class="n">vernfac</span> <span class="o">=</span> <span class="n">vernf_pheno_gated</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">+</span> <span class="n">ones</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">idsl_active</span><span class="p">)</span>
 
     <span class="c1"># Pre-emergence: DVS stays 0 until thermal sum reaches TSUMEM</span>
     <span class="c1"># We encode emergence by letting DVS start growing once TSUM &gt;= TSUMEM.</span>
