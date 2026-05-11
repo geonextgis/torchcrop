@@ -21156,15 +21156,15 @@ block.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">                * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
-<span class="sd">                  ``cScaleFactorRUE · RUETB(DVS)``.</span>
-<span class="sd">                * ``rtmco`` [-] — Overall correction factor</span>
-<span class="sd">                  ``RTMP · RCO``.</span>
-<span class="sd">                * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
-<span class="sd">                * ``rtmp`` [-] — Temperature correction factor</span>
-<span class="sd">                  ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
-<span class="sd">                * ``dtemp`` [°C] — Effective daytime temperature</span>
-<span class="sd">                  ``TMAX − f·(TMAX − TMIN)``.</span>
+<span class="sd">            * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
+<span class="sd">              ``cScaleFactorRUE · RUETB(DVS)``.</span>
+<span class="sd">            * ``rtmco`` [-] — Overall correction factor</span>
+<span class="sd">              ``RTMP · RCO``.</span>
+<span class="sd">            * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
+<span class="sd">            * ``rtmp`` [-] — Temperature correction factor</span>
+<span class="sd">              ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
+<span class="sd">            * ``dtemp`` [°C] — Effective daytime temperature</span>
+<span class="sd">              ``TMAX − f·(TMAX − TMIN)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># DVS-dependent base RUE (replaces the static scalar params.rue)</span>
         <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -21268,7 +21268,7 @@ block.</p>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
 <li><code>rue</code> [g MJ⁻¹] — DVS-dependent radiation use efficiency
-      <code>cScaleFactorRUE · RUETB(DVS)</code>.<ul>
+  <code>cScaleFactorRUE · RUETB(DVS)</code>.</li>
 <li><code>rtmco</code> [-] — Overall correction factor
   <code>RTMP · RCO</code>.</li>
 <li><code>rco</code> [-] — CO₂ correction factor <code>COTB(CO₂)</code>.</li>
@@ -21276,8 +21276,6 @@ block.</p>
   <code>TMPFTB(DTEMP) · TMNFTB(TMIN)</code>.</li>
 <li><code>dtemp</code> [°C] — Effective daytime temperature
   <code>TMAX − f·(TMAX − TMIN)</code>.</li>
-</ul>
-</li>
 </ul></td>
     </tr>
   </tbody>
@@ -21303,15 +21301,15 @@ block.</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
-<span class="sd">              ``cScaleFactorRUE · RUETB(DVS)``.</span>
-<span class="sd">            * ``rtmco`` [-] — Overall correction factor</span>
-<span class="sd">              ``RTMP · RCO``.</span>
-<span class="sd">            * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
-<span class="sd">            * ``rtmp`` [-] — Temperature correction factor</span>
-<span class="sd">              ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
-<span class="sd">            * ``dtemp`` [°C] — Effective daytime temperature</span>
-<span class="sd">              ``TMAX − f·(TMAX − TMIN)``.</span>
+<span class="sd">        * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
+<span class="sd">          ``cScaleFactorRUE · RUETB(DVS)``.</span>
+<span class="sd">        * ``rtmco`` [-] — Overall correction factor</span>
+<span class="sd">          ``RTMP · RCO``.</span>
+<span class="sd">        * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
+<span class="sd">        * ``rtmp`` [-] — Temperature correction factor</span>
+<span class="sd">          ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
+<span class="sd">        * ``dtemp`` [°C] — Effective daytime temperature</span>
+<span class="sd">          ``TMAX − f·(TMAX − TMIN)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># DVS-dependent base RUE (replaces the static scalar params.rue)</span>
     <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
