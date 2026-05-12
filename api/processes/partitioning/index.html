@@ -1981,18 +1981,20 @@
   partitioning fractions into per-organ growth rates.</li>
 </ul>
 </div>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
 <p>The baseline fractions <code>FRTWET</code>, <code>FLVT</code>, <code>FSTT</code>, <code>FSOT</code> are read from
 the interpolation tables <code>frtb</code>, <code>fltb</code>, <code>fstb</code>, <code>fotb</code> at the
 current DVS. <code>SUBPAR</code> then adjusts them depending on which stress is
 limiting:</p>
 <ul>
 <li><strong>Water stress more severe</strong> (<code>TRANRF &lt; NNI</code>): roots receive a larger
-  share via <code>FRTMOD = max(1, 1/(TRANRF + 0.5))</code>, capped at
-  <code>FRT ≤ 0.6</code>. Above-ground fractions are unchanged.</li>
+share via <code>FRTMOD = max(1, 1/(TRANRF + 0.5))</code>, capped at
+<code>FRT ≤ 0.6</code>. Above-ground fractions are unchanged.</li>
 <li><strong>N stress more severe</strong> (otherwise): leaf allocation is multiplied by
-  <code>FLVMOD = exp(-NPART · (1 − NNI))</code>; the deficit is re-routed to
-  stems (<code>FST ← FSTT + FLVT − FLV</code>). Roots and storage organs are
-  unchanged.</li>
+<code>FLVMOD = exp(-NPART · (1 − NNI))</code>; the deficit is re-routed to
+stems (<code>FST ← FSTT + FLVT − FLV</code>). Roots and storage organs are
+unchanged.</li>
 </ul>
 <p>Final organ growth rates follow <code>RELGR</code>:</p>
 <div class="arithmatex">\[
@@ -2003,6 +2005,7 @@ G_{\text{st}}   &amp;= G_{\text{total}} \cdot (1 - F_{rt}) \cdot F_{st} \\
 G_{\text{so}}   &amp;= G_{\text{total}} \cdot (1 - F_{rt}) \cdot F_{so}
 \end{aligned}
 \]</div>
+</div>
 
 
 
