@@ -1981,8 +1981,8 @@
   partitioning fractions into per-organ growth rates.</li>
 </ul>
 </div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
+<div class="admonition design">
+<p class="admonition-title">Design</p>
 <p>The baseline fractions <code>FRTWET</code>, <code>FLVT</code>, <code>FSTT</code>, <code>FSOT</code> are read from
 the interpolation tables <code>frtb</code>, <code>fltb</code>, <code>fstb</code>, <code>fotb</code> at the
 current DVS. <code>SUBPAR</code> then adjusts them depending on which stress is
@@ -1996,6 +1996,9 @@ share via <code>FRTMOD = max(1, 1/(TRANRF + 0.5))</code>, capped at
 stems (<code>FST ← FSTT + FLVT − FLV</code>). Roots and storage organs are
 unchanged.</li>
 </ul>
+</div>
+<div class="admonition equations">
+<p class="admonition-title">Equations</p>
 <p>Final organ growth rates follow <code>RELGR</code>:</p>
 <div class="arithmatex">\[
 \begin{aligned}
