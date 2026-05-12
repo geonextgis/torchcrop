@@ -2467,8 +2467,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="o">*</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span>
             <span class="o">*</span> <span class="n">tranrf</span>
         <span class="p">)</span>
+        <span class="c1"># Pre-step: NNI is not yet known, so assume no N stress (nni=1).</span>
+        <span class="c1"># TRANRF is already known and feeds the water-stress branch of SUBPAR.</span>
         <span class="n">part_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
-            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal_pre</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal_pre</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
+            <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -2509,8 +2515,15 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">[</span><span class="s2">&quot;photosynthesis&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">gtotal</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="c1"># 9. Partitioning</span>
-        <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">)</span>
+        <span class="c1"># 9. Partitioning (final, with water and N stress fed into SUBPAR;</span>
+        <span class="c1"># nstress here is the NPK index used as a proxy for NNI).</span>
+        <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
+            <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># 10. Leaf dynamics</span>
         <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaf_dynamics</span><span class="p">(</span>
