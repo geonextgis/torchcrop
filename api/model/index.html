@@ -2261,12 +2261,17 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
             <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># Seed leaf mass so that LAI growth has a substrate post-emergence</span>
-        <span class="n">laii</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">laii</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">sla</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">sla</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">wlv0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wlv</span><span class="p">,</span> <span class="n">laii</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">sla</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
-        <span class="n">lai0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">laii</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">wlv</span><span class="o">=</span><span class="n">wlv0</span><span class="p">,</span> <span class="n">lai</span><span class="o">=</span><span class="n">lai0</span><span class="p">)</span>
+        <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
+        <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
+        <span class="c1"># but in SIMPLACE it runs on iDoSow and is implicitly *the*</span>
+        <span class="c1"># emergence event (Lintul5.java:1047). torchcrop simulates the</span>
+        <span class="c1"># sowing→emergence interval explicitly via tsump/tsumem in</span>
+        <span class="c1"># Phenology, so we leave biomass pools at zero here and inject</span>
+        <span class="c1"># the Java initValues deltas as a one-shot rate in</span>
+        <span class="c1"># `_compute_rates_dispatch` on the day tsump first crosses</span>
+        <span class="c1"># tsumem (LAI is bootstrapped separately by the GLA emergence</span>
+        <span class="c1"># branch in LeafDynamics).</span>
+        <span class="k">return</span> <span class="n">state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2460,11 +2465,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># GTOTAL = RUE * RTMCO * PARINT * TRANRF * NSTRESS</span>
-        <span class="c1"># (LintulFunctions.GROWTH; NSTRESS=1 here for the pre-step)</span>
+        <span class="c1"># (LintulFunctions.GROWTH; NSTRESS=1 here for the pre-step).</span>
+        <span class="c1"># PARINT is in J m-2 d-1; SIMPLACE GROWTH expects MJ PAR m-2 d-1</span>
+        <span class="c1"># (LintulFunctions.java:852), so we convert here.</span>
+        <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
         <span class="n">gtotal_pre</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
             <span class="o">*</span> <span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span>
+            <span class="o">*</span> <span class="n">parint_mj</span>
             <span class="o">*</span> <span class="n">tranrf</span>
         <span class="p">)</span>
         <span class="c1"># Pre-step: NNI is not yet known, so assume no N stress (nni=1).</span>
@@ -2501,7 +2509,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">gtotal</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
             <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span>
+            <span class="o">*</span> <span class="n">parint_mj</span>
             <span class="o">*</span> <span class="n">tranrf</span>
             <span class="o">*</span> <span class="n">combined_stress</span>
         <span class="p">)</span>
@@ -2530,6 +2538,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">g_lv</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_lv&quot;</span><span class="p">],</span>
             <span class="n">dtsu</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dtsu&quot;</span><span class="p">],</span>
+            <span class="n">davtmp</span><span class="o">=</span><span class="n">davtmp</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
@@ -2582,6 +2591,44 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress</span><span class="p">,</span>
             <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
+
+        <span class="c1"># ---- Emergence-day bootstrap (Java Lintul5.java initValues,</span>
+        <span class="c1"># lines 793–810). Fires once per batch element on the step where</span>
+        <span class="c1"># tsump first crosses tsumem; injects WLVGI/WSTI/WRTI/WSOI and</span>
+        <span class="c1"># LAII = WLVGI · scale_factor_sla · SLATB(DVSI) as one-shot</span>
+        <span class="c1"># deltas, matching the SIMPLACE convention that the emergence</span>
+        <span class="c1"># event (iDoSow in Java) instantly mobilises seed reserves into</span>
+        <span class="c1"># a juvenile-canopy state. The resulting one-day LAI jump is</span>
+        <span class="c1"># part of the Lintul5 abstraction; if you need a gradient</span>
+        <span class="c1"># sowing-to-canopy ramp instead, lower `crop_params.tdwi` (less</span>
+        <span class="c1"># seed reserve) or raise `crop_params.rgrl` (faster juvenile</span>
+        <span class="c1"># expansion).</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span>
+        <span class="n">dvsi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span>
+        <span class="n">tdwi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tdwi</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dvsi</span>
+        <span class="n">frtb_d</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">crop_params</span><span class="o">.</span><span class="n">frtb</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+        <span class="n">fltb_d</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">crop_params</span><span class="o">.</span><span class="n">fltb</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+        <span class="n">fstb_d</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">crop_params</span><span class="o">.</span><span class="n">fstb</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+        <span class="n">fotb_d</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">crop_params</span><span class="o">.</span><span class="n">fotb</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+        <span class="n">sla_d</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">crop_params</span><span class="o">.</span><span class="n">slatb</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span>
+        <span class="n">wrti</span> <span class="o">=</span> <span class="n">frtb_d</span> <span class="o">*</span> <span class="n">tdwi</span>
+        <span class="n">tagb</span> <span class="o">=</span> <span class="n">tdwi</span> <span class="o">-</span> <span class="n">wrti</span>
+        <span class="n">wlvgi</span> <span class="o">=</span> <span class="n">fltb_d</span> <span class="o">*</span> <span class="n">tagb</span>
+        <span class="n">wsti</span> <span class="o">=</span> <span class="n">fstb_d</span> <span class="o">*</span> <span class="n">tagb</span>
+        <span class="n">wsoi</span> <span class="o">=</span> <span class="n">fotb_d</span> <span class="o">*</span> <span class="n">tagb</span>
+        <span class="n">laii_dyn</span> <span class="o">=</span> <span class="n">wlvgi</span> <span class="o">*</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">scale_factor_sla</span> <span class="o">*</span> <span class="n">sla_d</span>
+
+        <span class="n">tsump_next</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">+</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">emerg_now</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&lt;</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tsump_next</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wlvgi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+
         <span class="k">return</span> <span class="n">rates</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -2953,12 +3000,17 @@ growth has a substrate post-emergence.</p></td>
         <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
         <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="c1"># Seed leaf mass so that LAI growth has a substrate post-emergence</span>
-    <span class="n">laii</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">laii</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">sla</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">sla</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">wlv0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wlv</span><span class="p">,</span> <span class="n">laii</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">sla</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
-    <span class="n">lai0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">laii</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">wlv</span><span class="o">=</span><span class="n">wlv0</span><span class="p">,</span> <span class="n">lai</span><span class="o">=</span><span class="n">lai0</span><span class="p">)</span>
+    <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
+    <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
+    <span class="c1"># but in SIMPLACE it runs on iDoSow and is implicitly *the*</span>
+    <span class="c1"># emergence event (Lintul5.java:1047). torchcrop simulates the</span>
+    <span class="c1"># sowing→emergence interval explicitly via tsump/tsumem in</span>
+    <span class="c1"># Phenology, so we leave biomass pools at zero here and inject</span>
+    <span class="c1"># the Java initValues deltas as a one-shot rate in</span>
+    <span class="c1"># `_compute_rates_dispatch` on the day tsump first crosses</span>
+    <span class="c1"># tsumem (LAI is bootstrapped separately by the GLA emergence</span>
+    <span class="c1"># branch in LeafDynamics).</span>
+    <span class="k">return</span> <span class="n">state</span>
 </code></pre></div>
         </details>
     </div>

@@ -2114,7 +2114,7 @@ CSV, in the order used by
 
 
 <h2 id="torchcrop.utils.io.make_constant_weather" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">make_constant_weather</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_days</span><span class="p">,</span> <span class="n">davtmp</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">irrad</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">rain</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">vp</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">wind</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">make_constant_weather</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_days</span><span class="p">,</span> <span class="n">davtmp</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">irrad</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">rain</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">vp</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">wind</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.utils.io.make_constant_weather" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -2173,8 +2173,12 @@ CSV, in the order used by
       <tr>
         <td><code>rain</code></td>
         <td><code>float</code></td>
-        <td><p>Constant daily precipitation [mm d⁻¹].</p></td>
-        <td><code>2.0</code></td>
+        <td><p>Constant daily precipitation [mm d⁻¹]. Default <code>4.0</code> is
+chosen so that a 150-day run produces an agronomically
+plausible wheat yield (≈ 240 g m⁻²); values below ≈ 3 mm d⁻¹
+put the model into a drought-failed regime where TRANRF
+collapses to zero and WSO never accumulates.</p></td>
+        <td><code>4.0</code></td>
       </tr>
       <tr>
         <td><code>vp</code></td>
@@ -2234,7 +2238,7 @@ increments by 1 and wraps modulo 365.</p></td>
     <span class="n">tmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
     <span class="n">tmax</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">,</span>
     <span class="n">irrad</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
-    <span class="n">rain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">rain</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.0</span><span class="p">,</span>
     <span class="n">vp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">,</span>
     <span class="n">wind</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
     <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -2250,7 +2254,11 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">        tmin: Constant minimum daily temperature [°C].</span>
 <span class="sd">        tmax: Constant maximum daily temperature [°C].</span>
 <span class="sd">        irrad: Constant solar radiation [MJ m⁻² d⁻¹].</span>
-<span class="sd">        rain: Constant daily precipitation [mm d⁻¹].</span>
+<span class="sd">        rain: Constant daily precipitation [mm d⁻¹]. Default ``4.0`` is</span>
+<span class="sd">            chosen so that a 150-day run produces an agronomically</span>
+<span class="sd">            plausible wheat yield (≈ 240 g m⁻²); values below ≈ 3 mm d⁻¹</span>
+<span class="sd">            put the model into a drought-failed regime where TRANRF</span>
+<span class="sd">            collapses to zero and WSO never accumulates.</span>
 <span class="sd">        vp: Constant vapour pressure [kPa].</span>
 <span class="sd">        wind: Constant wind speed [m s⁻¹].</span>
 <span class="sd">        start_doy: Day of year for the first simulated day; ``doy``</span>
