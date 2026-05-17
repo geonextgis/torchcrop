@@ -2206,6 +2206,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span> <span class="o">=</span> <span class="n">Partitioning</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leaf_dynamics</span> <span class="o">=</span> <span class="n">LeafDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_dynamics</span> <span class="o">=</span> <span class="n">RootDynamics</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stem_dynamics</span> <span class="o">=</span> <span class="n">StemDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span> <span class="o">=</span> <span class="n">NutrientDemand</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">stress_module</span> <span class="ow">or</span> <span class="n">StressFactors</span><span class="p">()</span>
 
@@ -2552,6 +2553,13 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># 12. Stem dynamics</span>
+        <span class="n">stem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem_dynamics</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">g_st</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_st&quot;</span><span class="p">],</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="c1"># Gate all growth/senescence rates post-maturity</span>
         <span class="n">active</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">gate</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">active</span>  <span class="c1"># noqa: E731</span>
@@ -2563,7 +2571,8 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vern_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_st&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;wstd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wstd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>

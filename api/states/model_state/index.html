@@ -2147,6 +2147,11 @@ engine; see the module docstring for the full catalogue.</p>
         <td><p>Stem dry weight, <code>[B]</code> [g m⁻²].</p></td>
       </tr>
       <tr>
+        <td><code>wstd</code></td>
+        <td><code>Tensor</code></td>
+        <td><p>Dead stem dry weight (senesced), <code>[B]</code> [g m⁻²].</p></td>
+      </tr>
+      <tr>
         <td><code>wrt</code></td>
         <td><code>Tensor</code></td>
         <td><p>Root dry weight, <code>[B]</code> [g m⁻²].</p></td>
@@ -2247,6 +2252,7 @@ is preserved across the explicit-Euler step
 <span class="sd">        wlv: Green leaf dry weight, ``[B]`` [g m⁻²].</span>
 <span class="sd">        wlvd: Dead leaf dry weight (senesced), ``[B]`` [g m⁻²].</span>
 <span class="sd">        wst: Stem dry weight, ``[B]`` [g m⁻²].</span>
+<span class="sd">        wstd: Dead stem dry weight (senesced), ``[B]`` [g m⁻²].</span>
 <span class="sd">        wrt: Root dry weight, ``[B]`` [g m⁻²].</span>
 <span class="sd">        wso: Storage organ dry weight (drives final yield), ``[B]``</span>
 <span class="sd">            [g m⁻²].</span>
@@ -2283,6 +2289,7 @@ is preserved across the explicit-Euler step
     <span class="n">wlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># green leaves</span>
     <span class="n">wlvd</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># dead leaves</span>
     <span class="n">wst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># stems</span>
+    <span class="n">wstd</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># dead stems</span>
     <span class="n">wrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># roots</span>
     <span class="n">wso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># storage organs</span>
 
@@ -2358,6 +2365,7 @@ is preserved across the explicit-Euler step
             <span class="n">wlv</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">wlvd</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">wst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">wstd</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">wrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">wso</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">lai</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
@@ -2464,6 +2472,7 @@ is preserved across the explicit-Euler step
     </div>
 
   </div>
+
 
 
 
@@ -2609,6 +2618,7 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
         <span class="n">wlv</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">wlvd</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">wst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">wstd</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">wrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">wso</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">lai</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
