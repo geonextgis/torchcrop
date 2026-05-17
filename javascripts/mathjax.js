@@ -1,10 +1,19 @@
+window.MathJax = {
+    tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [["\\[", "\\]"]],
+        processEscapes: true,
+        processEnvironments: true,
+    },
+    options: {
+        ignoreHtmlClass: ".*|",
+        processHtmlClass: "arithmatex",
+    },
+};
+
 document$.subscribe(() => {
-    const renderMath = () => {
-        if (window.MathJax && MathJax.typesetPromise) {
-            MathJax.typesetPromise();
-        } else {
-            setTimeout(renderMath, 100);
-        }
-    };
-    renderMath();
+    MathJax.startup.output.clearCache();
+    MathJax.typesetClear();
+    MathJax.texReset();
+    MathJax.typesetPromise();
 });

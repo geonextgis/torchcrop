@@ -19429,26 +19429,23 @@ coefficient).</p></td>
       <p>Leaf area growth and senescence.</p>
 <p>Ports the Lintul5 <code>GLA</code> (Growth Leaf Area) and <code>DEATHL</code> (leaf death)
 subroutines from <code>LintulFunctions.java</code> together with the <code>SLA</code> and
-<code>GLAI</code>/<code>DLAI</code> block of <code>Lintul5.java</code> (lines ~1407–1461).</p>
+<code>GLAI</code>/<code>DLAI</code> block of <code>Lintul5.java</code>.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <ul>
 <li><code>simplace/sim/components/models/lintul5/LintulFunctions.java</code> —
-  <code>GLA</code> (lines 998–1021) and <code>DEATHL</code> (lines 938–977).</li>
+  <code>GLA</code> (lines 998–1021) and <code>DEATHL</code>.</li>
 <li><code>simplace/sim/components/models/lintul5/Lintul5.java</code> — the
-  <code>process()</code> block that wires SLA, GLAI, DLAI together
-  (lines 1407–1461).</li>
+  <code>process()</code> block that wires SLA, GLAI, DLAI together.</li>
 </ul>
 </div>
 <p>Three growth regimes (precedence: emergence &gt; juvenile &gt; mature):</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>* **Emergence day** (``LAI == 0``): ``GLAI = LAII / DELT``.
-* **Juvenile** (``DVS &lt; 0.2`` *and* ``LAI &lt; 0.75``): exponential
-  ``GLAI = LAI · (exp(RGRLAI · DTEFF) − 1) · TRANRF · exp(−NLAI · (1−NPKI))``.
-* **Mature**: source-limited ``GLAI = SLA · GLV``.
-</code></pre></div></td></tr></table></div>
+<ul>
+<li><strong>Emergence day</strong> (<code>LAI == 0</code>): <code>GLAI = LAII / DELT</code>.</li>
+<li><strong>Juvenile</strong> (<code>DVS &lt; 0.2</code> <em>and</em> <code>LAI &lt; 0.75</code>): exponential
+    <code>GLAI = LAI · (exp(RGRLAI · DTEFF) − 1) · TRANRF · exp(−NLAI · (1−NPKI))</code>.</li>
+<li><strong>Mature</strong>: source-limited <code>GLAI = SLA · GLV</code>.</li>
+</ul>
 <p>Senescence aggregates three independent death drivers via <code>max</code>:
 ageing/temperature (<code>RDRTMP</code> indexed by <strong>mean air temperature</strong>, gated
 by <code>DVSDLT</code>), self-shading above <code>LAICR</code>, and drought
@@ -24724,11 +24721,11 @@ Ignored for 1-D input. Defaults to <code>"batch i"</code>.</p></td>
       
         <script src="../../js/timeago_mkdocs_material.js"></script>
       
+        <script src="../../javascripts/mathjax.js"></script>
+      
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-      
-        <script src="../../javascripts/mathjax.js"></script>
       
     
   </body>
