@@ -1060,10 +1060,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.kmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.kminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        kmins
+        kminti
       
     </span>
   </a>
@@ -1093,10 +1093,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.nmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.nminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nmins
+        nminti
       
     </span>
   </a>
@@ -1115,10 +1115,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.pmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.pminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        pmins
+        pminti
       
     </span>
   </a>
@@ -2309,10 +2309,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.kmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.kminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        kmins
+        kminti
       
     </span>
   </a>
@@ -2342,10 +2342,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.nmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.nminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        nmins
+        nminti
       
     </span>
   </a>
@@ -2364,10 +2364,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.pmins" class="md-nav__link">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.pminti" class="md-nav__link">
     <span class="md-ellipsis">
       
-        pmins
+        pminti
       
     </span>
   </a>
@@ -2726,45 +2726,55 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 <span class="sd">    sensitivity analysis / calibration.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 6. Soil mineral nutrient supply (background mineralisation)</span>
+    <span class="c1"># 6. Soil mineral nutrient supply (mineralisation kinetics)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># The full Lintul5 NPK chain integrates two state pools per nutrient</span>
+    <span class="c1"># (organic ``NMIN`` and inorganic ``NMINT``) updated daily by</span>
+    <span class="c1"># ``SoilNutrients``. The constants below specify the *kinetics* of</span>
+    <span class="c1"># that integration — the *current* pool levels live on `ModelState`.</span>
 
-    <span class="n">nmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.50</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Background daily mineralisation supply of plant-available</span>
-<span class="sd">    soil N [g N · m⁻² · d⁻¹]. (Simplified surrogate of the SIMPLACE</span>
-<span class="sd">    ``cRTNMINS`` × ``sNMIN`` flux.)&quot;&quot;&quot;</span>
-
-    <span class="n">pmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Background daily supply of plant-available soil P</span>
-<span class="sd">    [g P · m⁻² · d⁻¹].&quot;&quot;&quot;</span>
-
-    <span class="n">kmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.30</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Background daily supply of plant-available soil K</span>
-<span class="sd">    [g K · m⁻² · d⁻¹].&quot;&quot;&quot;</span>
-
-    <span class="n">rtnmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+    <span class="n">rtnmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTNMINS``. Fraction [d⁻¹] of the soil organic-N pool that</span>
-<span class="sd">    becomes mineralised and plant-available per day.&quot;&quot;&quot;</span>
+<span class="sd">    becomes mineralised and plant-available per day. Multiplied by the</span>
+<span class="sd">    *initial* organic pool ``nmini`` (Lintul5 convention) and capped by</span>
+<span class="sd">    the current ``NMIN``. Default 0.01 gives a steady-state daily</span>
+<span class="sd">    mineralisation of ``0.01 × nmini`` g N m⁻² d⁻¹.&quot;&quot;&quot;</span>
 
-    <span class="n">rtpmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+    <span class="n">rtpmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTPMINS``. Fraction [d⁻¹] of soil P becoming available per</span>
-<span class="sd">    day.&quot;&quot;&quot;</span>
+<span class="sd">    day. Default 0.01.&quot;&quot;&quot;</span>
 
-    <span class="n">rtkmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+    <span class="n">rtkmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTKMINS``. Fraction [d⁻¹] of soil K becoming available per</span>
-<span class="sd">    day.&quot;&quot;&quot;</span>
+<span class="sd">    day. Default 0.01.&quot;&quot;&quot;</span>
 
-    <span class="n">nmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNMINI``. Initial amount [g N m⁻²] (at crop emergence) of</span>
-<span class="sd">    potentially available soil organic N.&quot;&quot;&quot;</span>
+    <span class="n">nmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">50.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNMINI``. Initial amount [g N m⁻²] of mineralisable soil</span>
+<span class="sd">    organic N at crop emergence; this seeds `ModelState.nmin`. Default</span>
+<span class="sd">    50 g/m² (~500 kg N/ha) combined with ``rtnmins=0.01`` produces a</span>
+<span class="sd">    steady-state mineralisation flux of 0.5 g N m⁻² d⁻¹, matching the</span>
+<span class="sd">    previous scalar surrogate.&quot;&quot;&quot;</span>
 
-    <span class="n">pmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPMINI``. Initial amount [g P m⁻²] of potentially available</span>
-<span class="sd">    soil P.&quot;&quot;&quot;</span>
+    <span class="n">pmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">5.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPMINI``. Initial mineralisable organic P pool [g P m⁻²].</span>
+<span class="sd">    Default 5 g/m² × ``rtpmins=0.01`` ⇒ 0.05 g P m⁻² d⁻¹ steady-state</span>
+<span class="sd">    supply.&quot;&quot;&quot;</span>
 
-    <span class="n">kmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKMINI``. Initial amount [g K m⁻²] of potentially available</span>
-<span class="sd">    soil K.&quot;&quot;&quot;</span>
+    <span class="n">kmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">30.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKMINI``. Initial mineralisable organic K pool [g K m⁻²].</span>
+<span class="sd">    Default 30 g/m² × ``rtkmins=0.01`` ⇒ 0.30 g K m⁻² d⁻¹ steady-state</span>
+<span class="sd">    supply.&quot;&quot;&quot;</span>
+
+    <span class="n">nminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic N pool ``NMINT`` [g N m⁻²]</span>
+<span class="sd">    at sowing/emergence. SIMPLACE default is 0; raise this to represent</span>
+<span class="sd">    residual mineral N at planting.&quot;&quot;&quot;</span>
+
+    <span class="n">pminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic P pool.&quot;&quot;&quot;</span>
+
+    <span class="n">kminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic K pool.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
@@ -2983,8 +2993,9 @@ not (=0). Stored as float for batch broadcasting.</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cKMINI</code>. Initial amount [g K m⁻²] of potentially available
-soil K.</p>
+      <p><code>cKMINI</code>. Initial mineralisable organic K pool [g K m⁻²].
+Default 30 g/m² × <code>rtkmins=0.01</code> ⇒ 0.30 g K m⁻² d⁻¹ steady-state
+supply.</p>
     </div>
 
   </div>
@@ -2995,19 +3006,18 @@ soil K.</p>
 
 
 
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.kmins" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">kmins</span><span class="p">:</span> <span class="n">Tensor</span></code>
+<h3 id="torchcrop.parameters.soil_params.SoilParameters.kminti" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">kminti</span><span class="p">:</span> <span class="n">Tensor</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
   </span>
 
-<a href="#torchcrop.parameters.soil_params.SoilParameters.kmins" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#torchcrop.parameters.soil_params.SoilParameters.kminti" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Background daily supply of plant-available soil K
-[g K · m⁻² · d⁻¹].</p>
+      <p>Initial directly available inorganic K pool.</p>
     </div>
 
   </div>
@@ -3052,8 +3062,11 @@ to deeper soil layers (sub-surface drainage).</p>
 
     <div class="doc doc-contents ">
 
-      <p><code>cNMINI</code>. Initial amount [g N m⁻²] (at crop emergence) of
-potentially available soil organic N.</p>
+      <p><code>cNMINI</code>. Initial amount [g N m⁻²] of mineralisable soil
+organic N at crop emergence; this seeds <code>ModelState.nmin</code>. Default
+50 g/m² (~500 kg N/ha) combined with <code>rtnmins=0.01</code> produces a
+steady-state mineralisation flux of 0.5 g N m⁻² d⁻¹, matching the
+previous scalar surrogate.</p>
     </div>
 
   </div>
@@ -3064,20 +3077,20 @@ potentially available soil organic N.</p>
 
 
 
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.nmins" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">nmins</span><span class="p">:</span> <span class="n">Tensor</span></code>
+<h3 id="torchcrop.parameters.soil_params.SoilParameters.nminti" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">nminti</span><span class="p">:</span> <span class="n">Tensor</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
   </span>
 
-<a href="#torchcrop.parameters.soil_params.SoilParameters.nmins" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#torchcrop.parameters.soil_params.SoilParameters.nminti" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Background daily mineralisation supply of plant-available
-soil N [g N · m⁻² · d⁻¹]. (Simplified surrogate of the SIMPLACE
-<code>cRTNMINS</code> × <code>sNMIN</code> flux.)</p>
+      <p>Initial directly available inorganic N pool <code>NMINT</code> [g N m⁻²]
+at sowing/emergence. SIMPLACE default is 0; raise this to represent
+residual mineral N at planting.</p>
     </div>
 
   </div>
@@ -3099,8 +3112,9 @@ soil N [g N · m⁻² · d⁻¹]. (Simplified surrogate of the SIMPLACE
 
     <div class="doc doc-contents ">
 
-      <p><code>cPMINI</code>. Initial amount [g P m⁻²] of potentially available
-soil P.</p>
+      <p><code>cPMINI</code>. Initial mineralisable organic P pool [g P m⁻²].
+Default 5 g/m² × <code>rtpmins=0.01</code> ⇒ 0.05 g P m⁻² d⁻¹ steady-state
+supply.</p>
     </div>
 
   </div>
@@ -3111,19 +3125,18 @@ soil P.</p>
 
 
 
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.pmins" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">pmins</span><span class="p">:</span> <span class="n">Tensor</span></code>
+<h3 id="torchcrop.parameters.soil_params.SoilParameters.pminti" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">pminti</span><span class="p">:</span> <span class="n">Tensor</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
   </span>
 
-<a href="#torchcrop.parameters.soil_params.SoilParameters.pmins" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#torchcrop.parameters.soil_params.SoilParameters.pminti" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Background daily supply of plant-available soil P
-[g P · m⁻² · d⁻¹].</p>
+      <p>Initial directly available inorganic P pool.</p>
     </div>
 
   </div>
@@ -3170,7 +3183,7 @@ rooting depth is <code>min(cRDMCR, cRDMSO)</code>.</p>
     <div class="doc doc-contents ">
 
       <p><code>cRTKMINS</code>. Fraction [d⁻¹] of soil K becoming available per
-day.</p>
+day. Default 0.01.</p>
     </div>
 
   </div>
@@ -3193,7 +3206,10 @@ day.</p>
     <div class="doc doc-contents ">
 
       <p><code>cRTNMINS</code>. Fraction [d⁻¹] of the soil organic-N pool that
-becomes mineralised and plant-available per day.</p>
+becomes mineralised and plant-available per day. Multiplied by the
+<em>initial</em> organic pool <code>nmini</code> (Lintul5 convention) and capped by
+the current <code>NMIN</code>. Default 0.01 gives a steady-state daily
+mineralisation of <code>0.01 × nmini</code> g N m⁻² d⁻¹.</p>
     </div>
 
   </div>
@@ -3216,7 +3232,7 @@ becomes mineralised and plant-available per day.</p>
     <div class="doc doc-contents ">
 
       <p><code>cRTPMINS</code>. Fraction [d⁻¹] of soil P becoming available per
-day.</p>
+day. Default 0.01.</p>
     </div>
 
   </div>

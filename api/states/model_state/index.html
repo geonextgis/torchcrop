@@ -2212,6 +2212,25 @@ storage organs, each <code>[B]</code> [g N m⁻²].</p></td>
         <td><p>Potassium pools, each <code>[B]</code> [g K m⁻²].</p></td>
       </tr>
       <tr>
+        <td><code>nmin,</code></td>
+        <td><code>pmin, kmin</code></td>
+        <td><p>Mineralisable soil organic N/P/K pools, each
+<code>[B]</code> [g X m⁻²]; SIMPLACE <code>sNMIN</code>/<code>sPMIN</code>/<code>sKMIN</code>.
+Depleted each day by the mineralisation flux <code>RNMINS</code>
+(handled with negative-rate sign convention).</p></td>
+      </tr>
+      <tr>
+        <td><code>nmint,</code></td>
+        <td><code>pmint, kmint</code></td>
+        <td><p>Directly available inorganic soil N/P/K
+pools, each <code>[B]</code> [g X m⁻²]; SIMPLACE
+<code>sNMINT</code>/<code>sPMINT</code>/<code>sKMINT</code>. Replenished daily by
+fertiliser (after recovery fraction) plus mineralisation
+from <code>nmin</code>/<code>pmin</code>/<code>kmin</code>, and drawn down by crop
+uptake (<code>NUPTR</code>/<code>PUPTR</code>/<code>KUPTR</code>). This is the pool
+that caps soil-limited uptake in IOPT ≥ 3.</p></td>
+      </tr>
+      <tr>
         <td><code>tran_cum</code></td>
         <td><code>Tensor</code></td>
         <td><p>Cumulative actual transpiration, <code>[B]</code> [mm].</p></td>
@@ -2269,6 +2288,17 @@ is preserved across the explicit-Euler step
 <span class="sd">            storage organs, each ``[B]`` [g N m⁻²].</span>
 <span class="sd">        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].</span>
 <span class="sd">        aklv, akst, akrt, akso: Potassium pools, each ``[B]`` [g K m⁻²].</span>
+<span class="sd">        nmin, pmin, kmin: Mineralisable soil organic N/P/K pools, each</span>
+<span class="sd">            ``[B]`` [g X m⁻²]; SIMPLACE ``sNMIN``/``sPMIN``/``sKMIN``.</span>
+<span class="sd">            Depleted each day by the mineralisation flux ``RNMINS``</span>
+<span class="sd">            (handled with negative-rate sign convention).</span>
+<span class="sd">        nmint, pmint, kmint: Directly available inorganic soil N/P/K</span>
+<span class="sd">            pools, each ``[B]`` [g X m⁻²]; SIMPLACE</span>
+<span class="sd">            ``sNMINT``/``sPMINT``/``sKMINT``. Replenished daily by</span>
+<span class="sd">            fertiliser (after recovery fraction) plus mineralisation</span>
+<span class="sd">            from ``nmin``/``pmin``/``kmin``, and drawn down by crop</span>
+<span class="sd">            uptake (``NUPTR``/``PUPTR``/``KUPTR``). This is the pool</span>
+<span class="sd">            that caps soil-limited uptake in IOPT ≥ 3.</span>
 <span class="sd">        tran_cum: Cumulative actual transpiration, ``[B]`` [mm].</span>
 <span class="sd">        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].</span>
 
@@ -2323,6 +2353,14 @@ is preserved across the explicit-Euler step
     <span class="n">akrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">akso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 
+    <span class="c1"># Soil mineral pools [g X m-2]</span>
+    <span class="n">nmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic N pool (sNMIN)</span>
+    <span class="n">pmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic P pool (sPMIN)</span>
+    <span class="n">kmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic K pool (sKMIN)</span>
+    <span class="n">nmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic N pool (sNMINT)</span>
+    <span class="n">pmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic P pool (sPMINT)</span>
+    <span class="n">kmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic K pool (sKMINT)</span>
+
     <span class="c1"># Optional bookkeeping</span>
     <span class="n">tran_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative transpiration [mm]</span>
     <span class="n">evap_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative evaporation [mm]</span>
@@ -2339,6 +2377,12 @@ is preserved across the explicit-Euler step
         <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
         <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
         <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
@@ -2349,6 +2393,16 @@ is preserved across the explicit-Euler step
 <span class="sd">            dvsi: Initial development stage ``DVSI``.</span>
 <span class="sd">            wai: Initial soil water content in the root zone [mm].</span>
 <span class="sd">            rootdi: Initial rooting depth [m].</span>
+<span class="sd">            wa_lower_i: Initial soil water in the lower zone [mm].</span>
+<span class="sd">            dslri: Initial days since last rain [d].</span>
+<span class="sd">            dsosi: Initial days of oxygen shortage [d].</span>
+<span class="sd">            nmini: Initial mineralisable organic N pool ``NMIN`` [g N m⁻²].</span>
+<span class="sd">            pmini: Initial mineralisable organic P pool ``PMIN`` [g P m⁻²].</span>
+<span class="sd">            kmini: Initial mineralisable organic K pool ``KMIN`` [g K m⁻²].</span>
+<span class="sd">            nminti: Initial directly available inorganic N pool ``NMINT``</span>
+<span class="sd">                [g N m⁻²]. SIMPLACE default is 0.</span>
+<span class="sd">            pminti: Initial directly available inorganic P pool.</span>
+<span class="sd">            kminti: Initial directly available inorganic K pool.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A fresh `ModelState` with all biomass / nutrient pools at</span>
@@ -2386,6 +2440,12 @@ is preserved across the explicit-Euler step
             <span class="n">akst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">akrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">akso</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">nmini</span><span class="p">),</span>
+            <span class="n">pmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">pmini</span><span class="p">),</span>
+            <span class="n">kmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kmini</span><span class="p">),</span>
+            <span class="n">nmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">nminti</span><span class="p">),</span>
+            <span class="n">pmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">pminti</span><span class="p">),</span>
+            <span class="n">kmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kminti</span><span class="p">),</span>
             <span class="n">tran_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">evap_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
@@ -2495,12 +2555,18 @@ is preserved across the explicit-Euler step
 
 
 
+
+
+
+
+
+
   <div class="doc doc-object doc-method">
 
 
 
 <h3 id="torchcrop.states.model_state.ModelState.initial" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wa_lower_i</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wa_lower_i</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
@@ -2559,6 +2625,61 @@ is preserved across the explicit-Euler step
         <td><p>Initial rooting depth [m].</p></td>
         <td><code>0.1</code></td>
       </tr>
+      <tr>
+        <td><code>wa_lower_i</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial soil water in the lower zone [mm].</p></td>
+        <td><code>400.0</code></td>
+      </tr>
+      <tr>
+        <td><code>dslri</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial days since last rain [d].</p></td>
+        <td><code>3.0</code></td>
+      </tr>
+      <tr>
+        <td><code>dsosi</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial days of oxygen shortage [d].</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>nmini</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial mineralisable organic N pool <code>NMIN</code> [g N m⁻²].</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>pmini</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial mineralisable organic P pool <code>PMIN</code> [g P m⁻²].</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>kmini</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial mineralisable organic K pool <code>KMIN</code> [g K m⁻²].</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>nminti</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial directly available inorganic N pool <code>NMINT</code>
+[g N m⁻²]. SIMPLACE default is 0.</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>pminti</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial directly available inorganic P pool.</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>kminti</code></td>
+        <td><code>float</code></td>
+        <td><p>Initial directly available inorganic K pool.</p></td>
+        <td><code>0.0</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -2592,6 +2713,12 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
     <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
     <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
     <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
@@ -2602,6 +2729,16 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
 <span class="sd">        dvsi: Initial development stage ``DVSI``.</span>
 <span class="sd">        wai: Initial soil water content in the root zone [mm].</span>
 <span class="sd">        rootdi: Initial rooting depth [m].</span>
+<span class="sd">        wa_lower_i: Initial soil water in the lower zone [mm].</span>
+<span class="sd">        dslri: Initial days since last rain [d].</span>
+<span class="sd">        dsosi: Initial days of oxygen shortage [d].</span>
+<span class="sd">        nmini: Initial mineralisable organic N pool ``NMIN`` [g N m⁻²].</span>
+<span class="sd">        pmini: Initial mineralisable organic P pool ``PMIN`` [g P m⁻²].</span>
+<span class="sd">        kmini: Initial mineralisable organic K pool ``KMIN`` [g K m⁻²].</span>
+<span class="sd">        nminti: Initial directly available inorganic N pool ``NMINT``</span>
+<span class="sd">            [g N m⁻²]. SIMPLACE default is 0.</span>
+<span class="sd">        pminti: Initial directly available inorganic P pool.</span>
+<span class="sd">        kminti: Initial directly available inorganic K pool.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A fresh `ModelState` with all biomass / nutrient pools at</span>
@@ -2639,6 +2776,12 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
         <span class="n">akst</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">akrt</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">akso</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">nmini</span><span class="p">),</span>
+        <span class="n">pmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">pmini</span><span class="p">),</span>
+        <span class="n">kmin</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kmini</span><span class="p">),</span>
+        <span class="n">nmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">nminti</span><span class="p">),</span>
+        <span class="n">pmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">pminti</span><span class="p">),</span>
+        <span class="n">kmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kminti</span><span class="p">),</span>
         <span class="n">tran_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">evap_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>

@@ -2208,6 +2208,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="bp">self</span><span class="o">.</span><span class="n">root_dynamics</span> <span class="o">=</span> <span class="n">RootDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stem_dynamics</span> <span class="o">=</span> <span class="n">StemDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span> <span class="o">=</span> <span class="n">NutrientDemand</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">soil_nutrients</span> <span class="o">=</span> <span class="n">SoilNutrients</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">stress_module</span> <span class="ow">or</span> <span class="n">StressFactors</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">residual_modules</span> <span class="ow">or</span> <span class="p">{})</span>
@@ -2251,6 +2252,16 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
         <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
+        <span class="c1"># Seed the soil mineral pools from soil_params. The organic</span>
+        <span class="c1"># pools (NMIN/PMIN/KMIN) start at NMINI/PMINI/KMINI; the</span>
+        <span class="c1"># directly available inorganic pools (NMINT/PMINT/KMINT) start</span>
+        <span class="c1"># at NMINTI/PMINTI/KMINTI (Lintul5 default 0).</span>
+        <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">nminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">pminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">kminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -2261,6 +2272,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">wa_lower_i</span><span class="o">=</span><span class="n">wa_lower_i</span><span class="p">,</span>
             <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
             <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">nmini</span><span class="o">=</span><span class="n">nmini</span><span class="p">,</span>
+            <span class="n">pmini</span><span class="o">=</span><span class="n">pmini</span><span class="p">,</span>
+            <span class="n">kmini</span><span class="o">=</span><span class="n">kmini</span><span class="p">,</span>
+            <span class="n">nminti</span><span class="o">=</span><span class="n">nminti</span><span class="p">,</span>
+            <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
+            <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
         <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
@@ -2487,14 +2504,27 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="p">)</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">g_lv</span><span class="o">=</span><span class="n">part_pre</span><span class="p">[</span><span class="s2">&quot;g_lv&quot;</span><span class="p">],</span>
-            <span class="n">g_st</span><span class="o">=</span><span class="n">part_pre</span><span class="p">[</span><span class="s2">&quot;g_st&quot;</span><span class="p">],</span>
-            <span class="n">g_rt</span><span class="o">=</span><span class="n">part_pre</span><span class="p">[</span><span class="s2">&quot;g_root&quot;</span><span class="p">],</span>
-            <span class="n">g_so</span><span class="o">=</span><span class="n">part_pre</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">],</span>
+            <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
+            <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
+            <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Soil mineral-pool balance (SoilNutrientRates in Lintul5.java).</span>
+        <span class="c1"># Sits *after* NutrientDemand because it consumes the day&#39;s</span>
+        <span class="c1"># NUPTR/PUPTR/KUPTR (depletes NMINT/PMINT/KMINT) and the same</span>
+        <span class="c1"># NLIMIT/EMERG gates used by uptake.</span>
+        <span class="n">soil_nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_nutrients</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
+            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
+            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
+            <span class="n">nlimit</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nlimit&quot;</span><span class="p">],</span>
+            <span class="n">emerg</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;emerg&quot;</span><span class="p">],</span>
+            <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
 
         <span class="c1"># 8. Photosynthesis (final) with nutrient + water stress</span>
         <span class="n">photo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span><span class="p">(</span>
@@ -2593,6 +2623,20 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;akso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_so_rate&quot;</span><span class="p">]),</span>
+            <span class="c1"># Soil pool dynamics: organic pool depletion (negative</span>
+            <span class="c1"># rates) and inorganic pool balance (fertiliser +</span>
+            <span class="c1"># mineralisation − uptake). Mineralisation is already gated</span>
+            <span class="c1"># internally by EMERG/NLIMIT; we deliberately do *not*</span>
+            <span class="c1"># multiply by ``active`` so that mineralisation and</span>
+            <span class="c1"># fertiliser additions to NMINT continue post-maturity</span>
+            <span class="c1"># (matches SIMPLACE — the soil keeps running even when the</span>
+            <span class="c1"># crop has died).</span>
+            <span class="s2">&quot;nmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;nmin_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;pmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;pmin_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmin_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;nmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;nmint_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;pmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;pmint_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmint_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tran_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
             <span class="s2">&quot;evap_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
             <span class="c1"># Diagnostics (not integrated)</span>
@@ -2998,6 +3042,16 @@ growth has a substrate post-emergence.</p></td>
     <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
     <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
+    <span class="c1"># Seed the soil mineral pools from soil_params. The organic</span>
+    <span class="c1"># pools (NMIN/PMIN/KMIN) start at NMINI/PMINI/KMINI; the</span>
+    <span class="c1"># directly available inorganic pools (NMINT/PMINT/KMINT) start</span>
+    <span class="c1"># at NMINTI/PMINTI/KMINTI (Lintul5 default 0).</span>
+    <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">nminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">pminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">kminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
         <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -3008,6 +3062,12 @@ growth has a substrate post-emergence.</p></td>
         <span class="n">wa_lower_i</span><span class="o">=</span><span class="n">wa_lower_i</span><span class="p">,</span>
         <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
         <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">nmini</span><span class="o">=</span><span class="n">nmini</span><span class="p">,</span>
+        <span class="n">pmini</span><span class="o">=</span><span class="n">pmini</span><span class="p">,</span>
+        <span class="n">kmini</span><span class="o">=</span><span class="n">kmini</span><span class="p">,</span>
+        <span class="n">nminti</span><span class="o">=</span><span class="n">nminti</span><span class="p">,</span>
+        <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
+        <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
     <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
