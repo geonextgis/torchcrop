@@ -118,7 +118,9 @@ nav:
                 - partitioning: api/processes/partitioning.md
                 - phenology: api/processes/phenology.md
                 - photosynthesis: api/processes/photosynthesis.md
+                - stem_dynamics: api/processes/stem_dynamics.md
                 - root_dynamics: api/processes/root_dynamics.md
+                - soil_nutrients: api/processes/soil_nutrients.md
                 - stress: api/processes/stress.md
                 - water_balance: api/processes/water_balance.md
           - Utils:
