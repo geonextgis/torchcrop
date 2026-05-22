@@ -2106,6 +2106,7 @@ block.</p>
         <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+        <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute RUE and the RTMCO correction factor.</span>
 
@@ -2114,7 +2115,10 @@ block.</p>
 <span class="sd">            tmin: Daily minimum air temperature [°C], shape ``[B]``.</span>
 <span class="sd">            dvs: Development stage [-] (0–2), shape ``[B]``.</span>
 <span class="sd">            params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
-<span class="sd">                ``tmpftb``, ``tmnftb``, ``cotb``, ``co2``, ``day_temp_factor``.</span>
+<span class="sd">                ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
+<span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
+<span class="sd">                broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
+<span class="sd">                reference). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -2133,8 +2137,9 @@ block.</p>
         <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
         <span class="c1"># CO2 correction</span>
-        <span class="n">co2</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span>
-        <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2</span><span class="p">)</span>
+        <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
+        <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
 
         <span class="c1"># Effective daytime temperature, customisable via day_temp_factor</span>
         <span class="n">dtemp</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">day_temp_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
@@ -2171,7 +2176,7 @@ block.</p>
 
 
 <h3 id="torchcrop.processes.photosynthesis.Photosynthesis.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="mf">370.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.photosynthesis.Photosynthesis.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2213,8 +2218,16 @@ block.</p>
         <td><code>params</code></td>
         <td><code>CropParameters</code></td>
         <td><p>Crop parameters; uses <code>ruetb</code>, <code>scale_factor_rue</code>,
-<code>tmpftb</code>, <code>tmnftb</code>, <code>cotb</code>, <code>co2</code>, <code>day_temp_factor</code>.</p></td>
+<code>tmpftb</code>, <code>tmnftb</code>, <code>cotb</code>, <code>day_temp_factor</code>.</p></td>
         <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>co2</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
+broadcastable to <code>[B]</code> (default 370, the SIMPLACE
+reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+        <td><code>370.0</code></td>
       </tr>
   </tbody>
 </table>
@@ -2251,6 +2264,7 @@ block.</p>
     <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+    <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute RUE and the RTMCO correction factor.</span>
 
@@ -2259,7 +2273,10 @@ block.</p>
 <span class="sd">        tmin: Daily minimum air temperature [°C], shape ``[B]``.</span>
 <span class="sd">        dvs: Development stage [-] (0–2), shape ``[B]``.</span>
 <span class="sd">        params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
-<span class="sd">            ``tmpftb``, ``tmnftb``, ``cotb``, ``co2``, ``day_temp_factor``.</span>
+<span class="sd">            ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
+<span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
+<span class="sd">            broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
+<span class="sd">            reference). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
@@ -2278,8 +2295,9 @@ block.</p>
     <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
     <span class="c1"># CO2 correction</span>
-    <span class="n">co2</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">params</span><span class="o">.</span><span class="n">co2</span>
-    <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2</span><span class="p">)</span>
+    <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
+    <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
 
     <span class="c1"># Effective daytime temperature, customisable via day_temp_factor</span>
     <span class="n">dtemp</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">day_temp_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
