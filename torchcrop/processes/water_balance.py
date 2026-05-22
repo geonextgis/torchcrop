@@ -1,7 +1,6 @@
 """Two-zone soil water balance for Lintul5.
 
-A faithful port of the SIMPLACE ``WATBALS`` routine: tracks water storage
-in a rooted zone and a lower zone, runs a percolation cascade to deep
+Tracks water storage in a rooted zone and a lower zone, runs a percolation cascade to deep
 drainage, and produces the water-stress factor ``TRANRF`` that gates crop
 growth.
 

@@ -1,7 +1,7 @@
 """Phenological development: thermal time, daylength, vernalisation, DVS.
 
 References:
-    Wolf (2012), Section 3.2; SIMPLACE ``Phenology.java``.
+    SIMPLACE ``Phenology.java``.
 
 Equations:
     Effective daily thermal time:

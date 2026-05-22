@@ -1,11 +1,10 @@
 """Biomass allocation to plant organs, with water- and N-stress modification.
 
 References:
-    * Biomass partitioning block of ``Lintul5.java`` (lines 1407–1465).
+    * Biomass partitioning block of ``Lintul5.java``.
     * ``LintulFunctions.SUBPAR`` — modifies the baseline partitioning
       fractions in response to water and nitrogen stress.
-    * ``LintulFunctions.RELGR`` — converts the (possibly stress-modified)
-      partitioning fractions into per-organ growth rates.
+    * ``LintulFunctions.RELGR`` — converts the partitioning fractions into per-organ growth rates.
 
 Design:
     The baseline fractions ``FRTWET``, ``FLVT``, ``FSTT``, ``FSOT`` are read from
@@ -47,8 +46,7 @@ from torchcrop.states.model_state import ModelState
 class Partitioning(nn.Module):
     """Allocate daily gross biomass production to organ-specific pools.
 
-    The module mirrors the Java ``SUBPAR`` + ``RELGR`` sequence: the
-    DVS-indexed baseline fractions are first modified for water or N
+    The DVS-indexed baseline fractions are first modified for water or N
     stress, then multiplied through by ``gtotal`` and the root/shoot
     split to obtain per-organ growth rates.
     """
@@ -138,26 +136,25 @@ class Partitioning(nn.Module):
             Rate variables (per-organ growth, fed to leaf/root/state updates
             and nutrient demand):
 
-                * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate
-                  (``= gtotal * fr``); becomes ``wrt_rate`` after
-                  subtracting root death in `RootDynamics`.
-                * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence
-                  (``= gtotal * (1 − fr) * fl``); `LeafDynamics`
-                  converts it into ``wlv_rate`` and ``lai_rate``.
-                * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate
-                  (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``
-                  directly.
-                * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate
-                  (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``
-                  and drives final yield.
+            * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate
+                (``= gtotal * fr``); becomes ``wrt_rate`` after
+                subtracting root death in `RootDynamics`.
+            * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence
+                (``= gtotal * (1 − fr) * fl``); `LeafDynamics`
+                converts it into ``wlv_rate`` and ``lai_rate``.
+            * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate
+                (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``
+                directly.
+            * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate
+                (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``
+                and drives final yield.
 
-            Diagnostics (post-``SUBPAR`` partitioning fractions, mirroring
-            ``FRT``, ``FLV``, ``FST``, ``FSO`` in the Java code):
+            Diagnostics:
 
-                * ``fr`` [-] — Below-ground (root) fraction after stress
-                  modification.
-                * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to
-                  leaves, stems, storage organs after stress modification.
+            * ``fr`` [-] — Below-ground (root) fraction after stress
+                modification.
+            * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to
+                leaves, stems, storage organs after stress modification.
         """
         dvs = state.dvs
         frtwet = interpolate(params.frtb, dvs)

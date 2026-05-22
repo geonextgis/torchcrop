@@ -7,10 +7,10 @@ biomass growth rate (``GTOTAL``) is produced downstream in
 the partitioning / model-level code, not here.
 
 References:
-    SIMPLACE ``RadiationUseEfficiency.java`` (``process()`` routine).
+    SIMPLACE ``RadiationUseEfficiency.java``.
 
 Equations:
-    Effective daytime temperature (SIMPLACE customisable mean):
+    Effective daytime temperature:
 
     $$
     \\text{DTEMP} = \\text{TMAX} - f \\cdot (\\text{TMAX} - \\text{TMIN})
@@ -26,7 +26,7 @@ Equations:
                     \\text{COTB}(\\text{CO}_2)
     $$
 
-    DVS-dependent radiation use efficiency (replaces the static scalar):
+    DVS-dependent radiation use efficiency:
 
     $$
     \\text{RUE} = \\text{cScaleFactorRUE} \\cdot \\text{RUETB}(\\text{DVS})
@@ -45,7 +45,7 @@ from torchcrop.parameters.crop_params import CropParameters
 
 
 class Photosynthesis(nn.Module):
-    """Radiation use efficiency component (SIMPLACE ``RadiationUseEfficiency``).
+    """Radiation use efficiency component.
 
     Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction factor
     ``RTMCO`` that combines daytime-temperature, minimum-temperature and
@@ -71,8 +71,7 @@ class Photosynthesis(nn.Module):
             params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,
                 ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.
             co2: Atmospheric CO₂ concentration [ppm], a scalar or shape
-                broadcastable to ``[B]`` (default 370, the SIMPLACE
-                reference). Supplied by `SiteParameters.co2` in the model.
+                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.
 
         Returns:
             Dict of ``[B]`` tensors:

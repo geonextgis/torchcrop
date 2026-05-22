@@ -60,8 +60,7 @@ from torchcrop.states.model_state import ModelState
 class Irradiation(nn.Module):
     """Daily total irradiation and PAR interception by canopy.
 
-    Computes AVRAD (daily total irradiation) from solar geometry per
-    SIMPLACE Irradiation.java, then calculates PAR interception using
+    Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using
     Beer-Lambert extinction law.
     """
 

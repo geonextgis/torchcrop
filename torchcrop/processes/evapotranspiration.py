@@ -97,8 +97,7 @@ class PotentialEvapoTranspiration(nn.Module):
             atmtr: Atmospheric transmission fraction [-], shape ``[B]``.
             frac_int: Fractional light interception [-], shape ``[B]``.
             co2: Atmospheric CO₂ concentration [ppm], a scalar or shape
-                broadcastable to ``[B]`` (default 370, the SIMPLACE
-                reference). Supplied by `SiteParameters.co2` in the model.
+                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.
 
         Returns:
             Dict of ``[B]`` tensors:
