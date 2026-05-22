@@ -2034,11 +2034,11 @@ biomass growth rate (<code>GTOTAL</code>) is produced downstream in
 the partitioning / model-level code, not here.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>RadiationUseEfficiency.java</code> (<code>process()</code> routine).</p>
+<p>SIMPLACE <code>RadiationUseEfficiency.java</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Effective daytime temperature (SIMPLACE customisable mean):</p>
+<p>Effective daytime temperature:</p>
 <div class="arithmatex">\[
 \text{DTEMP} = \text{TMAX} - f \cdot (\text{TMAX} - \text{TMIN})
 \]</div>
@@ -2049,7 +2049,7 @@ the partitioning / model-level code, not here.</p>
                 \text{TMNFTB}(\text{TMIN}) \cdot
                 \text{COTB}(\text{CO}_2)
 \]</div>
-<p>DVS-dependent radiation use efficiency (replaces the static scalar):</p>
+<p>DVS-dependent radiation use efficiency:</p>
 <div class="arithmatex">\[
 \text{RUE} = \text{cScaleFactorRUE} \cdot \text{RUETB}(\text{DVS})
 \]</div>
@@ -2081,7 +2081,7 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
 
     <div class="doc doc-contents ">
 
-      <p>Radiation use efficiency component (SIMPLACE <code>RadiationUseEfficiency</code>).</p>
+      <p>Radiation use efficiency component.</p>
 <p>Outputs <code>RUE</code> from <code>ruetb(DVS)</code> and an overall correction factor
 <code>RTMCO</code> that combines daytime-temperature, minimum-temperature and
 CO<span class="arithmatex">\(_2\)</span> responses. <code>parint</code>, <code>tranrf</code> and <code>nstress</code> are <em>not</em>
@@ -2091,7 +2091,7 @@ block.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/photosynthesis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Photosynthesis</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component (SIMPLACE ``RadiationUseEfficiency``).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component.</span>
 
 <span class="sd">    Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction factor</span>
 <span class="sd">    ``RTMCO`` that combines daytime-temperature, minimum-temperature and</span>
@@ -2117,8 +2117,7 @@ block.</p>
 <span class="sd">            params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">                ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">                broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">                reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -2225,8 +2224,7 @@ block.</p>
         <td><code>co2</code></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
-broadcastable to <code>[B]</code> (default 370, the SIMPLACE
-reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
   </tbody>
@@ -2275,8 +2273,7 @@ reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">        params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">            ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">            broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">            reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">            broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>

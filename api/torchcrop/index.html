@@ -20093,8 +20093,7 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">            atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
 <span class="sd">            frac_int: Fractional light interception [-], shape ``[B]``.</span>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">                broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">                reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -20280,8 +20279,7 @@ transpiration and soil evaporation based on light interception.</p>
         <td><code>co2</code></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
-broadcastable to <code>[B]</code> (default 370, the SIMPLACE
-reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
   </tbody>
@@ -20331,8 +20329,7 @@ reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">        atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
 <span class="sd">        frac_int: Fractional light interception [-], shape ``[B]``.</span>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">            broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">            reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">            broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
@@ -21287,8 +21284,7 @@ Irradiation            (<span title="torch.nn.modules.module.Module">Module</spa
     <div class="doc doc-contents ">
 
       <p>Daily total irradiation and PAR interception by canopy.</p>
-<p>Computes AVRAD (daily total irradiation) from solar geometry per
-SIMPLACE Irradiation.java, then calculates PAR interception using
+<p>Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using
 Beer-Lambert extinction law.</p>
 
         <details class="quote">
@@ -21296,8 +21292,7 @@ Beer-Lambert extinction law.</p>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Irradiation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily total irradiation and PAR interception by canopy.</span>
 
-<span class="sd">    Computes AVRAD (daily total irradiation) from solar geometry per</span>
-<span class="sd">    SIMPLACE Irradiation.java, then calculates PAR interception using</span>
+<span class="sd">    Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using</span>
 <span class="sd">    Beer-Lambert extinction law.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -23232,11 +23227,10 @@ Rate variables (consumed by the engine to update the matching
 <div class="admonition references">
 <p class="admonition-title">References</p>
 <ul>
-<li>Biomass partitioning block of <code>Lintul5.java</code> (lines 1407–1465).</li>
+<li>Biomass partitioning block of <code>Lintul5.java</code>.</li>
 <li><code>LintulFunctions.SUBPAR</code> — modifies the baseline partitioning
   fractions in response to water and nitrogen stress.</li>
-<li><code>LintulFunctions.RELGR</code> — converts the (possibly stress-modified)
-  partitioning fractions into per-organ growth rates.</li>
+<li><code>LintulFunctions.RELGR</code> — converts the partitioning fractions into per-organ growth rates.</li>
 </ul>
 </div>
 <div class="admonition design">
@@ -23294,8 +23288,7 @@ Partitioning            (<span title="torch.nn.modules.module.Module">Module</sp
     <div class="doc doc-contents ">
 
       <p>Allocate daily gross biomass production to organ-specific pools.</p>
-<p>The module mirrors the Java <code>SUBPAR</code> + <code>RELGR</code> sequence: the
-DVS-indexed baseline fractions are first modified for water or N
+<p>The DVS-indexed baseline fractions are first modified for water or N
 stress, then multiplied through by <code>gtotal</code> and the root/shoot
 split to obtain per-organ growth rates.</p>
 
@@ -23304,8 +23297,7 @@ split to obtain per-organ growth rates.</p>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Partitioning</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Allocate daily gross biomass production to organ-specific pools.</span>
 
-<span class="sd">    The module mirrors the Java ``SUBPAR`` + ``RELGR`` sequence: the</span>
-<span class="sd">    DVS-indexed baseline fractions are first modified for water or N</span>
+<span class="sd">    The DVS-indexed baseline fractions are first modified for water or N</span>
 <span class="sd">    stress, then multiplied through by ``gtotal`` and the root/shoot</span>
 <span class="sd">    split to obtain per-organ growth rates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -23395,26 +23387,25 @@ split to obtain per-organ growth rates.</p>
 <span class="sd">            Rate variables (per-organ growth, fed to leaf/root/state updates</span>
 <span class="sd">            and nutrient demand):</span>
 
-<span class="sd">                * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
-<span class="sd">                  (``= gtotal * fr``); becomes ``wrt_rate`` after</span>
-<span class="sd">                  subtracting root death in `RootDynamics`.</span>
-<span class="sd">                * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence</span>
-<span class="sd">                  (``= gtotal * (1 − fr) * fl``); `LeafDynamics`</span>
-<span class="sd">                  converts it into ``wlv_rate`` and ``lai_rate``.</span>
-<span class="sd">                * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate</span>
-<span class="sd">                  (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``</span>
-<span class="sd">                  directly.</span>
-<span class="sd">                * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate</span>
-<span class="sd">                  (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``</span>
-<span class="sd">                  and drives final yield.</span>
+<span class="sd">            * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
+<span class="sd">                (``= gtotal * fr``); becomes ``wrt_rate`` after</span>
+<span class="sd">                subtracting root death in `RootDynamics`.</span>
+<span class="sd">            * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence</span>
+<span class="sd">                (``= gtotal * (1 − fr) * fl``); `LeafDynamics`</span>
+<span class="sd">                converts it into ``wlv_rate`` and ``lai_rate``.</span>
+<span class="sd">            * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate</span>
+<span class="sd">                (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``</span>
+<span class="sd">                directly.</span>
+<span class="sd">            * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate</span>
+<span class="sd">                (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``</span>
+<span class="sd">                and drives final yield.</span>
 
-<span class="sd">            Diagnostics (post-``SUBPAR`` partitioning fractions, mirroring</span>
-<span class="sd">            ``FRT``, ``FLV``, ``FST``, ``FSO`` in the Java code):</span>
+<span class="sd">            Diagnostics:</span>
 
-<span class="sd">                * ``fr`` [-] — Below-ground (root) fraction after stress</span>
-<span class="sd">                  modification.</span>
-<span class="sd">                * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
-<span class="sd">                  leaves, stems, storage organs after stress modification.</span>
+<span class="sd">            * ``fr`` [-] — Below-ground (root) fraction after stress</span>
+<span class="sd">                modification.</span>
+<span class="sd">            * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
+<span class="sd">                leaves, stems, storage organs after stress modification.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
         <span class="n">frtwet</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">frtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -23552,30 +23543,25 @@ Rate variables (per-organ growth, fed to leaf/root/state updates
 and nutrient demand)</code></td>
       <td><ul>
 <li><code>g_root</code> [g DM m⁻² d⁻¹] — Root biomass growth rate
-      (<code>= gtotal * fr</code>); becomes <code>wrt_rate</code> after
-      subtracting root death in <code>RootDynamics</code>.<ul>
+    (<code>= gtotal * fr</code>); becomes <code>wrt_rate</code> after
+    subtracting root death in <code>RootDynamics</code>.</li>
 <li><code>g_lv</code> [g DM m⁻² d⁻¹] — Leaf growth before senescence
-  (<code>= gtotal * (1 − fr) * fl</code>); <code>LeafDynamics</code>
-  converts it into <code>wlv_rate</code> and <code>lai_rate</code>.</li>
+    (<code>= gtotal * (1 − fr) * fl</code>); <code>LeafDynamics</code>
+    converts it into <code>wlv_rate</code> and <code>lai_rate</code>.</li>
 <li><code>g_st</code> [g DM m⁻² d⁻¹] — Stem growth rate
-  (<code>= gtotal * (1 − fr) * fs</code>); becomes <code>wst_rate</code>
-  directly.</li>
+    (<code>= gtotal * (1 − fr) * fs</code>); becomes <code>wst_rate</code>
+    directly.</li>
 <li><code>g_so</code> [g DM m⁻² d⁻¹] — Storage-organ growth rate
-  (<code>= gtotal * (1 − fr) * fo</code>); becomes <code>wso_rate</code>
-  and drives final yield.</li>
+    (<code>= gtotal * (1 − fr) * fo</code>); becomes <code>wso_rate</code>
+    and drives final yield.</li>
 </ul>
-</li>
-</ul>
-<p>Diagnostics (post-<code>SUBPAR</code> partitioning fractions, mirroring
-<code>FRT</code>, <code>FLV</code>, <code>FST</code>, <code>FSO</code> in the Java code):</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``fr`` [-] — Below-ground (root) fraction after stress
-  modification.
-* ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to
-  leaves, stems, storage organs after stress modification.
-</code></pre></div></td></tr></table></div></td>
+<p>Diagnostics:</p>
+<ul>
+<li><code>fr</code> [-] — Below-ground (root) fraction after stress
+    modification.</li>
+<li><code>fl</code>, <code>fs</code>, <code>fo</code> [-] — Above-ground fractions to
+    leaves, stems, storage organs after stress modification.</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -23613,26 +23599,25 @@ and nutrient demand)</code></td>
 <span class="sd">        Rate variables (per-organ growth, fed to leaf/root/state updates</span>
 <span class="sd">        and nutrient demand):</span>
 
-<span class="sd">            * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
-<span class="sd">              (``= gtotal * fr``); becomes ``wrt_rate`` after</span>
-<span class="sd">              subtracting root death in `RootDynamics`.</span>
-<span class="sd">            * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence</span>
-<span class="sd">              (``= gtotal * (1 − fr) * fl``); `LeafDynamics`</span>
-<span class="sd">              converts it into ``wlv_rate`` and ``lai_rate``.</span>
-<span class="sd">            * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate</span>
-<span class="sd">              (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``</span>
-<span class="sd">              directly.</span>
-<span class="sd">            * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate</span>
-<span class="sd">              (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``</span>
-<span class="sd">              and drives final yield.</span>
+<span class="sd">        * ``g_root`` [g DM m⁻² d⁻¹] — Root biomass growth rate</span>
+<span class="sd">            (``= gtotal * fr``); becomes ``wrt_rate`` after</span>
+<span class="sd">            subtracting root death in `RootDynamics`.</span>
+<span class="sd">        * ``g_lv`` [g DM m⁻² d⁻¹] — Leaf growth before senescence</span>
+<span class="sd">            (``= gtotal * (1 − fr) * fl``); `LeafDynamics`</span>
+<span class="sd">            converts it into ``wlv_rate`` and ``lai_rate``.</span>
+<span class="sd">        * ``g_st`` [g DM m⁻² d⁻¹] — Stem growth rate</span>
+<span class="sd">            (``= gtotal * (1 − fr) * fs``); becomes ``wst_rate``</span>
+<span class="sd">            directly.</span>
+<span class="sd">        * ``g_so`` [g DM m⁻² d⁻¹] — Storage-organ growth rate</span>
+<span class="sd">            (``= gtotal * (1 − fr) * fo``); becomes ``wso_rate``</span>
+<span class="sd">            and drives final yield.</span>
 
-<span class="sd">        Diagnostics (post-``SUBPAR`` partitioning fractions, mirroring</span>
-<span class="sd">        ``FRT``, ``FLV``, ``FST``, ``FSO`` in the Java code):</span>
+<span class="sd">        Diagnostics:</span>
 
-<span class="sd">            * ``fr`` [-] — Below-ground (root) fraction after stress</span>
-<span class="sd">              modification.</span>
-<span class="sd">            * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
-<span class="sd">              leaves, stems, storage organs after stress modification.</span>
+<span class="sd">        * ``fr`` [-] — Below-ground (root) fraction after stress</span>
+<span class="sd">            modification.</span>
+<span class="sd">        * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
+<span class="sd">            leaves, stems, storage organs after stress modification.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
     <span class="n">frtwet</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">frtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -23719,7 +23704,7 @@ and nutrient demand)</code></td>
       <p>Phenological development: thermal time, daylength, vernalisation, DVS.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>Wolf (2012), Section 3.2; SIMPLACE <code>Phenology.java</code>.</p>
+<p>SIMPLACE <code>Phenology.java</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
@@ -24242,11 +24227,11 @@ biomass growth rate (<code>GTOTAL</code>) is produced downstream in
 the partitioning / model-level code, not here.</p>
 <div class="admonition references">
 <p class="admonition-title">References</p>
-<p>SIMPLACE <code>RadiationUseEfficiency.java</code> (<code>process()</code> routine).</p>
+<p>SIMPLACE <code>RadiationUseEfficiency.java</code>.</p>
 </div>
 <div class="admonition equations">
 <p class="admonition-title">Equations</p>
-<p>Effective daytime temperature (SIMPLACE customisable mean):</p>
+<p>Effective daytime temperature:</p>
 <div class="arithmatex">\[
 \text{DTEMP} = \text{TMAX} - f \cdot (\text{TMAX} - \text{TMIN})
 \]</div>
@@ -24257,7 +24242,7 @@ the partitioning / model-level code, not here.</p>
                 \text{TMNFTB}(\text{TMIN}) \cdot
                 \text{COTB}(\text{CO}_2)
 \]</div>
-<p>DVS-dependent radiation use efficiency (replaces the static scalar):</p>
+<p>DVS-dependent radiation use efficiency:</p>
 <div class="arithmatex">\[
 \text{RUE} = \text{cScaleFactorRUE} \cdot \text{RUETB}(\text{DVS})
 \]</div>
@@ -24289,7 +24274,7 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
 
     <div class="doc doc-contents ">
 
-      <p>Radiation use efficiency component (SIMPLACE <code>RadiationUseEfficiency</code>).</p>
+      <p>Radiation use efficiency component.</p>
 <p>Outputs <code>RUE</code> from <code>ruetb(DVS)</code> and an overall correction factor
 <code>RTMCO</code> that combines daytime-temperature, minimum-temperature and
 CO<span class="arithmatex">\(_2\)</span> responses. <code>parint</code>, <code>tranrf</code> and <code>nstress</code> are <em>not</em>
@@ -24299,7 +24284,7 @@ block.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/photosynthesis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Photosynthesis</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component (SIMPLACE ``RadiationUseEfficiency``).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component.</span>
 
 <span class="sd">    Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction factor</span>
 <span class="sd">    ``RTMCO`` that combines daytime-temperature, minimum-temperature and</span>
@@ -24325,8 +24310,7 @@ block.</p>
 <span class="sd">            params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">                ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">                broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">                reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -24433,8 +24417,7 @@ block.</p>
         <td><code>co2</code></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
-broadcastable to <code>[B]</code> (default 370, the SIMPLACE
-reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
   </tbody>
@@ -24483,8 +24466,7 @@ reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">        params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">            ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">            broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">            reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">            broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
@@ -26086,8 +26068,7 @@ therefore propagates into every per-organ rate
     <div class="doc doc-contents ">
 
       <p>Two-zone soil water balance for Lintul5.</p>
-<p>A faithful port of the SIMPLACE <code>WATBALS</code> routine: tracks water storage
-in a rooted zone and a lower zone, runs a percolation cascade to deep
+<p>Tracks water storage in a rooted zone and a lower zone, runs a percolation cascade to deep
 drainage, and produces the water-stress factor <code>TRANRF</code> that gates crop
 growth.</p>
 <div class="admonition references">

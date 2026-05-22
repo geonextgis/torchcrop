@@ -2172,8 +2172,7 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">            atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
 <span class="sd">            frac_int: Fractional light interception [-], shape ``[B]``.</span>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">                broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">                reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -2359,8 +2358,7 @@ transpiration and soil evaporation based on light interception.</p>
         <td><code>co2</code></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
-broadcastable to <code>[B]</code> (default 370, the SIMPLACE
-reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
   </tbody>
@@ -2410,8 +2408,7 @@ reference). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">        atmtr: Atmospheric transmission fraction [-], shape ``[B]``.</span>
 <span class="sd">        frac_int: Fractional light interception [-], shape ``[B]``.</span>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">            broadcastable to ``[B]`` (default 370, the SIMPLACE</span>
-<span class="sd">            reference). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">            broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
