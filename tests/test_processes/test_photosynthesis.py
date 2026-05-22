@@ -59,8 +59,10 @@ def test_rtmco_combines_temp_and_co2():
     photo = Photosynthesis()
     params = CropParameters()
     tmax, tmin, dvs = _inputs()
+    # photo() is called without an explicit co2, so the default 370 ppm
+    # (the SIMPLACE reference) is used for the COTB look-up.
     out = photo(tmax, tmin, dvs, params)
-    expected_rco = interpolate(params.cotb, params.co2.expand_as(tmax))
+    expected_rco = interpolate(params.cotb, torch.full_like(tmax, 370.0))
     expected_rtmp = interpolate(params.tmpftb, out["dtemp"]) * interpolate(
         params.tmnftb, tmin
     )

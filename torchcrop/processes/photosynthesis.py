@@ -60,6 +60,7 @@ class Photosynthesis(nn.Module):
         tmin: torch.Tensor,
         dvs: torch.Tensor,
         params: CropParameters,
+        co2: torch.Tensor | float = 370.0,
     ) -> dict[str, torch.Tensor]:
         """Compute RUE and the RTMCO correction factor.
 
@@ -68,7 +69,10 @@ class Photosynthesis(nn.Module):
             tmin: Daily minimum air temperature [°C], shape ``[B]``.
             dvs: Development stage [-] (0–2), shape ``[B]``.
             params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,
-                ``tmpftb``, ``tmnftb``, ``cotb``, ``co2``, ``day_temp_factor``.
+                ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.
+            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape
+                broadcastable to ``[B]`` (default 370, the SIMPLACE
+                reference). Supplied by `SiteParameters.co2` in the model.
 
         Returns:
             Dict of ``[B]`` tensors:
@@ -87,8 +91,9 @@ class Photosynthesis(nn.Module):
         rue = params.scale_factor_rue * interpolate(params.ruetb, dvs)
 
         # CO2 correction
-        co2 = params.co2.expand_as(tmax) if params.co2.dim() == 0 else params.co2
-        rco = interpolate(params.cotb, co2)
+        co2_t = torch.as_tensor(co2, dtype=tmax.dtype, device=tmax.device)
+        co2_b = co2_t.expand_as(tmax) if co2_t.dim() == 0 else co2_t
+        rco = interpolate(params.cotb, co2_b)
 
         # Effective daytime temperature, customisable via day_temp_factor
         dtemp = tmax - params.day_temp_factor * (tmax - tmin)

@@ -50,19 +50,16 @@ class PotentialEvapoTranspiration(nn.Module):
     Args:
         altitude: Station altitude [m] (default 0).
         cfet: Crop-specific correction factor for transpiration (default 1.0).
-        co2: Atmospheric CO2 concentration [ppm] (default 370).
     """
 
     def __init__(
         self,
         altitude: float = 0.0,
         cfet: float = 1.0,
-        co2: float = 370.0,
     ) -> None:
         super().__init__()
         self.altitude = altitude
         self.cfet = cfet
-        self.co2 = co2
 
         # CO2 correction table from SIMPLACE cET0CorrectionTableCo2 / cET0CorrectionTableFactor.
         self.register_buffer(
@@ -87,6 +84,7 @@ class PotentialEvapoTranspiration(nn.Module):
         avrad: torch.Tensor,
         atmtr: torch.Tensor,
         frac_int: torch.Tensor,
+        co2: torch.Tensor | float = 370.0,
     ) -> dict[str, torch.Tensor]:
         """Compute PENMAN potential ET and split into canopy/soil fluxes.
 
@@ -98,6 +96,9 @@ class PotentialEvapoTranspiration(nn.Module):
             avrad: Daily total irradiation [J m⁻² d⁻¹], shape ``[B]``.
             atmtr: Atmospheric transmission fraction [-], shape ``[B]``.
             frac_int: Fractional light interception [-], shape ``[B]``.
+            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape
+                broadcastable to ``[B]`` (default 370, the SIMPLACE
+                reference). Supplied by `SiteParameters.co2` in the model.
 
         Returns:
             Dict of ``[B]`` tensors:
@@ -180,7 +181,9 @@ class PotentialEvapoTranspiration(nn.Module):
         et0 = torch.clamp(et0, min=0.0)
 
         # CO2 correction for ET0
-        co2_factor = interpolate(self.co2_table, torch.full_like(e0, self.co2))
+        co2_t = torch.as_tensor(co2, dtype=e0.dtype, device=e0.device)
+        co2_b = co2_t.expand_as(e0) if co2_t.dim() == 0 else co2_t
+        co2_factor = interpolate(self.co2_table, co2_b)
         etc = et0 * co2_factor
 
         # Potential transpiration and soil evaporation split by light interception

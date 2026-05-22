@@ -158,11 +158,6 @@ class CropParameters:
     # 2. Radiation use efficiency / RUE (from RadiationUseEfficiency.java)
     # ------------------------------------------------------------------ #
 
-    co2: torch.Tensor = field(default_factory=lambda: _t(360.0))
-    """``cCO``. Atmospheric CO₂ concentration [ppm] used both as input to
-    the RUE CO₂ correction (`cotb`) and the ET₀ CO₂ correction.
-    Default is the original Lintul5 reference."""
-
     day_temp_factor: torch.Tensor = field(default_factory=lambda: _t(0.25))
     """``cDayTempFactor``. Weight ``f`` in
     ``T_day = TMAX − f·(TMAX − TMIN)`` used to derive a *daytime* mean
@@ -683,6 +678,61 @@ class CropParameters:
     """Scaffold alias of `tmpftb` (T-response of RUE) used by the
     current `Photosynthesis` module. Will be merged with
     `tmpftb` once the full SIMPLACE RUE chain is wired in."""
+
+    # ------------------------------------------------------------------ #
+    # 13. Heat stress (optional add-on components)
+    # ------------------------------------------------------------------ #
+    # Crop-specific constants for the optional SIMPLACE heat-stress
+    # components, which sit *outside* the core Lintul5 time loop:
+    #   * HeatStressOnLeafSenescence — cTempCritical, cFactorAtTempCritical,
+    #     cFactorSlope, cDevStageCritical
+    #   * HeatStressOnGrain — cTempCritical, cTempLimit, cBeginDevStage,
+    #     cEndDevStage
+    # Both SIMPLACE components define a constant named ``cTempCritical``;
+    # they are disambiguated here with ``leaf_heat_`` / ``grain_heat_``
+    # prefixes (mirroring the `Lintul5Model` submodule names). Keeping
+    # them in this dataclass lets a per-crop configuration file populate
+    # them alongside the core Lintul5 parameters.
+    # ------------------------------------------------------------------ #
+
+    leaf_heat_temp_critical: torch.Tensor = field(default_factory=lambda: _t(34.0))
+    """``cTempCritical`` of ``HeatStressOnLeafSenescence``. Critical daily
+    maximum temperature [°C] above which heat stress accelerates leaf
+    senescence."""
+
+    leaf_heat_factor_at_temp_critical: torch.Tensor = field(
+        default_factory=lambda: _t(3.0)
+    )
+    """``cFactorAtTempCritical``. Leaf-senescence multiplier [-] at exactly
+    the critical temperature `leaf_heat_temp_critical`."""
+
+    leaf_heat_factor_slope: torch.Tensor = field(default_factory=lambda: _t(0.5))
+    """``cFactorSlope``. Increment of the leaf-senescence multiplier per °C
+    above `leaf_heat_temp_critical` [°C⁻¹]."""
+
+    leaf_heat_devstage_critical: torch.Tensor = field(
+        default_factory=lambda: _t(1.0)
+    )
+    """``cDevStageCritical``. Development stage [-] above which heat stress
+    on leaf senescence applies."""
+
+    grain_heat_temp_critical: torch.Tensor = field(default_factory=lambda: _t(27.0))
+    """``cTempCritical`` of ``HeatStressOnGrain``. Critical day-time
+    temperature [°C] at which heat stress on grain yield starts."""
+
+    grain_heat_temp_limit: torch.Tensor = field(default_factory=lambda: _t(40.0))
+    """``cTempLimit``. Day-time temperature [°C] at which the daily grain
+    heat-stress intensity saturates at 1."""
+
+    grain_heat_begin_devstage: torch.Tensor = field(
+        default_factory=lambda: _t(0.8)
+    )
+    """``cBeginDevStage``. Development stage [-] at which the grain
+    thermally sensitive window opens."""
+
+    grain_heat_end_devstage: torch.Tensor = field(default_factory=lambda: _t(1.3))
+    """``cEndDevStage``. Development stage [-] at which the grain
+    thermally sensitive window closes."""
 
     # ------------------------------------------------------------------ #
     # Helpers

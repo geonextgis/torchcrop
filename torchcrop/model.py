@@ -19,6 +19,9 @@ from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
 from torchcrop.processes import (
     Astro,
+    Co2Transpiration,
+    HeatStressOnGrain,
+    HeatStressOnLeafSenescence,
     Irradiation,
     LeafDynamics,
     NutrientDemand,
@@ -44,10 +47,14 @@ class ModelOutput:
             the initial condition).
         rates: Per-day rate dicts (length ``T``).
         yield_: Final storage-organ dry weight ``WSO`` at the last step
-            [g m-2].
+            [g m-2], *before* the heat-stress adjustment.
         lai: LAI trajectory of shape ``[B, T + 1]``.
         dvs: DVS trajectory of shape ``[B, T + 1]``.
         biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.
+        heat_stress_factor: Around-anthesis heat-stress factor ``HSF`` in
+            ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.
+        adjusted_yield: Heat-stress-adjusted yield
+            ``(1 − HSF) · yield_`` [g m-2], shape ``[B]``.
     """
 
     states: list[ModelState]
@@ -56,6 +63,8 @@ class ModelOutput:
     lai: torch.Tensor
     dvs: torch.Tensor
     biomass: torch.Tensor
+    heat_stress_factor: torch.Tensor
+    adjusted_yield: torch.Tensor
 
 
 class Lintul5Model(nn.Module):
@@ -94,14 +103,17 @@ class Lintul5Model(nn.Module):
         self.phenology = Phenology(smooth=smooth)
         self.irradiation = Irradiation()
         self.evapotranspiration = PotentialEvapoTranspiration()
+        self.co2_transpiration = Co2Transpiration()
         self.water_balance = WaterBalance()
         self.photosynthesis = Photosynthesis()
         self.partitioning = Partitioning()
         self.leaf_dynamics = LeafDynamics()
+        self.leaf_heat_stress = HeatStressOnLeafSenescence(smooth=smooth)
         self.root_dynamics = RootDynamics()
         self.stem_dynamics = StemDynamics()
         self.nutrient_demand = NutrientDemand()
         self.soil_nutrients = SoilNutrients()
+        self.heat_stress_grain = HeatStressOnGrain()
         self.stress = stress_module or StressFactors()
 
         self.residual_modules = nn.ModuleDict(residual_modules or {})
@@ -229,6 +241,18 @@ class Lintul5Model(nn.Module):
         biomass = torch.stack([s.wlv + s.wst + s.wso for s in states], dim=1)
         yield_ = states[-1].wso
 
+        # Heat-stress penalty on grain yield around anthesis. The DVS
+        # entering each weather day is ``dvs[:, :-1]`` — the trajectory
+        # carries a leading initial-condition entry, so it has length
+        # ``T + 1`` against the ``T`` weather days.
+        hsg = self.heat_stress_grain(
+            tmin=weather.channel("tmin"),
+            tmax=weather.channel("tmax"),
+            dvs=dvs[:, :-1],
+            params=self.crop_params,
+            yield_=yield_,
+        )
+
         return ModelOutput(
             states=states,
             rates=rates,
@@ -236,6 +260,8 @@ class Lintul5Model(nn.Module):
             lai=lai,
             dvs=dvs,
             biomass=biomass,
+            heat_stress_factor=hsg["heat_stress_factor"],
+            adjusted_yield=hsg["adjusted_yield"],
         )
 
     # ------------------------------------------------------------------ #
@@ -338,7 +364,9 @@ class Lintul5Model(nn.Module):
         # 3. Phenology
         pheno = self.phenology(state, davtmp, ddlp, crop_params)
 
-        # 4. Evapotranspiration — PENMAN formula
+        # 4. Evapotranspiration — PENMAN formula. CO2 is a site/scenario
+        #    property: SiteParameters.co2 is the single source of truth
+        #    feeding the ET0, RUE and transpiration CO2 corrections.
         et = self.evapotranspiration(
             tmin=tmin,
             tmax=tmax,
@@ -347,7 +375,15 @@ class Lintul5Model(nn.Module):
             avrad=avrad,
             atmtr=atmtr,
             frac_int=frac_int,
+            co2=site_params.co2,
         )
+
+        # 4b. CO2 influence on transpiration — scale the potential
+        #     transpiration *demand* by the linear CO2 reduction factor
+        #     before it enters the water balance, so elevated CO2
+        #     propagates into the water-stress factor TRANRF (distinct
+        #     from the CO2 correction already applied to reference ET).
+        ptran_eff = self.co2_transpiration(et["ptran"], site_params.co2)["ptran"]
 
         # 5. Water balance (two-zone, with SIMPLACE percolation cascade)
         rdm = torch.minimum(
@@ -358,7 +394,7 @@ class Lintul5Model(nn.Module):
             state=state,
             rain=rain,
             pevap=et["pevap"],
-            ptran=et["ptran"],
+            ptran=ptran_eff,
             params=soil_params,
             rdm=rdm,
             etc=et["etc"],
@@ -374,6 +410,7 @@ class Lintul5Model(nn.Module):
             tmin=tmin,
             dvs=state.dvs,
             params=crop_params,
+            co2=site_params.co2,
         )
         # GTOTAL = RUE * RTMCO * PARINT * TRANRF * NSTRESS
         # (LintulFunctions.GROWTH; NSTRESS=1 here for the pre-step).
@@ -425,6 +462,7 @@ class Lintul5Model(nn.Module):
             tmin=tmin,
             dvs=state.dvs,
             params=crop_params,
+            co2=site_params.co2,
         )
         # GTOTAL = RUE * RTMCO * PARINT * min(TRANRF, NPKREF)
         # The combined stress is produced by self.stress; divide-cancel keeps
@@ -457,7 +495,11 @@ class Lintul5Model(nn.Module):
             nni=nstress,
         )
 
-        # 10. Leaf dynamics
+        # 10. Leaf dynamics — with heat-stress acceleration of senescence.
+        # HeatStressOnLeafSenescence returns a multiplier on RDR that is
+        # 1.0 outside the heat-stress regime (Tmax < Tc or DVS < DVS_c),
+        # so this is a no-op under non-stress conditions.
+        leaf_heat = self.leaf_heat_stress(tmax=tmax, dvs=state.dvs, params=crop_params)
         leaf = self.leaf_dynamics(
             state=state,
             g_lv=part["g_lv"],
@@ -466,6 +508,7 @@ class Lintul5Model(nn.Module):
             tranrf=tranrf,
             nstress=nstress,
             params=crop_params,
+            heat_stress=leaf_heat,
         )
 
         # 11. Root dynamics
@@ -497,6 +540,7 @@ class Lintul5Model(nn.Module):
             "wst_rate": gate(stem["wst_rate"]),
             "wstd_rate": gate(stem["wstd_rate"]),
             "wrt_rate": gate(root["wrt_rate"]),
+            "wrtd_rate": gate(root["wrtd_rate"]),
             "wso_rate": gate(part["g_so"]),
             "lai_rate": gate(leaf["lai_rate"]),
             "rootd_rate": root["rootd_rate"],

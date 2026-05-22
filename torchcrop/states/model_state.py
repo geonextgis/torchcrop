@@ -53,6 +53,10 @@ class ModelState:
         wst: Stem dry weight, ``[B]`` [g m⁻²].
         wstd: Dead stem dry weight (senesced), ``[B]`` [g m⁻²].
         wrt: Root dry weight, ``[B]`` [g m⁻²].
+        wrtd: Dead root dry weight (senesced), ``[B]`` [g m⁻²];
+            SIMPLACE ``WRTD``. Accumulates the root senescence flux
+            ``DRRT`` so that the N/P/K carried by dead roots is
+            conserved rather than discarded.
         wso: Storage organ dry weight (drives final yield), ``[B]``
             [g m⁻²].
         lai: Leaf area index, ``[B]`` [m² m⁻²].
@@ -101,6 +105,7 @@ class ModelState:
     wst: torch.Tensor  # stems
     wstd: torch.Tensor  # dead stems
     wrt: torch.Tensor  # roots
+    wrtd: torch.Tensor  # dead roots
     wso: torch.Tensor  # storage organs
 
     # Canopy
@@ -201,6 +206,7 @@ class ModelState:
             wst=zeros.clone(),
             wstd=zeros.clone(),
             wrt=zeros.clone(),
+            wrtd=zeros.clone(),
             wso=zeros.clone(),
             lai=zeros.clone(),
             rootd=full(rootdi),

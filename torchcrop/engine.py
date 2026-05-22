@@ -160,6 +160,7 @@ def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -
                 "wst",
                 "wstd",
                 "wrt",
+                "wrtd",
                 "wso",
                 "lai",
                 "rootd",

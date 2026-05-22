@@ -73,10 +73,13 @@ class SiteParameters:
     # ------------------------------------------------------------------ #
 
     co2: torch.Tensor = field(default_factory=lambda: _t(370.0))
-    """``cCO``. Atmospheric CO₂ concentration [ppm]. Mirrors
-    `CropParameters.co2`; provided here so a site-level CO₂ scenario
-    can be set independently of the crop default. The Lintul5 ET routine
-    uses 370 ppm as its reference."""
+    """``cCO``. Atmospheric CO₂ concentration [ppm]. **Single source of
+    truth** for CO₂ across the model — it feeds the Penman ET₀ correction
+    (`fpenmtb`), the RUE CO₂ correction (`CropParameters.cotb`), and the
+    `Co2Transpiration` reduction of potential transpiration. Modelled as a
+    site/scenario property rather than a crop trait; wrap it in an
+    `nn.Parameter` to calibrate or run elevated-CO₂ experiments. The
+    Lintul5 ET routine uses 370 ppm as its reference."""
 
     cfet: torch.Tensor = field(default_factory=lambda: _t(1.0))
     """``cCFET``. Empirical correction factor [-] applied to the Penman
