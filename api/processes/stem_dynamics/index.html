@@ -2121,8 +2121,7 @@
 but uses its own DVS-indexed relative death rate table <code>RDRSTB</code>.</p>
 <h3 id="torchcrop.processes.stem_dynamics--equations">Equations<a class="headerlink" href="#torchcrop.processes.stem_dynamics--equations" title="Permanent link">&para;</a></h3>
 <p>Stem senescence:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``DRST = WST · RDRST``   when ``DVS ≥ DVSDR``, else ``0``
-</code></pre></div></td></tr></table></div>
+<p><code>DRST = WST · RDRST</code>   when <code>DVS ≥ DVSDR</code>, else <code>0</code></p>
 <p>where <code>RDRST = RDRSTB(DVS) · scale_factor_rdr_stems</code> is the DVS-
 indexed relative stem death rate.</p>
 <p>Net living-stem biomass change is <code>RWST = AGRT · FST − DRST</code>; the

@@ -2138,13 +2138,13 @@
 <a id="torchcrop.processes.co2_transpiration"></a>
     <div class="doc doc-contents first">
 
-      <p>CO\ :sub:<code>2</code> influence on crop transpiration.</p>
-<p>Elevated atmospheric CO\ :sub:<code>2</code> reduces stomatal conductance, and
+      <p>CO₂ influence on crop transpiration.</p>
+<p>Elevated atmospheric CO₂ reduces stomatal conductance, and
 therefore crop transpiration. This module scales the potential
 transpiration <code>PTRAN</code> by a linear reduction factor before it enters
 the water balance, so the effect propagates into the water-stress
 factor <code>TRANRF</code>.</p>
-<p>This is a <em>distinct</em> mechanism from the CO\ :sub:<code>2</code> correction
+<p>This is a <em>distinct</em> mechanism from the CO₂ correction
 applied to reference ET in
 <code>torchcrop.processes.evapotranspiration</code>: that one rescales the
 reference evapotranspiration <code>ET0</code> via an interpolation table,
@@ -2152,7 +2152,7 @@ whereas this module rescales the <em>potential transpiration demand</em>
 that the water balance compares against soil water supply.</p>
 <h3 id="torchcrop.processes.co2_transpiration--equations">Equations<a class="headerlink" href="#torchcrop.processes.co2_transpiration--equations" title="Permanent link">&para;</a></h3>
 <p>Linear reduction factor as a function of the atmospheric
-CO\ :sub:<code>2</code> concentration:</p>
+CO₂ concentration:</p>
 <div class="arithmatex">\[
 f(\text{CO}_2) = m \cdot \text{CO}_2 + b
 \]</div>
@@ -2188,7 +2188,7 @@ Co2Transpiration            (<span title="torch.nn.modules.module.Module">Module
 
     <div class="doc doc-contents ">
 
-      <p>Reduce potential transpiration as a linear function of CO\ :sub:<code>2</code>.</p>
+      <p>Reduce potential transpiration as a linear function of CO₂.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2219,7 +2219,7 @@ reduction factor [-] (default <code>1.1</code>).</p></td>
         <td><code>clamp_nonnegative</code></td>
         <td><code>bool</code></td>
         <td><p>If <code>True</code> (default), clamp the reduction
-factor to <code>≥ 0</code> so an extreme CO\ :sub:<code>2</code> value can never
+factor to <code>≥ 0</code> so an extreme CO₂ value can never
 flip the sign of transpiration.</p></td>
         <td><code>True</code></td>
       </tr>
@@ -2228,7 +2228,7 @@ flip the sign of transpiration.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Co2Transpiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reduce potential transpiration as a linear function of CO\ :sub:`2`.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reduce potential transpiration as a linear function of CO₂.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        transpiration_m: Slope ``cTranspiration_m`` of the linear reduction</span>
@@ -2236,7 +2236,7 @@ flip the sign of transpiration.</p></td>
 <span class="sd">        transpiration_b: Intercept ``cTranspiration_b`` of the linear</span>
 <span class="sd">            reduction factor [-] (default ``1.1``).</span>
 <span class="sd">        clamp_nonnegative: If ``True`` (default), clamp the reduction</span>
-<span class="sd">            factor to ``≥ 0`` so an extreme CO\ :sub:`2` value can never</span>
+<span class="sd">            factor to ``≥ 0`` so an extreme CO₂ value can never</span>
 <span class="sd">            flip the sign of transpiration.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -2252,10 +2252,10 @@ flip the sign of transpiration.</p></td>
         <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span> <span class="o">=</span> <span class="n">clamp_nonnegative</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO\ :sub:`2` transpiration-reduction factor.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO₂ transpiration-reduction factor.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            co2: Atmospheric CO\ :sub:`2` concentration [ppm], broadcastable</span>
+<span class="sd">            co2: Atmospheric CO₂ concentration [ppm], broadcastable</span>
 <span class="sd">                to the transpiration tensor.</span>
 
 <span class="sd">        Returns:</span>
@@ -2272,17 +2272,17 @@ flip the sign of transpiration.</p></td>
         <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO\ :sub:`2` reduction to potential transpiration.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO₂ reduction to potential transpiration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
-<span class="sd">            co2: Atmospheric CO\ :sub:`2` concentration [ppm], a scalar</span>
+<span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar</span>
 <span class="sd">                tensor or shape broadcastable to ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``ptran`` [mm d⁻¹] — CO\ :sub:`2`-reduced potential</span>
+<span class="sd">            * ``ptran`` [mm d⁻¹] — CO₂-reduced potential</span>
 <span class="sd">              transpiration ``PTRAN · f(CO₂)``.</span>
 <span class="sd">            * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2319,7 +2319,7 @@ flip the sign of transpiration.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Compute the CO\ :sub:<code>2</code> transpiration-reduction factor.</p>
+      <p>Compute the CO₂ transpiration-reduction factor.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2335,7 +2335,7 @@ flip the sign of transpiration.</p></td>
       <tr>
         <td><code>co2</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Atmospheric CO\ :sub:<code>2</code> concentration [ppm], broadcastable
+        <td><p>Atmospheric CO₂ concentration [ppm], broadcastable
 to the transpiration tensor.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2360,10 +2360,10 @@ when <code>clamp_nonnegative</code> is set.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO\ :sub:`2` transpiration-reduction factor.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO₂ transpiration-reduction factor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        co2: Atmospheric CO\ :sub:`2` concentration [ppm], broadcastable</span>
+<span class="sd">        co2: Atmospheric CO₂ concentration [ppm], broadcastable</span>
 <span class="sd">            to the transpiration tensor.</span>
 
 <span class="sd">    Returns:</span>
@@ -2394,7 +2394,7 @@ when <code>clamp_nonnegative</code> is set.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Apply the CO\ :sub:<code>2</code> reduction to potential transpiration.</p>
+      <p>Apply the CO₂ reduction to potential transpiration.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2416,7 +2416,7 @@ when <code>clamp_nonnegative</code> is set.</p></td>
       <tr>
         <td><code>co2</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Atmospheric CO\ :sub:<code>2</code> concentration [ppm], a scalar
+        <td><p>Atmospheric CO₂ concentration [ppm], a scalar
 tensor or shape broadcastable to <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -2434,7 +2434,7 @@ tensor or shape broadcastable to <code>[B]</code>.</p></td>
     <tr>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>ptran</code> [mm d⁻¹] — CO\ :sub:<code>2</code>-reduced potential
+<li><code>ptran</code> [mm d⁻¹] — CO₂-reduced potential
   transpiration <code>PTRAN · f(CO₂)</code>.</li>
 <li><code>co2_factor</code> [-] — The applied reduction factor <code>f(CO₂)</code>.</li>
 </ul></td>
@@ -2448,17 +2448,17 @@ tensor or shape broadcastable to <code>[B]</code>.</p></td>
     <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO\ :sub:`2` reduction to potential transpiration.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO₂ reduction to potential transpiration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
-<span class="sd">        co2: Atmospheric CO\ :sub:`2` concentration [ppm], a scalar</span>
+<span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar</span>
 <span class="sd">            tensor or shape broadcastable to ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">        * ``ptran`` [mm d⁻¹] — CO\ :sub:`2`-reduced potential</span>
+<span class="sd">        * ``ptran`` [mm d⁻¹] — CO₂-reduced potential</span>
 <span class="sd">          transpiration ``PTRAN · f(CO₂)``.</span>
 <span class="sd">        * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
