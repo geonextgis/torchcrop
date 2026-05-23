@@ -2134,17 +2134,17 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 
 <span class="sd">            Rate variables (consumed by the engine for state update):</span>
 
-<span class="sd">                * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
-<span class="sd">                  living stem biomass (``= g_st − drst``).</span>
-<span class="sd">                * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem</span>
-<span class="sd">                  mass transferred to the dead-stem pool (``= drst``).</span>
+<span class="sd">            * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
+<span class="sd">                living stem biomass (``= g_st − drst``).</span>
+<span class="sd">            * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem</span>
+<span class="sd">                mass transferred to the dead-stem pool (``= drst``).</span>
 
 <span class="sd">            Diagnostics:</span>
 
-<span class="sd">                * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate</span>
-<span class="sd">                  ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
-<span class="sd">                * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
-<span class="sd">                  stem death rate after the scale factor.</span>
+<span class="sd">            * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate</span>
+<span class="sd">                ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
+<span class="sd">            * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
+<span class="sd">                stem death rate after the scale factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
         <span class="n">wst</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wst</span>
@@ -2261,21 +2261,17 @@ accumulate. Defaults to
 Rate variables (consumed by the engine for state update)</code></td>
       <td><ul>
 <li><code>wst_rate</code> [g DM m⁻² d⁻¹] — Net daily change in
-      living stem biomass (<code>= g_st − drst</code>).<ul>
+    living stem biomass (<code>= g_st − drst</code>).</li>
 <li><code>wstd_rate</code> [g DM m⁻² d⁻¹] — Daily senesced stem
-  mass transferred to the dead-stem pool (<code>= drst</code>).</li>
-</ul>
-</li>
+    mass transferred to the dead-stem pool (<code>= drst</code>).</li>
 </ul>
 <p>Diagnostics:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``drst`` [g DM m⁻² d⁻¹] — Stem death rate
-  ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.
-* ``rdrst`` [d⁻¹] — Effective DVS-indexed relative
-  stem death rate after the scale factor.
-</code></pre></div></td></tr></table></div></td>
+<ul>
+<li><code>drst</code> [g DM m⁻² d⁻¹] — Stem death rate
+    <code>DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]</code>.</li>
+<li><code>rdrst</code> [d⁻¹] — Effective DVS-indexed relative
+    stem death rate after the scale factor.</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -2310,17 +2306,17 @@ Rate variables (consumed by the engine for state update)</code></td>
 
 <span class="sd">        Rate variables (consumed by the engine for state update):</span>
 
-<span class="sd">            * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
-<span class="sd">              living stem biomass (``= g_st − drst``).</span>
-<span class="sd">            * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem</span>
-<span class="sd">              mass transferred to the dead-stem pool (``= drst``).</span>
+<span class="sd">        * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
+<span class="sd">            living stem biomass (``= g_st − drst``).</span>
+<span class="sd">        * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem</span>
+<span class="sd">            mass transferred to the dead-stem pool (``= drst``).</span>
 
 <span class="sd">        Diagnostics:</span>
 
-<span class="sd">            * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate</span>
-<span class="sd">              ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
-<span class="sd">            * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
-<span class="sd">              stem death rate after the scale factor.</span>
+<span class="sd">        * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate</span>
+<span class="sd">            ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
+<span class="sd">        * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
+<span class="sd">            stem death rate after the scale factor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
     <span class="n">wst</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wst</span>

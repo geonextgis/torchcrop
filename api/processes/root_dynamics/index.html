@@ -2068,11 +2068,9 @@ an <code>INSW</code>-style water-stress step (zero growth when
 <code>TRANRF &lt; 0.01</code>).</p>
 <h3 id="torchcrop.processes.root_dynamics--equations">Equations<a class="headerlink" href="#torchcrop.processes.root_dynamics--equations" title="Permanent link">&para;</a></h3>
 <p>Root depth growth:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``RR = min(RRI · INSW(TRANRF − 0.01, 0, 1), RDM − RD)``
-</code></pre></div></td></tr></table></div>
+<p><code>RR = min(RRI · INSW(TRANRF − 0.01, 0, 1), RDM − RD)</code></p>
 <p>Root senescence:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``DRRT = WRT · RDRRT``  when ``DVS ≥ DVSDR``, else ``0``
-</code></pre></div></td></tr></table></div>
+<p><code>DRRT = WRT · RDRRT</code>  when <code>DVS ≥ DVSDR</code>, else <code>0</code></p>
 <p>where <code>RDRRT = RDRRTB(DVS) · scale_factor_rdr_roots</code> is the DVS-
 indexed relative root death rate.</p>
 <p>Net living-root biomass change is <code>RWRT = GRT · FRT − DRRT</code>; the
@@ -2145,20 +2143,20 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 
 <span class="sd">            Rate variables (consumed by the engine for state update):</span>
 
-<span class="sd">                * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting</span>
-<span class="sd">                  depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),</span>
-<span class="sd">                  RDM − RD)``, gated to zero pre-emergence.</span>
-<span class="sd">                * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
-<span class="sd">                  living root biomass (``= g_root − drrt``).</span>
-<span class="sd">                * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root</span>
-<span class="sd">                  mass transferred to the dead-root pool (``= drrt``).</span>
+<span class="sd">            * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting</span>
+<span class="sd">                depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),</span>
+<span class="sd">                RDM − RD)``, gated to zero pre-emergence.</span>
+<span class="sd">            * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
+<span class="sd">                living root biomass (``= g_root − drrt``).</span>
+<span class="sd">            * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root</span>
+<span class="sd">                mass transferred to the dead-root pool (``= drrt``).</span>
 
 <span class="sd">            Diagnostics:</span>
 
-<span class="sd">                * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate</span>
-<span class="sd">                  ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
-<span class="sd">                * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
-<span class="sd">                  root death rate after the scale factor.</span>
+<span class="sd">            * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate</span>
+<span class="sd">                ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
+<span class="sd">            * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
+<span class="sd">                root death rate after the scale factor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rootd</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
@@ -2304,24 +2302,20 @@ also suppressed. Defaults to
 Rate variables (consumed by the engine for state update)</code></td>
       <td><ul>
 <li><code>rootd_rate</code> [m d⁻¹] — Daily increment of rooting
-      depth, <code>min(RRI · INSW(TRANRF − 0.01, 0, 1),
-      RDM − RD)</code>, gated to zero pre-emergence.<ul>
+    depth, <code>min(RRI · INSW(TRANRF − 0.01, 0, 1),
+    RDM − RD)</code>, gated to zero pre-emergence.</li>
 <li><code>wrt_rate</code> [g DM m⁻² d⁻¹] — Net daily change in
-  living root biomass (<code>= g_root − drrt</code>).</li>
+    living root biomass (<code>= g_root − drrt</code>).</li>
 <li><code>wrtd_rate</code> [g DM m⁻² d⁻¹] — Daily senesced root
-  mass transferred to the dead-root pool (<code>= drrt</code>).</li>
-</ul>
-</li>
+    mass transferred to the dead-root pool (<code>= drrt</code>).</li>
 </ul>
 <p>Diagnostics:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>* ``drrt`` [g DM m⁻² d⁻¹] — Root death rate
-  ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.
-* ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative
-  root death rate after the scale factor.
-</code></pre></div></td></tr></table></div></td>
+<ul>
+<li><code>drrt</code> [g DM m⁻² d⁻¹] — Root death rate
+    <code>DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]</code>.</li>
+<li><code>rdrrt</code> [d⁻¹] — Effective DVS-indexed relative
+    root death rate after the scale factor.</li>
+</ul></td>
     </tr>
   </tbody>
 </table>
@@ -2361,20 +2355,20 @@ Rate variables (consumed by the engine for state update)</code></td>
 
 <span class="sd">        Rate variables (consumed by the engine for state update):</span>
 
-<span class="sd">            * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting</span>
-<span class="sd">              depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),</span>
-<span class="sd">              RDM − RD)``, gated to zero pre-emergence.</span>
-<span class="sd">            * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
-<span class="sd">              living root biomass (``= g_root − drrt``).</span>
-<span class="sd">            * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root</span>
-<span class="sd">              mass transferred to the dead-root pool (``= drrt``).</span>
+<span class="sd">        * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting</span>
+<span class="sd">            depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),</span>
+<span class="sd">            RDM − RD)``, gated to zero pre-emergence.</span>
+<span class="sd">        * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in</span>
+<span class="sd">            living root biomass (``= g_root − drrt``).</span>
+<span class="sd">        * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root</span>
+<span class="sd">            mass transferred to the dead-root pool (``= drrt``).</span>
 
 <span class="sd">        Diagnostics:</span>
 
-<span class="sd">            * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate</span>
-<span class="sd">              ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
-<span class="sd">            * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
-<span class="sd">              root death rate after the scale factor.</span>
+<span class="sd">        * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate</span>
+<span class="sd">            ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
+<span class="sd">        * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
+<span class="sd">            root death rate after the scale factor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rootd</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
