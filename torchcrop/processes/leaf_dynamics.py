@@ -1,29 +1,32 @@
 """Leaf area growth and senescence.
 
-Ports the Lintul5 ``GLA`` (Growth Leaf Area) and ``DEATHL`` (leaf death)
-subroutines from ``LintulFunctions.java`` together with the ``SLA`` and
-``GLAI``/``DLAI`` block of ``Lintul5.java``.
+Implements daily leaf area growth (GLA), leaf death (DEATHL), and the
+specific leaf area (SLA) computation that links leaf mass to leaf area.
 
-References:
-    * ``simplace/sim/components/models/lintul5/LintulFunctions.java`` —
-      ``GLA`` (lines 998–1021) and ``DEATHL``.
-    * ``simplace/sim/components/models/lintul5/Lintul5.java`` — the
-      ``process()`` block that wires SLA, GLAI, DLAI together.
+Growth regimes
+--------------
+Three regimes determine the daily LAI growth, with precedence
+**emergence > juvenile > mature**:
 
-Three growth regimes (precedence: emergence > juvenile > mature):
-
-* **Emergence day** (``LAI == 0``): ``GLAI = LAII / DELT``.
-* **Juvenile** (``DVS < 0.2`` *and* ``LAI < 0.75``): exponential
-    ``GLAI = LAI · (exp(RGRLAI · DTEFF) − 1) · TRANRF · exp(−NLAI · (1−NPKI))``.
+* **Emergence** (``LAI == 0``): ``GLAI = LAII / DELT``.
+* **Juvenile** (``DVS < 0.2`` and ``LAI < 0.75``): exponential growth
+    ``GLAI = LAI · (exp(RGRLAI · DTEFF) − 1) · TRANRF
+            · exp(−NLAI · (1 − NPKI))``.
 * **Mature**: source-limited ``GLAI = SLA · GLV``.
 
-Senescence aggregates three independent death drivers via ``max``:
-ageing/temperature (``RDRTMP`` indexed by **mean air temperature**, gated
-by ``DVSDLT``), self-shading above ``LAICR``, and drought
-``(1−TRANRF)·RDRL``. Heat stress multiplies the resulting ``RDR`` and the
-result is capped at ``1`` d⁻¹. NPK-driven senescence is **additive**:
-``DLVNS = WLVG · RDRNS · (1−NPKI)`` (with ``DLAINS = DLVNS · SLA``), and
-SLA itself carries an ``exp(−NSLA·(1−NPKI))`` reduction.
+Senescence
+----------
+Three independent death drivers are combined with ``max``:
+
+* Ageing/temperature: ``RDRTMP`` is looked up from the mean air
+  temperature and gated by ``DVSDLT``.
+* Self-shading: activates above the critical LAI ``LAICR``.
+* Drought: ``(1 − TRANRF) · RDRL``.
+
+Heat stress multiplies the resulting ``RDR``, which is then capped at
+``1`` d⁻¹. NPK-driven senescence is **additive**:
+``DLVNS = WLVG · RDRNS · (1 − NPKI)``, with ``DLAINS = DLVNS · SLA``.
+SLA itself carries an ``exp(−NSLA · (1 − NPKI))`` reduction.
 """
 
 from __future__ import annotations
@@ -56,52 +59,50 @@ class LeafDynamics(nn.Module):
         Args:
             state: Current state; uses ``state.lai``, ``state.wlv``,
                 ``state.dvs``.
-            g_lv: Leaf growth allocated by partitioning [g DM m⁻² d⁻¹],
-                shape ``[B]``. Equivalent to Lintul5 ``GLV``.
-            dtsu: Effective thermal time for LAI growth [°C d d⁻¹], shape
-                ``[B]``. Equivalent to Lintul5 ``DTEFF``.
+            g_lv: Leaf growth allocated by partitioning
+                [g DM m⁻² d⁻¹], shape ``[B]``.
+            dtsu: Effective thermal time for LAI growth
+                [°C d d⁻¹], shape ``[B]``.
             davtmp: Mean daily air temperature [°C], shape ``[B]``.
-                Equivalent to Lintul5 ``TMPA`` — drives ``RDRTMP`` via
-                interpolation on ``rdrltb``.
+                Drives ``RDRTMP`` via interpolation on ``rdrltb``.
             tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.
-            nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``, shape
-                ``[B]``.
-            params: Crop parameters; uses ``laicr``, ``rgrl``, ``slatb``,
-                ``scale_factor_sla``, ``nsla``, ``nlai``, ``laii``,
-                ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,
+            nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,
+                shape ``[B]``.
+            params: Crop parameters; uses ``laicr``, ``rgrl``,
+                ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,
+                ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,
                 ``scale_factor_rdr_leaves``, ``dvsdlt``.
             heat_stress: Optional multiplicative heat-stress factor on
-                ``RDR`` (Lintul5 ``iLeaveSenescenceHeatStressFactor``,
-                default ``1.0``), broadcastable to ``[B]``.
+                ``RDR`` (default ``1.0``), broadcastable to ``[B]``.
             emerg: Optional emergence mask in ``{0, 1}`` (broadcast to
-                ``[B]``). Matches Lintul5 ``EMERG``: when ``0``, both
-                ``GLAI`` and ``DLV``/``DLAI`` are forced to zero (so
-                pre-emergence leaves neither grow nor senesce). Default
-                is derived from ``state.tsump >= params.tsumem``.
+                ``[B]``). When ``0``, both ``GLAI`` and ``DLV``/``DLAI``
+                are forced to zero so pre-emergence leaves neither grow
+                nor senesce. Defaults to
+                ``state.tsump >= params.tsumem``.
 
         Returns:
             Dict of ``[B]`` tensors grouped as follows.
 
             Rate variables (consumed by the engine for state update):
 
-                * ``lai_rate`` [m² m⁻² d⁻¹] — Net daily change in LAI
-                  (``= glai − dlai``).
-                * ``wlv_rate`` [g DM m⁻² d⁻¹] — Net daily change in green
-                  leaf weight (``= g_lv − dlv``).
-                * ``wlvd_rate`` [g DM m⁻² d⁻¹] — Daily senesced leaf mass
-                  transferred into the dead-leaf pool ``wlvd``
-                  (``= dlv``).
+            * ``lai_rate`` [m² m⁻² d⁻¹] — Net daily change in LAI
+                (``= glai − dlai``).
+            * ``wlv_rate`` [g DM m⁻² d⁻¹] — Net daily change in green
+                leaf weight (``= g_lv − dlv``).
+            * ``wlvd_rate`` [g DM m⁻² d⁻¹] — Daily senesced leaf mass
+                transferred into the dead-leaf pool ``wlvd``
+                (``= dlv``).
 
             Diagnostics:
 
-                * ``lai_growth`` [m² m⁻² d⁻¹] — Daily LAI growth (GLA).
-                * ``lai_sen`` [m² m⁻² d⁻¹] — Daily LAI loss to
-                  senescence (DLAI = DLAIS + DLAINS).
-                * ``rdr`` [d⁻¹] — Effective relative death rate (after
-                  heat scaling and ≤ 1 cap), excluding the additive NPK
-                  death.
-                * ``sla`` [m² g⁻¹] — Effective specific leaf area after
-                  NPK reduction.
+            * ``lai_growth`` [m² m⁻² d⁻¹] — Daily LAI growth (GLA).
+            * ``lai_sen`` [m² m⁻² d⁻¹] — Daily LAI loss to
+                senescence (``DLAI = DLAIS + DLAINS``).
+            * ``rdr`` [d⁻¹] — Effective relative death rate (after
+                heat scaling and ≤ 1 cap), excluding the additive NPK
+                death.
+            * ``sla`` [m² g⁻¹] — Effective specific leaf area after
+                NPK reduction.
         """
         lai = state.lai
         wlv = state.wlv
@@ -115,16 +116,14 @@ class LeafDynamics(nn.Module):
             emerg = emerg.to(lai.dtype)
 
         # ----- SLA with NPK reduction -----
-        # Lintul5.java:1408:
-        #   SLA = cScaleFactorSLA * SLATB(DVS) * exp(-NSLA * (1 - NPKI))
+        # SLA = cScaleFactorSLA * SLATB(DVS) * exp(-NSLA * (1 - NPKI))
         sla_base = interpolate(params.slatb, dvs)
         sla = params.scale_factor_sla * sla_base * torch.exp(
             -params.nsla * (1.0 - nstress)
         )
 
         # ----- GLA: daily increase in leaf area index -----
-        # LintulFunctions.java:998–1019. Branch precedence in the Java
-        # source (last assignment wins): emergence > juvenile > mature.
+        # Branch precedence: emergence > juvenile > mature.
         glai_mature = sla * g_lv
         glai_juv = (
             lai
@@ -143,7 +142,6 @@ class LeafDynamics(nn.Module):
         )
 
         # ----- DEATHL: relative death rates -----
-        # LintulFunctions.java:943–948.
         rdrtmp = interpolate(params.rdrltb, davtmp) * params.scale_factor_rdr_leaves
         rdrdv = torch.where(dvs < params.dvsdlt, torch.zeros_like(rdrtmp), rdrtmp)
         rdrsh = torch.clamp(
@@ -155,13 +153,13 @@ class LeafDynamics(nn.Module):
         rdr = torch.clamp(rdr, max=1.0)
 
         # Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).
-        # LintulFunctions.java:962–969.
         dlvs = wlv * rdr
         dlais = lai * rdr
 
-        # Additive NPK senescence. LintulFunctions.java:950–958.
-        # DLVNS = WLVG * RDRNS * (1 - NPKI)  iff NPKI < 1
-        # DLAINS = DLVNS * SLA  (mass→area via SLA, not LAI/WLV ratio)
+        # Additive NPK senescence:
+        #   DLVNS  = WLVG * RDRNS * (1 - NPKI)   when NPKI < 1
+        #   DLAINS = DLVNS * SLA                 (mass → area via SLA,
+        #                                         not via LAI/WLV ratio)
         npki_deficit = torch.clamp(1.0 - nstress, min=0.0)
         dlvns = wlv * params.rdrns * npki_deficit
         dlains = dlvns * sla
@@ -169,7 +167,7 @@ class LeafDynamics(nn.Module):
         dlv = dlvs + dlvns
         dlai = dlais + dlains
 
-        # EMERG gating — Java GLA/DEATHL return 0 when EMERG is false.
+        # EMERG gating — GLA and DEATHL return 0 before emergence.
         glai = glai * emerg
         dlv = dlv * emerg
         dlai = dlai * emerg
