@@ -1401,6 +1401,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.astro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.astro--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1982,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.astro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.astro--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2031,28 +2065,24 @@
 <code>Phenology</code>: solar declination <span class="arithmatex">\(\delta\)</span>, astronomical and photoperiodic
 daylengths, and the integrals <code>sinld</code>, <code>cosld</code>, <code>dsinbe</code> used to
 derive extraterrestrial radiation.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<p>Goudriaan, J. &amp; van Laar, H.H. (1994). <em>Modelling potential crop growth
-processes</em>. Matches the formulation in SIMPLACE
-<code>AstronomicParametersTransformer</code>.</p>
+<div class="admonition reference">
+<p class="admonition-title">Reference</p>
+<p>Goudriaan, J. &amp; van Laar, H.H. (1994). <em>Modelling potential crop
+growth processes</em>.</p>
 </div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
+<h3 id="torchcrop.processes.astro--equations">Equations<a class="headerlink" href="#torchcrop.processes.astro--equations" title="Permanent link">&para;</a></h3>
 <p>Solar declination (radians) for day of year <span class="arithmatex">\(\text{DOY}\)</span>:</p>
 <div class="arithmatex">\[
-\delta = -\arcsin\left[\sin(23.45^\circ)\,
-\cos\left(2\pi \frac{\text{DOY} + 10}{365}\right)\right]
+\delta = -\arcsin\!\left[\sin(23.45^\circ)\,
+\cos\!\left(2\pi \frac{\text{DOY} + 10}{365}\right)\right]
 \]</div>
 <p>Sunrise hour angle at latitude <span class="arithmatex">\(\phi\)</span> (radians):</p>
 <div class="arithmatex">\[
 \cos H_0 = -\tan\phi \, \tan\delta
 \]</div>
 <p>Astronomical daylength is returned in hours. Photoperiodic daylength
-<code>DDLP</code> uses a sun-inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> (civil twilight, as
-in Lintul5) so that low-light dawn and dusk count toward the
-photoperiodic response.</p>
-</div>
+<code>DDLP</code> uses a sun-inclusion angle of <span class="arithmatex">\(-4^\circ\)</span> (civil twilight), so
+low-light dawn and dusk count toward the photoperiodic response.</p>
 
 
 
@@ -2099,8 +2129,8 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
 <span class="sd">            latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
 <span class="sd">                (broadcastable).</span>
 <span class="sd">            inclination: Sun inclination angle in degrees used for the</span>
-<span class="sd">                photoperiodic daylength calculation. Defaults to ``-4.0``</span>
-<span class="sd">                (civil-twilight value used in Lintul5).</span>
+<span class="sd">                photoperiodic daylength calculation. Defaults to</span>
+<span class="sd">                ``-4.0`` (civil twilight).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
@@ -2211,8 +2241,8 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
         <td><code>inclination</code></td>
         <td><code>float | torch.Tensor</code></td>
         <td><p>Sun inclination angle in degrees used for the
-photoperiodic daylength calculation. Defaults to <code>-4.0</code>
-(civil-twilight value used in Lintul5).</p></td>
+photoperiodic daylength calculation. Defaults to
+<code>-4.0</code> (civil twilight).</p></td>
         <td><code>-4.0</code></td>
       </tr>
   </tbody>
@@ -2249,8 +2279,8 @@ photoperiodic daylength calculation. Defaults to <code>-4.0</code>
 <span class="sd">        latitude: Latitude in degrees, shape ``[B]`` or ``[]``</span>
 <span class="sd">            (broadcastable).</span>
 <span class="sd">        inclination: Sun inclination angle in degrees used for the</span>
-<span class="sd">            photoperiodic daylength calculation. Defaults to ``-4.0``</span>
-<span class="sd">            (civil-twilight value used in Lintul5).</span>
+<span class="sd">            photoperiodic daylength calculation. Defaults to</span>
+<span class="sd">            ``-4.0`` (civil twilight).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict with keys ``declination`` [rad], ``daylength`` [h],</span>

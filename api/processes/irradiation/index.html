@@ -1457,6 +1457,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.irradiation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.irradiation--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1982,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.irradiation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.irradiation--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2027,15 +2061,10 @@
     <div class="doc doc-contents first">
 
       <p>Daily solar irradiation and PAR interception by the canopy.</p>
-<p>Combines solar geometry with measured radiation to obtain the daily total
-irradiation <code>AVRAD</code>, then applies Beer–Lambert extinction to give the
-fraction of PAR captured by the canopy.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<p>SIMPLACE <code>Irradiation.java</code>.</p>
-</div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
+<p>Combines solar geometry with measured radiation to obtain the daily
+total irradiation <code>AVRAD</code>, then applies Beer–Lambert extinction to
+give the fraction of PAR captured by the canopy.</p>
+<h3 id="torchcrop.processes.irradiation--equations">Equations<a class="headerlink" href="#torchcrop.processes.irradiation--equations" title="Permanent link">&para;</a></h3>
 <p>Solar constant adjusted for Earth–Sun distance:</p>
 <div class="arithmatex">\[
 SC = 1370 \cdot (1 + 0.033 \cos(2\pi \, \text{DOY}/365))
@@ -2049,8 +2078,8 @@ A_0 = \text{LIMIT}(-1, 1, \text{SINLD}/\text{COSLD})
 \text{DSINB} = 3600 \left(\text{DAYL} \cdot \text{SINLD}
 + \frac{24}{\pi} \, \text{COSLD} \sqrt{1 - A_0^2}\right)
 \]</div>
-<p>Extraterrestrial radiation, with the daily total capped at 80 % of the
-extraterrestrial value:</p>
+<p>Extraterrestrial radiation, with the daily total capped at 80 % of
+the extraterrestrial value:</p>
 <div class="arithmatex">\[
 \text{ANGOT} = \max(10^{-4},\; SC \cdot \text{DSINB})
 \]</div>
@@ -2063,7 +2092,6 @@ Beer–Lambert extinction with coefficient <span class="arithmatex">\(K\)</span>
 \text{PAR} = 0.5 \cdot \text{AVRAD}, \qquad
 \text{PARINT} = \text{PAR} \cdot \bigl(1 - e^{-K \, \text{LAI}}\bigr)
 \]</div>
-</div>
 
 
 
@@ -2091,16 +2119,18 @@ Irradiation            (<span title="torch.nn.modules.module.Module">Module</spa
     <div class="doc doc-contents ">
 
       <p>Daily total irradiation and PAR interception by canopy.</p>
-<p>Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using
-Beer-Lambert extinction law.</p>
+<p>Computes <code>AVRAD</code> (daily total irradiation) from solar geometry,
+then calculates PAR interception via the Beer–Lambert extinction
+law.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/irradiation.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Irradiation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily total irradiation and PAR interception by canopy.</span>
 
-<span class="sd">    Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using</span>
-<span class="sd">    Beer-Lambert extinction law.</span>
+<span class="sd">    Computes ``AVRAD`` (daily total irradiation) from solar geometry,</span>
+<span class="sd">    then calculates PAR interception via the Beer–Lambert extinction</span>
+<span class="sd">    law.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2122,45 +2152,50 @@ Beer-Lambert extinction law.</p>
 <span class="sd">            sinld: sin(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">            cosld: cos(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">            dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
-<span class="sd">                Will be converted to J m⁻² d⁻¹ for PENMAN calculation.</span>
+<span class="sd">                Converted to J m⁻² d⁻¹ for the PENMAN calculation.</span>
 <span class="sd">            params: Crop parameters; uses ``params.k`` (extinction</span>
 <span class="sd">                coefficient).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
+<span class="sd">            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation</span>
+<span class="sd">              (computed from solar geometry; converted from input</span>
+<span class="sd">              MJ m⁻² d⁻¹).</span>
 <span class="sd">            * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
-<span class="sd">            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</span>
+<span class="sd">            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active</span>
+<span class="sd">              radiation (``0.5 · avrad``).</span>
 <span class="sd">            * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
-<span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.</span>
+<span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
+<span class="sd">              fraction.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation</span>
+        <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN.</span>
         <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
 
-        <span class="c1"># Daily total irradiation (SIMPLACE DailyTotalIrradiation logic)</span>
+        <span class="c1"># Daily total irradiation.</span>
         <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">cosld</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="n">dsinb</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
             <span class="n">dayl</span> <span class="o">*</span> <span class="n">sinld</span>
             <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
         <span class="p">)</span>
 
-        <span class="c1"># Solar constant [W m⁻²] as function of day of year</span>
+        <span class="c1"># Solar constant [W m⁻²] as a function of day of year.</span>
         <span class="n">sc</span> <span class="o">=</span> <span class="mf">1370.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.033</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">doy</span> <span class="o">/</span> <span class="mf">365.0</span><span class="p">))</span>
 
-        <span class="c1"># Extraterrestrial radiation [J m⁻² d⁻¹]</span>
+        <span class="c1"># Extraterrestrial radiation [J m⁻² d⁻¹].</span>
         <span class="n">angot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sc</span> <span class="o">*</span> <span class="n">dsinb</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
 
-        <span class="c1"># Daily total irradiation (minimum of 80% extraterrestrial and measured)</span>
+        <span class="c1"># Daily total irradiation: minimum of 80 % extraterrestrial</span>
+        <span class="c1"># and measured.</span>
         <span class="n">avrad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mf">0.80</span> <span class="o">*</span> <span class="n">angot</span><span class="p">,</span> <span class="n">dtr_j</span><span class="p">)</span>
 
-        <span class="c1"># Atmospheric transmission</span>
+        <span class="c1"># Atmospheric transmission.</span>
         <span class="n">atmtr</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">/</span> <span class="n">angot</span>
 
-        <span class="c1"># PAR (50% of global radiation)</span>
+        <span class="c1"># PAR (50 % of global radiation).</span>
         <span class="n">par</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">avrad</span>
 
-        <span class="c1"># Beer-Lambert interception by canopy</span>
+        <span class="c1"># Beer–Lambert interception by canopy.</span>
         <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">params</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
         <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 
@@ -2245,7 +2280,7 @@ Beer-Lambert extinction law.</p>
         <td><code>dtr</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Daily total radiation [MJ m⁻² d⁻¹], shape <code>[B]</code>.
-Will be converted to J m⁻² d⁻¹ for PENMAN calculation.</p></td>
+Converted to J m⁻² d⁻¹ for the PENMAN calculation.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2269,11 +2304,15 @@ coefficient).</p></td>
     <tr>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>avrad</code> [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</li>
+<li><code>avrad</code> [J m⁻² d⁻¹] — Daily total irradiation
+  (computed from solar geometry; converted from input
+  MJ m⁻² d⁻¹).</li>
 <li><code>atmtr</code> [-] — Atmospheric transmission fraction.</li>
-<li><code>par</code> [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</li>
+<li><code>par</code> [J m⁻² d⁻¹] — Photosynthetically active
+  radiation (<code>0.5 · avrad</code>).</li>
 <li><code>parint</code> [J m⁻² d⁻¹] — PAR intercepted by canopy.</li>
-<li><code>frac_intercepted</code> [-] — Beer–Lambert interception fraction.</li>
+<li><code>frac_intercepted</code> [-] — Beer–Lambert interception
+  fraction.</li>
 </ul></td>
     </tr>
   </tbody>
@@ -2299,45 +2338,50 @@ coefficient).</p></td>
 <span class="sd">        sinld: sin(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">        cosld: cos(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">        dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
-<span class="sd">            Will be converted to J m⁻² d⁻¹ for PENMAN calculation.</span>
+<span class="sd">            Converted to J m⁻² d⁻¹ for the PENMAN calculation.</span>
 <span class="sd">        params: Crop parameters; uses ``params.k`` (extinction</span>
 <span class="sd">            coefficient).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">        * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).</span>
+<span class="sd">        * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation</span>
+<span class="sd">          (computed from solar geometry; converted from input</span>
+<span class="sd">          MJ m⁻² d⁻¹).</span>
 <span class="sd">        * ``atmtr`` [-] — Atmospheric transmission fraction.</span>
-<span class="sd">        * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).</span>
+<span class="sd">        * ``par`` [J m⁻² d⁻¹] — Photosynthetically active</span>
+<span class="sd">          radiation (``0.5 · avrad``).</span>
 <span class="sd">        * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
-<span class="sd">        * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.</span>
+<span class="sd">        * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
+<span class="sd">          fraction.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation</span>
+    <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN.</span>
     <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
 
-    <span class="c1"># Daily total irradiation (SIMPLACE DailyTotalIrradiation logic)</span>
+    <span class="c1"># Daily total irradiation.</span>
     <span class="n">aob</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sinld</span> <span class="o">/</span> <span class="n">cosld</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="n">dsinb</span> <span class="o">=</span> <span class="mf">3600.0</span> <span class="o">*</span> <span class="p">(</span>
         <span class="n">dayl</span> <span class="o">*</span> <span class="n">sinld</span>
         <span class="o">+</span> <span class="mf">24.0</span> <span class="o">*</span> <span class="n">cosld</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">aob</span> <span class="o">*</span> <span class="n">aob</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
     <span class="p">)</span>
 
-    <span class="c1"># Solar constant [W m⁻²] as function of day of year</span>
+    <span class="c1"># Solar constant [W m⁻²] as a function of day of year.</span>
     <span class="n">sc</span> <span class="o">=</span> <span class="mf">1370.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.033</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">doy</span> <span class="o">/</span> <span class="mf">365.0</span><span class="p">))</span>
 
-    <span class="c1"># Extraterrestrial radiation [J m⁻² d⁻¹]</span>
+    <span class="c1"># Extraterrestrial radiation [J m⁻² d⁻¹].</span>
     <span class="n">angot</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">sc</span> <span class="o">*</span> <span class="n">dsinb</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
 
-    <span class="c1"># Daily total irradiation (minimum of 80% extraterrestrial and measured)</span>
+    <span class="c1"># Daily total irradiation: minimum of 80 % extraterrestrial</span>
+    <span class="c1"># and measured.</span>
     <span class="n">avrad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mf">0.80</span> <span class="o">*</span> <span class="n">angot</span><span class="p">,</span> <span class="n">dtr_j</span><span class="p">)</span>
 
-    <span class="c1"># Atmospheric transmission</span>
+    <span class="c1"># Atmospheric transmission.</span>
     <span class="n">atmtr</span> <span class="o">=</span> <span class="n">avrad</span> <span class="o">/</span> <span class="n">angot</span>
 
-    <span class="c1"># PAR (50% of global radiation)</span>
+    <span class="c1"># PAR (50 % of global radiation).</span>
     <span class="n">par</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">avrad</span>
 
-    <span class="c1"># Beer-Lambert interception by canopy</span>
+    <span class="c1"># Beer–Lambert interception by canopy.</span>
     <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">params</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
     <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 

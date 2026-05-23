@@ -1625,6 +1625,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.stem_dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.stem_dynamics--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1982,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.stem_dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.stem_dynamics--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2027,39 +2061,17 @@
     <div class="doc doc-contents first">
 
       <p>Stem biomass net growth and stem senescence.</p>
-<p>Ports the stem half of the SIMPLACE <code>DeadRootsStemsRate</code> subroutine
-(<code>LintulFunctions.java</code>) together with the stem branch of <code>RELGR</code>
-(<code>RWST = AGRT·FST − DRST</code>). Stem senescence shares the <code>DVS ≥ DVSDR</code>
-gate with root senescence but uses its own DVS-indexed relative death
-rate table <code>RDRSTB</code>.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<ul>
-<li><code>simplace/sim/components/models/lintul5/Lintul5.java</code> —
-  <code>RDRST = RDRSTB(DVS) * cScaleFactorRDRStems</code> (line 1442),
-  <code>INTGRL(WST, RWST)</code> (line 1094) and <code>INTGRL(WSTD, DRST)</code>
-  (line 1102).</li>
-<li><code>simplace/sim/components/models/lintul5/LintulFunctions.java</code> —
-  <code>DeadRootsStemsRate</code> (lines 247–269) and the <code>RELGR</code> stem
-  term <code>RWST = AGRT·FST − DRST</code> (line 1055).</li>
-</ul>
-</div>
-<p>Java reference snippets:
-    Stem senescence (LintulFunctions.java)::</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span>
-<span class="normal">3</span>
-<span class="normal">4</span>
-<span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code>    double DRST = 0.0;
-    if (DVS &gt;= DVSDR) DRST = WST * RDRST;
-
-Net stem biomass change (LintulFunctions.java:1055)::
-
-    RWST = AGRT * FST - DRST;
+<p>Stem senescence shares the <code>DVS ≥ DVSDR</code> gate with root senescence
+but uses its own DVS-indexed relative death rate table <code>RDRSTB</code>.</p>
+<h3 id="torchcrop.processes.stem_dynamics--equations">Equations<a class="headerlink" href="#torchcrop.processes.stem_dynamics--equations" title="Permanent link">&para;</a></h3>
+<p>Stem senescence:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``DRST = WST · RDRST``   when ``DVS ≥ DVSDR``, else ``0``
 </code></pre></div></td></tr></table></div>
-<p>In torchcrop the <code>AGRT · FST</code> term arrives pre-computed as <code>g_st</code>
-from <code>Partitioning</code>.</p>
+<p>where <code>RDRST = RDRSTB(DVS) · scale_factor_rdr_stems</code> is the DVS-
+indexed relative stem death rate.</p>
+<p>Net living-stem biomass change is <code>RWST = AGRT · FST − DRST</code>; the
+<code>AGRT · FST</code> term arrives pre-computed as <code>g_st</code> from
+<code>Partitioning</code>.</p>
 
 
 
@@ -2106,14 +2118,15 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">            state: Current state; uses ``state.dvs``, ``state.wst`` and</span>
 <span class="sd">                (for the default emergence mask) ``state.tsump``.</span>
 <span class="sd">            g_st: Gross stem biomass growth from partitioning</span>
-<span class="sd">                [g DM m⁻² d⁻¹], shape ``[B]`` — equivalent to the Java</span>
-<span class="sd">                ``AGRT * FST`` term.</span>
+<span class="sd">                [g DM m⁻² d⁻¹], shape ``[B]`` — the ``AGRT · FST``</span>
+<span class="sd">                term.</span>
 <span class="sd">            params: Crop parameters; uses ``rdrstb`` (relative stem</span>
 <span class="sd">                death rate vs DVS), ``scale_factor_rdr_stems`` and</span>
-<span class="sd">                ``dvsdr`` (DVS threshold above which stem death starts).</span>
-<span class="sd">            emerg: Optional emergence mask in ``{0, 1}`` (broadcast to</span>
-<span class="sd">                ``[B]``). Matches Lintul5 ``EMERG``: when ``0`` dead</span>
-<span class="sd">                stems do not accumulate. Default is derived from</span>
+<span class="sd">                ``dvsdr`` (DVS threshold above which stem death</span>
+<span class="sd">                starts).</span>
+<span class="sd">            emerg: Optional emergence mask in ``{0, 1}`` (broadcast</span>
+<span class="sd">                to ``[B]``). When ``0``, dead stems do not</span>
+<span class="sd">                accumulate. Defaults to</span>
 <span class="sd">                ``state.tsump &gt;= params.tsumem``.</span>
 
 <span class="sd">        Returns:</span>
@@ -2143,15 +2156,13 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
             <span class="n">emerg</span> <span class="o">=</span> <span class="n">emerg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># ----- Stem senescence (DRST) -----</span>
-        <span class="c1"># LintulFunctions.DeadRootsStemsRate:</span>
-        <span class="c1">#   DRST = WST * RDRST   if DVS &gt;= DVSDR else 0</span>
-        <span class="c1"># RDRST = RDRSTB(DVS) * cScaleFactorRDRStems   (Lintul5.java:1442)</span>
+        <span class="c1"># DRST = WST * RDRST when DVS &gt;= DVSDR, else 0.</span>
         <span class="n">rdrst</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdrstb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rdr_stems</span>
         <span class="n">death_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">params</span><span class="o">.</span><span class="n">dvsdr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">drst</span> <span class="o">=</span> <span class="n">wst</span> <span class="o">*</span> <span class="n">rdrst</span> <span class="o">*</span> <span class="n">death_mask</span> <span class="o">*</span> <span class="n">emerg</span>
 
-        <span class="c1"># ----- Net living-stem biomass change (RELGR stem term) -----</span>
-        <span class="c1"># LintulFunctions.RELGR:  RWST = AGRT * FST - DRST</span>
+        <span class="c1"># ----- Net living-stem biomass change -----</span>
+        <span class="c1"># RWST = AGRT * FST - DRST.</span>
         <span class="n">wst_rate</span> <span class="o">=</span> <span class="n">g_st</span> <span class="o">-</span> <span class="n">drst</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2211,8 +2222,8 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <td><code>g_st</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Gross stem biomass growth from partitioning
-[g DM m⁻² d⁻¹], shape <code>[B]</code> — equivalent to the Java
-<code>AGRT * FST</code> term.</p></td>
+[g DM m⁻² d⁻¹], shape <code>[B]</code> — the <code>AGRT · FST</code>
+term.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2220,15 +2231,16 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <td><code>CropParameters</code></td>
         <td><p>Crop parameters; uses <code>rdrstb</code> (relative stem
 death rate vs DVS), <code>scale_factor_rdr_stems</code> and
-<code>dvsdr</code> (DVS threshold above which stem death starts).</p></td>
+<code>dvsdr</code> (DVS threshold above which stem death
+starts).</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>emerg</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Optional emergence mask in <code>{0, 1}</code> (broadcast to
-<code>[B]</code>). Matches Lintul5 <code>EMERG</code>: when <code>0</code> dead
-stems do not accumulate. Default is derived from
+        <td><p>Optional emergence mask in <code>{0, 1}</code> (broadcast
+to <code>[B]</code>). When <code>0</code>, dead stems do not
+accumulate. Defaults to
 <code>state.tsump &gt;= params.tsumem</code>.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -2282,14 +2294,15 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">        state: Current state; uses ``state.dvs``, ``state.wst`` and</span>
 <span class="sd">            (for the default emergence mask) ``state.tsump``.</span>
 <span class="sd">        g_st: Gross stem biomass growth from partitioning</span>
-<span class="sd">            [g DM m⁻² d⁻¹], shape ``[B]`` — equivalent to the Java</span>
-<span class="sd">            ``AGRT * FST`` term.</span>
+<span class="sd">            [g DM m⁻² d⁻¹], shape ``[B]`` — the ``AGRT · FST``</span>
+<span class="sd">            term.</span>
 <span class="sd">        params: Crop parameters; uses ``rdrstb`` (relative stem</span>
 <span class="sd">            death rate vs DVS), ``scale_factor_rdr_stems`` and</span>
-<span class="sd">            ``dvsdr`` (DVS threshold above which stem death starts).</span>
-<span class="sd">        emerg: Optional emergence mask in ``{0, 1}`` (broadcast to</span>
-<span class="sd">            ``[B]``). Matches Lintul5 ``EMERG``: when ``0`` dead</span>
-<span class="sd">            stems do not accumulate. Default is derived from</span>
+<span class="sd">            ``dvsdr`` (DVS threshold above which stem death</span>
+<span class="sd">            starts).</span>
+<span class="sd">        emerg: Optional emergence mask in ``{0, 1}`` (broadcast</span>
+<span class="sd">            to ``[B]``). When ``0``, dead stems do not</span>
+<span class="sd">            accumulate. Defaults to</span>
 <span class="sd">            ``state.tsump &gt;= params.tsumem``.</span>
 
 <span class="sd">    Returns:</span>
@@ -2319,15 +2332,13 @@ Rate variables (consumed by the engine for state update)</code></td>
         <span class="n">emerg</span> <span class="o">=</span> <span class="n">emerg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="c1"># ----- Stem senescence (DRST) -----</span>
-    <span class="c1"># LintulFunctions.DeadRootsStemsRate:</span>
-    <span class="c1">#   DRST = WST * RDRST   if DVS &gt;= DVSDR else 0</span>
-    <span class="c1"># RDRST = RDRSTB(DVS) * cScaleFactorRDRStems   (Lintul5.java:1442)</span>
+    <span class="c1"># DRST = WST * RDRST when DVS &gt;= DVSDR, else 0.</span>
     <span class="n">rdrst</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdrstb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rdr_stems</span>
     <span class="n">death_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">params</span><span class="o">.</span><span class="n">dvsdr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">drst</span> <span class="o">=</span> <span class="n">wst</span> <span class="o">*</span> <span class="n">rdrst</span> <span class="o">*</span> <span class="n">death_mask</span> <span class="o">*</span> <span class="n">emerg</span>
 
-    <span class="c1"># ----- Net living-stem biomass change (RELGR stem term) -----</span>
-    <span class="c1"># LintulFunctions.RELGR:  RWST = AGRT * FST - DRST</span>
+    <span class="c1"># ----- Net living-stem biomass change -----</span>
+    <span class="c1"># RWST = AGRT * FST - DRST.</span>
     <span class="n">wst_rate</span> <span class="o">=</span> <span class="n">g_st</span> <span class="o">-</span> <span class="n">drst</span>
 
     <span class="k">return</span> <span class="p">{</span>

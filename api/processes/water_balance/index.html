@@ -1737,6 +1737,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.water_balance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.water_balance--design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.water_balance--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1993,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.water_balance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.water_balance--design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.water_balance--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2026,20 +2082,14 @@
 <a id="torchcrop.processes.water_balance"></a>
     <div class="doc doc-contents first">
 
-      <p>Two-zone soil water balance for Lintul5.</p>
-<p>Tracks water storage in a rooted zone and a lower zone, runs a percolation cascade to deep
-drainage, and produces the water-stress factor <code>TRANRF</code> that gates crop
-growth.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<p>SIMPLACE <code>WaterBalance.java</code> (<code>WATBALS</code> routine) and
-<code>LintulFunctions.SWEAF</code>.</p>
-</div>
-<div class="admonition design">
-<p class="admonition-title">Design</p>
+      <p>Two-zone soil water balance.</p>
+<p>Tracks water storage in a rooted zone and a lower zone, runs a
+percolation cascade to deep drainage, and produces the water-stress
+factor <code>TRANRF</code> that gates crop growth.</p>
+<h3 id="torchcrop.processes.water_balance--design">Design<a class="headerlink" href="#torchcrop.processes.water_balance--design" title="Permanent link">&para;</a></h3>
 <p><strong>Zones.</strong> The soil column is split into a rooted zone of depth
 <code>rootd</code> storing <code>wa</code> [mm] and a lower zone of depth
-<code>rdm - rootd</code> storing <code>wa_lower</code> [mm], where
+<code>rdm − rootd</code> storing <code>wa_lower</code> [mm], where
 <code>rdm = min(rdmso, rdmcr)</code> is the soil-/crop-limited maximum rooting
 depth. Root-front advance <code>rr</code> moves water at content <code>SMACTL</code>
 from the lower zone into the rooted zone via the <code>WDR</code>/<code>WDRA</code>
@@ -2056,15 +2106,13 @@ drought factor <code>RDRY</code> and (for non-rice crops) an oxygen factor
 persistent across days and clipped to <code>[0, 4]</code>.</p>
 <p><strong>Soil evaporation.</strong> Stroosnijder model: when infiltration
 ≥ 5 mm d⁻¹, evaporation is reset to the potential rate and <code>DSLR</code>
-to 1; otherwise <code>DSLR</code> increments and evaporation follows the
-<code>sqrt(DSLR) - sqrt(DSLR-1)</code> decay, capped by air-dry capacity.</p>
-<p><strong>Irrigation.</strong> Three modes selected by <code>params.irri</code>: 0 = none;
-1 = automatic refill when <code>SMACT</code> falls below <code>SMCR + 0.02</code> and
-rain &lt; 10 mm; 2 = table look-up of <code>irrtab</code> scaled by
+to <code>1</code>; otherwise <code>DSLR</code> increments and evaporation follows the
+<code>sqrt(DSLR) − sqrt(DSLR − 1)</code> decay, capped by air-dry capacity.</p>
+<p><strong>Irrigation.</strong> Three modes selected by <code>params.irri</code>: <code>0</code> = none;
+<code>1</code> = automatic refill when <code>SMACT</code> falls below <code>SMCR + 0.02</code>
+and rain <code>&lt; 10</code> mm; <code>2</code> = table look-up of <code>irrtab</code> scaled by
 <code>scale_factor_irr</code>.</p>
-</div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
+<h3 id="torchcrop.processes.water_balance--equations">Equations<a class="headerlink" href="#torchcrop.processes.water_balance--equations" title="Permanent link">&para;</a></h3>
 <p>Volumetric soil-moisture contents [m³ m⁻³]:</p>
 <div class="arithmatex">\[
 \theta = \frac{W_a}{1000 \cdot D_\text{root}},
@@ -2072,10 +2120,10 @@ rain &lt; 10 mm; 2 = table look-up of <code>irrtab</code> scaled by
 \theta_\ell = \frac{W_{a,\ell}}{1000 \cdot (D_\text{rdm} -
 D_\text{root})}
 \]</div>
-<p>Easily-available fraction (SIMPLACE <code>SWEAF</code>) and the critical
-moisture content below which transpiration starts to decline:</p>
+<p>Easily-available fraction (<code>SWEAF</code>) and the critical moisture
+content below which transpiration starts to decline:</p>
 <div class="arithmatex">\[
-f_\text{eaw} = \mathrm{clip}\left(\frac{1}{A + B\,\text{ETC}_
+f_\text{eaw} = \mathrm{clip}\!\left(\frac{1}{A + B\,\text{ETC}_
 \text{cm}} - (5-\text{DEPNR})\cdot 0.10,\ 0.10,\ 0.95\right),
 \qquad
 \theta_\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
@@ -2083,11 +2131,11 @@ f_\text{eaw} = \mathrm{clip}\left(\frac{1}{A + B\,\text{ETC}_
 \]</div>
 <p>Drought and oxygen reduction factors:</p>
 <div class="arithmatex">\[
-R_\text{dry} = \mathrm{clip}\left(
+R_\text{dry} = \mathrm{clip}\!\left(
 \frac{\theta - \theta_\text{wp}}{\theta_\text{crit} -
 \theta_\text{wp}},\ 0,\ 1\right),
 \quad
-R_\text{wet,max} = \mathrm{clip}\left(
+R_\text{wet,max} = \mathrm{clip}\!\left(
 \frac{\theta_\text{sat} - \theta}{\theta_\text{sat} -
 \theta_\text{air}},\ 0,\ 1\right),
 \quad
@@ -2123,7 +2171,6 @@ unlabelled = field-capacity headroom):</p>
 \qquad
 \dot W_{a,\ell} = \text{PERC2} - \text{PERC3} - \text{WDR}.
 \]</div>
-</div>
 
 
 
@@ -2150,21 +2197,21 @@ WaterBalance            (<span title="torch.nn.modules.module.Module">Module</sp
 
     <div class="doc doc-contents ">
 
-      <p>Two-zone port of SIMPLACE Lintul5 <code>WATBALS</code>.</p>
+      <p>Two-zone soil water balance.</p>
 <p>Computes daily water fluxes (transpiration, evaporation, runoff,
-drainage), stress factors (<code>TRANRF</code>), and rate variables for the
-rooted / lower / Stroosnijder / oxygen states, in a fully batched
-and autograd-safe manner.</p>
+drainage), the stress factor <code>TRANRF</code>, and rate variables for
+the rooted / lower / Stroosnijder / oxygen states, in a fully
+batched and autograd-safe manner.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/water_balance.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">WaterBalance</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Two-zone port of SIMPLACE Lintul5 ``WATBALS``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Two-zone soil water balance.</span>
 
 <span class="sd">    Computes daily water fluxes (transpiration, evaporation, runoff,</span>
-<span class="sd">    drainage), stress factors (``TRANRF``), and rate variables for the</span>
-<span class="sd">    rooted / lower / Stroosnijder / oxygen states, in a fully batched</span>
-<span class="sd">    and autograd-safe manner.</span>
+<span class="sd">    drainage), the stress factor ``TRANRF``, and rate variables for</span>
+<span class="sd">    the rooted / lower / Stroosnijder / oxygen states, in a fully</span>
+<span class="sd">    batched and autograd-safe manner.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2191,12 +2238,12 @@ and autograd-safe manner.</p>
 <span class="sd">            params: Soil parameter container.</span>
 <span class="sd">            rdm: Soil-/crop-limited maximum rooting depth</span>
 <span class="sd">                ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
-<span class="sd">            etc: CO2-corrected reference canopy ET [mm d⁻¹], shape ``[B]``;</span>
-<span class="sd">                falls back to ``ptran`` when ``None``.</span>
-<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``; ``None`` → 0</span>
-<span class="sd">                (no root-front water transfer).</span>
+<span class="sd">            etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
+<span class="sd">                ``[B]``; falls back to ``ptran`` when ``None``.</span>
+<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``;</span>
+<span class="sd">                ``None`` → ``0`` (no root-front water transfer).</span>
 <span class="sd">            irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
-<span class="sd">                overrides ``params.irri`` mode.</span>
+<span class="sd">                overrides the ``params.irri`` mode.</span>
 <span class="sd">            doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">                look-up; shape ``[B]``.</span>
 
@@ -2205,25 +2252,31 @@ and autograd-safe manner.</p>
 
 <span class="sd">            **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">            * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
-<span class="sd">            * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
-<span class="sd">            * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
-<span class="sd">            * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
+<span class="sd">            * ``wa_rate``       — ``perc1 − perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``wa_lower_rate`` — ``perc2 − perc3 − wdr`` [mm d⁻¹].</span>
+<span class="sd">            * ``dslr_rate``     — ``dslr_new − dslr`` [d d⁻¹].</span>
+<span class="sd">            * ``dsos_rate``     — ``dsos_new − dsos`` [d d⁻¹].</span>
 
 <span class="sd">            **Fluxes / diagnostics**:</span>
 
 <span class="sd">            * ``tran``   — actual transpiration [mm d⁻¹].</span>
 <span class="sd">            * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
-<span class="sd">            * ``runoff`` — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</span>
-<span class="sd">            * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
-<span class="sd">            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes [mm d⁻¹].</span>
-<span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">            * ``runoff`` — surface runoff (preliminary + rejected</span>
+<span class="sd">              infiltration) [mm d⁻¹].</span>
+<span class="sd">            * ``drain``  — deep drainage (``= perc3``) [mm d⁻¹].</span>
+<span class="sd">            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
+<span class="sd">              [mm d⁻¹].</span>
+<span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
+<span class="sd">              rooted zone (total / available) [mm d⁻¹].</span>
 <span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
 <span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
-<span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents [m³ m⁻³].</span>
+<span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents</span>
+<span class="sd">              [m³ m⁻³].</span>
 <span class="sd">            * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
-<span class="sd">            * ``rdry`` / ``rwet`` — drought / oxygen reduction factors in ``[0, 1]``.</span>
-<span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</span>
+<span class="sd">            * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
+<span class="sd">              factors in ``[0, 1]``.</span>
+<span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
+<span class="sd">              (should be ≈ 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
         <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
@@ -2291,11 +2344,13 @@ and autograd-safe manner.</p>
         <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
             <span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span>
         <span class="p">)</span>
-        <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
+        <span class="c1"># Evaporation on dry days — Stroosnijder (1987):</span>
+        <span class="c1">#   sqrt(t) − sqrt(t − 1).</span>
         <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">)</span>
         <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
-        <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
+        <span class="c1"># Cap by air-dry topsoil water capacity:</span>
+        <span class="c1">#   100 · (SMACT − SMDRY).</span>
         <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">evap_dry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evmaxt</span> <span class="o">+</span> <span class="n">perc</span><span class="p">,</span> <span class="n">evap_cap</span><span class="p">)),</span>
@@ -2303,7 +2358,7 @@ and autograd-safe manner.</p>
         <span class="p">)</span>
         <span class="n">evap_wet</span> <span class="o">=</span> <span class="n">pevap</span>
         <span class="n">evap</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">evap_wet</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">evap_dry</span>
-        <span class="c1"># Final safety clamp by available water above air-dry content</span>
+        <span class="c1"># Final safety clamp by available water above air-dry content.</span>
         <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
         <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
@@ -2458,22 +2513,22 @@ and autograd-safe manner.</p>
       <tr>
         <td><code>etc</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>CO2-corrected reference canopy ET [mm d⁻¹], shape <code>[B]</code>;
-falls back to <code>ptran</code> when <code>None</code>.</p></td>
+        <td><p>CO₂-corrected reference canopy ET [mm d⁻¹], shape
+<code>[B]</code>; falls back to <code>ptran</code> when <code>None</code>.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>rr</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>; <code>None</code> → 0
-(no root-front water transfer).</p></td>
+        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>;
+<code>None</code> → <code>0</code> (no root-front water transfer).</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>irrigation</code></td>
         <td><code>torch.Tensor | None</code></td>
         <td><p>Externally supplied irrigation [mm d⁻¹] that
-overrides <code>params.irri</code> mode.</p></td>
+overrides the <code>params.irri</code> mode.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -2499,25 +2554,31 @@ look-up; shape <code>[B]</code>.</p></td>
 
 **Rate variables** (consumed by the engine)</code></td>
       <td><ul>
-<li><code>wa_rate</code>       — <code>perc1 - perc2 + wdr</code> [mm d⁻¹].</li>
-<li><code>wa_lower_rate</code> — <code>perc2 - perc3 - wdr</code> [mm d⁻¹].</li>
-<li><code>dslr_rate</code>     — <code>dslr_new - dslr</code> [d d⁻¹].</li>
-<li><code>dsos_rate</code>     — <code>dsos_new - dsos</code> [d d⁻¹].</li>
+<li><code>wa_rate</code>       — <code>perc1 − perc2 + wdr</code> [mm d⁻¹].</li>
+<li><code>wa_lower_rate</code> — <code>perc2 − perc3 − wdr</code> [mm d⁻¹].</li>
+<li><code>dslr_rate</code>     — <code>dslr_new − dslr</code> [d d⁻¹].</li>
+<li><code>dsos_rate</code>     — <code>dsos_new − dsos</code> [d d⁻¹].</li>
 </ul>
 <p><strong>Fluxes / diagnostics</strong>:</p>
 <ul>
 <li><code>tran</code>   — actual transpiration [mm d⁻¹].</li>
 <li><code>evap</code>   — actual soil evaporation [mm d⁻¹].</li>
-<li><code>runoff</code> — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</li>
-<li><code>drain</code>  — deep drainage = <code>perc3</code> [mm d⁻¹].</li>
-<li><code>perc1</code> / <code>perc2</code> / <code>perc3</code> — cascade fluxes [mm d⁻¹].</li>
-<li><code>wdr</code> / <code>wdra</code> — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</li>
+<li><code>runoff</code> — surface runoff (preliminary + rejected
+  infiltration) [mm d⁻¹].</li>
+<li><code>drain</code>  — deep drainage (<code>= perc3</code>) [mm d⁻¹].</li>
+<li><code>perc1</code> / <code>perc2</code> / <code>perc3</code> — cascade fluxes
+  [mm d⁻¹].</li>
+<li><code>wdr</code> / <code>wdra</code> — root-front water transfer to the
+  rooted zone (total / available) [mm d⁻¹].</li>
 <li><code>rirr</code>   — effective irrigation [mm d⁻¹].</li>
 <li><code>tranrf</code> — water-stress factor in <code>[0, 1]</code>.</li>
-<li><code>smact</code> / <code>smactl</code> — soil-moisture contents [m³ m⁻³].</li>
+<li><code>smact</code> / <code>smactl</code> — soil-moisture contents
+  [m³ m⁻³].</li>
 <li><code>smcr</code>   — critical soil-moisture content [m³ m⁻³].</li>
-<li><code>rdry</code> / <code>rwet</code> — drought / oxygen reduction factors in <code>[0, 1]</code>.</li>
-<li><code>wbal</code>   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</li>
+<li><code>rdry</code> / <code>rwet</code> — drought / oxygen reduction
+  factors in <code>[0, 1]</code>.</li>
+<li><code>wbal</code>   — rooted-zone mass-balance residual [mm]
+  (should be ≈ 0).</li>
 </ul></td>
     </tr>
   </tbody>
@@ -2548,12 +2609,12 @@ look-up; shape <code>[B]</code>.</p></td>
 <span class="sd">        params: Soil parameter container.</span>
 <span class="sd">        rdm: Soil-/crop-limited maximum rooting depth</span>
 <span class="sd">            ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
-<span class="sd">        etc: CO2-corrected reference canopy ET [mm d⁻¹], shape ``[B]``;</span>
-<span class="sd">            falls back to ``ptran`` when ``None``.</span>
-<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``; ``None`` → 0</span>
-<span class="sd">            (no root-front water transfer).</span>
+<span class="sd">        etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
+<span class="sd">            ``[B]``; falls back to ``ptran`` when ``None``.</span>
+<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``;</span>
+<span class="sd">            ``None`` → ``0`` (no root-front water transfer).</span>
 <span class="sd">        irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
-<span class="sd">            overrides ``params.irri`` mode.</span>
+<span class="sd">            overrides the ``params.irri`` mode.</span>
 <span class="sd">        doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">            look-up; shape ``[B]``.</span>
 
@@ -2562,25 +2623,31 @@ look-up; shape <code>[B]</code>.</p></td>
 
 <span class="sd">        **Rate variables** (consumed by the engine):</span>
 
-<span class="sd">        * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].</span>
-<span class="sd">        * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].</span>
-<span class="sd">        * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].</span>
-<span class="sd">        * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].</span>
+<span class="sd">        * ``wa_rate``       — ``perc1 − perc2 + wdr`` [mm d⁻¹].</span>
+<span class="sd">        * ``wa_lower_rate`` — ``perc2 − perc3 − wdr`` [mm d⁻¹].</span>
+<span class="sd">        * ``dslr_rate``     — ``dslr_new − dslr`` [d d⁻¹].</span>
+<span class="sd">        * ``dsos_rate``     — ``dsos_new − dsos`` [d d⁻¹].</span>
 
 <span class="sd">        **Fluxes / diagnostics**:</span>
 
 <span class="sd">        * ``tran``   — actual transpiration [mm d⁻¹].</span>
 <span class="sd">        * ``evap``   — actual soil evaporation [mm d⁻¹].</span>
-<span class="sd">        * ``runoff`` — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].</span>
-<span class="sd">        * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].</span>
-<span class="sd">        * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes [mm d⁻¹].</span>
-<span class="sd">        * ``wdr`` / ``wdra`` — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">        * ``runoff`` — surface runoff (preliminary + rejected</span>
+<span class="sd">          infiltration) [mm d⁻¹].</span>
+<span class="sd">        * ``drain``  — deep drainage (``= perc3``) [mm d⁻¹].</span>
+<span class="sd">        * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes</span>
+<span class="sd">          [mm d⁻¹].</span>
+<span class="sd">        * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
+<span class="sd">          rooted zone (total / available) [mm d⁻¹].</span>
 <span class="sd">        * ``rirr``   — effective irrigation [mm d⁻¹].</span>
 <span class="sd">        * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
-<span class="sd">        * ``smact`` / ``smactl`` — soil-moisture contents [m³ m⁻³].</span>
+<span class="sd">        * ``smact`` / ``smactl`` — soil-moisture contents</span>
+<span class="sd">          [m³ m⁻³].</span>
 <span class="sd">        * ``smcr``   — critical soil-moisture content [m³ m⁻³].</span>
-<span class="sd">        * ``rdry`` / ``rwet`` — drought / oxygen reduction factors in ``[0, 1]``.</span>
-<span class="sd">        * ``wbal``   — rooted-zone mass-balance residual [mm] (should be ≈ 0).</span>
+<span class="sd">        * ``rdry`` / ``rwet`` — drought / oxygen reduction</span>
+<span class="sd">          factors in ``[0, 1]``.</span>
+<span class="sd">        * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
+<span class="sd">          (should be ≈ 0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
     <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
@@ -2648,11 +2715,13 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="n">dslr_new</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dslr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
         <span class="n">state</span><span class="o">.</span><span class="n">dslr</span> <span class="o">+</span> <span class="mf">1.0</span>
     <span class="p">)</span>
-    <span class="c1"># Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)</span>
+    <span class="c1"># Evaporation on dry days — Stroosnijder (1987):</span>
+    <span class="c1">#   sqrt(t) − sqrt(t − 1).</span>
     <span class="n">dslr_prev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">dslr_new</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dslr_prev</span><span class="p">)</span>
     <span class="n">evmaxt</span> <span class="o">=</span> <span class="n">pevap</span> <span class="o">*</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">decay</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">cfev</span><span class="p">)</span>
-    <span class="c1"># Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))</span>
+    <span class="c1"># Cap by air-dry topsoil water capacity:</span>
+    <span class="c1">#   100 · (SMACT − SMDRY).</span>
     <span class="n">evap_cap</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">evap_dry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pevap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evmaxt</span> <span class="o">+</span> <span class="n">perc</span><span class="p">,</span> <span class="n">evap_cap</span><span class="p">)),</span>
@@ -2660,7 +2729,7 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="p">)</span>
     <span class="n">evap_wet</span> <span class="o">=</span> <span class="n">pevap</span>
     <span class="n">evap</span> <span class="o">=</span> <span class="n">wet_day</span> <span class="o">*</span> <span class="n">evap_wet</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">wet_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">evap_dry</span>
-    <span class="c1"># Final safety clamp by available water above air-dry content</span>
+    <span class="c1"># Final safety clamp by available water above air-dry content.</span>
     <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
     <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 

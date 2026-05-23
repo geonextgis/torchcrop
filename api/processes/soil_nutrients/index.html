@@ -2026,20 +2026,17 @@
 <a id="torchcrop.processes.soil_nutrients"></a>
     <div class="doc doc-contents first">
 
-      <p>Soil mineral N/P/K balance: mineralisation, fertiliser, and uptake bookkeeping.</p>
-<p>Mechanistic port of the SIMPLACE <code>SoilNutrientRates</code> function from
-<code>LintulFunctions.java</code> (lines 679–728) together with the lookup-table
-fertiliser-application path used by <code>Lintul5.java</code> (lines 1502–1516).</p>
-<p>State variables advanced here (Lintul5 names in parentheses):</p>
+      <p>Soil mineral N/P/K balance: mineralisation, fertiliser, and
+uptake bookkeeping.</p>
+<p>State variables advanced here:</p>
 <ul>
-<li><code>nmin</code> / <code>pmin</code> / <code>kmin</code> (<code>sNMIN</code> / <code>sPMIN</code> / <code>sKMIN</code>):
-  mineralisable organic N/P/K pool. Daily rate <code>RNMINS</code> is <strong>negative
-  or zero</strong> (Lintul5 sign convention) so adding it to the state depletes
-  the pool.</li>
-<li><code>nmint</code> / <code>pmint</code> / <code>kmint</code> (<code>sNMINT</code> / <code>sPMINT</code> /
-  <code>sKMINT</code>): directly available inorganic pool. Daily rate
-  <code>RNMINT = FERTNS − NUPTR − RNMINS</code> (note <code>−RNMINS</code> is the
-  mineralisation flux <strong>into</strong> <code>NMINT</code>).</li>
+<li><code>nmin</code> / <code>pmin</code> / <code>kmin</code>: mineralisable organic N/P/K pool.
+  Daily rate <code>RNMINS</code> is <strong>negative or zero</strong> (sign convention), so
+  adding it to the state depletes the pool.</li>
+<li><code>nmint</code> / <code>pmint</code> / <code>kmint</code>: directly available inorganic
+  pool. Daily rate <code>RNMINT = FERTNS − NUPTR − RNMINS</code> (subtracting
+  the negative <code>RNMINS</code> adds the mineralisation flux <strong>into</strong>
+  <code>NMINT</code>).</li>
 </ul>
 <p>The module is a stateless <code>nn.Module</code> that returns one rate dict per
 day; the engine integrates the pools via the standard explicit-Euler
@@ -2070,28 +2067,28 @@ SoilNutrients            (<span title="torch.nn.modules.module.Module">Module</s
 
     <div class="doc doc-contents ">
 
-      <p>Daily soil mineral-pool balance for the Lintul5 NPK chain.</p>
+      <p>Daily soil mineral-pool balance for the NPK chain.</p>
 <p>Computes — entirely from current-day soil/crop inputs — the rate
-variables that advance the four state pools
-(<code>nmin</code>, <code>pmin</code>, <code>kmin</code>, <code>nmint</code>, <code>pmint</code>, <code>kmint</code>) in
-the next explicit-Euler step.</p>
+variables that advance the six state pools (<code>nmin</code>, <code>pmin</code>,
+<code>kmin</code>, <code>nmint</code>, <code>pmint</code>, <code>kmint</code>) in the next
+explicit-Euler step.</p>
 <p>All operations are vectorised over the batch dimension <code>[B]</code> so
-the module composes with the rest of the differentiable simulation
-pipeline without breaking autograd or batching.</p>
+the module composes with the rest of the differentiable
+simulation pipeline without breaking autograd or batching.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/soil_nutrients.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SoilNutrients</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily soil mineral-pool balance for the Lintul5 NPK chain.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily soil mineral-pool balance for the NPK chain.</span>
 
 <span class="sd">    Computes — entirely from current-day soil/crop inputs — the rate</span>
-<span class="sd">    variables that advance the four state pools</span>
-<span class="sd">    (``nmin``, ``pmin``, ``kmin``, ``nmint``, ``pmint``, ``kmint``) in</span>
-<span class="sd">    the next explicit-Euler step.</span>
+<span class="sd">    variables that advance the six state pools (``nmin``, ``pmin``,</span>
+<span class="sd">    ``kmin``, ``nmint``, ``pmint``, ``kmint``) in the next</span>
+<span class="sd">    explicit-Euler step.</span>
 
 <span class="sd">    All operations are vectorised over the batch dimension ``[B]`` so</span>
-<span class="sd">    the module composes with the rest of the differentiable simulation</span>
-<span class="sd">    pipeline without breaking autograd or batching.</span>
+<span class="sd">    the module composes with the rest of the differentiable</span>
+<span class="sd">    simulation pipeline without breaking autograd or batching.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2118,13 +2115,13 @@ pipeline without breaking autograd or batching.</p>
 <span class="sd">                `NutrientDemand`.</span>
 <span class="sd">            puptr: Daily soil P uptake, shape ``[B]``.</span>
 <span class="sd">            kuptr: Daily soil K uptake, shape ``[B]``.</span>
-<span class="sd">            nlimit: Lintul5 nutrient-limit gate in ``{0, 1}``, shape</span>
-<span class="sd">                ``[B]``; 1 within the uptake window (``DVS &lt; DVSNLT``</span>
-<span class="sd">                and ``TRANRF ≥ 0.01``), else 0. Reuses the same gate</span>
-<span class="sd">                used by `NutrientDemand` so mineralisation pauses</span>
-<span class="sd">                when uptake pauses (matches Lintul5.java:709).</span>
-<span class="sd">            emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; 0 before</span>
-<span class="sd">                crop emergence (mineralisation is suppressed).</span>
+<span class="sd">            nlimit: Nutrient-limit gate in ``{0, 1}``, shape ``[B]``;</span>
+<span class="sd">                ``1`` within the uptake window (``DVS &lt; DVSNLT`` and</span>
+<span class="sd">                ``TRANRF ≥ 0.01``), else ``0``. Reuses the gate used</span>
+<span class="sd">                by `NutrientDemand` so mineralisation pauses when</span>
+<span class="sd">                uptake pauses.</span>
+<span class="sd">            emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; ``0``</span>
+<span class="sd">                before crop emergence (mineralisation is suppressed).</span>
 <span class="sd">            doy: Day-of-year tensor, shape ``[B]``. Used to interpolate</span>
 <span class="sd">                the fertiliser application tables</span>
 <span class="sd">                ``ferntab``/``ferptab``/``ferktab`` and the recovery</span>
@@ -2134,8 +2131,8 @@ pipeline without breaking autograd or batching.</p>
 <span class="sd">                ``nrf``/``prf``/``krf``.</span>
 <span class="sd">            soil_params: Mineralisation kinetics</span>
 <span class="sd">                ``rtnmins``/``rtpmins``/``rtkmins`` and the initial</span>
-<span class="sd">                organic pools ``nmini``/``pmini``/``kmini``. The latter</span>
-<span class="sd">                are used by the Lintul5 mineralisation formula</span>
+<span class="sd">                organic pools ``nmini``/``pmini``/``kmini``. The</span>
+<span class="sd">                latter are used by the mineralisation formula</span>
 <span class="sd">                ``RTNMINS · NMINI`` (not the current pool), capped by</span>
 <span class="sd">                the current ``NMIN`` to prevent over-depletion.</span>
 
@@ -2160,8 +2157,8 @@ pipeline without breaking autograd or batching.</p>
         <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
 
         <span class="c1"># Look up fertiliser applications and recovery fractions.</span>
-        <span class="c1"># Lintul5.java:1502–1508. Missing tables ⇒ no application / use</span>
-        <span class="c1"># scalar recovery fraction default.</span>
+        <span class="c1"># Missing tables ⇒ no application / use scalar recovery</span>
+        <span class="c1"># fraction default.</span>
         <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
         <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
         <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
@@ -2178,16 +2175,16 @@ pipeline without breaking autograd or batching.</p>
         <span class="n">fertks</span> <span class="o">=</span> <span class="n">fertk</span> <span class="o">*</span> <span class="n">krf</span>
 
         <span class="c1"># Mineralisation flux from the depleting organic pool.</span>
-        <span class="c1"># LintulFunctions.java:707–712 — sign convention: ``RNMINS`` is</span>
-        <span class="c1"># *negative* (depletes ``NMIN``). The flux into ``NMINT`` is</span>
-        <span class="c1"># therefore ``−RNMINS`` (positive).</span>
+        <span class="c1"># Sign convention: ``RNMINS`` is *negative* (depletes</span>
+        <span class="c1"># ``NMIN``); the flux into ``NMINT`` is therefore ``−RNMINS``</span>
+        <span class="c1"># (positive).</span>
         <span class="n">rtnmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtnmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">nmini</span> <span class="o">*</span> <span class="n">nlimit</span>
         <span class="n">rtpmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtpmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pmini</span> <span class="o">*</span> <span class="n">nlimit</span>
         <span class="n">rtkmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtkmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">kmini</span> <span class="o">*</span> <span class="n">nlimit</span>
 
-        <span class="c1"># Cap by what is left in the pool (cannot mineralise more than</span>
-        <span class="c1"># currently present). Multiplied by ``emerg`` so mineralisation</span>
-        <span class="c1"># only runs after emergence (Lintul5 ``if (EMERG)`` block).</span>
+        <span class="c1"># Cap by what is left in the pool (cannot mineralise more</span>
+        <span class="c1"># than is currently present). Multiplied by ``emerg`` so</span>
+        <span class="c1"># mineralisation only runs after emergence.</span>
         <span class="n">mineralisation_n</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rtnmins_flux</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">nmin</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
         <span class="p">)</span> <span class="o">*</span> <span class="n">emerg</span>
@@ -2202,9 +2199,10 @@ pipeline without breaking autograd or batching.</p>
         <span class="n">rpmins</span> <span class="o">=</span> <span class="o">-</span><span class="n">mineralisation_p</span>
         <span class="n">rkmins</span> <span class="o">=</span> <span class="o">-</span><span class="n">mineralisation_k</span>
 
-        <span class="c1"># Inorganic pool balance — Lintul5.java:723–725.</span>
-        <span class="c1"># ``RNMINT = FERTNS − NUPTR − RNMINS`` (subtracting the negative</span>
-        <span class="c1"># RNMINS adds the mineralisation flux into NMINT).</span>
+        <span class="c1"># Inorganic pool balance:</span>
+        <span class="c1">#   RNMINT = FERTNS − NUPTR − RNMINS</span>
+        <span class="c1"># (subtracting the negative RNMINS adds the mineralisation</span>
+        <span class="c1"># flux into NMINT).</span>
         <span class="n">rnmint</span> <span class="o">=</span> <span class="n">fertns</span> <span class="o">-</span> <span class="n">nuptr</span> <span class="o">-</span> <span class="n">rnmins</span>
         <span class="n">rpmint</span> <span class="o">=</span> <span class="n">fertps</span> <span class="o">-</span> <span class="n">puptr</span> <span class="o">-</span> <span class="n">rpmins</span>
         <span class="n">rkmint</span> <span class="o">=</span> <span class="n">fertks</span> <span class="o">-</span> <span class="n">kuptr</span> <span class="o">-</span> <span class="n">rkmins</span>
@@ -2295,18 +2293,18 @@ shape <code>[B]</code>. <strong>Excludes</strong> biological N fixation
       <tr>
         <td><code>nlimit</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Lintul5 nutrient-limit gate in <code>{0, 1}</code>, shape
-<code>[B]</code>; 1 within the uptake window (<code>DVS &lt; DVSNLT</code>
-and <code>TRANRF ≥ 0.01</code>), else 0. Reuses the same gate
-used by <code>NutrientDemand</code> so mineralisation pauses
-when uptake pauses (matches Lintul5.java:709).</p></td>
+        <td><p>Nutrient-limit gate in <code>{0, 1}</code>, shape <code>[B]</code>;
+<code>1</code> within the uptake window (<code>DVS &lt; DVSNLT</code> and
+<code>TRANRF ≥ 0.01</code>), else <code>0</code>. Reuses the gate used
+by <code>NutrientDemand</code> so mineralisation pauses when
+uptake pauses.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
         <td><code>emerg</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Emergence mask in <code>{0, 1}</code>, shape <code>[B]</code>; 0 before
-crop emergence (mineralisation is suppressed).</p></td>
+        <td><p>Emergence mask in <code>{0, 1}</code>, shape <code>[B]</code>; <code>0</code>
+before crop emergence (mineralisation is suppressed).</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2331,8 +2329,8 @@ scalar default recovery fractions
         <td><code>SoilParameters</code></td>
         <td><p>Mineralisation kinetics
 <code>rtnmins</code>/<code>rtpmins</code>/<code>rtkmins</code> and the initial
-organic pools <code>nmini</code>/<code>pmini</code>/<code>kmini</code>. The latter
-are used by the Lintul5 mineralisation formula
+organic pools <code>nmini</code>/<code>pmini</code>/<code>kmini</code>. The
+latter are used by the mineralisation formula
 <code>RTNMINS · NMINI</code> (not the current pool), capped by
 the current <code>NMIN</code> to prevent over-depletion.</p></td>
         <td><em>required</em></td>
@@ -2396,13 +2394,13 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">            `NutrientDemand`.</span>
 <span class="sd">        puptr: Daily soil P uptake, shape ``[B]``.</span>
 <span class="sd">        kuptr: Daily soil K uptake, shape ``[B]``.</span>
-<span class="sd">        nlimit: Lintul5 nutrient-limit gate in ``{0, 1}``, shape</span>
-<span class="sd">            ``[B]``; 1 within the uptake window (``DVS &lt; DVSNLT``</span>
-<span class="sd">            and ``TRANRF ≥ 0.01``), else 0. Reuses the same gate</span>
-<span class="sd">            used by `NutrientDemand` so mineralisation pauses</span>
-<span class="sd">            when uptake pauses (matches Lintul5.java:709).</span>
-<span class="sd">        emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; 0 before</span>
-<span class="sd">            crop emergence (mineralisation is suppressed).</span>
+<span class="sd">        nlimit: Nutrient-limit gate in ``{0, 1}``, shape ``[B]``;</span>
+<span class="sd">            ``1`` within the uptake window (``DVS &lt; DVSNLT`` and</span>
+<span class="sd">            ``TRANRF ≥ 0.01``), else ``0``. Reuses the gate used</span>
+<span class="sd">            by `NutrientDemand` so mineralisation pauses when</span>
+<span class="sd">            uptake pauses.</span>
+<span class="sd">        emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; ``0``</span>
+<span class="sd">            before crop emergence (mineralisation is suppressed).</span>
 <span class="sd">        doy: Day-of-year tensor, shape ``[B]``. Used to interpolate</span>
 <span class="sd">            the fertiliser application tables</span>
 <span class="sd">            ``ferntab``/``ferptab``/``ferktab`` and the recovery</span>
@@ -2412,8 +2410,8 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">            ``nrf``/``prf``/``krf``.</span>
 <span class="sd">        soil_params: Mineralisation kinetics</span>
 <span class="sd">            ``rtnmins``/``rtpmins``/``rtkmins`` and the initial</span>
-<span class="sd">            organic pools ``nmini``/``pmini``/``kmini``. The latter</span>
-<span class="sd">            are used by the Lintul5 mineralisation formula</span>
+<span class="sd">            organic pools ``nmini``/``pmini``/``kmini``. The</span>
+<span class="sd">            latter are used by the mineralisation formula</span>
 <span class="sd">            ``RTNMINS · NMINI`` (not the current pool), capped by</span>
 <span class="sd">            the current ``NMIN`` to prevent over-depletion.</span>
 
@@ -2438,8 +2436,8 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
 
     <span class="c1"># Look up fertiliser applications and recovery fractions.</span>
-    <span class="c1"># Lintul5.java:1502–1508. Missing tables ⇒ no application / use</span>
-    <span class="c1"># scalar recovery fraction default.</span>
+    <span class="c1"># Missing tables ⇒ no application / use scalar recovery</span>
+    <span class="c1"># fraction default.</span>
     <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
     <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
     <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
@@ -2456,16 +2454,16 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">fertks</span> <span class="o">=</span> <span class="n">fertk</span> <span class="o">*</span> <span class="n">krf</span>
 
     <span class="c1"># Mineralisation flux from the depleting organic pool.</span>
-    <span class="c1"># LintulFunctions.java:707–712 — sign convention: ``RNMINS`` is</span>
-    <span class="c1"># *negative* (depletes ``NMIN``). The flux into ``NMINT`` is</span>
-    <span class="c1"># therefore ``−RNMINS`` (positive).</span>
+    <span class="c1"># Sign convention: ``RNMINS`` is *negative* (depletes</span>
+    <span class="c1"># ``NMIN``); the flux into ``NMINT`` is therefore ``−RNMINS``</span>
+    <span class="c1"># (positive).</span>
     <span class="n">rtnmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtnmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">nmini</span> <span class="o">*</span> <span class="n">nlimit</span>
     <span class="n">rtpmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtpmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pmini</span> <span class="o">*</span> <span class="n">nlimit</span>
     <span class="n">rtkmins_flux</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">rtkmins</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">kmini</span> <span class="o">*</span> <span class="n">nlimit</span>
 
-    <span class="c1"># Cap by what is left in the pool (cannot mineralise more than</span>
-    <span class="c1"># currently present). Multiplied by ``emerg`` so mineralisation</span>
-    <span class="c1"># only runs after emergence (Lintul5 ``if (EMERG)`` block).</span>
+    <span class="c1"># Cap by what is left in the pool (cannot mineralise more</span>
+    <span class="c1"># than is currently present). Multiplied by ``emerg`` so</span>
+    <span class="c1"># mineralisation only runs after emergence.</span>
     <span class="n">mineralisation_n</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rtnmins_flux</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">nmin</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
     <span class="p">)</span> <span class="o">*</span> <span class="n">emerg</span>
@@ -2480,9 +2478,10 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">rpmins</span> <span class="o">=</span> <span class="o">-</span><span class="n">mineralisation_p</span>
     <span class="n">rkmins</span> <span class="o">=</span> <span class="o">-</span><span class="n">mineralisation_k</span>
 
-    <span class="c1"># Inorganic pool balance — Lintul5.java:723–725.</span>
-    <span class="c1"># ``RNMINT = FERTNS − NUPTR − RNMINS`` (subtracting the negative</span>
-    <span class="c1"># RNMINS adds the mineralisation flux into NMINT).</span>
+    <span class="c1"># Inorganic pool balance:</span>
+    <span class="c1">#   RNMINT = FERTNS − NUPTR − RNMINS</span>
+    <span class="c1"># (subtracting the negative RNMINS adds the mineralisation</span>
+    <span class="c1"># flux into NMINT).</span>
     <span class="n">rnmint</span> <span class="o">=</span> <span class="n">fertns</span> <span class="o">-</span> <span class="n">nuptr</span> <span class="o">-</span> <span class="n">rnmins</span>
     <span class="n">rpmint</span> <span class="o">=</span> <span class="n">fertps</span> <span class="o">-</span> <span class="n">puptr</span> <span class="o">-</span> <span class="n">rpmins</span>
     <span class="n">rkmint</span> <span class="o">=</span> <span class="n">fertks</span> <span class="o">-</span> <span class="n">kuptr</span> <span class="o">-</span> <span class="n">rkmins</span>

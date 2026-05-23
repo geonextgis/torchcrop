@@ -1597,6 +1597,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.photosynthesis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.photosynthesis--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1982,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.photosynthesis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.photosynthesis--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2027,22 +2061,16 @@
     <div class="doc doc-contents first">
 
       <p>Radiation use efficiency.</p>
-<p>Mirrors the SIMPLACE <code>RadiationUseEfficiency.java</code> component, which only
-computes <code>RUE</code> and the overall correction factor <code>RTMCO</code>. The gross
-biomass growth rate (<code>GTOTAL</code>) is produced downstream in
-<code>Lintul5.java</code>'s biomass block (<code>LintulFunctions.GROWTH</code>) and lives in
-the partitioning / model-level code, not here.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<p>SIMPLACE <code>RadiationUseEfficiency.java</code>.</p>
-</div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
+<p>This module produces only <code>RUE</code> and the overall correction factor
+<code>RTMCO</code>. The gross biomass growth rate (<code>GTOTAL</code>) is produced
+downstream in the partitioning / model-level code, not here.</p>
+<h3 id="torchcrop.processes.photosynthesis--equations">Equations<a class="headerlink" href="#torchcrop.processes.photosynthesis--equations" title="Permanent link">&para;</a></h3>
 <p>Effective daytime temperature:</p>
 <div class="arithmatex">\[
 \text{DTEMP} = \text{TMAX} - f \cdot (\text{TMAX} - \text{TMIN})
 \]</div>
-<p>where <code>f</code> is <code>cDayTempFactor</code> (default 0.25, i.e. daytime mean).</p>
+<p>where <code>f</code> is <code>day_temp_factor</code> (default <code>0.25</code>, i.e. daytime
+mean).</p>
 <p>Temperature × CO<span class="arithmatex">\(_2\)</span> correction factor on RUE:</p>
 <div class="arithmatex">\[
 \text{RTMCO} = \text{TMPFTB}(\text{DTEMP}) \cdot
@@ -2051,10 +2079,9 @@ the partitioning / model-level code, not here.</p>
 \]</div>
 <p>DVS-dependent radiation use efficiency:</p>
 <div class="arithmatex">\[
-\text{RUE} = \text{cScaleFactorRUE} \cdot \text{RUETB}(\text{DVS})
+\text{RUE} = \text{scale\_factor\_rue} \cdot \text{RUETB}(\text{DVS})
 \]</div>
-<p><code>RUE</code> has units of g dry matter per MJ intercepted PAR.</p>
-</div>
+<p><code>RUE</code> is in units of g dry matter per MJ intercepted PAR.</p>
 
 
 
@@ -2082,22 +2109,22 @@ Photosynthesis            (<span title="torch.nn.modules.module.Module">Module</
     <div class="doc doc-contents ">
 
       <p>Radiation use efficiency component.</p>
-<p>Outputs <code>RUE</code> from <code>ruetb(DVS)</code> and an overall correction factor
-<code>RTMCO</code> that combines daytime-temperature, minimum-temperature and
-CO<span class="arithmatex">\(_2\)</span> responses. <code>parint</code>, <code>tranrf</code> and <code>nstress</code> are <em>not</em>
-consumed here — they enter the GTOTAL formula in the downstream biomass
-block.</p>
+<p>Outputs <code>RUE</code> from <code>ruetb(DVS)</code> and an overall correction
+factor <code>RTMCO</code> that combines daytime-temperature,
+minimum-temperature and CO<span class="arithmatex">\(_2\)</span> responses. <code>parint</code>,
+<code>tranrf</code> and <code>nstress</code> are <em>not</em> consumed here — they enter
+the <code>GTOTAL</code> formula in the downstream biomass block.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/photosynthesis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Photosynthesis</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component.</span>
 
-<span class="sd">    Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction factor</span>
-<span class="sd">    ``RTMCO`` that combines daytime-temperature, minimum-temperature and</span>
-<span class="sd">    CO\\(_2\\) responses. ``parint``, ``tranrf`` and ``nstress`` are *not*</span>
-<span class="sd">    consumed here — they enter the GTOTAL formula in the downstream biomass</span>
-<span class="sd">    block.</span>
+<span class="sd">    Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction</span>
+<span class="sd">    factor ``RTMCO`` that combines daytime-temperature,</span>
+<span class="sd">    minimum-temperature and CO\\(_2\\) responses. ``parint``,</span>
+<span class="sd">    ``tranrf`` and ``nstress`` are *not* consumed here — they enter</span>
+<span class="sd">    the ``GTOTAL`` formula in the downstream biomass block.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2116,34 +2143,35 @@ block.</p>
 <span class="sd">            dvs: Development stage [-] (0–2), shape ``[B]``.</span>
 <span class="sd">            params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">                ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
-<span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or</span>
+<span class="sd">                shape broadcastable to ``[B]`` (default ``370``).</span>
+<span class="sd">                Supplied by ``SiteParameters.co2`` in the model.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
 
-<span class="sd">            * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
-<span class="sd">              ``cScaleFactorRUE · RUETB(DVS)``.</span>
+<span class="sd">            * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use</span>
+<span class="sd">              efficiency ``scale_factor_rue · RUETB(DVS)``.</span>
 <span class="sd">            * ``rtmco`` [-] — Overall correction factor</span>
 <span class="sd">              ``RTMP · RCO``.</span>
 <span class="sd">            * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
 <span class="sd">            * ``rtmp`` [-] — Temperature correction factor</span>
 <span class="sd">              ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
 <span class="sd">            * ``dtemp`` [°C] — Effective daytime temperature</span>
-<span class="sd">              ``TMAX − f·(TMAX − TMIN)``.</span>
+<span class="sd">              ``TMAX − f · (TMAX − TMIN)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># DVS-dependent base RUE (replaces the static scalar params.rue)</span>
+        <span class="c1"># DVS-dependent base RUE.</span>
         <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
-        <span class="c1"># CO2 correction</span>
+        <span class="c1"># CO₂ correction.</span>
         <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
         <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
 
-        <span class="c1"># Effective daytime temperature, customisable via day_temp_factor</span>
+        <span class="c1"># Effective daytime temperature; tuned via day_temp_factor.</span>
         <span class="n">dtemp</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">day_temp_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
 
-        <span class="c1"># Temperature reduction: daytime-temp × low-min-temp</span>
+        <span class="c1"># Temperature reduction: daytime-temp × low-min-temp.</span>
         <span class="n">rtmp</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmpftb</span><span class="p">,</span> <span class="n">dtemp</span><span class="p">)</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmnftb</span><span class="p">,</span> <span class="n">tmin</span><span class="p">)</span>
 
         <span class="n">rtmco</span> <span class="o">=</span> <span class="n">rtmp</span> <span class="o">*</span> <span class="n">rco</span>
@@ -2223,8 +2251,9 @@ block.</p>
       <tr>
         <td><code>co2</code></td>
         <td><code>torch.Tensor | float</code></td>
-        <td><p>Atmospheric CO₂ concentration [ppm], a scalar or shape
-broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
+        <td><p>Atmospheric CO₂ concentration [ppm], a scalar or
+shape broadcastable to <code>[B]</code> (default <code>370</code>).
+Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
   </tbody>
@@ -2241,15 +2270,15 @@ broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameter
     <tr>
       <td><code>Dict of ``[B]`` tensors</code></td>
       <td><ul>
-<li><code>rue</code> [g MJ⁻¹] — DVS-dependent radiation use efficiency
-  <code>cScaleFactorRUE · RUETB(DVS)</code>.</li>
+<li><code>rue</code> [g MJ⁻¹] — DVS-dependent radiation use
+  efficiency <code>scale_factor_rue · RUETB(DVS)</code>.</li>
 <li><code>rtmco</code> [-] — Overall correction factor
   <code>RTMP · RCO</code>.</li>
 <li><code>rco</code> [-] — CO₂ correction factor <code>COTB(CO₂)</code>.</li>
 <li><code>rtmp</code> [-] — Temperature correction factor
   <code>TMPFTB(DTEMP) · TMNFTB(TMIN)</code>.</li>
 <li><code>dtemp</code> [°C] — Effective daytime temperature
-  <code>TMAX − f·(TMAX − TMIN)</code>.</li>
+  <code>TMAX − f · (TMAX − TMIN)</code>.</li>
 </ul></td>
     </tr>
   </tbody>
@@ -2272,34 +2301,35 @@ broadcastable to <code>[B]</code> (default 370). Supplied by <code>SiteParameter
 <span class="sd">        dvs: Development stage [-] (0–2), shape ``[B]``.</span>
 <span class="sd">        params: Crop parameters; uses ``ruetb``, ``scale_factor_rue``,</span>
 <span class="sd">            ``tmpftb``, ``tmnftb``, ``cotb``, ``day_temp_factor``.</span>
-<span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or shape</span>
-<span class="sd">            broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.</span>
+<span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or</span>
+<span class="sd">            shape broadcastable to ``[B]`` (default ``370``).</span>
+<span class="sd">            Supplied by ``SiteParameters.co2`` in the model.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">        * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use efficiency</span>
-<span class="sd">          ``cScaleFactorRUE · RUETB(DVS)``.</span>
+<span class="sd">        * ``rue`` [g MJ⁻¹] — DVS-dependent radiation use</span>
+<span class="sd">          efficiency ``scale_factor_rue · RUETB(DVS)``.</span>
 <span class="sd">        * ``rtmco`` [-] — Overall correction factor</span>
 <span class="sd">          ``RTMP · RCO``.</span>
 <span class="sd">        * ``rco`` [-] — CO₂ correction factor ``COTB(CO₂)``.</span>
 <span class="sd">        * ``rtmp`` [-] — Temperature correction factor</span>
 <span class="sd">          ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
 <span class="sd">        * ``dtemp`` [°C] — Effective daytime temperature</span>
-<span class="sd">          ``TMAX − f·(TMAX − TMIN)``.</span>
+<span class="sd">          ``TMAX − f · (TMAX − TMIN)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># DVS-dependent base RUE (replaces the static scalar params.rue)</span>
+    <span class="c1"># DVS-dependent base RUE.</span>
     <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
-    <span class="c1"># CO2 correction</span>
+    <span class="c1"># CO₂ correction.</span>
     <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmax</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">tmax</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
     <span class="n">rco</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">cotb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
 
-    <span class="c1"># Effective daytime temperature, customisable via day_temp_factor</span>
+    <span class="c1"># Effective daytime temperature; tuned via day_temp_factor.</span>
     <span class="n">dtemp</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">day_temp_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
 
-    <span class="c1"># Temperature reduction: daytime-temp × low-min-temp</span>
+    <span class="c1"># Temperature reduction: daytime-temp × low-min-temp.</span>
     <span class="n">rtmp</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmpftb</span><span class="p">,</span> <span class="n">dtemp</span><span class="p">)</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tmnftb</span><span class="p">,</span> <span class="n">tmin</span><span class="p">)</span>
 
     <span class="n">rtmco</span> <span class="o">=</span> <span class="n">rtmp</span> <span class="o">*</span> <span class="n">rco</span>

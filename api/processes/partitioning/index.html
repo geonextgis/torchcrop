@@ -1541,6 +1541,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.partitioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.partitioning--design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.partitioning--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1993,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.partitioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.partitioning--design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.partitioning--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2026,35 +2082,24 @@
 <a id="torchcrop.processes.partitioning"></a>
     <div class="doc doc-contents first">
 
-      <p>Biomass allocation to plant organs, with water- and N-stress modification.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
+      <p>Biomass allocation to plant organs, with water- and N-stress
+modification.</p>
+<h3 id="torchcrop.processes.partitioning--design">Design<a class="headerlink" href="#torchcrop.processes.partitioning--design" title="Permanent link">&para;</a></h3>
+<p>The baseline fractions <code>FRTWET</code>, <code>FLVT</code>, <code>FSTT</code>, <code>FSOT</code> are
+read from the interpolation tables <code>frtb</code>, <code>fltb</code>, <code>fstb</code>,
+<code>fotb</code> at the current DVS. <code>SUBPAR</code> then adjusts them depending
+on which stress is limiting:</p>
 <ul>
-<li>Biomass partitioning block of <code>Lintul5.java</code>.</li>
-<li><code>LintulFunctions.SUBPAR</code> — modifies the baseline partitioning
-  fractions in response to water and nitrogen stress.</li>
-<li><code>LintulFunctions.RELGR</code> — converts the partitioning fractions into per-organ growth rates.</li>
+<li><strong>Water stress more severe</strong> (<code>TRANRF &lt; NNI</code>): roots receive a
+  larger share via <code>FRTMOD = max(1, 1 / (TRANRF + 0.5))</code>, capped at
+  <code>FRT ≤ 0.6</code>. Above-ground fractions are unchanged.</li>
+<li><strong>N stress more severe</strong> (otherwise): leaf allocation is multiplied
+  by <code>FLVMOD = exp(−NPART · (1 − NNI))</code>; the deficit is re-routed
+  to stems (<code>FST ← FSTT + FLVT − FLV</code>). Roots and storage organs
+  are unchanged.</li>
 </ul>
-</div>
-<div class="admonition design">
-<p class="admonition-title">Design</p>
-<p>The baseline fractions <code>FRTWET</code>, <code>FLVT</code>, <code>FSTT</code>, <code>FSOT</code> are read from
-the interpolation tables <code>frtb</code>, <code>fltb</code>, <code>fstb</code>, <code>fotb</code> at the
-current DVS. <code>SUBPAR</code> then adjusts them depending on which stress is
-limiting:</p>
-<ul>
-<li><strong>Water stress more severe</strong> (<code>TRANRF &lt; NNI</code>): roots receive a larger
-share via <code>FRTMOD = max(1, 1/(TRANRF + 0.5))</code>, capped at
-<code>FRT ≤ 0.6</code>. Above-ground fractions are unchanged.</li>
-<li><strong>N stress more severe</strong> (otherwise): leaf allocation is multiplied by
-<code>FLVMOD = exp(-NPART · (1 − NNI))</code>; the deficit is re-routed to
-stems (<code>FST ← FSTT + FLVT − FLV</code>). Roots and storage organs are
-unchanged.</li>
-</ul>
-</div>
-<div class="admonition equations">
-<p class="admonition-title">Equations</p>
-<p>Final organ growth rates follow <code>RELGR</code>:</p>
+<h3 id="torchcrop.processes.partitioning--equations">Equations<a class="headerlink" href="#torchcrop.processes.partitioning--equations" title="Permanent link">&para;</a></h3>
+<p>Final organ growth rates:</p>
 <div class="arithmatex">\[
 \begin{aligned}
 G_{\text{root}} &amp;= G_{\text{total}} \cdot F_{rt} \\
@@ -2063,7 +2108,6 @@ G_{\text{st}}   &amp;= G_{\text{total}} \cdot (1 - F_{rt}) \cdot F_{st} \\
 G_{\text{so}}   &amp;= G_{\text{total}} \cdot (1 - F_{rt}) \cdot F_{so}
 \end{aligned}
 \]</div>
-</div>
 
 
 
@@ -2115,7 +2159,7 @@ split to obtain per-organ growth rates.</p>
         <span class="n">fstt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">fsot</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the Java ``SUBPAR`` stress modification to partitioning.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the ``SUBPAR`` stress modification to partitioning.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            npart: N-stress partitioning coefficient ``cNPART``, shape</span>
@@ -2175,14 +2219,13 @@ split to obtain per-organ growth rates.</p>
 <span class="sd">            params: Crop parameters; uses the partitioning tables ``frtb``,</span>
 <span class="sd">                ``fltb``, ``fstb``, ``fotb`` and the N-stress</span>
 <span class="sd">                partitioning coefficient ``npart``.</span>
-<span class="sd">            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``. If</span>
-<span class="sd">                ``None`` (no stress information available), defaults to</span>
-<span class="sd">                a tensor of ones, in which case ``SUBPAR`` reduces to</span>
-<span class="sd">                the N-stress branch with ``FLVMOD = exp(0) = 1`` —</span>
-<span class="sd">                i.e. baseline fractions are returned unchanged.</span>
-<span class="sd">            nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK index</span>
-<span class="sd">                proxy), shape ``[B]``. If ``None`` defaults to ones</span>
-<span class="sd">                (no N stress).</span>
+<span class="sd">            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
+<span class="sd">                If ``None`` (no stress information available),</span>
+<span class="sd">                defaults to ones — ``SUBPAR`` then reduces to the</span>
+<span class="sd">                N-stress branch with ``FLVMOD = exp(0) = 1``, so</span>
+<span class="sd">                baseline fractions are returned unchanged.</span>
+<span class="sd">            nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK-index</span>
+<span class="sd">                proxy), shape ``[B]``. Defaults to ones (no N stress).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2231,8 +2274,8 @@ split to obtain per-organ growth rates.</p>
             <span class="n">fsot</span><span class="o">=</span><span class="n">fsot</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># RELGR: gross per-organ growth before subtracting death rates</span>
-        <span class="c1"># (death rates are handled in LeafDynamics / RootDynamics).</span>
+        <span class="c1"># Gross per-organ growth, before subtracting death rates</span>
+        <span class="c1"># (handled in LeafDynamics / RootDynamics).</span>
         <span class="n">agrt</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fr</span><span class="p">)</span>
         <span class="n">g_root</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="n">fr</span>
         <span class="n">g_lv</span> <span class="o">=</span> <span class="n">fl</span> <span class="o">*</span> <span class="n">agrt</span>
@@ -2313,19 +2356,18 @@ partitioning coefficient <code>npart</code>.</p></td>
       <tr>
         <td><code>tranrf</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Water-stress factor in <code>[0, 1]</code>, shape <code>[B]</code>. If
-<code>None</code> (no stress information available), defaults to
-a tensor of ones, in which case <code>SUBPAR</code> reduces to
-the N-stress branch with <code>FLVMOD = exp(0) = 1</code> —
-i.e. baseline fractions are returned unchanged.</p></td>
+        <td><p>Water-stress factor in <code>[0, 1]</code>, shape <code>[B]</code>.
+If <code>None</code> (no stress information available),
+defaults to ones — <code>SUBPAR</code> then reduces to the
+N-stress branch with <code>FLVMOD = exp(0) = 1</code>, so
+baseline fractions are returned unchanged.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>nni</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Nitrogen Nutrition Index in <code>[0, 1]</code> (or NPK index
-proxy), shape <code>[B]</code>. If <code>None</code> defaults to ones
-(no N stress).</p></td>
+        <td><p>Nitrogen Nutrition Index in <code>[0, 1]</code> (or NPK-index
+proxy), shape <code>[B]</code>. Defaults to ones (no N stress).</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2387,14 +2429,13 @@ and nutrient demand)</code></td>
 <span class="sd">        params: Crop parameters; uses the partitioning tables ``frtb``,</span>
 <span class="sd">            ``fltb``, ``fstb``, ``fotb`` and the N-stress</span>
 <span class="sd">            partitioning coefficient ``npart``.</span>
-<span class="sd">        tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``. If</span>
-<span class="sd">            ``None`` (no stress information available), defaults to</span>
-<span class="sd">            a tensor of ones, in which case ``SUBPAR`` reduces to</span>
-<span class="sd">            the N-stress branch with ``FLVMOD = exp(0) = 1`` —</span>
-<span class="sd">            i.e. baseline fractions are returned unchanged.</span>
-<span class="sd">        nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK index</span>
-<span class="sd">            proxy), shape ``[B]``. If ``None`` defaults to ones</span>
-<span class="sd">            (no N stress).</span>
+<span class="sd">        tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
+<span class="sd">            If ``None`` (no stress information available),</span>
+<span class="sd">            defaults to ones — ``SUBPAR`` then reduces to the</span>
+<span class="sd">            N-stress branch with ``FLVMOD = exp(0) = 1``, so</span>
+<span class="sd">            baseline fractions are returned unchanged.</span>
+<span class="sd">        nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK-index</span>
+<span class="sd">            proxy), shape ``[B]``. Defaults to ones (no N stress).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2443,8 +2484,8 @@ and nutrient demand)</code></td>
         <span class="n">fsot</span><span class="o">=</span><span class="n">fsot</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># RELGR: gross per-organ growth before subtracting death rates</span>
-    <span class="c1"># (death rates are handled in LeafDynamics / RootDynamics).</span>
+    <span class="c1"># Gross per-organ growth, before subtracting death rates</span>
+    <span class="c1"># (handled in LeafDynamics / RootDynamics).</span>
     <span class="n">agrt</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fr</span><span class="p">)</span>
     <span class="n">g_root</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="n">fr</span>
     <span class="n">g_lv</span> <span class="o">=</span> <span class="n">fl</span> <span class="o">*</span> <span class="n">agrt</span>

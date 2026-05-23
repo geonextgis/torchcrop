@@ -2027,25 +2027,28 @@
     <div class="doc doc-contents first">
 
       <p>Crop nutrient demand, uptake, translocation and stress indices.</p>
-<p>Mechanistic port of the SIMPLACE Lintul5 NPK block. Every quantity is a
-batch-compatible PyTorch tensor of shape <code>[B]</code> so the module integrates
-into the differentiable simulation engine without breaking the autograd
-graph or the batch dimension.</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
+<p>Mechanistic implementation of the Lintul5 NPK block. Every quantity
+is a batch-compatible PyTorch tensor of shape <code>[B]</code> so the module
+integrates into the differentiable simulation engine without breaking
+the autograd graph or the batch dimension.</p>
+<p>The module covers:</p>
 <ul>
-<li><code>simplace/sim/components/models/lintul5/Lintul5.java</code> lines
-  1184–1380 (NPK Part 1: translocatable pools, demand, uptake,
-  nutrition indices) and 1480–1565 (per-organ rate assembly).</li>
-<li><code>simplace/sim/components/models/lintul5/LintulFunctions.java</code>:
-  <code>NTRLOC</code> (translocatable pools), <code>NDEMND</code> (deficit-based
-  demand), <code>NUptake</code> (IOPT-aware soil/biological supply),
-  <code>NOPTM</code> and <code>NNINDX</code> (concentration-based nutrition indices),
-  <code>NTRANS</code> (organ-share translocation to storage organs),
-  <code>RNUSUB</code> (per-organ uptake partitioning), <code>RNLD</code> (death
-  losses).</li>
+<li>Translocatable pools (<code>NTRLOC</code>) — leaf, stem, and root nutrient
+  contents above residual concentrations.</li>
+<li>Deficit-based demand (<code>NDEMND</code>) — per-organ maximum vs. actual
+  concentration, with storage-organ demand filtered by translocation
+  time constants.</li>
+<li>Uptake (<code>NUptake</code>) — gated by emergence, the DVS uptake window,
+  and the water-stress trigger; the <code>IOPT</code> run-mode switches
+  between soil-pool-limited and demand-limited uptake.</li>
+<li>Concentration-based nutrition indices <code>NNI</code>/<code>PNI</code>/<code>KNI</code>
+  combined into <code>NPKI = min(NNI, PNI, KNI)</code>.</li>
+<li>Per-organ partitioning of soil + fixation uptake by demand share
+  (<code>RNUSUB</code>) and translocation to storage organs by translocatable-
+  pool share (<code>NTRANS</code>).</li>
+<li>Death-related nutrient losses (<code>RNLD</code>) and net per-organ rate
+  assembly.</li>
 </ul>
-</div>
 
 
 
@@ -2136,7 +2139,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">drrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the full Lintul5 NPK rate package for one day.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the full NPK rate package for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`. Reads the biomass pools</span>
@@ -2236,7 +2239,6 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
             <span class="n">drst</span> <span class="o">=</span> <span class="n">zero</span>
 
         <span class="c1"># ------------- Maximum concentrations (DVS-indexed) ------------</span>
-        <span class="c1"># Lintul5.java:1254–1256, 1282–1287.</span>
         <span class="n">nmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">nmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
         <span class="n">pmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">pmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
         <span class="n">kmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">kmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -2248,7 +2250,6 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">kmaxrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">lrkr</span> <span class="o">*</span> <span class="n">kmaxlv</span>
 
         <span class="c1"># ------------- Translocatable pools (NTRLOC) -------------------</span>
-        <span class="c1"># LintulFunctions.java:86–113.</span>
         <span class="n">atnlv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">anlv</span> <span class="o">-</span> <span class="n">wlv</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnflv</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">atnst</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">anst</span> <span class="o">-</span> <span class="n">wst</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfst</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">atnrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">((</span><span class="n">atnlv</span> <span class="o">+</span> <span class="n">atnst</span><span class="p">)</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">fntrt</span><span class="p">,</span> <span class="n">anrt</span> <span class="o">-</span> <span class="n">wrt</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfrt</span><span class="p">)</span>
@@ -2265,8 +2266,8 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">atk</span> <span class="o">=</span> <span class="n">atklv</span> <span class="o">+</span> <span class="n">atkst</span> <span class="o">+</span> <span class="n">atkrt</span>
 
         <span class="c1"># ------------- Demand from deficit (NDEMND) --------------------</span>
-        <span class="c1"># LintulFunctions.java:457–489. Storage-organ demand is filtered</span>
-        <span class="c1"># by the first-order translocation time constants.</span>
+        <span class="c1"># Storage-organ demand is filtered by the first-order</span>
+        <span class="c1"># translocation time constants.</span>
         <span class="n">ndeml</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxlv</span> <span class="o">*</span> <span class="n">wlv</span> <span class="o">-</span> <span class="n">anlv</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">ndems</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxst</span> <span class="o">*</span> <span class="n">wst</span> <span class="o">-</span> <span class="n">anst</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">ndemr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxrt</span> <span class="o">*</span> <span class="n">wrt</span> <span class="o">-</span> <span class="n">anrt</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2287,25 +2288,25 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">kdemto</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">kdeml</span> <span class="o">+</span> <span class="n">kdems</span> <span class="o">+</span> <span class="n">kdemr</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># ------------- Storage-organ supply via translocation ----------</span>
-        <span class="c1"># Lintul5.java:1345–1347. Translocation only above DVSNT.</span>
+        <span class="c1"># Translocation activates only above DVSNT.</span>
         <span class="n">translocating</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">cp</span><span class="o">.</span><span class="n">dvsnt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">nsupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atn</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tcnt</span>
         <span class="n">psupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atp</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tcpt</span>
         <span class="n">ksupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atk</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tckt</span>
 
         <span class="c1"># ------------- Emergence and NLIMIT gates ----------------------</span>
-        <span class="c1"># EMERG mask: thermal-sum since sowing has exceeded TSUMEM.</span>
+        <span class="c1"># EMERG mask: thermal sum since sowing has exceeded TSUMEM.</span>
         <span class="n">emerg</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">cp</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="c1"># NLIMIT: Lintul5.java:1273. Uptake only during DVS &lt; DVSNLT and</span>
-        <span class="c1"># only when the soil is wet enough (TRANRF ≥ 0.01).</span>
+        <span class="c1"># NLIMIT: uptake only during DVS &lt; DVSNLT and only when the</span>
+        <span class="c1"># soil is wet enough (TRANRF ≥ 0.01).</span>
         <span class="n">within_window</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">cp</span><span class="o">.</span><span class="n">dvsnlt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">wet_enough</span> <span class="o">=</span> <span class="p">(</span><span class="n">tranrf</span> <span class="o">&gt;=</span> <span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">nlimit</span> <span class="o">=</span> <span class="n">within_window</span> <span class="o">*</span> <span class="n">wet_enough</span>
 
         <span class="c1"># ------------- Whole-plant uptake (NUptake, IOPT-aware) --------</span>
-        <span class="c1"># LintulFunctions.java:515–562. The soil-uptake cap is the</span>
-        <span class="c1"># currently available inorganic pool (``NMINT``/``PMINT``/``KMINT``),</span>
-        <span class="c1"># advanced day-by-day by `SoilNutrients`.</span>
+        <span class="c1"># The soil-uptake cap is the currently available inorganic</span>
+        <span class="c1"># pool (``NMINT``/``PMINT``/``KMINT``), advanced day-by-day by</span>
+        <span class="c1"># `SoilNutrients`.</span>
         <span class="n">nmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">nmint</span> <span class="o">+</span> <span class="n">zero</span>  <span class="c1"># broadcast to [B]</span>
         <span class="n">pmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">pmint</span> <span class="o">+</span> <span class="n">zero</span>
         <span class="n">kmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">kmint</span> <span class="o">+</span> <span class="n">zero</span>
@@ -2349,10 +2350,8 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">rkso</span> <span class="o">=</span> <span class="n">rkso</span> <span class="o">*</span> <span class="n">emerg</span>
 
         <span class="c1"># ------------- Concentration-based nutrition indices -----------</span>
-        <span class="c1"># Whole-canopy (leaves + stems) mean concentrations, compared to</span>
-        <span class="c1"># the residual (RMR) and optimal (OPTMR) levels.</span>
-        <span class="c1"># Lintul5.java:1266–1268 (NRMR), the NOPTM call at 1292–1300,</span>
-        <span class="c1"># and the NFGMR + NNINDX calls at 1366–1380.</span>
+        <span class="c1"># Whole-canopy (leaves + stems) mean concentrations, compared</span>
+        <span class="c1"># to the residual (RMR) and optimal (OPTMR) levels.</span>
         <span class="n">tbgmr</span> <span class="o">=</span> <span class="n">wlv</span> <span class="o">+</span> <span class="n">wst</span>
         <span class="n">s_tbgmr</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">tbgmr</span><span class="p">)</span>
 
@@ -2391,7 +2390,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-        <span class="c1"># IOPT overrides (LintulFunctions.java:215–228).</span>
+        <span class="c1"># IOPT overrides.</span>
         <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
         <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
         <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
@@ -2407,8 +2406,8 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
         <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
-        <span class="c1"># LintulFunctions.java:644–671. Soil + biological N uptake is</span>
-        <span class="c1"># distributed across leaves/stems/roots by demand share.</span>
+        <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
+        <span class="c1"># stems and roots by demand share.</span>
         <span class="n">n_in</span> <span class="o">=</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span>
         <span class="n">rnulv</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndeml</span> <span class="o">/</span> <span class="n">s_ndemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_in</span>
         <span class="n">rnust</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndems</span> <span class="o">/</span> <span class="n">s_ndemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_in</span>
@@ -2421,8 +2420,8 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">rkurt</span> <span class="o">=</span> <span class="p">(</span><span class="n">kdemr</span> <span class="o">/</span> <span class="n">s_kdemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">kuptr</span>
 
         <span class="c1"># ------------- Translocation to storage organs (NTRANS) --------</span>
-        <span class="c1"># LintulFunctions.java:590–612. RNSO is partitioned across source</span>
-        <span class="c1"># organs by translocatable-pool share.</span>
+        <span class="c1"># RNSO is partitioned across source organs by translocatable-</span>
+        <span class="c1"># pool share.</span>
         <span class="n">s_atn</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atn</span><span class="p">)</span>
         <span class="n">s_atp</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atp</span><span class="p">)</span>
         <span class="n">s_atk</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atk</span><span class="p">)</span>
@@ -2437,7 +2436,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">rktrt</span> <span class="o">=</span> <span class="n">rkso</span> <span class="o">*</span> <span class="n">atkrt</span> <span class="o">/</span> <span class="n">s_atk</span>
 
         <span class="c1"># ------------- Death losses (RNLD) -----------------------------</span>
-        <span class="c1"># LintulFunctions.java:292–313. Residual concentrations × dead DM.</span>
+        <span class="c1"># Residual concentrations multiplied by dead biomass.</span>
         <span class="n">rnldlv</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnflv</span> <span class="o">*</span> <span class="n">dlv</span>
         <span class="n">rnldst</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfst</span> <span class="o">*</span> <span class="n">drst</span>
         <span class="n">rnldrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfrt</span> <span class="o">*</span> <span class="n">drrt</span>
@@ -2448,7 +2447,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">rkldst</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rkfst</span> <span class="o">*</span> <span class="n">drst</span>
         <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
 
-        <span class="c1"># ------------- Net per-organ rates (Lintul5.java:1556–1565) ----</span>
+        <span class="c1"># ------------- Net per-organ rates -----------------------------</span>
         <span class="n">n_lv_rate</span> <span class="o">=</span> <span class="n">rnulv</span> <span class="o">-</span> <span class="n">rntlv</span> <span class="o">-</span> <span class="n">rnldlv</span>
         <span class="n">n_st_rate</span> <span class="o">=</span> <span class="n">rnust</span> <span class="o">-</span> <span class="n">rntst</span> <span class="o">-</span> <span class="n">rnldst</span>
         <span class="n">n_rt_rate</span> <span class="o">=</span> <span class="n">rnurt</span> <span class="o">-</span> <span class="n">rntrt</span> <span class="o">-</span> <span class="n">rnldrt</span>
@@ -2533,7 +2532,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 
     <div class="doc doc-contents ">
 
-      <p>Compute the full Lintul5 NPK rate package for one day.</p>
+      <p>Compute the full NPK rate package for one day.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2698,7 +2697,7 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">drrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">drst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the full Lintul5 NPK rate package for one day.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the full NPK rate package for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`. Reads the biomass pools</span>
@@ -2798,7 +2797,6 @@ Rate variables (consumed by the engine to update the matching
         <span class="n">drst</span> <span class="o">=</span> <span class="n">zero</span>
 
     <span class="c1"># ------------- Maximum concentrations (DVS-indexed) ------------</span>
-    <span class="c1"># Lintul5.java:1254–1256, 1282–1287.</span>
     <span class="n">nmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">nmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
     <span class="n">pmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">pmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
     <span class="n">kmaxlv</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">kmxlv</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -2810,7 +2808,6 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">kmaxrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">lrkr</span> <span class="o">*</span> <span class="n">kmaxlv</span>
 
     <span class="c1"># ------------- Translocatable pools (NTRLOC) -------------------</span>
-    <span class="c1"># LintulFunctions.java:86–113.</span>
     <span class="n">atnlv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">anlv</span> <span class="o">-</span> <span class="n">wlv</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnflv</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">atnst</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">anst</span> <span class="o">-</span> <span class="n">wst</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfst</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">atnrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">((</span><span class="n">atnlv</span> <span class="o">+</span> <span class="n">atnst</span><span class="p">)</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">fntrt</span><span class="p">,</span> <span class="n">anrt</span> <span class="o">-</span> <span class="n">wrt</span> <span class="o">*</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfrt</span><span class="p">)</span>
@@ -2827,8 +2824,8 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">atk</span> <span class="o">=</span> <span class="n">atklv</span> <span class="o">+</span> <span class="n">atkst</span> <span class="o">+</span> <span class="n">atkrt</span>
 
     <span class="c1"># ------------- Demand from deficit (NDEMND) --------------------</span>
-    <span class="c1"># LintulFunctions.java:457–489. Storage-organ demand is filtered</span>
-    <span class="c1"># by the first-order translocation time constants.</span>
+    <span class="c1"># Storage-organ demand is filtered by the first-order</span>
+    <span class="c1"># translocation time constants.</span>
     <span class="n">ndeml</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxlv</span> <span class="o">*</span> <span class="n">wlv</span> <span class="o">-</span> <span class="n">anlv</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">ndems</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxst</span> <span class="o">*</span> <span class="n">wst</span> <span class="o">-</span> <span class="n">anst</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">ndemr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">nmaxrt</span> <span class="o">*</span> <span class="n">wrt</span> <span class="o">-</span> <span class="n">anrt</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2849,25 +2846,25 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">kdemto</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">kdeml</span> <span class="o">+</span> <span class="n">kdems</span> <span class="o">+</span> <span class="n">kdemr</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="c1"># ------------- Storage-organ supply via translocation ----------</span>
-    <span class="c1"># Lintul5.java:1345–1347. Translocation only above DVSNT.</span>
+    <span class="c1"># Translocation activates only above DVSNT.</span>
     <span class="n">translocating</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">cp</span><span class="o">.</span><span class="n">dvsnt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">nsupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atn</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tcnt</span>
     <span class="n">psupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atp</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tcpt</span>
     <span class="n">ksupso</span> <span class="o">=</span> <span class="n">translocating</span> <span class="o">*</span> <span class="n">atk</span> <span class="o">/</span> <span class="n">cp</span><span class="o">.</span><span class="n">tckt</span>
 
     <span class="c1"># ------------- Emergence and NLIMIT gates ----------------------</span>
-    <span class="c1"># EMERG mask: thermal-sum since sowing has exceeded TSUMEM.</span>
+    <span class="c1"># EMERG mask: thermal sum since sowing has exceeded TSUMEM.</span>
     <span class="n">emerg</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">cp</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-    <span class="c1"># NLIMIT: Lintul5.java:1273. Uptake only during DVS &lt; DVSNLT and</span>
-    <span class="c1"># only when the soil is wet enough (TRANRF ≥ 0.01).</span>
+    <span class="c1"># NLIMIT: uptake only during DVS &lt; DVSNLT and only when the</span>
+    <span class="c1"># soil is wet enough (TRANRF ≥ 0.01).</span>
     <span class="n">within_window</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">cp</span><span class="o">.</span><span class="n">dvsnlt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">wet_enough</span> <span class="o">=</span> <span class="p">(</span><span class="n">tranrf</span> <span class="o">&gt;=</span> <span class="mf">0.01</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">wlv</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">nlimit</span> <span class="o">=</span> <span class="n">within_window</span> <span class="o">*</span> <span class="n">wet_enough</span>
 
     <span class="c1"># ------------- Whole-plant uptake (NUptake, IOPT-aware) --------</span>
-    <span class="c1"># LintulFunctions.java:515–562. The soil-uptake cap is the</span>
-    <span class="c1"># currently available inorganic pool (``NMINT``/``PMINT``/``KMINT``),</span>
-    <span class="c1"># advanced day-by-day by `SoilNutrients`.</span>
+    <span class="c1"># The soil-uptake cap is the currently available inorganic</span>
+    <span class="c1"># pool (``NMINT``/``PMINT``/``KMINT``), advanced day-by-day by</span>
+    <span class="c1"># `SoilNutrients`.</span>
     <span class="n">nmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">nmint</span> <span class="o">+</span> <span class="n">zero</span>  <span class="c1"># broadcast to [B]</span>
     <span class="n">pmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">pmint</span> <span class="o">+</span> <span class="n">zero</span>
     <span class="n">kmint</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">kmint</span> <span class="o">+</span> <span class="n">zero</span>
@@ -2911,10 +2908,8 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">rkso</span> <span class="o">=</span> <span class="n">rkso</span> <span class="o">*</span> <span class="n">emerg</span>
 
     <span class="c1"># ------------- Concentration-based nutrition indices -----------</span>
-    <span class="c1"># Whole-canopy (leaves + stems) mean concentrations, compared to</span>
-    <span class="c1"># the residual (RMR) and optimal (OPTMR) levels.</span>
-    <span class="c1"># Lintul5.java:1266–1268 (NRMR), the NOPTM call at 1292–1300,</span>
-    <span class="c1"># and the NFGMR + NNINDX calls at 1366–1380.</span>
+    <span class="c1"># Whole-canopy (leaves + stems) mean concentrations, compared</span>
+    <span class="c1"># to the residual (RMR) and optimal (OPTMR) levels.</span>
     <span class="n">tbgmr</span> <span class="o">=</span> <span class="n">wlv</span> <span class="o">+</span> <span class="n">wst</span>
     <span class="n">s_tbgmr</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">tbgmr</span><span class="p">)</span>
 
@@ -2953,7 +2948,7 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-    <span class="c1"># IOPT overrides (LintulFunctions.java:215–228).</span>
+    <span class="c1"># IOPT overrides.</span>
     <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
     <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
     <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
@@ -2969,8 +2964,8 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
     <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
-    <span class="c1"># LintulFunctions.java:644–671. Soil + biological N uptake is</span>
-    <span class="c1"># distributed across leaves/stems/roots by demand share.</span>
+    <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
+    <span class="c1"># stems and roots by demand share.</span>
     <span class="n">n_in</span> <span class="o">=</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span>
     <span class="n">rnulv</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndeml</span> <span class="o">/</span> <span class="n">s_ndemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_in</span>
     <span class="n">rnust</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndems</span> <span class="o">/</span> <span class="n">s_ndemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_in</span>
@@ -2983,8 +2978,8 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">rkurt</span> <span class="o">=</span> <span class="p">(</span><span class="n">kdemr</span> <span class="o">/</span> <span class="n">s_kdemto</span><span class="p">)</span> <span class="o">*</span> <span class="n">kuptr</span>
 
     <span class="c1"># ------------- Translocation to storage organs (NTRANS) --------</span>
-    <span class="c1"># LintulFunctions.java:590–612. RNSO is partitioned across source</span>
-    <span class="c1"># organs by translocatable-pool share.</span>
+    <span class="c1"># RNSO is partitioned across source organs by translocatable-</span>
+    <span class="c1"># pool share.</span>
     <span class="n">s_atn</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atn</span><span class="p">)</span>
     <span class="n">s_atp</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atp</span><span class="p">)</span>
     <span class="n">s_atk</span> <span class="o">=</span> <span class="n">_safe</span><span class="p">(</span><span class="n">atk</span><span class="p">)</span>
@@ -2999,7 +2994,7 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">rktrt</span> <span class="o">=</span> <span class="n">rkso</span> <span class="o">*</span> <span class="n">atkrt</span> <span class="o">/</span> <span class="n">s_atk</span>
 
     <span class="c1"># ------------- Death losses (RNLD) -----------------------------</span>
-    <span class="c1"># LintulFunctions.java:292–313. Residual concentrations × dead DM.</span>
+    <span class="c1"># Residual concentrations multiplied by dead biomass.</span>
     <span class="n">rnldlv</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnflv</span> <span class="o">*</span> <span class="n">dlv</span>
     <span class="n">rnldst</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfst</span> <span class="o">*</span> <span class="n">drst</span>
     <span class="n">rnldrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rnfrt</span> <span class="o">*</span> <span class="n">drrt</span>
@@ -3010,7 +3005,7 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">rkldst</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rkfst</span> <span class="o">*</span> <span class="n">drst</span>
     <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
 
-    <span class="c1"># ------------- Net per-organ rates (Lintul5.java:1556–1565) ----</span>
+    <span class="c1"># ------------- Net per-organ rates -----------------------------</span>
     <span class="n">n_lv_rate</span> <span class="o">=</span> <span class="n">rnulv</span> <span class="o">-</span> <span class="n">rntlv</span> <span class="o">-</span> <span class="n">rnldlv</span>
     <span class="n">n_st_rate</span> <span class="o">=</span> <span class="n">rnust</span> <span class="o">-</span> <span class="n">rntst</span> <span class="o">-</span> <span class="n">rnldst</span>
     <span class="n">n_rt_rate</span> <span class="o">=</span> <span class="n">rnurt</span> <span class="o">-</span> <span class="n">rntrt</span> <span class="o">-</span> <span class="n">rnldrt</span>

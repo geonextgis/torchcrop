@@ -1653,6 +1653,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.root_dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.root_dynamics--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1965,6 +1982,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="torchcrop.processes.root_dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.root_dynamics--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2027,51 +2061,23 @@
     <div class="doc doc-contents first">
 
       <p>Root depth growth, root biomass and root senescence.</p>
-<p>Ports the Lintul5 root block from <code>Lintul5.java</code> together with the
-<code>DeadRootsStemsRate</code> subroutine from <code>LintulFunctions.java</code>. Root
-depth grows at the maximum daily increase <code>RRI</code> whenever the crop has
-emerged and the soil is not severely water-stressed; growth is capped
-at the maximum rooting depth <code>RDM</code> and gated by the SIMPLACE
-<code>INSW</code>-style water-stress step (zero growth iff <code>TRANRF &lt; 0.01</code>).</p>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<ul>
-<li><code>simplace/sim/components/models/lintul5/Lintul5.java</code> — root
-  growth rate <code>RR</code> (lines 1472–1474) and the Java integrations
-  <code>INTGRL(WRT, RWRT)</code> / <code>INTGRL(WRTD, DRRT)</code> / <code>INTGRL(RD, RR)</code>.</li>
-<li><code>simplace/sim/components/models/lintul5/LintulFunctions.java</code> —
-  <code>DeadRootsStemsRate</code> (lines 247–269) and the <code>RELGR</code> root term
-  <code>RWRT = GRT·FRT − DRRT</code> (line 1052).</li>
-<li><code>simplace/sim/components/util/FSTFunctions.java</code> — the
-  <code>INSW(testvalue, X2, X3)</code> step function reproduced verbatim
-  below.</li>
-</ul>
-</div>
-<p>Java reference snippets:
-    Root depth (Lintul5.java)::</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code>    if (EMERG)
-        RR = min(RRI * INSW(TRANRF − 0.01, 0., 1.), RDM − RD);
-
-Root senescence (LintulFunctions.java)::
-
-    double DRRT = 0.0;
-    if (DVS &gt;= DVSDR) DRRT = WRT * RDRRT;
-
-where ``RDRRT = RDRRTB(DVS) * cScaleFactorRDRRoots`` (Lintul5.java
-line 1441) is the DVS-indexed relative root death rate.
+<p>Root depth advances at the maximum daily increase <code>RRI</code> whenever
+the crop has emerged and the soil is not severely water-stressed.
+Growth is capped at the maximum rooting depth <code>RDM</code> and gated by
+an <code>INSW</code>-style water-stress step (zero growth when
+<code>TRANRF &lt; 0.01</code>).</p>
+<h3 id="torchcrop.processes.root_dynamics--equations">Equations<a class="headerlink" href="#torchcrop.processes.root_dynamics--equations" title="Permanent link">&para;</a></h3>
+<p>Root depth growth:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``RR = min(RRI · INSW(TRANRF − 0.01, 0, 1), RDM − RD)``
 </code></pre></div></td></tr></table></div>
-<p>Net root biomass change therefore is <code>RWRT = GRT·FRT − DRRT</code> per the
-<code>RELGR</code> subroutine; in torchcrop <code>GRT·FRT</code> arrives pre-computed as
-<code>g_root</code> from <code>Partitioning</code>.</p>
+<p>Root senescence:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>``DRRT = WRT · RDRRT``  when ``DVS ≥ DVSDR``, else ``0``
+</code></pre></div></td></tr></table></div>
+<p>where <code>RDRRT = RDRRTB(DVS) · scale_factor_rdr_roots</code> is the DVS-
+indexed relative root death rate.</p>
+<p>Net living-root biomass change is <code>RWRT = GRT · FRT − DRRT</code>; the
+<code>GRT · FRT</code> term arrives pre-computed as <code>g_root</code> from
+<code>Partitioning</code>.</p>
 
 
 
@@ -2120,19 +2126,19 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                ``state.wrt`` and (for the default emergence mask)</span>
 <span class="sd">                ``state.tsump``.</span>
 <span class="sd">            g_root: Gross root biomass growth from partitioning</span>
-<span class="sd">                [g DM m⁻² d⁻¹], shape ``[B]`` — equivalent to the Java</span>
-<span class="sd">                ``GRT * FRT`` term.</span>
+<span class="sd">                [g DM m⁻² d⁻¹], shape ``[B]`` — the ``GRT · FRT``</span>
+<span class="sd">                term.</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">            params: Crop parameters; uses ``rri`` (maximum daily root</span>
 <span class="sd">                depth increase), ``rdmcr`` (crop-specific maximum</span>
 <span class="sd">                rooting depth), ``rdrrtb`` (relative root death rate vs</span>
 <span class="sd">                DVS), ``scale_factor_rdr_roots`` and ``dvsdr`` (DVS</span>
 <span class="sd">                threshold above which root death starts).</span>
-<span class="sd">            emerg: Optional emergence mask in ``{0, 1}`` (broadcast to</span>
-<span class="sd">                ``[B]``). Matches Lintul5 ``EMERG``: when ``0`` the root</span>
-<span class="sd">                front does not advance (pre-emergence) and dead-root</span>
-<span class="sd">                accumulation is also suppressed. Default is derived</span>
-<span class="sd">                from ``state.tsump &gt;= params.tsumem``.</span>
+<span class="sd">            emerg: Optional emergence mask in ``{0, 1}`` (broadcast</span>
+<span class="sd">                to ``[B]``). When ``0``, the root front does not</span>
+<span class="sd">                advance (pre-emergence) and dead-root accumulation is</span>
+<span class="sd">                also suppressed. Defaults to</span>
+<span class="sd">                ``state.tsump &gt;= params.tsumem``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2168,36 +2174,28 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
             <span class="n">emerg</span> <span class="o">=</span> <span class="n">emerg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># ----- Root depth growth -----</span>
-        <span class="c1"># FSTFunctions.INSW(x, X2, X3) returns X2 if x &lt; 0, else X3.</span>
-        <span class="c1"># Lintul5.java:1474 :</span>
-        <span class="c1">#   RR = min( RRI * INSW(TRANRF - 0.01, 0., 1.), RDM - RD )</span>
-        <span class="c1"># i.e. a hard step at TRANRF = 0.01 — full root-front velocity</span>
-        <span class="c1"># above the threshold, zero below — *not* a linear scaling.</span>
+        <span class="c1"># Hard step at TRANRF = 0.01: full root-front velocity above</span>
+        <span class="c1"># the threshold, zero below — not a linear scaling.</span>
         <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">one</span><span class="p">)</span>
         <span class="n">rr_pot</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">rri</span> <span class="o">*</span> <span class="n">insw_water</span>
 
-        <span class="c1"># Avoid overshoot beyond the crop-specific maximum rooting depth</span>
-        <span class="c1"># (Lintul5.java uses min(..., RDM - RD); RDM is the maximum</span>
-        <span class="c1"># rooting depth honoured by the soil/profile, capped here by the</span>
-        <span class="c1"># crop&#39;s rdmcr parameter).</span>
+        <span class="c1"># Avoid overshoot beyond the crop-specific maximum rooting</span>
+        <span class="c1"># depth (``rdmcr``).</span>
         <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">rootd_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rr_pot</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span>
 
-        <span class="c1"># Lintul5.java:1473 — root growth only after emergence.</span>
+        <span class="c1"># Root growth only after emergence.</span>
         <span class="n">rootd_rate</span> <span class="o">=</span> <span class="n">rootd_rate</span> <span class="o">*</span> <span class="n">emerg</span>
 
         <span class="c1"># ----- Root senescence (DRRT) -----</span>
-        <span class="c1"># LintulFunctions.DeadRootsStemsRate:</span>
-        <span class="c1">#   DRRT = WRT * RDRRT   if DVS &gt;= DVSDR else 0</span>
-        <span class="c1"># RDRRT = RDRRTB(DVS) * cScaleFactorRDRRoots   (Lintul5.java:1441)</span>
+        <span class="c1"># DRRT = WRT * RDRRT when DVS &gt;= DVSDR, else 0.</span>
         <span class="n">rdrrt</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdrrtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rdr_roots</span>
         <span class="n">death_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">params</span><span class="o">.</span><span class="n">dvsdr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">drrt</span> <span class="o">=</span> <span class="n">wrt</span> <span class="o">*</span> <span class="n">rdrrt</span> <span class="o">*</span> <span class="n">death_mask</span> <span class="o">*</span> <span class="n">emerg</span>
 
-        <span class="c1"># ----- Net living-root biomass change (RELGR root term) -----</span>
-        <span class="c1"># LintulFunctions.RELGR:  RWRT = GRT * FRT - DRRT</span>
-        <span class="c1"># g_root already carries the GRT * FRT contribution from</span>
-        <span class="c1"># `Partitioning`, so we just subtract the senescence flux.</span>
+        <span class="c1"># ----- Net living-root biomass change -----</span>
+        <span class="c1"># RWRT = GRT * FRT - DRRT; g_root already carries the</span>
+        <span class="c1"># GRT * FRT contribution from `Partitioning`.</span>
         <span class="n">wrt_rate</span> <span class="o">=</span> <span class="n">g_root</span> <span class="o">-</span> <span class="n">drrt</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2259,8 +2257,8 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <td><code>g_root</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>Gross root biomass growth from partitioning
-[g DM m⁻² d⁻¹], shape <code>[B]</code> — equivalent to the Java
-<code>GRT * FRT</code> term.</p></td>
+[g DM m⁻² d⁻¹], shape <code>[B]</code> — the <code>GRT · FRT</code>
+term.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2282,11 +2280,11 @@ threshold above which root death starts).</p></td>
       <tr>
         <td><code>emerg</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Optional emergence mask in <code>{0, 1}</code> (broadcast to
-<code>[B]</code>). Matches Lintul5 <code>EMERG</code>: when <code>0</code> the root
-front does not advance (pre-emergence) and dead-root
-accumulation is also suppressed. Default is derived
-from <code>state.tsump &gt;= params.tsumem</code>.</p></td>
+        <td><p>Optional emergence mask in <code>{0, 1}</code> (broadcast
+to <code>[B]</code>). When <code>0</code>, the root front does not
+advance (pre-emergence) and dead-root accumulation is
+also suppressed. Defaults to
+<code>state.tsump &gt;= params.tsumem</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2344,19 +2342,19 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            ``state.wrt`` and (for the default emergence mask)</span>
 <span class="sd">            ``state.tsump``.</span>
 <span class="sd">        g_root: Gross root biomass growth from partitioning</span>
-<span class="sd">            [g DM m⁻² d⁻¹], shape ``[B]`` — equivalent to the Java</span>
-<span class="sd">            ``GRT * FRT`` term.</span>
+<span class="sd">            [g DM m⁻² d⁻¹], shape ``[B]`` — the ``GRT · FRT``</span>
+<span class="sd">            term.</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">        params: Crop parameters; uses ``rri`` (maximum daily root</span>
 <span class="sd">            depth increase), ``rdmcr`` (crop-specific maximum</span>
 <span class="sd">            rooting depth), ``rdrrtb`` (relative root death rate vs</span>
 <span class="sd">            DVS), ``scale_factor_rdr_roots`` and ``dvsdr`` (DVS</span>
 <span class="sd">            threshold above which root death starts).</span>
-<span class="sd">        emerg: Optional emergence mask in ``{0, 1}`` (broadcast to</span>
-<span class="sd">            ``[B]``). Matches Lintul5 ``EMERG``: when ``0`` the root</span>
-<span class="sd">            front does not advance (pre-emergence) and dead-root</span>
-<span class="sd">            accumulation is also suppressed. Default is derived</span>
-<span class="sd">            from ``state.tsump &gt;= params.tsumem``.</span>
+<span class="sd">        emerg: Optional emergence mask in ``{0, 1}`` (broadcast</span>
+<span class="sd">            to ``[B]``). When ``0``, the root front does not</span>
+<span class="sd">            advance (pre-emergence) and dead-root accumulation is</span>
+<span class="sd">            also suppressed. Defaults to</span>
+<span class="sd">            ``state.tsump &gt;= params.tsumem``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2392,36 +2390,28 @@ Rate variables (consumed by the engine for state update)</code></td>
         <span class="n">emerg</span> <span class="o">=</span> <span class="n">emerg</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 
     <span class="c1"># ----- Root depth growth -----</span>
-    <span class="c1"># FSTFunctions.INSW(x, X2, X3) returns X2 if x &lt; 0, else X3.</span>
-    <span class="c1"># Lintul5.java:1474 :</span>
-    <span class="c1">#   RR = min( RRI * INSW(TRANRF - 0.01, 0., 1.), RDM - RD )</span>
-    <span class="c1"># i.e. a hard step at TRANRF = 0.01 — full root-front velocity</span>
-    <span class="c1"># above the threshold, zero below — *not* a linear scaling.</span>
+    <span class="c1"># Hard step at TRANRF = 0.01: full root-front velocity above</span>
+    <span class="c1"># the threshold, zero below — not a linear scaling.</span>
     <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">one</span><span class="p">)</span>
     <span class="n">rr_pot</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">rri</span> <span class="o">*</span> <span class="n">insw_water</span>
 
-    <span class="c1"># Avoid overshoot beyond the crop-specific maximum rooting depth</span>
-    <span class="c1"># (Lintul5.java uses min(..., RDM - RD); RDM is the maximum</span>
-    <span class="c1"># rooting depth honoured by the soil/profile, capped here by the</span>
-    <span class="c1"># crop&#39;s rdmcr parameter).</span>
+    <span class="c1"># Avoid overshoot beyond the crop-specific maximum rooting</span>
+    <span class="c1"># depth (``rdmcr``).</span>
     <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">rootd_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rr_pot</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span>
 
-    <span class="c1"># Lintul5.java:1473 — root growth only after emergence.</span>
+    <span class="c1"># Root growth only after emergence.</span>
     <span class="n">rootd_rate</span> <span class="o">=</span> <span class="n">rootd_rate</span> <span class="o">*</span> <span class="n">emerg</span>
 
     <span class="c1"># ----- Root senescence (DRRT) -----</span>
-    <span class="c1"># LintulFunctions.DeadRootsStemsRate:</span>
-    <span class="c1">#   DRRT = WRT * RDRRT   if DVS &gt;= DVSDR else 0</span>
-    <span class="c1"># RDRRT = RDRRTB(DVS) * cScaleFactorRDRRoots   (Lintul5.java:1441)</span>
+    <span class="c1"># DRRT = WRT * RDRRT when DVS &gt;= DVSDR, else 0.</span>
     <span class="n">rdrrt</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">rdrrtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rdr_roots</span>
     <span class="n">death_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">params</span><span class="o">.</span><span class="n">dvsdr</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">drrt</span> <span class="o">=</span> <span class="n">wrt</span> <span class="o">*</span> <span class="n">rdrrt</span> <span class="o">*</span> <span class="n">death_mask</span> <span class="o">*</span> <span class="n">emerg</span>
 
-    <span class="c1"># ----- Net living-root biomass change (RELGR root term) -----</span>
-    <span class="c1"># LintulFunctions.RELGR:  RWRT = GRT * FRT - DRRT</span>
-    <span class="c1"># g_root already carries the GRT * FRT contribution from</span>
-    <span class="c1"># `Partitioning`, so we just subtract the senescence flux.</span>
+    <span class="c1"># ----- Net living-root biomass change -----</span>
+    <span class="c1"># RWRT = GRT * FRT - DRRT; g_root already carries the</span>
+    <span class="c1"># GRT * FRT contribution from `Partitioning`.</span>
     <span class="n">wrt_rate</span> <span class="o">=</span> <span class="n">g_root</span> <span class="o">-</span> <span class="n">drrt</span>
 
     <span class="k">return</span> <span class="p">{</span>
