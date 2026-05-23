@@ -1,10 +1,5 @@
 """Crop nutrient demand, uptake, translocation and stress indices.
 
-Mechanistic implementation of the Lintul5 NPK block. Every quantity
-is a batch-compatible PyTorch tensor of shape ``[B]`` so the module
-integrates into the differentiable simulation engine without breaking
-the autograd graph or the batch dimension.
-
 The module covers:
 
 * Translocatable pools (``NTRLOC``) — leaf, stem, and root nutrient
