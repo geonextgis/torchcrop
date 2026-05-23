@@ -85,7 +85,15 @@
          <lastmod>2026-05-23</lastmod>
     </url>
     <url>
+         <loc>https://geonextgis.github.io/torchcrop/api/processes/co2_transpiration/</loc>
+         <lastmod>2026-05-23</lastmod>
+    </url>
+    <url>
          <loc>https://geonextgis.github.io/torchcrop/api/processes/evapotranspiration/</loc>
+         <lastmod>2026-05-23</lastmod>
+    </url>
+    <url>
+         <loc>https://geonextgis.github.io/torchcrop/api/processes/heat_stress/</loc>
          <lastmod>2026-05-23</lastmod>
     </url>
     <url>

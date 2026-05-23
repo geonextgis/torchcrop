@@ -5458,6 +5458,62 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../processes/heat_stress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    heat_stress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../processes/co2_transpiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    co2_transpiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -25352,18 +25408,18 @@ simulation pipeline without breaking autograd or batching.</p>
 <span class="sd">            Dict of ``[B]`` tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` for the</span>
 <span class="sd">            six soil pools, plus diagnostics:</span>
 
-<span class="sd">                * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
-<span class="sd">                  [g X m⁻² d⁻¹] — Rate of change of the **organic**</span>
-<span class="sd">                  pools (= ``RNMINS``, negative when mineralising).</span>
-<span class="sd">                * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``</span>
-<span class="sd">                  [g X m⁻² d⁻¹] — Rate of change of the **inorganic**</span>
-<span class="sd">                  pools (= ``RNMINT`` etc. = fertiliser + mineralisation</span>
-<span class="sd">                  − crop uptake).</span>
-<span class="sd">                * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —</span>
-<span class="sd">                  Effective fertiliser supply after recovery.</span>
-<span class="sd">                * ``mineralisation_n``, ``mineralisation_p``,</span>
-<span class="sd">                  ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
-<span class="sd">                  mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
+<span class="sd">            * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
+<span class="sd">                [g X m⁻² d⁻¹] — Rate of change of the **organic**</span>
+<span class="sd">                pools (= ``RNMINS``, negative when mineralising).</span>
+<span class="sd">            * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``</span>
+<span class="sd">                [g X m⁻² d⁻¹] — Rate of change of the **inorganic**</span>
+<span class="sd">                pools (= ``RNMINT`` etc. = fertiliser + mineralisation</span>
+<span class="sd">                − crop uptake).</span>
+<span class="sd">            * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —</span>
+<span class="sd">                Effective fertiliser supply after recovery.</span>
+<span class="sd">            * ``mineralisation_n``, ``mineralisation_p``,</span>
+<span class="sd">                ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
+<span class="sd">                mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
         <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
@@ -25563,19 +25619,17 @@ the current <code>NMIN</code> to prevent over-depletion.</p></td>
 six soil pools, plus diagnostics</code></td>
       <td><ul>
 <li><code>nmin_rate</code>, <code>pmin_rate</code>, <code>kmin_rate</code>
-      [g X m⁻² d⁻¹] — Rate of change of the <strong>organic</strong>
-      pools (= <code>RNMINS</code>, negative when mineralising).<ul>
+    [g X m⁻² d⁻¹] — Rate of change of the <strong>organic</strong>
+    pools (= <code>RNMINS</code>, negative when mineralising).</li>
 <li><code>nmint_rate</code>, <code>pmint_rate</code>, <code>kmint_rate</code>
-  [g X m⁻² d⁻¹] — Rate of change of the <strong>inorganic</strong>
-  pools (= <code>RNMINT</code> etc. = fertiliser + mineralisation
-  − crop uptake).</li>
+    [g X m⁻² d⁻¹] — Rate of change of the <strong>inorganic</strong>
+    pools (= <code>RNMINT</code> etc. = fertiliser + mineralisation
+    − crop uptake).</li>
 <li><code>fertns</code>, <code>fertps</code>, <code>fertks</code> [g X m⁻² d⁻¹] —
-  Effective fertiliser supply after recovery.</li>
+    Effective fertiliser supply after recovery.</li>
 <li><code>mineralisation_n</code>, <code>mineralisation_p</code>,
-  <code>mineralisation_k</code> [g X m⁻² d⁻¹] — Positive
-  mineralisation flux into <code>NMINT</code> (= <code>−RNMINS</code>).</li>
-</ul>
-</li>
+    <code>mineralisation_k</code> [g X m⁻² d⁻¹] — Positive
+    mineralisation flux into <code>NMINT</code> (= <code>−RNMINS</code>).</li>
 </ul></td>
     </tr>
   </tbody>
@@ -25631,18 +25685,18 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">        Dict of ``[B]`` tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` for the</span>
 <span class="sd">        six soil pools, plus diagnostics:</span>
 
-<span class="sd">            * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
-<span class="sd">              [g X m⁻² d⁻¹] — Rate of change of the **organic**</span>
-<span class="sd">              pools (= ``RNMINS``, negative when mineralising).</span>
-<span class="sd">            * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``</span>
-<span class="sd">              [g X m⁻² d⁻¹] — Rate of change of the **inorganic**</span>
-<span class="sd">              pools (= ``RNMINT`` etc. = fertiliser + mineralisation</span>
-<span class="sd">              − crop uptake).</span>
-<span class="sd">            * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —</span>
-<span class="sd">              Effective fertiliser supply after recovery.</span>
-<span class="sd">            * ``mineralisation_n``, ``mineralisation_p``,</span>
-<span class="sd">              ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
-<span class="sd">              mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
+<span class="sd">        * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
+<span class="sd">            [g X m⁻² d⁻¹] — Rate of change of the **organic**</span>
+<span class="sd">            pools (= ``RNMINS``, negative when mineralising).</span>
+<span class="sd">        * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``</span>
+<span class="sd">            [g X m⁻² d⁻¹] — Rate of change of the **inorganic**</span>
+<span class="sd">            pools (= ``RNMINT`` etc. = fertiliser + mineralisation</span>
+<span class="sd">            − crop uptake).</span>
+<span class="sd">        * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —</span>
+<span class="sd">            Effective fertiliser supply after recovery.</span>
+<span class="sd">        * ``mineralisation_n``, ``mineralisation_p``,</span>
+<span class="sd">            ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
+<span class="sd">            mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
     <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
@@ -28893,7 +28947,7 @@ Ignored for 1-D input. Defaults to <code>"batch i"</code>.</p></td>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2024 - 2024 Krishnagopal Halder
+      Copyright &copy; 2026 - 2026 Krishnagopal Halder
     </div>
   
   

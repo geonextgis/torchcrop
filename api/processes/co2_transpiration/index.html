@@ -12,13 +12,13 @@
         <meta name="author" content="geonextgis">
       
       
-        <link rel="canonical" href="https://geonextgis.github.io/torchcrop/api/functions/interpolation/">
+        <link rel="canonical" href="https://geonextgis.github.io/torchcrop/api/processes/co2_transpiration/">
       
       
-        <link rel="prev" href="../fst_functions/">
+        <link rel="prev" href="../heat_stress/">
       
       
-        <link rel="next" href="../smoothing/">
+        <link rel="next" href="../../utils/io/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>interpolation - torchcrop</title>
+        <title>co2_transpiration - torchcrop</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#interpolation" class="md-skip">
+        <a href="#co2_transpiration" class="md-skip">
           Skip to content
         </a>
       
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              interpolation
+              co2_transpiration
             
           </span>
         </div>
@@ -1003,20 +1003,18 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" >
         
           
           <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="0">
@@ -1037,7 +1035,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1055,7 +1053,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fst_functions/" class="md-nav__link">
+      <a href="../../functions/fst_functions/" class="md-nav__link">
         
   
   
@@ -1080,37 +1078,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    interpolation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../functions/interpolation/" class="md-nav__link">
         
   
   
@@ -1126,48 +1097,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#torchcrop.functions.interpolation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        torchcrop.functions.interpolation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#torchcrop.functions.interpolation.interpolate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        interpolate()
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1180,7 +1109,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../smoothing/" class="md-nav__link">
+      <a href="../../functions/smoothing/" class="md-nav__link">
         
   
   
@@ -1352,18 +1281,20 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" checked>
         
           
           <label class="md-nav__link" for="__nav_9_10" id="__nav_9_10_label" tabindex="0">
@@ -1384,7 +1315,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_9_10">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1402,7 +1333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/astro/" class="md-nav__link">
+      <a href="../astro/" class="md-nav__link">
         
   
   
@@ -1430,7 +1361,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/evapotranspiration/" class="md-nav__link">
+      <a href="../evapotranspiration/" class="md-nav__link">
         
   
   
@@ -1458,7 +1389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/irradiation/" class="md-nav__link">
+      <a href="../irradiation/" class="md-nav__link">
         
   
   
@@ -1486,7 +1417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/leaf_dynamics/" class="md-nav__link">
+      <a href="../leaf_dynamics/" class="md-nav__link">
         
   
   
@@ -1514,7 +1445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/nutrient_demand/" class="md-nav__link">
+      <a href="../nutrient_demand/" class="md-nav__link">
         
   
   
@@ -1542,7 +1473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/partitioning/" class="md-nav__link">
+      <a href="../partitioning/" class="md-nav__link">
         
   
   
@@ -1570,7 +1501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/phenology/" class="md-nav__link">
+      <a href="../phenology/" class="md-nav__link">
         
   
   
@@ -1598,7 +1529,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/photosynthesis/" class="md-nav__link">
+      <a href="../photosynthesis/" class="md-nav__link">
         
   
   
@@ -1626,7 +1557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/stem_dynamics/" class="md-nav__link">
+      <a href="../stem_dynamics/" class="md-nav__link">
         
   
   
@@ -1654,7 +1585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/root_dynamics/" class="md-nav__link">
+      <a href="../root_dynamics/" class="md-nav__link">
         
   
   
@@ -1682,7 +1613,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/soil_nutrients/" class="md-nav__link">
+      <a href="../soil_nutrients/" class="md-nav__link">
         
   
   
@@ -1710,7 +1641,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/stress/" class="md-nav__link">
+      <a href="../stress/" class="md-nav__link">
         
   
   
@@ -1738,7 +1669,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/water_balance/" class="md-nav__link">
+      <a href="../water_balance/" class="md-nav__link">
         
   
   
@@ -1766,7 +1697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../processes/heat_stress/" class="md-nav__link">
+      <a href="../heat_stress/" class="md-nav__link">
         
   
   
@@ -1791,10 +1722,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../processes/co2_transpiration/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    co2_transpiration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1810,6 +1768,93 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        torchcrop.processes.co2_transpiration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="torchcrop.processes.co2_transpiration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Co2Transpiration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Co2Transpiration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        factor()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1996,24 +2041,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#torchcrop.functions.interpolation" class="md-nav__link">
+  <a href="#torchcrop.processes.co2_transpiration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        torchcrop.functions.interpolation
+        torchcrop.processes.co2_transpiration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="torchcrop.processes.co2_transpiration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration--equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equations
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#torchcrop.functions.interpolation.interpolate" class="md-nav__link">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        interpolate()
+        Co2Transpiration
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Co2Transpiration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.factor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        factor()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2040,19 +2130,38 @@
   
 
 
-<h1 id="interpolation">interpolation<a class="headerlink" href="#interpolation" title="Permanent link">&para;</a></h1>
+<h1 id="co2_transpiration">co2_transpiration<a class="headerlink" href="#co2_transpiration" title="Permanent link">&para;</a></h1>
 
 
   <div class="doc doc-object doc-module">
 
-<a id="torchcrop.functions.interpolation"></a>
+<a id="torchcrop.processes.co2_transpiration"></a>
     <div class="doc doc-contents first">
 
-      <p>Differentiable piecewise-linear interpolation.</p>
-<p>Replaces the SIMPLACE <code>AFGEN</code>/<code>InterpolationTable</code> lookup used throughout
-Lintul5. The implementation is a pure PyTorch piecewise-linear interpolator
-that is differentiable with respect to both the query <code>x</code> and the table
-<code>y</code> values.</p>
+      <p>CO\ :sub:<code>2</code> influence on crop transpiration.</p>
+<p>Elevated atmospheric CO\ :sub:<code>2</code> reduces stomatal conductance, and
+therefore crop transpiration. This module scales the potential
+transpiration <code>PTRAN</code> by a linear reduction factor before it enters
+the water balance, so the effect propagates into the water-stress
+factor <code>TRANRF</code>.</p>
+<p>This is a <em>distinct</em> mechanism from the CO\ :sub:<code>2</code> correction
+applied to reference ET in
+<code>torchcrop.processes.evapotranspiration</code>: that one rescales the
+reference evapotranspiration <code>ET0</code> via an interpolation table,
+whereas this module rescales the <em>potential transpiration demand</em>
+that the water balance compares against soil water supply.</p>
+<h3 id="torchcrop.processes.co2_transpiration--equations">Equations<a class="headerlink" href="#torchcrop.processes.co2_transpiration--equations" title="Permanent link">&para;</a></h3>
+<p>Linear reduction factor as a function of the atmospheric
+CO\ :sub:<code>2</code> concentration:</p>
+<div class="arithmatex">\[
+f(\text{CO}_2) = m \cdot \text{CO}_2 + b
+\]</div>
+<div class="arithmatex">\[
+\text{PTRAN}_{\text{reduced}} = \text{PTRAN} \cdot f(\text{CO}_2)
+\]</div>
+<p>With the defaults <code>m = -0.0003</code> ppm⁻¹ and <code>b = 1.1</code>, the factor
+is <code>≈ 1</code> at the <code>≈ 350</code> ppm reference and falls below <code>1</code> for
+higher concentrations (less transpiration under elevated CO₂).</p>
 
 
 
@@ -2064,23 +2173,22 @@ that is differentiable with respect to both the query <code>x</code> and the tab
 
 
 
-
-  <div class="doc doc-object doc-function">
-
+  <div class="doc doc-object doc-class">
 
 
-<h2 id="torchcrop.functions.interpolation.interpolate" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">interpolate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span></code>
+
+<h2 id="torchcrop.processes.co2_transpiration.Co2Transpiration" class="doc doc-heading">
+        <code>
+Co2Transpiration            (<span title="torch.nn.modules.module.Module">Module</span>)
+        </code>
 
 
-<a href="#torchcrop.functions.interpolation.interpolate" class="headerlink" title="Permanent link">&para;</a></h2>
+
+<a href="#torchcrop.processes.co2_transpiration.Co2Transpiration" class="headerlink" title="Permanent link">&para;</a></h2>
 
     <div class="doc doc-contents ">
 
-      <p>Piecewise-linear interpolation of <code>x</code> against a breakpoint table.</p>
-<p>Equivalent to the Lintul5 <code>AFGEN</code> function. Outside the support of the
-table the output is clamped to the first/last y-value (flat extrapolation),
-matching the SIMPLACE <code>InterpolationTable</code> behaviour.</p>
+      <p>Reduce potential transpiration as a linear function of CO\ :sub:<code>2</code>.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2094,17 +2202,141 @@ matching the SIMPLACE <code>InterpolationTable</code> behaviour.</p>
   </thead>
   <tbody>
       <tr>
-        <td><code>table</code></td>
-        <td><code>torch.Tensor</code></td>
-        <td><p>Breakpoint table of shape <code>[N, 2]</code> with columns
-<code>(x_k, y_k)</code> sorted by increasing <code>x_k</code>. May also be of
-shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
-        <td><em>required</em></td>
+        <td><code>transpiration_m</code></td>
+        <td><code>float</code></td>
+        <td><p>Slope <code>cTranspiration_m</code> of the linear reduction
+factor [ppm⁻¹] (default <code>-0.0003</code>).</p></td>
+        <td><code>-0.0003</code></td>
       </tr>
       <tr>
-        <td><code>x</code></td>
+        <td><code>transpiration_b</code></td>
+        <td><code>float</code></td>
+        <td><p>Intercept <code>cTranspiration_b</code> of the linear
+reduction factor [-] (default <code>1.1</code>).</p></td>
+        <td><code>1.1</code></td>
+      </tr>
+      <tr>
+        <td><code>clamp_nonnegative</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code> (default), clamp the reduction
+factor to <code>≥ 0</code> so an extreme CO\ :sub:<code>2</code> value can never
+flip the sign of transpiration.</p></td>
+        <td><code>True</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Co2Transpiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reduce potential transpiration as a linear function of CO\ :sub:`2`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        transpiration_m: Slope ``cTranspiration_m`` of the linear reduction</span>
+<span class="sd">            factor [ppm⁻¹] (default ``-0.0003``).</span>
+<span class="sd">        transpiration_b: Intercept ``cTranspiration_b`` of the linear</span>
+<span class="sd">            reduction factor [-] (default ``1.1``).</span>
+<span class="sd">        clamp_nonnegative: If ``True`` (default), clamp the reduction</span>
+<span class="sd">            factor to ``≥ 0`` so an extreme CO\ :sub:`2` value can never</span>
+<span class="sd">            flip the sign of transpiration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transpiration_m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0003</span><span class="p">,</span>
+        <span class="n">transpiration_b</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.1</span><span class="p">,</span>
+        <span class="n">clamp_nonnegative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_m</span> <span class="o">=</span> <span class="n">transpiration_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_b</span> <span class="o">=</span> <span class="n">transpiration_b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span> <span class="o">=</span> <span class="n">clamp_nonnegative</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO\ :sub:`2` transpiration-reduction factor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            co2: Atmospheric CO\ :sub:`2` concentration [ppm], broadcastable</span>
+<span class="sd">                to the transpiration tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Reduction factor ``f(CO₂) = m·CO₂ + b`` [-]; clamped to ``≥ 0``</span>
+<span class="sd">            when ``clamp_nonnegative`` is set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_m</span> <span class="o">*</span> <span class="n">co2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_b</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO\ :sub:`2` reduction to potential transpiration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">            co2: Atmospheric CO\ :sub:`2` concentration [ppm], a scalar</span>
+<span class="sd">                tensor or shape broadcastable to ``[B]``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict of ``[B]`` tensors:</span>
+
+<span class="sd">            * ``ptran`` [mm d⁻¹] — CO\ :sub:`2`-reduced potential</span>
+<span class="sd">              transpiration ``PTRAN · f(CO₂)``.</span>
+<span class="sd">            * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">co2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
+            <span class="s2">&quot;co2_factor&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="p">}</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.processes.co2_transpiration.Co2Transpiration.factor" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.factor" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Compute the CO\ :sub:<code>2</code> transpiration-reduction factor.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>co2</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Query values of shape <code>[B]</code> (or scalar).</p></td>
+        <td><p>Atmospheric CO\ :sub:<code>2</code> concentration [ppm], broadcastable
+to the transpiration tensor.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2120,11 +2352,77 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
   <tbody>
     <tr>
       <td><code>torch.Tensor</code></td>
-      <td><p>Interpolated values with the broadcast shape of <code>x</code>.</p></td>
+      <td><p>Reduction factor <code>f(CO₂) = m·CO₂ + b</code> [-]; clamped to <code>≥ 0</code>
+when <code>clamp_nonnegative</code> is set.</p></td>
     </tr>
   </tbody>
 </table>
-<p><strong>Exceptions:</strong></p>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO\ :sub:`2` transpiration-reduction factor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        co2: Atmospheric CO\ :sub:`2` concentration [ppm], broadcastable</span>
+<span class="sd">            to the transpiration tensor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Reduction factor ``f(CO₂) = m·CO₂ + b`` [-]; clamped to ``≥ 0``</span>
+<span class="sd">        when ``clamp_nonnegative`` is set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_m</span> <span class="o">*</span> <span class="n">co2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_b</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">f</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.processes.co2_transpiration.Co2Transpiration.forward" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">co2</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.processes.co2_transpiration.Co2Transpiration.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Apply the CO\ :sub:<code>2</code> reduction to potential transpiration.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ptran</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Potential canopy transpiration [mm d⁻¹], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>co2</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Atmospheric CO\ :sub:<code>2</code> concentration [ppm], a scalar
+tensor or shape broadcastable to <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
 <table>
   <thead>
     <tr>
@@ -2133,50 +2431,58 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     </tr>
   </thead>
   <tbody>
-      <tr>
-        <td><code>ValueError</code></td>
-        <td><p>If <code>table</code> is neither 2-D nor 3-D.</p></td>
-      </tr>
+    <tr>
+      <td><code>Dict of ``[B]`` tensors</code></td>
+      <td><ul>
+<li><code>ptran</code> [mm d⁻¹] — CO\ :sub:<code>2</code>-reduced potential
+  transpiration <code>PTRAN · f(CO₂)</code>.</li>
+<li><code>co2_factor</code> [-] — The applied reduction factor <code>f(CO₂)</code>.</li>
+</ul></td>
+    </tr>
   </tbody>
 </table>
         <details class="quote">
-          <summary>Source code in <code>torchcrop/functions/interpolation.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span>
-    <span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Piecewise-linear interpolation of ``x`` against a breakpoint table.</span>
-
-<span class="sd">    Equivalent to the Lintul5 ``AFGEN`` function. Outside the support of the</span>
-<span class="sd">    table the output is clamped to the first/last y-value (flat extrapolation),</span>
-<span class="sd">    matching the SIMPLACE ``InterpolationTable`` behaviour.</span>
+          <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO\ :sub:`2` reduction to potential transpiration.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        table: Breakpoint table of shape ``[N, 2]`` with columns</span>
-<span class="sd">            ``(x_k, y_k)`` sorted by increasing ``x_k``. May also be of</span>
-<span class="sd">            shape ``[B, N, 2]`` for batch-specific tables.</span>
-<span class="sd">        x: Query values of shape ``[B]`` (or scalar).</span>
+<span class="sd">        ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
+<span class="sd">        co2: Atmospheric CO\ :sub:`2` concentration [ppm], a scalar</span>
+<span class="sd">            tensor or shape broadcastable to ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Interpolated values with the broadcast shape of ``x``.</span>
+<span class="sd">        Dict of ``[B]`` tensors:</span>
 
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If ``table`` is neither 2-D nor 3-D.</span>
+<span class="sd">        * ``ptran`` [mm d⁻¹] — CO\ :sub:`2`-reduced potential</span>
+<span class="sd">          transpiration ``PTRAN · f(CO₂)``.</span>
+<span class="sd">        * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">xs</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-        <span class="n">ys</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">_interp_1d</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_interp_batched</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;table must be of shape [N, 2] or [B, N, 2]; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span>
+    <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">co2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
+        <span class="s2">&quot;co2_factor&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+    <span class="p">}</span>
 </code></pre></div>
         </details>
     </div>
 
   </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
 
 
 
@@ -2210,7 +2516,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 18, 2026 21:54:28 UTC"><span class="timeago" datetime="2026-04-18T21:54:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 18, 2026 21:54:28 UTC">2026-04-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2026 20:35:34 UTC"><span class="timeago" datetime="2026-05-23T20:35:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2026 20:35:34 UTC">2026-05-23</span>
   </span>
 
     
@@ -2220,7 +2526,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 18, 2026 21:54:28 UTC"><span class="timeago" datetime="2026-04-18T21:54:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 18, 2026 21:54:28 UTC">2026-04-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2026 20:35:34 UTC"><span class="timeago" datetime="2026-05-23T20:35:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2026 20:35:34 UTC">2026-05-23</span>
   </span>
 
     

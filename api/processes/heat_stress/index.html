@@ -1,0 +1,2972 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A PyTorch-native library for hybrid crop modeling.">
+      
+      
+        <meta name="author" content="geonextgis">
+      
+      
+        <link rel="canonical" href="https://geonextgis.github.io/torchcrop/api/processes/heat_stress/">
+      
+      
+        <link rel="prev" href="../water_balance/">
+      
+      
+        <link rel="next" href="../co2_transpiration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>heat_stress - torchcrop</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans:300,300i,400,400i,700,700i%7CRegular:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Google Sans";--md-code-font:"Regular"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../css/timeago.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heat_stress" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="torchcrop" class="md-header__button md-logo" aria-label="torchcrop" data-md-component="logo">
+      
+  <img src="../../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            torchcrop
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              heat_stress
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/geonextgis/torchcrop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="torchcrop" class="md-nav__button md-logo" aria-label="torchcrop" data-md-component="logo">
+      
+  <img src="../../../assets/logo.png" alt="logo">
+
+    </a>
+    torchcrop
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/geonextgis/torchcrop" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/geonextgis/torchcrop/issues" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report Issues
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Examples
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../torchcrop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_5" id="__nav_9_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Drivers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Drivers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../drivers/weather/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    weather
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_6" id="__nav_9_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Parameters
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parameters/crop_params/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    crop_params
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parameters/site_params/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    site_params
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../parameters/soil_params/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    soil_params
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_7" id="__nav_9_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    States
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    States
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../states/model_state/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    model_state
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_8" id="__nav_9_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Functions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../functions/fst_functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    fst_functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../functions/interpolation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    interpolation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../functions/smoothing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    smoothing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_9" id="__nav_9_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Neural Networks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Neural Networks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../nn/learned_stress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    learned_stress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../nn/param_net/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    param_net
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../nn/residual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    residual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_10" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9_10" id="__nav_9_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Processes
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Processes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../astro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    astro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evapotranspiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    evapotranspiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../irradiation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    irradiation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../leaf_dynamics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    leaf_dynamics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nutrient_demand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nutrient_demand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../partitioning/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    partitioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../phenology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    phenology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../photosynthesis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    photosynthesis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stem_dynamics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stem_dynamics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../root_dynamics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    root_dynamics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../soil_nutrients/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    soil_nutrients
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    stress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../water_balance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    water_balance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    heat_stress
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    heat_stress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        torchcrop.processes.heat_stress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnGrain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeatStressOnGrain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HeatStressOnGrain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnGrain.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeatStressOnLeafSenescence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HeatStressOnLeafSenescence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../co2_transpiration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    co2_transpiration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_11" id="__nav_9_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utils
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Utils
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utils/io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    io
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utils/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../utils/vis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        torchcrop.processes.heat_stress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnGrain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeatStressOnGrain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HeatStressOnGrain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnGrain.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HeatStressOnLeafSenescence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="HeatStressOnLeafSenescence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence.forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+
+
+
+                  
+
+
+  
+  
+
+
+<h1 id="heat_stress">heat_stress<a class="headerlink" href="#heat_stress" title="Permanent link">&para;</a></h1>
+
+
+  <div class="doc doc-object doc-module">
+
+<a id="torchcrop.processes.heat_stress"></a>
+    <div class="doc doc-contents first">
+
+      <p>Heat-stress effects on leaf senescence and on grain yield.</p>
+<p>Two optional climate-change-related modules that are not part of the
+core Lintul5 time loop but are routinely coupled to it:</p>
+<ul>
+<li><code>HeatStressOnLeafSenescence</code> — a per-day module that accelerates
+  leaf senescence when the daily maximum temperature exceeds a
+  critical threshold. Its scalar output multiplies the relative
+  death rate <code>RDR</code> in <code>torchcrop.processes.leaf_dynamics.LeafDynamics</code>.</li>
+<li><code>HeatStressOnGrain</code> — a trajectory-level module that accumulates a
+  daily heat-stress intensity over a development-stage window around
+  anthesis and converts it into a multiplicative yield penalty.</li>
+</ul>
+<p>Both modules are <em>stateless</em> with respect to crop constants: every
+crop-specific value (critical temperatures, slopes, development-stage
+thresholds) is read from <code>CropParameters</code> at call time. This keeps
+the heat-stress configuration in the same per-crop parameter
+container as the core Lintul5 parameters, so a single external crop
+configuration file can drive a multi-crop simulation. The
+<code>smooth</code>/<code>k_sharp</code> constructor arguments are <em>behavioural</em> flags
+(gradient smoothing), not crop constants, and therefore stay on the
+module.</p>
+<div class="admonition references">
+<p class="admonition-title">References</p>
+<ul>
+<li>Asseng, S., Foster, I., Turner, N. C. (2011). The impact of
+  temperature variability on wheat yields. <em>Global Change
+  Biology</em>.</li>
+<li>Teixeira, E., Fischer, G., van Velthuizen, H., Walter, C.,
+  Ewert, F. (2013). Global hot-spots of heat stress on
+  agricultural crops due to climate change. <em>Agricultural and
+  Forest Meteorology</em>, 170, 206–215.</li>
+</ul>
+</div>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="torchcrop.processes.heat_stress.HeatStressOnGrain" class="doc doc-heading">
+        <code>
+HeatStressOnGrain            (<span title="torch.nn.modules.module.Module">Module</span>)
+        </code>
+
+
+
+<a href="#torchcrop.processes.heat_stress.HeatStressOnGrain" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Heat-stress penalty on grain yield around anthesis.</p>
+<p>Accumulates a daily heat-stress intensity over a development-stage
+window bracketing anthesis (<code>DVS</code> roughly <code>0.8</code>–<code>1.3</code>) and turns
+it into a multiplicative yield penalty. This module is <em>trajectory
+level</em>: unlike the per-day process modules it consumes the whole
+weather forcing and <code>DVS</code> trajectory at once, because the heat-stress
+factor is a window average.</p>
+<p>Daily day-time temperature and stress intensity (Teixeira et al. 2013):</p>
+<div class="arithmatex">\[
+T_{\text{day},i} = T_{\max,i} - \tfrac{1}{4}\,(T_{\max,i} - T_{\min,i})
+\]</div>
+<div class="arithmatex">\[
+s_i = \mathrm{clip}\!\left(
+    \frac{T_{\text{day},i} - T_c}{T_{\text{limit}} - T_c},\; 0,\; 1
+\right)
+\]</div>
+<p>Window-averaged heat-stress factor and adjusted yield, over the days
+<code>i</code> whose development stage lies in
+<code>[DVS_\text{begin}, DVS_\text{end}]</code>:</p>
+<div class="arithmatex">\[
+\text{HSF} = \frac{\sum_i s_i \, \mathbb{1}[\text{DVS}_i \in
+[\text{DVS}_\text{begin}, \text{DVS}_\text{end}]]}
+{\sum_i \mathbb{1}[\text{DVS}_i \in
+[\text{DVS}_\text{begin}, \text{DVS}_\text{end}]]}
+\]</div>
+<div class="arithmatex">\[
+\text{AdjustedYield} = (1 - \text{HSF}) \cdot \text{Yield}
+\]</div>
+<p>This implements the development-stage variant of the heat-stress
+model, which is the natural choice for a batched, differentiable
+setting where an explicit anthesis calendar date is not tracked.</p>
+<p>The crop constants <code>T_c</code>, <code>T_limit</code>, <code>DVS_begin</code> and
+<code>DVS_end</code> are read from <code>CropParameters</code> — fields
+<code>grain_heat_temp_critical</code>, <code>grain_heat_temp_limit</code>,
+<code>grain_heat_begin_devstage</code> and <code>grain_heat_end_devstage</code> —
+so they can be loaded per crop from an external configuration
+file.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HeatStressOnGrain</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Heat-stress penalty on grain yield around anthesis.</span>
+
+<span class="sd">    Accumulates a daily heat-stress intensity over a development-stage</span>
+<span class="sd">    window bracketing anthesis (``DVS`` roughly ``0.8``–``1.3``) and turns</span>
+<span class="sd">    it into a multiplicative yield penalty. This module is *trajectory</span>
+<span class="sd">    level*: unlike the per-day process modules it consumes the whole</span>
+<span class="sd">    weather forcing and ``DVS`` trajectory at once, because the heat-stress</span>
+<span class="sd">    factor is a window average.</span>
+
+<span class="sd">    Daily day-time temperature and stress intensity (Teixeira et al. 2013):</span>
+
+<span class="sd">    $$</span>
+<span class="sd">    T_{\text{day},i} = T_{\max,i} - \tfrac{1}{4}\,(T_{\max,i} - T_{\min,i})</span>
+<span class="sd">    $$</span>
+
+<span class="sd">    $$</span>
+<span class="sd">    s_i = \mathrm{clip}\!\left(</span>
+<span class="sd">        \frac{T_{\text{day},i} - T_c}{T_{\text{limit}} - T_c},\; 0,\; 1</span>
+<span class="sd">    \right)</span>
+<span class="sd">    $$</span>
+
+<span class="sd">    Window-averaged heat-stress factor and adjusted yield, over the days</span>
+<span class="sd">    ``i`` whose development stage lies in</span>
+<span class="sd">    ``[DVS_\text{begin}, DVS_\text{end}]``:</span>
+
+<span class="sd">    $$</span>
+<span class="sd">    \text{HSF} = \frac{\sum_i s_i \, \mathbb{1}[\text{DVS}_i \in</span>
+<span class="sd">    [\text{DVS}_\text{begin}, \text{DVS}_\text{end}]]}</span>
+<span class="sd">    {\sum_i \mathbb{1}[\text{DVS}_i \in</span>
+<span class="sd">    [\text{DVS}_\text{begin}, \text{DVS}_\text{end}]]}</span>
+<span class="sd">    $$</span>
+
+<span class="sd">    $$</span>
+<span class="sd">    \text{AdjustedYield} = (1 - \text{HSF}) \cdot \text{Yield}</span>
+<span class="sd">    $$</span>
+
+<span class="sd">    This implements the development-stage variant of the heat-stress</span>
+<span class="sd">    model, which is the natural choice for a batched, differentiable</span>
+<span class="sd">    setting where an explicit anthesis calendar date is not tracked.</span>
+
+<span class="sd">    The crop constants ``T_c``, ``T_limit``, ``DVS_begin`` and</span>
+<span class="sd">    ``DVS_end`` are read from `CropParameters` — fields</span>
+<span class="sd">    ``grain_heat_temp_critical``, ``grain_heat_temp_limit``,</span>
+<span class="sd">    ``grain_heat_begin_devstage`` and ``grain_heat_end_devstage`` —</span>
+<span class="sd">    so they can be loaded per crop from an external configuration</span>
+<span class="sd">    file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+        <span class="n">yield_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress factor over the anthesis window.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tmin: Daily minimum air temperature [°C], shape ``[B, T]``.</span>
+<span class="sd">            tmax: Daily maximum air temperature [°C], shape ``[B, T]``.</span>
+<span class="sd">            dvs: Development-stage trajectory [-], shape ``[B, T]``, aligned</span>
+<span class="sd">                day-for-day with ``tmin``/``tmax`` (the ``DVS`` value</span>
+<span class="sd">                *entering* each simulated day).</span>
+<span class="sd">            params: Crop parameters; supplies ``grain_heat_temp_critical``,</span>
+<span class="sd">                ``grain_heat_temp_limit``, ``grain_heat_begin_devstage``</span>
+<span class="sd">                and ``grain_heat_end_devstage``.</span>
+<span class="sd">            yield_: Optional raw storage-organ yield ``WSO`` [g m⁻²], shape</span>
+<span class="sd">                ``[B]``. When supplied, ``adjusted_yield`` is returned.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict of tensors:</span>
+
+<span class="sd">            * ``heat_stress_factor`` [-] — Window-averaged heat-stress</span>
+<span class="sd">              factor ``HSF`` in ``[0, 1]``, shape ``[B]``. ``0`` when the</span>
+<span class="sd">              window never opens (e.g. ``T`` too short) or never hot.</span>
+<span class="sd">            * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_``, shape</span>
+<span class="sd">              ``[B]``; only present when ``yield_`` is given.</span>
+<span class="sd">            * ``daily_factor`` [-] — Daily stress intensity ``s_i``, shape</span>
+<span class="sd">              ``[B, T]``.</span>
+<span class="sd">            * ``window_mask`` [-] — ``1`` on days inside the</span>
+<span class="sd">              development-stage window, else ``0``, shape ``[B, T]``.</span>
+<span class="sd">            * ``window_days`` [-] — Number of days inside the window,</span>
+<span class="sd">              shape ``[B]``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_critical</span>
+        <span class="n">temp_limit</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_limit</span>
+        <span class="n">begin_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_begin_devstage</span>
+        <span class="n">end_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_end_devstage</span>
+
+        <span class="c1"># Day-time temperature and daily stress intensity.</span>
+        <span class="n">tday</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">temp_limit</span> <span class="o">-</span> <span class="n">temp_critical</span>
+        <span class="n">daily_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">tday</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Development-stage window around anthesis.</span>
+        <span class="n">window_mask</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">begin_devstage</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&lt;=</span> <span class="n">end_devstage</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">daily_factor</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">window_days</span> <span class="o">=</span> <span class="n">window_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B]</span>
+        <span class="n">cumulated</span> <span class="o">=</span> <span class="p">(</span><span class="n">daily_factor</span> <span class="o">*</span> <span class="n">window_mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B]</span>
+        <span class="c1"># Window-average the cumulated factor; guard against an empty</span>
+        <span class="c1"># window (no anthesis reached) so HSF = 0 in that case.</span>
+        <span class="n">heat_stress_factor</span> <span class="o">=</span> <span class="n">cumulated</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">window_days</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
+            <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
+            <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
+            <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+        <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.processes.heat_stress.HeatStressOnGrain.forward" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">yield_</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.processes.heat_stress.HeatStressOnGrain.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Compute the heat-stress factor over the anthesis window.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tmin</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Daily minimum air temperature [°C], shape <code>[B, T]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>tmax</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Daily maximum air temperature [°C], shape <code>[B, T]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dvs</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Development-stage trajectory [-], shape <code>[B, T]</code>, aligned
+day-for-day with <code>tmin</code>/<code>tmax</code> (the <code>DVS</code> value
+<em>entering</em> each simulated day).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>CropParameters</code></td>
+        <td><p>Crop parameters; supplies <code>grain_heat_temp_critical</code>,
+<code>grain_heat_temp_limit</code>, <code>grain_heat_begin_devstage</code>
+and <code>grain_heat_end_devstage</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>yield_</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional raw storage-organ yield <code>WSO</code> [g m⁻²], shape
+<code>[B]</code>. When supplied, <code>adjusted_yield</code> is returned.</p></td>
+        <td><code>None</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Dict of tensors</code></td>
+      <td><ul>
+<li><code>heat_stress_factor</code> [-] — Window-averaged heat-stress
+  factor <code>HSF</code> in <code>[0, 1]</code>, shape <code>[B]</code>. <code>0</code> when the
+  window never opens (e.g. <code>T</code> too short) or never hot.</li>
+<li><code>adjusted_yield</code> [g m⁻²] — <code>(1 − HSF) · yield_</code>, shape
+  <code>[B]</code>; only present when <code>yield_</code> is given.</li>
+<li><code>daily_factor</code> [-] — Daily stress intensity <code>s_i</code>, shape
+  <code>[B, T]</code>.</li>
+<li><code>window_mask</code> [-] — <code>1</code> on days inside the
+  development-stage window, else <code>0</code>, shape <code>[B, T]</code>.</li>
+<li><code>window_days</code> [-] — Number of days inside the window,
+  shape <code>[B]</code>.</li>
+</ul></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+    <span class="n">yield_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress factor over the anthesis window.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmin: Daily minimum air temperature [°C], shape ``[B, T]``.</span>
+<span class="sd">        tmax: Daily maximum air temperature [°C], shape ``[B, T]``.</span>
+<span class="sd">        dvs: Development-stage trajectory [-], shape ``[B, T]``, aligned</span>
+<span class="sd">            day-for-day with ``tmin``/``tmax`` (the ``DVS`` value</span>
+<span class="sd">            *entering* each simulated day).</span>
+<span class="sd">        params: Crop parameters; supplies ``grain_heat_temp_critical``,</span>
+<span class="sd">            ``grain_heat_temp_limit``, ``grain_heat_begin_devstage``</span>
+<span class="sd">            and ``grain_heat_end_devstage``.</span>
+<span class="sd">        yield_: Optional raw storage-organ yield ``WSO`` [g m⁻²], shape</span>
+<span class="sd">            ``[B]``. When supplied, ``adjusted_yield`` is returned.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Dict of tensors:</span>
+
+<span class="sd">        * ``heat_stress_factor`` [-] — Window-averaged heat-stress</span>
+<span class="sd">          factor ``HSF`` in ``[0, 1]``, shape ``[B]``. ``0`` when the</span>
+<span class="sd">          window never opens (e.g. ``T`` too short) or never hot.</span>
+<span class="sd">        * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_``, shape</span>
+<span class="sd">          ``[B]``; only present when ``yield_`` is given.</span>
+<span class="sd">        * ``daily_factor`` [-] — Daily stress intensity ``s_i``, shape</span>
+<span class="sd">          ``[B, T]``.</span>
+<span class="sd">        * ``window_mask`` [-] — ``1`` on days inside the</span>
+<span class="sd">          development-stage window, else ``0``, shape ``[B, T]``.</span>
+<span class="sd">        * ``window_days`` [-] — Number of days inside the window,</span>
+<span class="sd">          shape ``[B]``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_critical</span>
+    <span class="n">temp_limit</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_limit</span>
+    <span class="n">begin_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_begin_devstage</span>
+    <span class="n">end_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_end_devstage</span>
+
+    <span class="c1"># Day-time temperature and daily stress intensity.</span>
+    <span class="n">tday</span> <span class="o">=</span> <span class="n">tmax</span> <span class="o">-</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">tmin</span><span class="p">)</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="n">temp_limit</span> <span class="o">-</span> <span class="n">temp_critical</span>
+    <span class="n">daily_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tday</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Development-stage window around anthesis.</span>
+    <span class="n">window_mask</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">begin_devstage</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&lt;=</span> <span class="n">end_devstage</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">daily_factor</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="n">window_days</span> <span class="o">=</span> <span class="n">window_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B]</span>
+    <span class="n">cumulated</span> <span class="o">=</span> <span class="p">(</span><span class="n">daily_factor</span> <span class="o">*</span> <span class="n">window_mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B]</span>
+    <span class="c1"># Window-average the cumulated factor; guard against an empty</span>
+    <span class="c1"># window (no anthesis reached) so HSF = 0 in that case.</span>
+    <span class="n">heat_stress_factor</span> <span class="o">=</span> <span class="n">cumulated</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">window_days</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
+        <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
+        <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
+        <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="torchcrop.processes.heat_stress.HeatStressOnLeafSenescence" class="doc doc-heading">
+        <code>
+HeatStressOnLeafSenescence            (<span title="torch.nn.modules.module.Module">Module</span>)
+        </code>
+
+
+
+<a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Heat-stress acceleration of leaf senescence.</p>
+<p>When the daily maximum temperature <code>Tmax</code> exceeds a critical
+threshold <code>Tc</code> <em>and</em> the crop has passed a critical development
+stage <code>DVS_c</code>, the relative leaf death rate is multiplied by a
+factor that increases linearly with temperature:</p>
+<div class="arithmatex">\[
+F_{\text{heat}}(T_{\max}, \text{DVS}) =
+\begin{cases}
+    \max\!\left(0,\; m\,(T_{\max} - T_c) + F_{T_c}\right)
+        &amp; T_{\max} \ge T_c \;\wedge\; \text{DVS} \ge \text{DVS}_c \\
+    1 &amp; \text{otherwise}
+\end{cases}
+\]</div>
+<p>With the default values <code>Tc = 34</code>, <code>m = 0.5</code>, <code>F_Tc = 3</code>,
+this is equivalent to the Asseng et al. (2011) expression
+<code>F_heat = 4 − (1 − (Tmax − 34) / 2)</code>.</p>
+<p>The crop constants <code>Tc</code>, <code>F_Tc</code>, <code>m</code> and <code>DVS_c</code> are read
+from <code>CropParameters</code> — fields <code>leaf_heat_temp_critical</code>,
+<code>leaf_heat_factor_at_temp_critical</code>, <code>leaf_heat_factor_slope</code>
+and <code>leaf_heat_devstage_critical</code> — so they can be loaded per
+crop from an external configuration file.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>smooth</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code>, replace the hard <code>Tmax</code>/<code>DVS</code>
+thresholds with sigmoid blends for smoother gradients.</p></td>
+        <td><code>False</code></td>
+      </tr>
+      <tr>
+        <td><code>k_sharp</code></td>
+        <td><code>float</code></td>
+        <td><p>Sigmoid sharpness; ignored when <code>smooth=False</code>.</p></td>
+        <td><code>50.0</code></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HeatStressOnLeafSenescence</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Heat-stress acceleration of leaf senescence.</span>
+
+<span class="sd">    When the daily maximum temperature ``Tmax`` exceeds a critical</span>
+<span class="sd">    threshold ``Tc`` *and* the crop has passed a critical development</span>
+<span class="sd">    stage ``DVS_c``, the relative leaf death rate is multiplied by a</span>
+<span class="sd">    factor that increases linearly with temperature:</span>
+
+<span class="sd">    $$</span>
+<span class="sd">    F_{\text{heat}}(T_{\max}, \text{DVS}) =</span>
+<span class="sd">    \begin{cases}</span>
+<span class="sd">        \max\!\left(0,\; m\,(T_{\max} - T_c) + F_{T_c}\right)</span>
+<span class="sd">            &amp; T_{\max} \ge T_c \;\wedge\; \text{DVS} \ge \text{DVS}_c \\</span>
+<span class="sd">        1 &amp; \text{otherwise}</span>
+<span class="sd">    \end{cases}</span>
+<span class="sd">    $$</span>
+
+<span class="sd">    With the default values ``Tc = 34``, ``m = 0.5``, ``F_Tc = 3``,</span>
+<span class="sd">    this is equivalent to the Asseng et al. (2011) expression</span>
+<span class="sd">    ``F_heat = 4 − (1 − (Tmax − 34) / 2)``.</span>
+
+<span class="sd">    The crop constants ``Tc``, ``F_Tc``, ``m`` and ``DVS_c`` are read</span>
+<span class="sd">    from `CropParameters` — fields ``leaf_heat_temp_critical``,</span>
+<span class="sd">    ``leaf_heat_factor_at_temp_critical``, ``leaf_heat_factor_slope``</span>
+<span class="sd">    and ``leaf_heat_devstage_critical`` — so they can be loaded per</span>
+<span class="sd">    crop from an external configuration file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        smooth: If ``True``, replace the hard ``Tmax``/``DVS``</span>
+<span class="sd">            thresholds with sigmoid blends for smoother gradients.</span>
+<span class="sd">        k_sharp: Sigmoid sharpness; ignored when ``smooth=False``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">k_sharp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">=</span> <span class="n">k_sharp</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress leaf-senescence multiplier for one day.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
+<span class="sd">            dvs: Development stage [-] (0–2), shape ``[B]``.</span>
+<span class="sd">            params: Crop parameters; supplies ``leaf_heat_temp_critical``,</span>
+<span class="sd">                ``leaf_heat_factor_at_temp_critical``,</span>
+<span class="sd">                ``leaf_heat_factor_slope`` and</span>
+<span class="sd">                ``leaf_heat_devstage_critical``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Leaf-senescence multiplier ``LeafSenescenceFactor`` [-], shape</span>
+<span class="sd">            ``[B]``. Equals ``1`` outside the heat-stress regime and ``≥ 0``</span>
+<span class="sd">            (typically ``&gt; 1``) inside it. Intended to be passed as the</span>
+<span class="sd">            ``heat_stress`` argument of `LeafDynamics`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_temp_critical</span>
+        <span class="n">factor_at_temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_at_temp_critical</span>
+        <span class="n">factor_slope</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_slope</span>
+        <span class="n">devstage_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_devstage_critical</span>
+
+        <span class="c1"># Heat-stress factor when the regime is active.</span>
+        <span class="n">active_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">factor_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">+</span> <span class="n">factor_at_temp_critical</span><span class="p">,</span>
+            <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">one</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">active_factor</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
+            <span class="c1"># Sigmoid blend: both thresholds must be satisfied, so the</span>
+            <span class="c1"># gate is the product of the two soft step functions.</span>
+            <span class="n">gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span>
+            <span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">-</span> <span class="n">devstage_critical</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">one</span> <span class="o">+</span> <span class="n">gate</span> <span class="o">*</span> <span class="p">(</span><span class="n">active_factor</span> <span class="o">-</span> <span class="n">one</span><span class="p">)</span>
+
+        <span class="c1"># Hard branch.</span>
+        <span class="n">regime</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">&gt;=</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">devstage_critical</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">regime</span><span class="p">,</span> <span class="n">active_factor</span><span class="p">,</span> <span class="n">one</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.processes.heat_stress.HeatStressOnLeafSenescence.forward" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.processes.heat_stress.HeatStressOnLeafSenescence.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Compute the heat-stress leaf-senescence multiplier for one day.</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>tmax</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Daily maximum air temperature [°C], shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>dvs</code></td>
+        <td><code>torch.Tensor</code></td>
+        <td><p>Development stage [-] (0–2), shape <code>[B]</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>params</code></td>
+        <td><code>CropParameters</code></td>
+        <td><p>Crop parameters; supplies <code>leaf_heat_temp_critical</code>,
+<code>leaf_heat_factor_at_temp_critical</code>,
+<code>leaf_heat_factor_slope</code> and
+<code>leaf_heat_devstage_critical</code>.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>Leaf-senescence multiplier <code>LeafSenescenceFactor</code> [-], shape
+<code>[B]</code>. Equals <code>1</code> outside the heat-stress regime and <code>≥ 0</code>
+(typically <code>&gt; 1</code>) inside it. Intended to be passed as the
+<code>heat_stress</code> argument of <code>LeafDynamics</code>.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tmax</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress leaf-senescence multiplier for one day.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
+<span class="sd">        dvs: Development stage [-] (0–2), shape ``[B]``.</span>
+<span class="sd">        params: Crop parameters; supplies ``leaf_heat_temp_critical``,</span>
+<span class="sd">            ``leaf_heat_factor_at_temp_critical``,</span>
+<span class="sd">            ``leaf_heat_factor_slope`` and</span>
+<span class="sd">            ``leaf_heat_devstage_critical``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Leaf-senescence multiplier ``LeafSenescenceFactor`` [-], shape</span>
+<span class="sd">        ``[B]``. Equals ``1`` outside the heat-stress regime and ``≥ 0``</span>
+<span class="sd">        (typically ``&gt; 1``) inside it. Intended to be passed as the</span>
+<span class="sd">        ``heat_stress`` argument of `LeafDynamics`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_temp_critical</span>
+    <span class="n">factor_at_temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_at_temp_critical</span>
+    <span class="n">factor_slope</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_slope</span>
+    <span class="n">devstage_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_devstage_critical</span>
+
+    <span class="c1"># Heat-stress factor when the regime is active.</span>
+    <span class="n">active_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">factor_slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">+</span> <span class="n">factor_at_temp_critical</span><span class="p">,</span>
+        <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">active_factor</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
+        <span class="c1"># Sigmoid blend: both thresholds must be satisfied, so the</span>
+        <span class="c1"># gate is the product of the two soft step functions.</span>
+        <span class="n">gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">-</span> <span class="n">temp_critical</span><span class="p">)</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k_sharp</span> <span class="o">*</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">-</span> <span class="n">devstage_critical</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">one</span> <span class="o">+</span> <span class="n">gate</span> <span class="o">*</span> <span class="p">(</span><span class="n">active_factor</span> <span class="o">-</span> <span class="n">one</span><span class="p">)</span>
+
+    <span class="c1"># Hard branch.</span>
+    <span class="n">regime</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmax</span> <span class="o">&gt;=</span> <span class="n">temp_critical</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">dvs</span> <span class="o">&gt;=</span> <span class="n">devstage_critical</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">regime</span><span class="p">,</span> <span class="n">active_factor</span><span class="p">,</span> <span class="n">one</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2026 20:35:34 UTC"><span class="timeago" datetime="2026-05-23T20:35:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2026 20:35:34 UTC">2026-05-23</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2026 20:35:34 UTC"><span class="timeago" datetime="2026-05-23T20:35:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2026 20:35:34 UTC">2026-05-23</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 - 2026 Krishnagopal Halder
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../js/timeago.min.js"></script>
+      
+        <script src="../../../js/timeago_mkdocs_material.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
