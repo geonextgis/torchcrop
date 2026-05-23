@@ -5,29 +5,28 @@ Provides the astronomical quantities consumed by ``Irradiation`` and
 daylengths, and the integrals ``sinld``, ``cosld``, ``dsinbe`` used to
 derive extraterrestrial radiation.
 
-References:
-    Goudriaan, J. & van Laar, H.H. (1994). *Modelling potential crop growth
-    processes*. Matches the formulation in SIMPLACE
-    ``AstronomicParametersTransformer``.
+Reference:
+    Goudriaan, J. & van Laar, H.H. (1994). *Modelling potential crop
+    growth processes*.
 
-Equations:
-    Solar declination (radians) for day of year $\\text{DOY}$:
+Equations
+---------
+Solar declination (radians) for day of year $\\text{DOY}$:
 
-    $$
-    \\delta = -\\arcsin\\left[\\sin(23.45^\\circ)\\,
-    \\cos\\left(2\\pi \\frac{\\text{DOY} + 10}{365}\\right)\\right]
-    $$
+$$
+\\delta = -\\arcsin\\!\\left[\\sin(23.45^\\circ)\\,
+\\cos\\!\\left(2\\pi \\frac{\\text{DOY} + 10}{365}\\right)\\right]
+$$
 
-    Sunrise hour angle at latitude $\\phi$ (radians):
+Sunrise hour angle at latitude $\\phi$ (radians):
 
-    $$
-    \\cos H_0 = -\\tan\\phi \\, \\tan\\delta
-    $$
+$$
+\\cos H_0 = -\\tan\\phi \\, \\tan\\delta
+$$
 
-    Astronomical daylength is returned in hours. Photoperiodic daylength
-    ``DDLP`` uses a sun-inclusion angle of $-4^\\circ$ (civil twilight, as
-    in Lintul5) so that low-light dawn and dusk count toward the
-    photoperiodic response.
+Astronomical daylength is returned in hours. Photoperiodic daylength
+``DDLP`` uses a sun-inclusion angle of $-4^\\circ$ (civil twilight), so
+low-light dawn and dusk count toward the photoperiodic response.
 """
 
 from __future__ import annotations
@@ -56,8 +55,8 @@ class Astro(nn.Module):
             latitude: Latitude in degrees, shape ``[B]`` or ``[]``
                 (broadcastable).
             inclination: Sun inclination angle in degrees used for the
-                photoperiodic daylength calculation. Defaults to ``-4.0``
-                (civil-twilight value used in Lintul5).
+                photoperiodic daylength calculation. Defaults to
+                ``-4.0`` (civil twilight).
 
         Returns:
             Dict with keys ``declination`` [rad], ``daylength`` [h],
