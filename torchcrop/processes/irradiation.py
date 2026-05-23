@@ -1,49 +1,47 @@
 """Daily solar irradiation and PAR interception by the canopy.
 
-Combines solar geometry with measured radiation to obtain the daily total
-irradiation ``AVRAD``, then applies Beer–Lambert extinction to give the
-fraction of PAR captured by the canopy.
+Combines solar geometry with measured radiation to obtain the daily
+total irradiation ``AVRAD``, then applies Beer–Lambert extinction to
+give the fraction of PAR captured by the canopy.
 
-References:
-    SIMPLACE ``Irradiation.java``.
+Equations
+---------
+Solar constant adjusted for Earth–Sun distance:
 
-Equations:
-    Solar constant adjusted for Earth–Sun distance:
+$$
+SC = 1370 \\cdot (1 + 0.033 \\cos(2\\pi \\, \\text{DOY}/365))
+$$
 
-    $$
-    SC = 1370 \\cdot (1 + 0.033 \\cos(2\\pi \\, \\text{DOY}/365))
-    $$
+Daily integral of $\\sin\\beta$ (solar elevation) over the daylight
+period:
 
-    Daily integral of $\\sin\\beta$ (solar elevation) over the daylight
-    period:
+$$
+A_0 = \\text{LIMIT}(-1, 1, \\text{SINLD}/\\text{COSLD})
+$$
 
-    $$
-    A_0 = \\text{LIMIT}(-1, 1, \\text{SINLD}/\\text{COSLD})
-    $$
+$$
+\\text{DSINB} = 3600 \\left(\\text{DAYL} \\cdot \\text{SINLD}
++ \\frac{24}{\\pi} \\, \\text{COSLD} \\sqrt{1 - A_0^2}\\right)
+$$
 
-    $$
-    \\text{DSINB} = 3600 \\left(\\text{DAYL} \\cdot \\text{SINLD}
-    + \\frac{24}{\\pi} \\, \\text{COSLD} \\sqrt{1 - A_0^2}\\right)
-    $$
+Extraterrestrial radiation, with the daily total capped at 80 % of
+the extraterrestrial value:
 
-    Extraterrestrial radiation, with the daily total capped at 80 % of the
-    extraterrestrial value:
+$$
+\\text{ANGOT} = \\max(10^{-4},\\; SC \\cdot \\text{DSINB})
+$$
 
-    $$
-    \\text{ANGOT} = \\max(10^{-4},\\; SC \\cdot \\text{DSINB})
-    $$
+$$
+\\text{AVRAD} = \\min(0.80 \\cdot \\text{ANGOT},\\; \\text{DTR})
+$$
 
-    $$
-    \\text{AVRAD} = \\min(0.80 \\cdot \\text{ANGOT},\\; \\text{DTR})
-    $$
+PAR is taken as 50 % of global radiation and intercepted following
+Beer–Lambert extinction with coefficient $K$:
 
-    PAR is taken as 50 % of global radiation and intercepted following
-    Beer–Lambert extinction with coefficient $K$:
-
-    $$
-    \\text{PAR} = 0.5 \\cdot \\text{AVRAD}, \\qquad
-    \\text{PARINT} = \\text{PAR} \\cdot \\bigl(1 - e^{-K \\, \\text{LAI}}\\bigr)
-    $$
+$$
+\\text{PAR} = 0.5 \\cdot \\text{AVRAD}, \\qquad
+\\text{PARINT} = \\text{PAR} \\cdot \\bigl(1 - e^{-K \\, \\text{LAI}}\\bigr)
+$$
 """
 
 from __future__ import annotations
@@ -60,8 +58,9 @@ from torchcrop.states.model_state import ModelState
 class Irradiation(nn.Module):
     """Daily total irradiation and PAR interception by canopy.
 
-    Computes AVRAD (daily total irradiation) from solar geometry, then calculates PAR interception using
-    Beer-Lambert extinction law.
+    Computes ``AVRAD`` (daily total irradiation) from solar geometry,
+    then calculates PAR interception via the Beer–Lambert extinction
+    law.
     """
 
     def forward(
@@ -83,45 +82,50 @@ class Irradiation(nn.Module):
             sinld: sin(declination) [dimensionless], shape ``[B]``.
             cosld: cos(declination) [dimensionless], shape ``[B]``.
             dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.
-                Will be converted to J m⁻² d⁻¹ for PENMAN calculation.
+                Converted to J m⁻² d⁻¹ for the PENMAN calculation.
             params: Crop parameters; uses ``params.k`` (extinction
                 coefficient).
 
         Returns:
             Dict of ``[B]`` tensors:
 
-            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation (computed from solar geometry; converted from input MJ m⁻² d⁻¹).
+            * ``avrad`` [J m⁻² d⁻¹] — Daily total irradiation
+              (computed from solar geometry; converted from input
+              MJ m⁻² d⁻¹).
             * ``atmtr`` [-] — Atmospheric transmission fraction.
-            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active radiation (0.5 * avrad).
+            * ``par`` [J m⁻² d⁻¹] — Photosynthetically active
+              radiation (``0.5 · avrad``).
             * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.
-            * ``frac_intercepted`` [-] — Beer–Lambert interception fraction.
+            * ``frac_intercepted`` [-] — Beer–Lambert interception
+              fraction.
         """
-        # Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN calculation
+        # Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN.
         dtr_j = dtr * 1e6
 
-        # Daily total irradiation (SIMPLACE DailyTotalIrradiation logic)
+        # Daily total irradiation.
         aob = torch.clamp(sinld / cosld, min=-1.0, max=1.0)
         dsinb = 3600.0 * (
             dayl * sinld
             + 24.0 * cosld * torch.sqrt(torch.clamp(1.0 - aob * aob, min=0.0)) / math.pi
         )
 
-        # Solar constant [W m⁻²] as function of day of year
+        # Solar constant [W m⁻²] as a function of day of year.
         sc = 1370.0 * (1.0 + 0.033 * torch.cos(2.0 * math.pi * doy / 365.0))
 
-        # Extraterrestrial radiation [J m⁻² d⁻¹]
+        # Extraterrestrial radiation [J m⁻² d⁻¹].
         angot = torch.clamp(sc * dsinb, min=0.0001)
 
-        # Daily total irradiation (minimum of 80% extraterrestrial and measured)
+        # Daily total irradiation: minimum of 80 % extraterrestrial
+        # and measured.
         avrad = torch.min(0.80 * angot, dtr_j)
 
-        # Atmospheric transmission
+        # Atmospheric transmission.
         atmtr = avrad / angot
 
-        # PAR (50% of global radiation)
+        # PAR (50 % of global radiation).
         par = 0.5 * avrad
 
-        # Beer-Lambert interception by canopy
+        # Beer–Lambert interception by canopy.
         frac = 1.0 - torch.exp(-params.k * state.lai)
         parint = par * frac
 

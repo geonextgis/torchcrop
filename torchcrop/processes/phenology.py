@@ -1,63 +1,65 @@
-"""Phenological development: thermal time, daylength, vernalisation, DVS.
+"""Phenological development: thermal time, daylength, vernalisation,
+and development stage (DVS).
 
-References:
-    SIMPLACE ``Phenology.java``.
-
-Equations:
-    Effective daily thermal time:
+Equations
+---------
+Effective daily thermal time:
 
     $$
     \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
     $$
 
-    Development rate (vegetative, generative):
+Development rate (vegetative, generative):
 
-    $$
-    \\text{DVR} =
-    \\begin{cases}
-        \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} / \\text{TSUM1},
-            & 0 \\le \\text{DVS} < 1 \\\\
-        \\text{DTSU} / \\text{TSUM2},
-            & 1 \\le \\text{DVS} < 2
-    \\end{cases}
-    $$
+$$
+\\text{DVR} =
+\\begin{cases}
+    \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} /
+        \\text{TSUM1}, & 0 \\le \\text{DVS} < 1 \\\\
+    \\text{DTSU} / \\text{TSUM2},
+        & 1 \\le \\text{DVS} < 2
+\\end{cases}
+$$
 
-    Photoperiod factor (active when ``IDSL >= 1``):
+Photoperiod factor (active when ``IDSL >= 1``):
 
-    $$
-    \\text{PHOTFAC} =
-    \\begin{cases}
-        \\text{AFGEN}(\\text{PHOTTB}, \\text{DDLP}), & \\text{IDSL} \\ge 1 \\\\
-        1, & \\text{otherwise}
-    \\end{cases}
-    $$
+$$
+\\text{PHOTFAC} =
+\\begin{cases}
+    \\text{AFGEN}(\\text{PHOTTB}, \\text{DDLP}),
+        & \\text{IDSL} \\ge 1 \\\\
+    1, & \\text{otherwise}
+\\end{cases}
+$$
 
-    Vernalisation (active when ``IDSL = 2``). With
-    $V_\\text{dvs}$ = ``vernalisation_devstage``,
-    $V_\\text{base}$ = ``VBASE``, $V_\\text{sat}$ = ``VERSAT``,
-    $V_\\text{min}$ = ``cMinimalVernalisationFactor``:
+Vernalisation (active when ``IDSL = 2``). With
+$V_\\text{dvs}$ = ``vernalisation_devstage``,
+$V_\\text{base}$ = ``VBASE``, $V_\\text{sat}$ = ``VERSAT``,
+$V_\\text{min}$ = ``minimal_vernalisation_factor``:
 
-    $$
-    \\text{VERNR} = \\text{AFGEN}(\\text{VERNRT}, T_\\text{avg})
-    $$
+$$
+\\text{VERNR} = \\text{AFGEN}(\\text{VERNRT}, T_\\text{avg})
+$$
 
-    $$
-    \\text{VERN}_\\text{rate} =
-    \\begin{cases}
-        \\text{VERNR}, & \\text{DVS} < V_\\text{dvs} \\\\
-        0,            & \\text{otherwise}
-    \\end{cases}
-    $$
+$$
+\\text{VERN}_\\text{rate} =
+\\begin{cases}
+    \\text{VERNR}, & \\text{DVS} < V_\\text{dvs} \\\\
+    0,            & \\text{otherwise}
+\\end{cases}
+$$
 
-    $$
-    \\text{VERNFAC} =
-    \\begin{cases}
-        \\text{LIMIT}\\!\\left(V_\\text{min},\\, 1,\\,
-            \\dfrac{\\text{VERN} - V_\\text{base}}{V_\\text{sat} - V_\\text{base}}\\right),
-            & \\text{DVS} < V_\\text{dvs},\\ V_\\text{sat} \\neq V_\\text{base} \\\\
-        1, & \\text{otherwise}
-    \\end{cases}
-    $$
+$$
+\\text{VERNFAC} =
+\\begin{cases}
+    \\text{LIMIT}\\!\\left(V_\\text{min},\\, 1,\\,
+        \\dfrac{\\text{VERN} - V_\\text{base}}
+              {V_\\text{sat} - V_\\text{base}}\\right),
+        & \\text{DVS} < V_\\text{dvs},\\
+          V_\\text{sat} \\neq V_\\text{base} \\\\
+    1, & \\text{otherwise}
+\\end{cases}
+$$
 """
 
 from __future__ import annotations
@@ -108,22 +110,32 @@ class Phenology(nn.Module):
 
             Rates (integrated by the engine):
 
-            * ``dvs_rate`` [d⁻¹] — DVS increment; gated to zero pre-emergence and post-maturity.
-            * ``tsum_rate`` [°C d d⁻¹] — ``dtsu`` once emerged, else 0.
-            * ``tsump_rate`` [°C d d⁻¹] — ``max(0, T_avg - tbasem)`` capped at ``teffmx - tbasem``.
-            * ``vern_rate`` [d d⁻¹] — ``AFGEN(vernrt, T_avg)``, zero when ``idsl < 2`` or ``dvs >= vernalisation_devstage``.
+            * ``dvs_rate`` [d⁻¹] — DVS increment; gated to zero
+              pre-emergence and post-maturity.
+            * ``tsum_rate`` [°C d d⁻¹] — ``dtsu`` once emerged, else
+              ``0``.
+            * ``tsump_rate`` [°C d d⁻¹] — ``max(0, T_avg − tbasem)``,
+              capped at ``teffmx − tbasem``.
+            * ``vern_rate`` [d d⁻¹] — ``AFGEN(vernrt, T_avg)``, zero
+              when ``idsl < 2`` or
+              ``dvs >= vernalisation_devstage``.
 
             Diagnostics:
 
             * ``photofac`` [-] — equals ``1`` when ``idsl < 1``.
-            * ``vernfac`` [-] — in ``[minimal_vernalisation_factor, 1]``; equals ``1`` when ``idsl < 2`` or ``dvs >= vernalisation_devstage``.
-            * ``emerged`` [-] — hard (or smooth) mask of ``tsump >= tsumem``.
+            * ``vernfac`` [-] — in
+              ``[minimal_vernalisation_factor, 1]``; equals ``1``
+              when ``idsl < 2`` or
+              ``dvs >= vernalisation_devstage``.
+            * ``emerged`` [-] — hard (or smooth) mask of
+              ``tsump >= tsumem``.
             * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.
         """
-        # Effective thermal time
+        # Effective thermal time.
         dtsu = torch.clamp(interpolate(params.dtsmtb, davtmp), min=0.0)
 
-        # Thermal sum since sowing — simple base-temp accumulation capped at TEFFMX
+        # Thermal sum since sowing — base-temperature accumulation
+        # capped at TEFFMX.
         tbasem = params.tbasem
         teffmx = params.teffmx
         tsump_rate = torch.clamp(davtmp - tbasem, min=0.0)
@@ -154,8 +166,8 @@ class Phenology(nn.Module):
         vern_rate = vernr * pre_vern_dvs * idsl_active
 
         # VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).
-        # When VERSAT == VBASE the SIMPLACE code keeps VERNF = 1 to dodge
-        # division by zero; we replicate that with a soft fallback.
+        # When VERSAT == VBASE, fall back to VERNF = 1 to avoid a
+        # division by zero.
         versat_minus_vbase = params.versat - params.vbase
         vernf_raw = (state.vern - params.vbase) / _safe(versat_minus_vbase)
         ones = torch.ones_like(vernf_raw)
@@ -166,14 +178,15 @@ class Phenology(nn.Module):
         denom_zero = (versat_minus_vbase.abs() <= 1e-10).to(vernf_raw.dtype)
         vernf = vernf_clamped * (1.0 - denom_zero) + ones * denom_zero
 
-        # INSW(DVS - VernDvs, VERNF, 1): apply VERNF only while DVS < VernDvs.
+        # Apply VERNF only while DVS < VernDvs.
         vernf_pheno_gated = vernf * pre_vern_dvs + ones * (1.0 - pre_vern_dvs)
 
-        # Gate the entire vernalisation effect by IDSL (vernfac = 1 when off).
+        # Gate the entire vernalisation effect by IDSL
+        # (vernfac = 1 when off).
         vernfac = vernf_pheno_gated * idsl_active + ones * (1.0 - idsl_active)
 
-        # Pre-emergence: DVS stays 0 until thermal sum reaches TSUMEM
-        # We encode emergence by letting DVS start growing once TSUM >= TSUMEM.
+        # Pre-emergence: DVS stays at 0 until the thermal sum reaches
+        # TSUMEM. DVS starts to increase once TSUM ≥ TSUMEM.
         emerged = state.tsump >= params.tsumem
         if self.smooth:
             emerged_f = torch.sigmoid(self.k_sharp * (state.tsump - params.tsumem))
@@ -182,7 +195,7 @@ class Phenology(nn.Module):
 
         tsum_rate = dtsu * emerged_f
 
-        # DVS rate: piecewise on DVS
+        # DVS rate — piecewise on DVS.
         dvr_veg = dtsu * photofac * vernfac / _safe(params.tsum1)
         dvr_gen = dtsu / _safe(params.tsum2)
 
@@ -192,7 +205,7 @@ class Phenology(nn.Module):
         else:
             dvs_rate = torch.where(state.dvs < 1.0, dvr_veg, dvr_gen)
 
-        # Turn off DVS progression before emergence and after maturity
+        # Turn off DVS progression before emergence and after maturity.
         if self.smooth:
             pre_mat = torch.sigmoid(self.k_sharp * (2.0 - state.dvs))
         else:

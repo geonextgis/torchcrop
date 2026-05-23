@@ -1,35 +1,34 @@
 r"""CO\ :sub:`2` influence on crop transpiration.
 
-Ports the SIMPLACE ``Co2InfluenceOnTranspiration`` crop component. Elevated
-atmospheric CO\ :sub:`2` reduces stomatal conductance and therefore crop
-transpiration; this module scales the potential transpiration ``PTRAN`` by a
-linear reduction factor before it enters the water balance, so the effect
-propagates into the water-stress factor ``TRANRF``.
+Elevated atmospheric CO\ :sub:`2` reduces stomatal conductance, and
+therefore crop transpiration. This module scales the potential
+transpiration ``PTRAN`` by a linear reduction factor before it enters
+the water balance, so the effect propagates into the water-stress
+factor ``TRANRF``.
 
-This is a *distinct* mechanism from the CO\ :sub:`2` correction applied to
-reference ET in `torchcrop.processes.evapotranspiration`: that one rescales
-the reference evapotranspiration ``ET0`` via an interpolation table, whereas
-this module rescales the *potential transpiration demand* that the water
-balance compares against soil water supply.
+This is a *distinct* mechanism from the CO\ :sub:`2` correction
+applied to reference ET in
+`torchcrop.processes.evapotranspiration`: that one rescales the
+reference evapotranspiration ``ET0`` via an interpolation table,
+whereas this module rescales the *potential transpiration demand*
+that the water balance compares against soil water supply.
 
-References:
-    ``simplace/sim/components/crop/co2/Co2InfluenceOnTranspiration.java``.
+Equations
+---------
+Linear reduction factor as a function of the atmospheric
+CO\ :sub:`2` concentration:
 
-Equations:
-    Linear reduction factor as a function of the atmospheric CO\ :sub:`2`
-    concentration:
+$$
+f(\text{CO}_2) = m \cdot \text{CO}_2 + b
+$$
 
-    $$
-    f(\text{CO}_2) = m \cdot \text{CO}_2 + b
-    $$
+$$
+\text{PTRAN}_{\text{reduced}} = \text{PTRAN} \cdot f(\text{CO}_2)
+$$
 
-    $$
-    \text{PTRAN}_{\text{reduced}} = \text{PTRAN} \cdot f(\text{CO}_2)
-    $$
-
-    With the SIMPLACE defaults ``m = -0.0003`` ppm⁻¹ and ``b = 1.1`` the
-    factor is ``≈ 1`` at the ``≈ 350`` ppm reference and falls below ``1``
-    for higher concentrations (less transpiration under elevated CO₂).
+With the defaults ``m = -0.0003`` ppm⁻¹ and ``b = 1.1``, the factor
+is ``≈ 1`` at the ``≈ 350`` ppm reference and falls below ``1`` for
+higher concentrations (less transpiration under elevated CO₂).
 """
 
 from __future__ import annotations

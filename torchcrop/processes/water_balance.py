@@ -1,114 +1,112 @@
-"""Two-zone soil water balance for Lintul5.
+"""Two-zone soil water balance.
 
-Tracks water storage in a rooted zone and a lower zone, runs a percolation cascade to deep
-drainage, and produces the water-stress factor ``TRANRF`` that gates crop
-growth.
+Tracks water storage in a rooted zone and a lower zone, runs a
+percolation cascade to deep drainage, and produces the water-stress
+factor ``TRANRF`` that gates crop growth.
 
-References:
-    SIMPLACE ``WaterBalance.java`` (``WATBALS`` routine) and
-    ``LintulFunctions.SWEAF``.
+Design
+------
+**Zones.** The soil column is split into a rooted zone of depth
+``rootd`` storing ``wa`` [mm] and a lower zone of depth
+``rdm − rootd`` storing ``wa_lower`` [mm], where
+``rdm = min(rdmso, rdmcr)`` is the soil-/crop-limited maximum rooting
+depth. Root-front advance ``rr`` moves water at content ``SMACTL``
+from the lower zone into the rooted zone via the ``WDR``/``WDRA``
+fluxes.
 
-Design:
-    **Zones.** The soil column is split into a rooted zone of depth
-    ``rootd`` storing ``wa`` [mm] and a lower zone of depth
-    ``rdm - rootd`` storing ``wa_lower`` [mm], where
-    ``rdm = min(rdmso, rdmcr)`` is the soil-/crop-limited maximum rooting
-    depth. Root-front advance ``rr`` moves water at content ``SMACTL``
-    from the lower zone into the rooted zone via the ``WDR``/``WDRA``
-    fluxes.
+**Percolation cascade.** Net infiltration (after evaporation and
+transpiration) enters the rooted zone as ``PERC1``; excess above
+field capacity descends to the lower zone as ``PERC2``; excess below
+the lower zone's field capacity leaves the profile as deep drainage
+``PERC3``. Each step is rate-limited by ``KSUB`` and by the free pore
+space of the receiving layer.
 
-    **Percolation cascade.** Net infiltration (after evaporation and
-    transpiration) enters the rooted zone as ``PERC1``; excess above
-    field capacity descends to the lower zone as ``PERC2``; excess below
-    the lower zone's field capacity leaves the profile as deep drainage
-    ``PERC3``. Each step is rate-limited by ``KSUB`` and by the free pore
-    space of the receiving layer.
+**Stress factors.** Transpiration is reduced multiplicatively by a
+drought factor ``RDRY`` and (for non-rice crops) an oxygen factor
+``RWET`` that ramps with ``DSOS`` — days of oxygen shortage,
+persistent across days and clipped to ``[0, 4]``.
 
-    **Stress factors.** Transpiration is reduced multiplicatively by a
-    drought factor ``RDRY`` and (for non-rice crops) an oxygen factor
-    ``RWET`` that ramps with ``DSOS`` — days of oxygen shortage,
-    persistent across days and clipped to ``[0, 4]``.
+**Soil evaporation.** Stroosnijder model: when infiltration
+≥ 5 mm d⁻¹, evaporation is reset to the potential rate and ``DSLR``
+to ``1``; otherwise ``DSLR`` increments and evaporation follows the
+``sqrt(DSLR) − sqrt(DSLR − 1)`` decay, capped by air-dry capacity.
 
-    **Soil evaporation.** Stroosnijder model: when infiltration
-    ≥ 5 mm d⁻¹, evaporation is reset to the potential rate and ``DSLR``
-    to 1; otherwise ``DSLR`` increments and evaporation follows the
-    ``sqrt(DSLR) - sqrt(DSLR-1)`` decay, capped by air-dry capacity.
+**Irrigation.** Three modes selected by ``params.irri``: ``0`` = none;
+``1`` = automatic refill when ``SMACT`` falls below ``SMCR + 0.02``
+and rain ``< 10`` mm; ``2`` = table look-up of ``irrtab`` scaled by
+``scale_factor_irr``.
 
-    **Irrigation.** Three modes selected by ``params.irri``: 0 = none;
-    1 = automatic refill when ``SMACT`` falls below ``SMCR + 0.02`` and
-    rain < 10 mm; 2 = table look-up of ``irrtab`` scaled by
-    ``scale_factor_irr``.
+Equations
+---------
+Volumetric soil-moisture contents [m³ m⁻³]:
 
-Equations:
-    Volumetric soil-moisture contents [m³ m⁻³]:
+$$
+\\theta = \\frac{W_a}{1000 \\cdot D_\\text{root}},
+\\qquad
+\\theta_\\ell = \\frac{W_{a,\\ell}}{1000 \\cdot (D_\\text{rdm} -
+D_\\text{root})}
+$$
 
-    $$
-    \\theta = \\frac{W_a}{1000 \\cdot D_\\text{root}},
-    \\qquad
-    \\theta_\\ell = \\frac{W_{a,\\ell}}{1000 \\cdot (D_\\text{rdm} -
-    D_\\text{root})}
-    $$
+Easily-available fraction (``SWEAF``) and the critical moisture
+content below which transpiration starts to decline:
 
-    Easily-available fraction (SIMPLACE ``SWEAF``) and the critical
-    moisture content below which transpiration starts to decline:
+$$
+f_\\text{eaw} = \\mathrm{clip}\\!\\left(\\frac{1}{A + B\\,\\text{ETC}_
+\\text{cm}} - (5-\\text{DEPNR})\\cdot 0.10,\\ 0.10,\\ 0.95\\right),
+\\qquad
+\\theta_\\text{crit} = (1 - f_\\text{eaw})(\\theta_\\text{fc} -
+\\theta_\\text{wp}) + \\theta_\\text{wp}.
+$$
 
-    $$
-    f_\\text{eaw} = \\mathrm{clip}\\left(\\frac{1}{A + B\\,\\text{ETC}_
-    \\text{cm}} - (5-\\text{DEPNR})\\cdot 0.10,\\ 0.10,\\ 0.95\\right),
-    \\qquad
-    \\theta_\\text{crit} = (1 - f_\\text{eaw})(\\theta_\\text{fc} -
-    \\theta_\\text{wp}) + \\theta_\\text{wp}.
-    $$
+Drought and oxygen reduction factors:
 
-    Drought and oxygen reduction factors:
+$$
+R_\\text{dry} = \\mathrm{clip}\\!\\left(
+\\frac{\\theta - \\theta_\\text{wp}}{\\theta_\\text{crit} -
+\\theta_\\text{wp}},\\ 0,\\ 1\\right),
+\\quad
+R_\\text{wet,max} = \\mathrm{clip}\\!\\left(
+\\frac{\\theta_\\text{sat} - \\theta}{\\theta_\\text{sat} -
+\\theta_\\text{air}},\\ 0,\\ 1\\right),
+\\quad
+R_\\text{wet} = R_\\text{wet,max} + \\left(1 - \\tfrac{\\text{DSOS}}{4}
+\\right)(1 - R_\\text{wet,max}).
+$$
 
-    $$
-    R_\\text{dry} = \\mathrm{clip}\\left(
-    \\frac{\\theta - \\theta_\\text{wp}}{\\theta_\\text{crit} -
-    \\theta_\\text{wp}},\\ 0,\\ 1\\right),
-    \\quad
-    R_\\text{wet,max} = \\mathrm{clip}\\left(
-    \\frac{\\theta_\\text{sat} - \\theta}{\\theta_\\text{sat} -
-    \\theta_\\text{air}},\\ 0,\\ 1\\right),
-    \\quad
-    R_\\text{wet} = R_\\text{wet,max} + \\left(1 - \\tfrac{\\text{DSOS}}{4}
-    \\right)(1 - R_\\text{wet,max}).
-    $$
+Root-front water transfer (total / above wilting point):
 
-    Root-front water transfer (total / above wilting point):
+$$
+\\text{WDR} = 1000 \\cdot r_r \\cdot \\theta_\\ell,
+\\qquad
+\\text{WDRA} = 1000 \\cdot r_r \\cdot (\\theta_\\ell -
+\\theta_\\text{wp})_+.
+$$
 
-    $$
-    \\text{WDR} = 1000 \\cdot r_r \\cdot \\theta_\\ell,
-    \\qquad
-    \\text{WDRA} = 1000 \\cdot r_r \\cdot (\\theta_\\ell -
-    \\theta_\\text{wp})_+.
-    $$
+Percolation cascade (subscript ``0`` = saturation-capacity headroom;
+unlabelled = field-capacity headroom):
 
-    Percolation cascade (subscript ``0`` = saturation-capacity headroom;
-    unlabelled = field-capacity headroom):
+$$
+\\begin{aligned}
+\\text{PERC} &= (1 - \\text{RUNFR})\\cdot \\text{RAIN} + \\text{RIRR},\\\\
+\\text{PERC1P} &= \\text{PERC} - E_a - T_a,\\\\
+\\text{PERC1} &= \\min(\\text{KSUB} + \\text{CAP}_0,\\ \\text{PERC1P}),\\\\
+\\text{RUNOFF} &= \\text{RUNFR}\\cdot \\text{RAIN} + (\\text{PERC1P}
+- \\text{PERC1})_+,\\\\
+\\text{PERC2} &= \\mathbb{1}_{\\text{CAP}\\le \\text{PERC1}}\\cdot
+\\min(\\text{KSUB} + \\text{CAP}_{\\ell,0},\\ (\\text{PERC1} -
+\\text{CAP})_+),\\\\
+\\text{PERC3} &= \\mathbb{1}_{\\text{CAP}_\\ell\\le \\text{PERC2}}\\cdot
+\\min(\\text{KSUB},\\ (\\text{PERC2} - \\text{CAP}_\\ell)_+).
+\\end{aligned}
+$$
 
-    $$
-    \\begin{aligned}
-    \\text{PERC} &= (1 - \\text{RUNFR})\\cdot \\text{RAIN} + \\text{RIRR},\\\\
-    \\text{PERC1P} &= \\text{PERC} - E_a - T_a,\\\\
-    \\text{PERC1} &= \\min(\\text{KSUB} + \\text{CAP}_0,\\ \\text{PERC1P}),\\\\
-    \\text{RUNOFF} &= \\text{RUNFR}\\cdot \\text{RAIN} + (\\text{PERC1P}
-    - \\text{PERC1})_+,\\\\
-    \\text{PERC2} &= \\mathbb{1}_{\\text{CAP}\\le \\text{PERC1}}\\cdot
-    \\min(\\text{KSUB} + \\text{CAP}_{\\ell,0},\\ (\\text{PERC1} -
-    \\text{CAP})_+),\\\\
-    \\text{PERC3} &= \\mathbb{1}_{\\text{CAP}_\\ell\\le \\text{PERC2}}\\cdot
-    \\min(\\text{KSUB},\\ (\\text{PERC2} - \\text{CAP}_\\ell)_+).
-    \\end{aligned}
-    $$
+State rates (forward Euler, ``dt = 1`` d):
 
-    State rates (forward Euler, ``dt = 1`` d):
-
-    $$
-    \\dot W_a = \\text{PERC1} - \\text{PERC2} + \\text{WDR},
-    \\qquad
-    \\dot W_{a,\\ell} = \\text{PERC2} - \\text{PERC3} - \\text{WDR}.
-    $$
+$$
+\\dot W_a = \\text{PERC1} - \\text{PERC2} + \\text{WDR},
+\\qquad
+\\dot W_{a,\\ell} = \\text{PERC2} - \\text{PERC3} - \\text{WDR}.
+$$
 """
 
 from __future__ import annotations
@@ -122,18 +120,19 @@ from torchcrop.parameters.soil_params import SoilParameters
 from torchcrop.states.model_state import ModelState
 
 # ---------------------------------------------------------------------------- #
-# SIMPLACE helper: fraction of easily-available soil water (SWEAF)
+# Helper: fraction of easily-available soil water (SWEAF)
 # ---------------------------------------------------------------------------- #
 
 
 def _sweaf(etc: torch.Tensor, depnr: torch.Tensor) -> torch.Tensor:
-    """Port of ``LintulFunctions.SWEAF`` (Doorenbos & Kassam).
+    """Easily-available soil-water fraction (Doorenbos & Kassam).
 
     Args:
-        etc: CO2-corrected potential canopy evapotranspiration [mm d⁻¹],
-            shape ``[B]``.
+        etc: CO₂-corrected potential canopy evapotranspiration
+            [mm d⁻¹], shape ``[B]``.
         depnr: Crop-group depletion number ``cDEPNR`` in ``[1, 5]``,
-            broadcastable to ``[B]``. (from 1 (=drought-sensitive) to 5 (=drought-resistent)).
+            broadcastable to ``[B]``. ``1`` = drought-sensitive,
+            ``5`` = drought-resistant.
 
     Returns:
         Easily-available fraction of soil water in ``[0.10, 0.95]``.
@@ -148,7 +147,7 @@ def _sweaf(etc: torch.Tensor, depnr: torch.Tensor) -> torch.Tensor:
 
 
 # ---------------------------------------------------------------------------- #
-# Irrigation demand — supports SIMPLACE IRRI modes 0, 1, 2
+# Irrigation demand — supports IRRI modes 0, 1, 2
 # ---------------------------------------------------------------------------- #
 
 
@@ -217,12 +216,12 @@ def _irrigation_demand(
 
 
 class WaterBalance(nn.Module):
-    """Two-zone port of SIMPLACE Lintul5 ``WATBALS``.
+    """Two-zone soil water balance.
 
     Computes daily water fluxes (transpiration, evaporation, runoff,
-    drainage), stress factors (``TRANRF``), and rate variables for the
-    rooted / lower / Stroosnijder / oxygen states, in a fully batched
-    and autograd-safe manner.
+    drainage), the stress factor ``TRANRF``, and rate variables for
+    the rooted / lower / Stroosnijder / oxygen states, in a fully
+    batched and autograd-safe manner.
     """
 
     def forward(
@@ -249,12 +248,12 @@ class WaterBalance(nn.Module):
             params: Soil parameter container.
             rdm: Soil-/crop-limited maximum rooting depth
                 ``min(rdmso, rdmcr)`` [m], shape ``[B]``.
-            etc: CO2-corrected reference canopy ET [mm d⁻¹], shape ``[B]``;
-                falls back to ``ptran`` when ``None``.
-            rr: Root-front velocity [m d⁻¹], shape ``[B]``; ``None`` → 0
-                (no root-front water transfer).
+            etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape
+                ``[B]``; falls back to ``ptran`` when ``None``.
+            rr: Root-front velocity [m d⁻¹], shape ``[B]``;
+                ``None`` → ``0`` (no root-front water transfer).
             irrigation: Externally supplied irrigation [mm d⁻¹] that
-                overrides ``params.irri`` mode.
+                overrides the ``params.irri`` mode.
             doy: Day-of-year tensor needed by the ``IRRI = 2`` table
                 look-up; shape ``[B]``.
 
@@ -263,25 +262,31 @@ class WaterBalance(nn.Module):
 
             **Rate variables** (consumed by the engine):
 
-            * ``wa_rate``       — ``perc1 - perc2 + wdr`` [mm d⁻¹].
-            * ``wa_lower_rate`` — ``perc2 - perc3 - wdr`` [mm d⁻¹].
-            * ``dslr_rate``     — ``dslr_new - dslr`` [d d⁻¹].
-            * ``dsos_rate``     — ``dsos_new - dsos`` [d d⁻¹].
+            * ``wa_rate``       — ``perc1 − perc2 + wdr`` [mm d⁻¹].
+            * ``wa_lower_rate`` — ``perc2 − perc3 − wdr`` [mm d⁻¹].
+            * ``dslr_rate``     — ``dslr_new − dslr`` [d d⁻¹].
+            * ``dsos_rate``     — ``dsos_new − dsos`` [d d⁻¹].
 
             **Fluxes / diagnostics**:
 
             * ``tran``   — actual transpiration [mm d⁻¹].
             * ``evap``   — actual soil evaporation [mm d⁻¹].
-            * ``runoff`` — surface runoff (preliminary + rejected infiltration) [mm d⁻¹].
-            * ``drain``  — deep drainage = ``perc3`` [mm d⁻¹].
-            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes [mm d⁻¹].
-            * ``wdr`` / ``wdra`` — root-front water transfer to the rooted zone (total / available) [mm d⁻¹].
+            * ``runoff`` — surface runoff (preliminary + rejected
+              infiltration) [mm d⁻¹].
+            * ``drain``  — deep drainage (``= perc3``) [mm d⁻¹].
+            * ``perc1`` / ``perc2`` / ``perc3`` — cascade fluxes
+              [mm d⁻¹].
+            * ``wdr`` / ``wdra`` — root-front water transfer to the
+              rooted zone (total / available) [mm d⁻¹].
             * ``rirr``   — effective irrigation [mm d⁻¹].
             * ``tranrf`` — water-stress factor in ``[0, 1]``.
-            * ``smact`` / ``smactl`` — soil-moisture contents [m³ m⁻³].
+            * ``smact`` / ``smactl`` — soil-moisture contents
+              [m³ m⁻³].
             * ``smcr``   — critical soil-moisture content [m³ m⁻³].
-            * ``rdry`` / ``rwet`` — drought / oxygen reduction factors in ``[0, 1]``.
-            * ``wbal``   — rooted-zone mass-balance residual [mm] (should be ≈ 0).
+            * ``rdry`` / ``rwet`` — drought / oxygen reduction
+              factors in ``[0, 1]``.
+            * ``wbal``   — rooted-zone mass-balance residual [mm]
+              (should be ≈ 0).
         """
         factor = 1000.0  # root [m] · volumetric water-content → water [mm]
         rootd = torch.clamp(state.rootd, min=1e-4)
@@ -349,11 +354,13 @@ class WaterBalance(nn.Module):
         dslr_new = wet_day * torch.ones_like(state.dslr) + (1.0 - wet_day) * (
             state.dslr + 1.0
         )
-        # Evaporation on dry days — Stroosnijder (1987): sqrt(t) - sqrt(t-1)
+        # Evaporation on dry days — Stroosnijder (1987):
+        #   sqrt(t) − sqrt(t − 1).
         dslr_prev = torch.clamp(dslr_new - 1.0, min=0.0)
         decay = torch.sqrt(torch.clamp(dslr_new, min=1e-8)) - torch.sqrt(dslr_prev)
         evmaxt = pevap * limit(0.0, 1.0, decay * params.cfev)
-        # Cap by air-dry topsoil water capacity (SIMPLACE: 100·(SMACT - SMDRY))
+        # Cap by air-dry topsoil water capacity:
+        #   100 · (SMACT − SMDRY).
         evap_cap = 100.0 * torch.clamp(smact - params.wcad, min=0.0)
         evap_dry = torch.clamp(
             torch.minimum(pevap, torch.minimum(evmaxt + perc, evap_cap)),
@@ -361,7 +368,7 @@ class WaterBalance(nn.Module):
         )
         evap_wet = pevap
         evap = wet_day * evap_wet + (1.0 - wet_day) * evap_dry
-        # Final safety clamp by available water above air-dry content
+        # Final safety clamp by available water above air-dry content.
         wad_mm = factor * params.wcad * rootd
         evap = torch.minimum(evap, torch.clamp(state.wa - wad_mm, min=0.0))
 

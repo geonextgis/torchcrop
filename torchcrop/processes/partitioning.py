@@ -1,36 +1,33 @@
-"""Biomass allocation to plant organs, with water- and N-stress modification.
+"""Biomass allocation to plant organs, with water- and N-stress
+modification.
 
-References:
-    * Biomass partitioning block of ``Lintul5.java``.
-    * ``LintulFunctions.SUBPAR`` — modifies the baseline partitioning
-      fractions in response to water and nitrogen stress.
-    * ``LintulFunctions.RELGR`` — converts the partitioning fractions into per-organ growth rates.
+Design
+------
+The baseline fractions ``FRTWET``, ``FLVT``, ``FSTT``, ``FSOT`` are
+read from the interpolation tables ``frtb``, ``fltb``, ``fstb``,
+``fotb`` at the current DVS. ``SUBPAR`` then adjusts them depending
+on which stress is limiting:
 
-Design:
-    The baseline fractions ``FRTWET``, ``FLVT``, ``FSTT``, ``FSOT`` are read from
-    the interpolation tables ``frtb``, ``fltb``, ``fstb``, ``fotb`` at the
-    current DVS. ``SUBPAR`` then adjusts them depending on which stress is
-    limiting:
+* **Water stress more severe** (``TRANRF < NNI``): roots receive a
+  larger share via ``FRTMOD = max(1, 1 / (TRANRF + 0.5))``, capped at
+  ``FRT ≤ 0.6``. Above-ground fractions are unchanged.
+* **N stress more severe** (otherwise): leaf allocation is multiplied
+  by ``FLVMOD = exp(−NPART · (1 − NNI))``; the deficit is re-routed
+  to stems (``FST ← FSTT + FLVT − FLV``). Roots and storage organs
+  are unchanged.
 
-    * **Water stress more severe** (``TRANRF < NNI``): roots receive a larger
-    share via ``FRTMOD = max(1, 1/(TRANRF + 0.5))``, capped at
-    ``FRT ≤ 0.6``. Above-ground fractions are unchanged.
-    * **N stress more severe** (otherwise): leaf allocation is multiplied by
-    ``FLVMOD = exp(-NPART · (1 − NNI))``; the deficit is re-routed to
-    stems (``FST ← FSTT + FLVT − FLV``). Roots and storage organs are
-    unchanged.
+Equations
+---------
+Final organ growth rates:
 
-Equations:
-    Final organ growth rates follow ``RELGR``:
-
-    $$
-    \\begin{aligned}
-    G_{\\text{root}} &= G_{\\text{total}} \\cdot F_{rt} \\\\
-    G_{\\text{lv}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{lv} \\\\
-    G_{\\text{st}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{st} \\\\
-    G_{\\text{so}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{so}
-    \\end{aligned}
-    $$
+$$
+\\begin{aligned}
+G_{\\text{root}} &= G_{\\text{total}} \\cdot F_{rt} \\\\
+G_{\\text{lv}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{lv} \\\\
+G_{\\text{st}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{st} \\\\
+G_{\\text{so}}   &= G_{\\text{total}} \\cdot (1 - F_{rt}) \\cdot F_{so}
+\\end{aligned}
+$$
 """
 
 from __future__ import annotations
@@ -61,7 +58,7 @@ class Partitioning(nn.Module):
         fstt: torch.Tensor,
         fsot: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Apply the Java ``SUBPAR`` stress modification to partitioning.
+        """Apply the ``SUBPAR`` stress modification to partitioning.
 
         Args:
             npart: N-stress partitioning coefficient ``cNPART``, shape
@@ -121,14 +118,13 @@ class Partitioning(nn.Module):
             params: Crop parameters; uses the partitioning tables ``frtb``,
                 ``fltb``, ``fstb``, ``fotb`` and the N-stress
                 partitioning coefficient ``npart``.
-            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``. If
-                ``None`` (no stress information available), defaults to
-                a tensor of ones, in which case ``SUBPAR`` reduces to
-                the N-stress branch with ``FLVMOD = exp(0) = 1`` —
-                i.e. baseline fractions are returned unchanged.
-            nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK index
-                proxy), shape ``[B]``. If ``None`` defaults to ones
-                (no N stress).
+            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.
+                If ``None`` (no stress information available),
+                defaults to ones — ``SUBPAR`` then reduces to the
+                N-stress branch with ``FLVMOD = exp(0) = 1``, so
+                baseline fractions are returned unchanged.
+            nni: Nitrogen Nutrition Index in ``[0, 1]`` (or NPK-index
+                proxy), shape ``[B]``. Defaults to ones (no N stress).
 
         Returns:
             Dict of ``[B]`` tensors grouped as follows.
@@ -177,8 +173,8 @@ class Partitioning(nn.Module):
             fsot=fsot,
         )
 
-        # RELGR: gross per-organ growth before subtracting death rates
-        # (death rates are handled in LeafDynamics / RootDynamics).
+        # Gross per-organ growth, before subtracting death rates
+        # (handled in LeafDynamics / RootDynamics).
         agrt = gtotal * (1.0 - fr)
         g_root = gtotal * fr
         g_lv = fl * agrt

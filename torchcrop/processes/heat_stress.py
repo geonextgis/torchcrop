@@ -1,34 +1,34 @@
 """Heat-stress effects on leaf senescence and on grain yield.
 
-Ports two optional SIMPLACE crop components that are not part of the core
-``Lintul5.java`` time loop but are routinely coupled to it in SIMPLACE
-solutions for climate-change studies:
+Two optional climate-change-related modules that are not part of the
+core Lintul5 time loop but are routinely coupled to it:
 
-* `HeatStressOnLeafSenescence` — a per-day module that accelerates leaf
-  senescence when the daily maximum temperature exceeds a critical
-  threshold. Its scalar output multiplies the relative death rate ``RDR``
-  in `torchcrop.processes.leaf_dynamics.LeafDynamics`.
-* `HeatStressOnGrain` — a trajectory-level module that accumulates a daily
-  heat-stress intensity over a development-stage window around anthesis
-  and converts it into a multiplicative yield penalty.
+* `HeatStressOnLeafSenescence` — a per-day module that accelerates
+  leaf senescence when the daily maximum temperature exceeds a
+  critical threshold. Its scalar output multiplies the relative
+  death rate ``RDR`` in `torchcrop.processes.leaf_dynamics.LeafDynamics`.
+* `HeatStressOnGrain` — a trajectory-level module that accumulates a
+  daily heat-stress intensity over a development-stage window around
+  anthesis and converts it into a multiplicative yield penalty.
 
 Both modules are *stateless* with respect to crop constants: every
 crop-specific value (critical temperatures, slopes, development-stage
-thresholds) is read from `CropParameters` at call time. This keeps the
-heat-stress configuration in the same per-crop parameter container as the
-core Lintul5 parameters, so a single external crop configuration file can
-drive a multi-crop simulation. The ``smooth``/``k_sharp`` constructor
-arguments are *behavioural* flags (gradient smoothing), not crop
-constants, and therefore stay on the module.
+thresholds) is read from `CropParameters` at call time. This keeps
+the heat-stress configuration in the same per-crop parameter
+container as the core Lintul5 parameters, so a single external crop
+configuration file can drive a multi-crop simulation. The
+``smooth``/``k_sharp`` constructor arguments are *behavioural* flags
+(gradient smoothing), not crop constants, and therefore stay on the
+module.
 
 References:
-    * ``simplace/sim/components/crop/heatstress/HeatStressOnLeafSenescence.java``
-    * ``simplace/sim/components/crop/heatstress/HeatStressOnGrain.java``
     * Asseng, S., Foster, I., Turner, N. C. (2011). The impact of
-      temperature variability on wheat yields. *Global Change Biology*.
-    * Teixeira, E., Fischer, G., van Velthuizen, H., Walter, C., Ewert, F.
-      (2013). Global hot-spots of heat stress on agricultural crops due to
-      climate change. *Agricultural and Forest Meteorology*, 170, 206–215.
+      temperature variability on wheat yields. *Global Change
+      Biology*.
+    * Teixeira, E., Fischer, G., van Velthuizen, H., Walter, C.,
+      Ewert, F. (2013). Global hot-spots of heat stress on
+      agricultural crops due to climate change. *Agricultural and
+      Forest Meteorology*, 170, 206–215.
 """
 
 from __future__ import annotations
@@ -56,22 +56,19 @@ class HeatStressOnLeafSenescence(nn.Module):
     \end{cases}
     $$
 
-    With the default values ``Tc = 34``, ``m = 0.5``, ``F_Tc = 3`` this is
-    equivalent to the Asseng et al. (2011) expression
-    ``F_heat = 4 - (1 - (Tmax - 34) / 2)``.
+    With the default values ``Tc = 34``, ``m = 0.5``, ``F_Tc = 3``,
+    this is equivalent to the Asseng et al. (2011) expression
+    ``F_heat = 4 − (1 − (Tmax − 34) / 2)``.
 
-    The crop constants ``Tc``, ``F_Tc``, ``m`` and ``DVS_c`` (SIMPLACE
-    ``cTempCritical``, ``cFactorAtTempCritical``, ``cFactorSlope``,
-    ``cDevStageCritical``) are read from `CropParameters` — fields
-    ``leaf_heat_temp_critical``, ``leaf_heat_factor_at_temp_critical``,
-    ``leaf_heat_factor_slope`` and ``leaf_heat_devstage_critical`` — so
-    they can be loaded per crop from an external configuration file.
-
-    Reference: ``HeatStressOnLeafSenescence.java`` (``process()``).
+    The crop constants ``Tc``, ``F_Tc``, ``m`` and ``DVS_c`` are read
+    from `CropParameters` — fields ``leaf_heat_temp_critical``,
+    ``leaf_heat_factor_at_temp_critical``, ``leaf_heat_factor_slope``
+    and ``leaf_heat_devstage_critical`` — so they can be loaded per
+    crop from an external configuration file.
 
     Args:
-        smooth: If ``True``, replace the hard ``Tmax``/``DVS`` thresholds
-            with sigmoid blends for smoother gradients.
+        smooth: If ``True``, replace the hard ``Tmax``/``DVS``
+            thresholds with sigmoid blends for smoother gradients.
         k_sharp: Sigmoid sharpness; ignored when ``smooth=False``.
     """
 
@@ -111,7 +108,7 @@ class HeatStressOnLeafSenescence(nn.Module):
         factor_slope = params.leaf_heat_factor_slope
         devstage_critical = params.leaf_heat_devstage_critical
 
-        # Heat-stress factor when the regime is active (Java: process()).
+        # Heat-stress factor when the regime is active.
         active_factor = torch.clamp(
             factor_slope * (tmax - temp_critical) + factor_at_temp_critical,
             min=0.0,
@@ -128,7 +125,7 @@ class HeatStressOnLeafSenescence(nn.Module):
             )
             return one + gate * (active_factor - one)
 
-        # Hard branch (faithful to the Java conditional).
+        # Hard branch.
         regime = (tmax >= temp_critical) & (dvs >= devstage_critical)
         return torch.where(regime, active_factor, one)
 
@@ -170,19 +167,16 @@ class HeatStressOnGrain(nn.Module):
     \text{AdjustedYield} = (1 - \text{HSF}) \cdot \text{Yield}
     $$
 
-    This implements the development-stage variant of the Java component
-    (``pUseCalendarDays = false``), which is the natural choice for a
-    batched, differentiable model where an explicit anthesis calendar date
-    is not tracked.
+    This implements the development-stage variant of the heat-stress
+    model, which is the natural choice for a batched, differentiable
+    setting where an explicit anthesis calendar date is not tracked.
 
-    The crop constants ``T_c``, ``T_limit``, ``DVS_begin`` and ``DVS_end``
-    (SIMPLACE ``cTempCritical``, ``cTempLimit``, ``cBeginDevStage``,
-    ``cEndDevStage``) are read from `CropParameters` — fields
+    The crop constants ``T_c``, ``T_limit``, ``DVS_begin`` and
+    ``DVS_end`` are read from `CropParameters` — fields
     ``grain_heat_temp_critical``, ``grain_heat_temp_limit``,
-    ``grain_heat_begin_devstage`` and ``grain_heat_end_devstage`` — so they
-    can be loaded per crop from an external configuration file.
-
-    Reference: ``HeatStressOnGrain.java`` (``process()``, dev-stage branch).
+    ``grain_heat_begin_devstage`` and ``grain_heat_end_devstage`` —
+    so they can be loaded per crop from an external configuration
+    file.
     """
 
     def forward(
@@ -241,8 +235,8 @@ class HeatStressOnGrain(nn.Module):
 
         window_days = window_mask.sum(dim=1)  # [B]
         cumulated = (daily_factor * window_mask).sum(dim=1)  # [B]
-        # Java divides the cumulated factor by the number of window days;
-        # guard the empty-window case (no anthesis reached) -> HSF = 0.
+        # Window-average the cumulated factor; guard against an empty
+        # window (no anthesis reached) so HSF = 0 in that case.
         heat_stress_factor = cumulated / torch.clamp(window_days, min=1.0)
 
         out: dict[str, torch.Tensor] = {

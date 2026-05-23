@@ -1,21 +1,27 @@
 """Crop nutrient demand, uptake, translocation and stress indices.
 
-Mechanistic port of the SIMPLACE Lintul5 NPK block. Every quantity is a
-batch-compatible PyTorch tensor of shape ``[B]`` so the module integrates
-into the differentiable simulation engine without breaking the autograd
-graph or the batch dimension.
+Mechanistic implementation of the Lintul5 NPK block. Every quantity
+is a batch-compatible PyTorch tensor of shape ``[B]`` so the module
+integrates into the differentiable simulation engine without breaking
+the autograd graph or the batch dimension.
 
-References:
-    * ``simplace/sim/components/models/lintul5/Lintul5.java`` lines
-      1184–1380 (NPK Part 1: translocatable pools, demand, uptake,
-      nutrition indices) and 1480–1565 (per-organ rate assembly).
-    * ``simplace/sim/components/models/lintul5/LintulFunctions.java``:
-      ``NTRLOC`` (translocatable pools), ``NDEMND`` (deficit-based
-      demand), ``NUptake`` (IOPT-aware soil/biological supply),
-      ``NOPTM`` and ``NNINDX`` (concentration-based nutrition indices),
-      ``NTRANS`` (organ-share translocation to storage organs),
-      ``RNUSUB`` (per-organ uptake partitioning), ``RNLD`` (death
-      losses).
+The module covers:
+
+* Translocatable pools (``NTRLOC``) — leaf, stem, and root nutrient
+  contents above residual concentrations.
+* Deficit-based demand (``NDEMND``) — per-organ maximum vs. actual
+  concentration, with storage-organ demand filtered by translocation
+  time constants.
+* Uptake (``NUptake``) — gated by emergence, the DVS uptake window,
+  and the water-stress trigger; the ``IOPT`` run-mode switches
+  between soil-pool-limited and demand-limited uptake.
+* Concentration-based nutrition indices ``NNI``/``PNI``/``KNI``
+  combined into ``NPKI = min(NNI, PNI, KNI)``.
+* Per-organ partitioning of soil + fixation uptake by demand share
+  (``RNUSUB``) and translocation to storage organs by translocatable-
+  pool share (``NTRANS``).
+* Death-related nutrient losses (``RNLD``) and net per-organ rate
+  assembly.
 """
 
 from __future__ import annotations
@@ -71,7 +77,7 @@ class NutrientDemand(nn.Module):
         drrt: torch.Tensor | None = None,
         drst: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
-        """Compute the full Lintul5 NPK rate package for one day.
+        """Compute the full NPK rate package for one day.
 
         Args:
             state: Current `ModelState`. Reads the biomass pools
@@ -171,7 +177,6 @@ class NutrientDemand(nn.Module):
             drst = zero
 
         # ------------- Maximum concentrations (DVS-indexed) ------------
-        # Lintul5.java:1254–1256, 1282–1287.
         nmaxlv = interpolate(cp.nmxlv, dvs)
         pmaxlv = interpolate(cp.pmxlv, dvs)
         kmaxlv = interpolate(cp.kmxlv, dvs)
@@ -183,7 +188,6 @@ class NutrientDemand(nn.Module):
         kmaxrt = cp.lrkr * kmaxlv
 
         # ------------- Translocatable pools (NTRLOC) -------------------
-        # LintulFunctions.java:86–113.
         atnlv = torch.clamp(anlv - wlv * cp.rnflv, min=0.0)
         atnst = torch.clamp(anst - wst * cp.rnfst, min=0.0)
         atnrt = torch.minimum((atnlv + atnst) * cp.fntrt, anrt - wrt * cp.rnfrt)
@@ -200,8 +204,8 @@ class NutrientDemand(nn.Module):
         atk = atklv + atkst + atkrt
 
         # ------------- Demand from deficit (NDEMND) --------------------
-        # LintulFunctions.java:457–489. Storage-organ demand is filtered
-        # by the first-order translocation time constants.
+        # Storage-organ demand is filtered by the first-order
+        # translocation time constants.
         ndeml = torch.clamp(nmaxlv * wlv - anlv, min=0.0)
         ndems = torch.clamp(nmaxst * wst - anst, min=0.0)
         ndemr = torch.clamp(nmaxrt * wrt - anrt, min=0.0)
@@ -222,25 +226,25 @@ class NutrientDemand(nn.Module):
         kdemto = torch.clamp(kdeml + kdems + kdemr, min=0.0)
 
         # ------------- Storage-organ supply via translocation ----------
-        # Lintul5.java:1345–1347. Translocation only above DVSNT.
+        # Translocation activates only above DVSNT.
         translocating = (dvs >= cp.dvsnt).to(wlv.dtype)
         nsupso = translocating * atn / cp.tcnt
         psupso = translocating * atp / cp.tcpt
         ksupso = translocating * atk / cp.tckt
 
         # ------------- Emergence and NLIMIT gates ----------------------
-        # EMERG mask: thermal-sum since sowing has exceeded TSUMEM.
+        # EMERG mask: thermal sum since sowing has exceeded TSUMEM.
         emerg = (state.tsump >= cp.tsumem).to(wlv.dtype)
-        # NLIMIT: Lintul5.java:1273. Uptake only during DVS < DVSNLT and
-        # only when the soil is wet enough (TRANRF ≥ 0.01).
+        # NLIMIT: uptake only during DVS < DVSNLT and only when the
+        # soil is wet enough (TRANRF ≥ 0.01).
         within_window = (dvs < cp.dvsnlt).to(wlv.dtype)
         wet_enough = (tranrf >= 0.01).to(wlv.dtype)
         nlimit = within_window * wet_enough
 
         # ------------- Whole-plant uptake (NUptake, IOPT-aware) --------
-        # LintulFunctions.java:515–562. The soil-uptake cap is the
-        # currently available inorganic pool (``NMINT``/``PMINT``/``KMINT``),
-        # advanced day-by-day by `SoilNutrients`.
+        # The soil-uptake cap is the currently available inorganic
+        # pool (``NMINT``/``PMINT``/``KMINT``), advanced day-by-day by
+        # `SoilNutrients`.
         nmint = state.nmint + zero  # broadcast to [B]
         pmint = state.pmint + zero
         kmint = state.kmint + zero
@@ -284,10 +288,8 @@ class NutrientDemand(nn.Module):
         rkso = rkso * emerg
 
         # ------------- Concentration-based nutrition indices -----------
-        # Whole-canopy (leaves + stems) mean concentrations, compared to
-        # the residual (RMR) and optimal (OPTMR) levels.
-        # Lintul5.java:1266–1268 (NRMR), the NOPTM call at 1292–1300,
-        # and the NFGMR + NNINDX calls at 1366–1380.
+        # Whole-canopy (leaves + stems) mean concentrations, compared
+        # to the residual (RMR) and optimal (OPTMR) levels.
         tbgmr = wlv + wst
         s_tbgmr = _safe(tbgmr)
 
@@ -326,7 +328,7 @@ class NutrientDemand(nn.Module):
         kni = _idx(kfgmr, krmr, koptmr)
         npki = torch.minimum(torch.minimum(nni, pni), kni)
 
-        # IOPT overrides (LintulFunctions.java:215–228).
+        # IOPT overrides.
         nni = torch.where(iopt <= 2.5, ones, nni)
         pni = torch.where(iopt <= 3.5, ones, pni)
         kni = torch.where(iopt <= 3.5, ones, kni)
@@ -342,8 +344,8 @@ class NutrientDemand(nn.Module):
         npki = torch.where(emerg_mask, npki, ones)
 
         # ------------- Per-organ uptake split (RNUSUB) -----------------
-        # LintulFunctions.java:644–671. Soil + biological N uptake is
-        # distributed across leaves/stems/roots by demand share.
+        # Soil + biological N uptake is distributed across leaves,
+        # stems and roots by demand share.
         n_in = nuptr + nfixtr
         rnulv = (ndeml / s_ndemto) * n_in
         rnust = (ndems / s_ndemto) * n_in
@@ -356,8 +358,8 @@ class NutrientDemand(nn.Module):
         rkurt = (kdemr / s_kdemto) * kuptr
 
         # ------------- Translocation to storage organs (NTRANS) --------
-        # LintulFunctions.java:590–612. RNSO is partitioned across source
-        # organs by translocatable-pool share.
+        # RNSO is partitioned across source organs by translocatable-
+        # pool share.
         s_atn = _safe(atn)
         s_atp = _safe(atp)
         s_atk = _safe(atk)
@@ -372,7 +374,7 @@ class NutrientDemand(nn.Module):
         rktrt = rkso * atkrt / s_atk
 
         # ------------- Death losses (RNLD) -----------------------------
-        # LintulFunctions.java:292–313. Residual concentrations × dead DM.
+        # Residual concentrations multiplied by dead biomass.
         rnldlv = cp.rnflv * dlv
         rnldst = cp.rnfst * drst
         rnldrt = cp.rnfrt * drrt
@@ -383,7 +385,7 @@ class NutrientDemand(nn.Module):
         rkldst = cp.rkfst * drst
         rkldrt = cp.rkfrt * drrt
 
-        # ------------- Net per-organ rates (Lintul5.java:1556–1565) ----
+        # ------------- Net per-organ rates -----------------------------
         n_lv_rate = rnulv - rntlv - rnldlv
         n_st_rate = rnust - rntst - rnldst
         n_rt_rate = rnurt - rntrt - rnldrt

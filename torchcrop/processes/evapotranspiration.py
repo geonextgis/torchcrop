@@ -1,33 +1,34 @@
 """PENMAN potential evaporation and transpiration with CO₂ correction.
 
-Computes Penman reference fluxes for an open-water, bare-soil, and closed
-canopy reference, then partitions them into potential canopy transpiration
-and potential soil evaporation according to the fraction of incoming light
-intercepted by the crop.
+Computes Penman reference fluxes for open-water, bare-soil, and a
+closed-canopy reference, then partitions them into potential canopy
+transpiration and potential soil evaporation according to the
+fraction of incoming light intercepted by the crop.
 
-References:
-    Penman (1948) with the van Kraalingen modifications used by SIMPLACE
-    ``PotentialEvapoTranspiration.java`` and ``LintulFunctions.PENMAN``.
+Reference:
+    Penman (1948), with the van Kraalingen modifications.
 
-Outputs:
-    - ``E0``  — potential evaporation from open water [mm d⁻¹]
-    - ``ES0`` — potential evaporation from bare soil [mm d⁻¹]
-    - ``ETC`` — potential transpiration of a closed canopy, CO₂-corrected
-      [mm d⁻¹]
+Outputs
+-------
+* ``E0``  — potential evaporation from open water [mm d⁻¹].
+* ``ES0`` — potential evaporation from bare soil [mm d⁻¹].
+* ``ETC`` — potential transpiration of a closed canopy,
+  CO₂-corrected [mm d⁻¹].
 
-Equations:
-    Canopy transpiration and soil evaporation are split by the fractional
-    light interception $F_{\\text{INT}}$:
+Equations
+---------
+Canopy transpiration and soil evaporation are split by the fractional
+light interception $F_{\\text{INT}}$:
 
-    $$
-    P_t = \\text{CFET} \\cdot \\text{ETC} \\cdot F_{\\text{INT}}
-    $$
+$$
+P_t = \\text{CFET} \\cdot \\text{ETC} \\cdot F_{\\text{INT}}
+$$
 
-    $$
-    P_s = \\text{ES}_0 \\cdot (1 - F_{\\text{INT}})
-    $$
+$$
+P_s = \\text{ES}_0 \\cdot (1 - F_{\\text{INT}})
+$$
 
-    where ``CFET`` is a crop-specific transpiration correction factor.
+where ``CFET`` is a crop-specific transpiration correction factor.
 """
 
 from __future__ import annotations
@@ -43,13 +44,14 @@ from torchcrop.functions.interpolation import interpolate
 class PotentialEvapoTranspiration(nn.Module):
     """PENMAN-based potential evapotranspiration calculation.
 
-    Implements the full PENMAN formula per SIMPLACE PotentialEvapoTranspiration.java.
-    Outputs reference ET (E0, ES0, ETC) which are then split into potential
+    Implements the full PENMAN formula and outputs reference ET
+    (``E0``, ``ES0``, ``ETC``), which is then split into potential
     transpiration and soil evaporation based on light interception.
 
     Args:
-        altitude: Station altitude [m] (default 0).
-        cfet: Crop-specific correction factor for transpiration (default 1.0).
+        altitude: Station altitude [m] (default ``0``).
+        cfet: Crop-specific correction factor for transpiration
+            (default ``1.0``).
     """
 
     def __init__(
@@ -61,7 +63,7 @@ class PotentialEvapoTranspiration(nn.Module):
         self.altitude = altitude
         self.cfet = cfet
 
-        # CO2 correction table from SIMPLACE cET0CorrectionTableCo2 / cET0CorrectionTableFactor.
+        # CO2 correction table (concentration [ppm] → ET0 factor).
         self.register_buffer(
             "co2_table",
             torch.tensor(
@@ -96,19 +98,23 @@ class PotentialEvapoTranspiration(nn.Module):
             avrad: Daily total irradiation [J m⁻² d⁻¹], shape ``[B]``.
             atmtr: Atmospheric transmission fraction [-], shape ``[B]``.
             frac_int: Fractional light interception [-], shape ``[B]``.
-            co2: Atmospheric CO₂ concentration [ppm], a scalar or shape
-                broadcastable to ``[B]`` (default 370). Supplied by `SiteParameters.co2` in the model.
+            co2: Atmospheric CO₂ concentration [ppm], a scalar or
+                shape broadcastable to ``[B]`` (default ``370``).
+                Supplied by ``SiteParameters.co2`` in the model.
 
         Returns:
             Dict of ``[B]`` tensors:
 
             * ``e0`` [mm d⁻¹] — Potential evaporation from open water.
             * ``es0`` [mm d⁻¹] — Potential evaporation from bare soil.
-            * ``etc`` [mm d⁻¹] — Potential transpiration (CO2-corrected).
-            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration (= CFET * ETC * frac_int).
-            * ``pevap`` [mm d⁻¹] — Potential soil evaporation (= ES0 * (1 - frac_int)).
+            * ``etc`` [mm d⁻¹] — Potential transpiration
+              (CO₂-corrected).
+            * ``ptran`` [mm d⁻¹] — Potential canopy transpiration
+              (``= CFET · ETC · frac_int``).
+            * ``pevap`` [mm d⁻¹] — Potential soil evaporation
+              (``= ES0 · (1 − frac_int)``).
         """
-        # Constants from PENMAN formula (SIMPLACE LintulFunctions.PENMAN)
+        # Constants from the PENMAN formula.
         A = 0.20
         B = 0.56
         REFCFW = 0.05  # Albedo for water

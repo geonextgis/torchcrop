@@ -1,19 +1,15 @@
-"""Soil mineral N/P/K balance: mineralisation, fertiliser, and uptake bookkeeping.
+"""Soil mineral N/P/K balance: mineralisation, fertiliser, and
+uptake bookkeeping.
 
-Mechanistic port of the SIMPLACE ``SoilNutrientRates`` function from
-``LintulFunctions.java`` (lines 679–728) together with the lookup-table
-fertiliser-application path used by ``Lintul5.java`` (lines 1502–1516).
+State variables advanced here:
 
-State variables advanced here (Lintul5 names in parentheses):
-
-* ``nmin`` / ``pmin`` / ``kmin`` (``sNMIN`` / ``sPMIN`` / ``sKMIN``):
-  mineralisable organic N/P/K pool. Daily rate ``RNMINS`` is **negative
-  or zero** (Lintul5 sign convention) so adding it to the state depletes
-  the pool.
-* ``nmint`` / ``pmint`` / ``kmint`` (``sNMINT`` / ``sPMINT`` /
-  ``sKMINT``): directly available inorganic pool. Daily rate
-  ``RNMINT = FERTNS − NUPTR − RNMINS`` (note ``−RNMINS`` is the
-  mineralisation flux **into** ``NMINT``).
+* ``nmin`` / ``pmin`` / ``kmin``: mineralisable organic N/P/K pool.
+  Daily rate ``RNMINS`` is **negative or zero** (sign convention), so
+  adding it to the state depletes the pool.
+* ``nmint`` / ``pmint`` / ``kmint``: directly available inorganic
+  pool. Daily rate ``RNMINT = FERTNS − NUPTR − RNMINS`` (subtracting
+  the negative ``RNMINS`` adds the mineralisation flux **into**
+  ``NMINT``).
 
 The module is a stateless `nn.Module` that returns one rate dict per
 day; the engine integrates the pools via the standard explicit-Euler
@@ -53,16 +49,16 @@ def _lookup_or_scalar(
 
 
 class SoilNutrients(nn.Module):
-    """Daily soil mineral-pool balance for the Lintul5 NPK chain.
+    """Daily soil mineral-pool balance for the NPK chain.
 
     Computes — entirely from current-day soil/crop inputs — the rate
-    variables that advance the four state pools
-    (``nmin``, ``pmin``, ``kmin``, ``nmint``, ``pmint``, ``kmint``) in
-    the next explicit-Euler step.
+    variables that advance the six state pools (``nmin``, ``pmin``,
+    ``kmin``, ``nmint``, ``pmint``, ``kmint``) in the next
+    explicit-Euler step.
 
     All operations are vectorised over the batch dimension ``[B]`` so
-    the module composes with the rest of the differentiable simulation
-    pipeline without breaking autograd or batching.
+    the module composes with the rest of the differentiable
+    simulation pipeline without breaking autograd or batching.
     """
 
     def forward(
@@ -89,13 +85,13 @@ class SoilNutrients(nn.Module):
                 `NutrientDemand`.
             puptr: Daily soil P uptake, shape ``[B]``.
             kuptr: Daily soil K uptake, shape ``[B]``.
-            nlimit: Lintul5 nutrient-limit gate in ``{0, 1}``, shape
-                ``[B]``; 1 within the uptake window (``DVS < DVSNLT``
-                and ``TRANRF ≥ 0.01``), else 0. Reuses the same gate
-                used by `NutrientDemand` so mineralisation pauses
-                when uptake pauses (matches Lintul5.java:709).
-            emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; 0 before
-                crop emergence (mineralisation is suppressed).
+            nlimit: Nutrient-limit gate in ``{0, 1}``, shape ``[B]``;
+                ``1`` within the uptake window (``DVS < DVSNLT`` and
+                ``TRANRF ≥ 0.01``), else ``0``. Reuses the gate used
+                by `NutrientDemand` so mineralisation pauses when
+                uptake pauses.
+            emerg: Emergence mask in ``{0, 1}``, shape ``[B]``; ``0``
+                before crop emergence (mineralisation is suppressed).
             doy: Day-of-year tensor, shape ``[B]``. Used to interpolate
                 the fertiliser application tables
                 ``ferntab``/``ferptab``/``ferktab`` and the recovery
@@ -105,8 +101,8 @@ class SoilNutrients(nn.Module):
                 ``nrf``/``prf``/``krf``.
             soil_params: Mineralisation kinetics
                 ``rtnmins``/``rtpmins``/``rtkmins`` and the initial
-                organic pools ``nmini``/``pmini``/``kmini``. The latter
-                are used by the Lintul5 mineralisation formula
+                organic pools ``nmini``/``pmini``/``kmini``. The
+                latter are used by the mineralisation formula
                 ``RTNMINS · NMINI`` (not the current pool), capped by
                 the current ``NMIN`` to prevent over-depletion.
 
@@ -131,8 +127,8 @@ class SoilNutrients(nn.Module):
         sp = soil_params
 
         # Look up fertiliser applications and recovery fractions.
-        # Lintul5.java:1502–1508. Missing tables ⇒ no application / use
-        # scalar recovery fraction default.
+        # Missing tables ⇒ no application / use scalar recovery
+        # fraction default.
         fertn_raw = _lookup_or_scalar(cp.ferntab, torch.zeros_like(doy), doy)
         fertp_raw = _lookup_or_scalar(cp.ferptab, torch.zeros_like(doy), doy)
         fertk_raw = _lookup_or_scalar(cp.ferktab, torch.zeros_like(doy), doy)
@@ -149,16 +145,16 @@ class SoilNutrients(nn.Module):
         fertks = fertk * krf
 
         # Mineralisation flux from the depleting organic pool.
-        # LintulFunctions.java:707–712 — sign convention: ``RNMINS`` is
-        # *negative* (depletes ``NMIN``). The flux into ``NMINT`` is
-        # therefore ``−RNMINS`` (positive).
+        # Sign convention: ``RNMINS`` is *negative* (depletes
+        # ``NMIN``); the flux into ``NMINT`` is therefore ``−RNMINS``
+        # (positive).
         rtnmins_flux = sp.rtnmins * sp.nmini * nlimit
         rtpmins_flux = sp.rtpmins * sp.pmini * nlimit
         rtkmins_flux = sp.rtkmins * sp.kmini * nlimit
 
-        # Cap by what is left in the pool (cannot mineralise more than
-        # currently present). Multiplied by ``emerg`` so mineralisation
-        # only runs after emergence (Lintul5 ``if (EMERG)`` block).
+        # Cap by what is left in the pool (cannot mineralise more
+        # than is currently present). Multiplied by ``emerg`` so
+        # mineralisation only runs after emergence.
         mineralisation_n = torch.clamp(
             torch.minimum(rtnmins_flux, state.nmin), min=0.0
         ) * emerg
@@ -173,9 +169,10 @@ class SoilNutrients(nn.Module):
         rpmins = -mineralisation_p
         rkmins = -mineralisation_k
 
-        # Inorganic pool balance — Lintul5.java:723–725.
-        # ``RNMINT = FERTNS − NUPTR − RNMINS`` (subtracting the negative
-        # RNMINS adds the mineralisation flux into NMINT).
+        # Inorganic pool balance:
+        #   RNMINT = FERTNS − NUPTR − RNMINS
+        # (subtracting the negative RNMINS adds the mineralisation
+        # flux into NMINT).
         rnmint = fertns - nuptr - rnmins
         rpmint = fertps - puptr - rpmins
         rkmint = fertks - kuptr - rkmins
