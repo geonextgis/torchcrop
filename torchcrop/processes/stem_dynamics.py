@@ -59,17 +59,17 @@ class StemDynamics(nn.Module):
 
             Rate variables (consumed by the engine for state update):
 
-                * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in
-                  living stem biomass (``= g_st − drst``).
-                * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem
-                  mass transferred to the dead-stem pool (``= drst``).
+            * ``wst_rate`` [g DM m⁻² d⁻¹] — Net daily change in
+                living stem biomass (``= g_st − drst``).
+            * ``wstd_rate`` [g DM m⁻² d⁻¹] — Daily senesced stem
+                mass transferred to the dead-stem pool (``= drst``).
 
             Diagnostics:
 
-                * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate
-                  ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.
-                * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative
-                  stem death rate after the scale factor.
+            * ``drst`` [g DM m⁻² d⁻¹] — Stem death rate
+                ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.
+            * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative
+                stem death rate after the scale factor.
         """
         dvs = state.dvs
         wst = state.wst

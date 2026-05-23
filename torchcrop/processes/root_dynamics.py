@@ -10,11 +10,11 @@ Equations
 ---------
 Root depth growth:
 
-    ``RR = min(RRI · INSW(TRANRF − 0.01, 0, 1), RDM − RD)``
+``RR = min(RRI · INSW(TRANRF − 0.01, 0, 1), RDM − RD)``
 
 Root senescence:
 
-    ``DRRT = WRT · RDRRT``  when ``DVS ≥ DVSDR``, else ``0``
+``DRRT = WRT · RDRRT``  when ``DVS ≥ DVSDR``, else ``0``
 
 where ``RDRRT = RDRRTB(DVS) · scale_factor_rdr_roots`` is the DVS-
 indexed relative root death rate.
@@ -71,20 +71,20 @@ class RootDynamics(nn.Module):
 
             Rate variables (consumed by the engine for state update):
 
-                * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting
-                  depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),
-                  RDM − RD)``, gated to zero pre-emergence.
-                * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in
-                  living root biomass (``= g_root − drrt``).
-                * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root
-                  mass transferred to the dead-root pool (``= drrt``).
+            * ``rootd_rate`` [m d⁻¹] — Daily increment of rooting
+                depth, ``min(RRI · INSW(TRANRF − 0.01, 0, 1),
+                RDM − RD)``, gated to zero pre-emergence.
+            * ``wrt_rate`` [g DM m⁻² d⁻¹] — Net daily change in
+                living root biomass (``= g_root − drrt``).
+            * ``wrtd_rate`` [g DM m⁻² d⁻¹] — Daily senesced root
+                mass transferred to the dead-root pool (``= drrt``).
 
             Diagnostics:
 
-                * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate
-                  ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.
-                * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative
-                  root death rate after the scale factor.
+            * ``drrt`` [g DM m⁻² d⁻¹] — Root death rate
+                ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.
+            * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative
+                root death rate after the scale factor.
         """
         rootd = state.rootd
         dvs = state.dvs

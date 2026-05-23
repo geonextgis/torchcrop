@@ -5,9 +5,9 @@ Equations
 ---------
 Effective daily thermal time:
 
-    $$
-    \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
-    $$
+$$
+\\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
+$$
 
 Development rate (vegetative, generative):
 

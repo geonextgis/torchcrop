@@ -119,38 +119,38 @@ class NutrientDemand(nn.Module):
             Rate variables (consumed by the engine to update the matching
             ``a{n,p,k}{lv,st,rt,so}`` state pools):
 
-                * ``n_lv_rate``, ``n_st_rate``, ``n_rt_rate``,
-                  ``n_so_rate`` [g N m⁻² d⁻¹] — Net daily change in the
-                  per-organ N pool: ``uptake − translocation − loss``
-                  for vegetative organs, ``RNSO`` (translocation in) for
-                  the storage organ.
-                * ``p_lv_rate``, ``p_st_rate``, ``p_rt_rate``,
-                  ``p_so_rate`` [g P m⁻² d⁻¹] — Per-organ net P rate.
-                * ``k_lv_rate``, ``k_st_rate``, ``k_rt_rate``,
-                  ``k_so_rate`` [g K m⁻² d⁻¹] — Per-organ net K rate.
+            * ``n_lv_rate``, ``n_st_rate``, ``n_rt_rate``,
+              ``n_so_rate`` [g N m⁻² d⁻¹] — Net daily change in the
+                per-organ N pool: ``uptake − translocation − loss``
+                for vegetative organs, ``RNSO`` (translocation in) for
+                the storage organ.
+            * ``p_lv_rate``, ``p_st_rate``, ``p_rt_rate``,
+              ``p_so_rate`` [g P m⁻² d⁻¹] — Per-organ net P rate.
+            * ``k_lv_rate``, ``k_st_rate``, ``k_rt_rate``,
+              ``k_so_rate`` [g K m⁻² d⁻¹] — Per-organ net K rate.
 
             Diagnostics:
 
-                * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the
-                  combined nutrition index in ``[1e-3, 1]`` that
-                  multiplies ``gtotal`` in `Photosynthesis`.
-                * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.
-                * ``n_uptake``, ``p_uptake``, ``k_uptake``
-                  [g X m⁻² d⁻¹] — Whole-plant uptake totals
-                  (``NUPTR + NFIXTR`` for N).
-                * ``n_demand``, ``p_demand``, ``k_demand``
-                  [g X m⁻² d⁻¹] — Vegetative demand totals
-                  (``NDEMTO`` etc.).
-                * ``nfixtr`` [g N m⁻² d⁻¹] — Biological N fixation flux.
-                * ``rnso``, ``rpso``, ``rkso`` [g X m⁻² d⁻¹] —
-                  Storage-organ supply from translocation.
-                * ``nuptr``, ``puptr``, ``kuptr`` [g X m⁻² d⁻¹] —
-                  Soil-only uptake fluxes (no fixation), fed to
-                  `SoilNutrients` for the inorganic-pool balance.
-                * ``nlimit`` [-] — Nutrient-uptake gate
-                  ``(DVS < DVSNLT) ∧ (TRANRF ≥ 0.01)``.
-                * ``emerg`` [-] — Emergence mask
-                  ``(tsump ≥ tsumem)``.
+            * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the
+                combined nutrition index in ``[1e-3, 1]`` that
+                multiplies ``gtotal`` in `Photosynthesis`.
+            * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.
+            * ``n_uptake``, ``p_uptake``, ``k_uptake``
+                [g X m⁻² d⁻¹] — Whole-plant uptake totals
+                (``NUPTR + NFIXTR`` for N).
+            * ``n_demand``, ``p_demand``, ``k_demand``
+                [g X m⁻² d⁻¹] — Vegetative demand totals
+                (``NDEMTO`` etc.).
+            * ``nfixtr`` [g N m⁻² d⁻¹] — Biological N fixation flux.
+            * ``rnso``, ``rpso``, ``rkso`` [g X m⁻² d⁻¹] —
+                Storage-organ supply from translocation.
+            * ``nuptr``, ``puptr``, ``kuptr`` [g X m⁻² d⁻¹] —
+                Soil-only uptake fluxes (no fixation), fed to
+                `SoilNutrients` for the inorganic-pool balance.
+            * ``nlimit`` [-] — Nutrient-uptake gate
+              ``(DVS < DVSNLT) ∧ (TRANRF ≥ 0.01)``.
+            * ``emerg`` [-] — Emergence mask
+              ``(tsump ≥ tsumem)``.
         """
         del soil_params  # uptake cap now lives on `ModelState.{nmint,pmint,kmint}`
         cp = crop_params

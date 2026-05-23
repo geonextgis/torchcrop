@@ -26,7 +26,7 @@ $$
 DVS-dependent radiation use efficiency:
 
 $$
-\\text{RUE} = \\text{scale\\_factor\\_rue} \\cdot \\text{RUETB}(\\text{DVS})
+\\text{RUE} = \\text{scale_factor_rue} \\cdot \\text{RUETB}(\\text{DVS})
 $$
 
 ``RUE`` is in units of g dry matter per MJ intercepted PAR.
