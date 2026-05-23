@@ -111,20 +111,20 @@ nav:
                 - residual: api/nn/residual.md
           - Processes:
                 - astro: api/processes/astro.md
+                - co2_transpiration: api/processes/co2_transpiration.md
                 - evapotranspiration: api/processes/evapotranspiration.md
+                - heat_stress: api/processes/heat_stress.md
                 - irradiation: api/processes/irradiation.md
                 - leaf_dynamics: api/processes/leaf_dynamics.md
                 - nutrient_demand: api/processes/nutrient_demand.md
                 - partitioning: api/processes/partitioning.md
                 - phenology: api/processes/phenology.md
                 - photosynthesis: api/processes/photosynthesis.md
-                - stem_dynamics: api/processes/stem_dynamics.md
                 - root_dynamics: api/processes/root_dynamics.md
                 - soil_nutrients: api/processes/soil_nutrients.md
+                - stem_dynamics: api/processes/stem_dynamics.md
                 - stress: api/processes/stress.md
                 - water_balance: api/processes/water_balance.md
-                - heat_stress: api/processes/heat_stress.md
-                - co2_transpiration: api/processes/co2_transpiration.md
           - Utils:
                 - io: api/utils/io.md
                 - validation: api/utils/validation.md
