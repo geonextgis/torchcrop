@@ -1,12 +1,12 @@
-r"""CO\ :sub:`2` influence on crop transpiration.
+r"""CO₂ influence on crop transpiration.
 
-Elevated atmospheric CO\ :sub:`2` reduces stomatal conductance, and
+Elevated atmospheric CO₂ reduces stomatal conductance, and
 therefore crop transpiration. This module scales the potential
 transpiration ``PTRAN`` by a linear reduction factor before it enters
 the water balance, so the effect propagates into the water-stress
 factor ``TRANRF``.
 
-This is a *distinct* mechanism from the CO\ :sub:`2` correction
+This is a *distinct* mechanism from the CO₂ correction
 applied to reference ET in
 `torchcrop.processes.evapotranspiration`: that one rescales the
 reference evapotranspiration ``ET0`` via an interpolation table,
@@ -16,7 +16,7 @@ that the water balance compares against soil water supply.
 Equations
 ---------
 Linear reduction factor as a function of the atmospheric
-CO\ :sub:`2` concentration:
+CO₂ concentration:
 
 $$
 f(\text{CO}_2) = m \cdot \text{CO}_2 + b
@@ -38,7 +38,7 @@ import torch.nn as nn
 
 
 class Co2Transpiration(nn.Module):
-    r"""Reduce potential transpiration as a linear function of CO\ :sub:`2`.
+    r"""Reduce potential transpiration as a linear function of CO₂.
 
     Args:
         transpiration_m: Slope ``cTranspiration_m`` of the linear reduction
@@ -46,7 +46,7 @@ class Co2Transpiration(nn.Module):
         transpiration_b: Intercept ``cTranspiration_b`` of the linear
             reduction factor [-] (default ``1.1``).
         clamp_nonnegative: If ``True`` (default), clamp the reduction
-            factor to ``≥ 0`` so an extreme CO\ :sub:`2` value can never
+            factor to ``≥ 0`` so an extreme CO₂ value can never
             flip the sign of transpiration.
     """
 
@@ -62,10 +62,10 @@ class Co2Transpiration(nn.Module):
         self.clamp_nonnegative = clamp_nonnegative
 
     def factor(self, co2: torch.Tensor) -> torch.Tensor:
-        r"""Compute the CO\ :sub:`2` transpiration-reduction factor.
+        r"""Compute the CO₂ transpiration-reduction factor.
 
         Args:
-            co2: Atmospheric CO\ :sub:`2` concentration [ppm], broadcastable
+            co2: Atmospheric CO₂ concentration [ppm], broadcastable
                 to the transpiration tensor.
 
         Returns:
@@ -82,17 +82,17 @@ class Co2Transpiration(nn.Module):
         ptran: torch.Tensor,
         co2: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        r"""Apply the CO\ :sub:`2` reduction to potential transpiration.
+        r"""Apply the CO₂ reduction to potential transpiration.
 
         Args:
             ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.
-            co2: Atmospheric CO\ :sub:`2` concentration [ppm], a scalar
+            co2: Atmospheric CO₂ concentration [ppm], a scalar
                 tensor or shape broadcastable to ``[B]``.
 
         Returns:
             Dict of ``[B]`` tensors:
 
-            * ``ptran`` [mm d⁻¹] — CO\ :sub:`2`-reduced potential
+            * ``ptran`` [mm d⁻¹] — CO₂-reduced potential
               transpiration ``PTRAN · f(CO₂)``.
             * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.
         """

@@ -7,7 +7,7 @@ Equations
 ---------
 Stem senescence:
 
-    ``DRST = WST · RDRST``   when ``DVS ≥ DVSDR``, else ``0``
+``DRST = WST · RDRST``   when ``DVS ≥ DVSDR``, else ``0``
 
 where ``RDRST = RDRSTB(DVS) · scale_factor_rdr_stems`` is the DVS-
 indexed relative stem death rate.
