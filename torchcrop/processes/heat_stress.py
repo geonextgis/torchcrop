@@ -154,7 +154,7 @@ class HeatStressOnGrain(nn.Module):
 
     Window-averaged heat-stress factor and adjusted yield, over the days
     ``i`` whose development stage lies in
-    ``[DVS_\text{begin}, DVS_\text{end}]``:
+    ``[DVS(begin), DVS(end)]``:
 
     $$
     \text{HSF} = \frac{\sum_i s_i \, \mathbb{1}[\text{DVS}_i \in
