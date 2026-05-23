@@ -110,18 +110,18 @@ class SoilNutrients(nn.Module):
             Dict of ``[B]`` tensors keyed by ``"<field>_rate"`` for the
             six soil pools, plus diagnostics:
 
-                * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``
-                  [g X m⁻² d⁻¹] — Rate of change of the **organic**
-                  pools (= ``RNMINS``, negative when mineralising).
-                * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``
-                  [g X m⁻² d⁻¹] — Rate of change of the **inorganic**
-                  pools (= ``RNMINT`` etc. = fertiliser + mineralisation
-                  − crop uptake).
-                * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —
-                  Effective fertiliser supply after recovery.
-                * ``mineralisation_n``, ``mineralisation_p``,
-                  ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive
-                  mineralisation flux into ``NMINT`` (= ``−RNMINS``).
+            * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``
+                [g X m⁻² d⁻¹] — Rate of change of the **organic**
+                pools (= ``RNMINS``, negative when mineralising).
+            * ``nmint_rate``, ``pmint_rate``, ``kmint_rate``
+                [g X m⁻² d⁻¹] — Rate of change of the **inorganic**
+                pools (= ``RNMINT`` etc. = fertiliser + mineralisation
+                − crop uptake).
+            * ``fertns``, ``fertps``, ``fertks`` [g X m⁻² d⁻¹] —
+                Effective fertiliser supply after recovery.
+            * ``mineralisation_n``, ``mineralisation_p``,
+                ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive
+                mineralisation flux into ``NMINT`` (= ``−RNMINS``).
         """
         cp = crop_params
         sp = soil_params

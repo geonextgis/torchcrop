@@ -9,7 +9,7 @@ extra_javascript:
     - https://polyfill.io/v3/polyfill.min.js?features=es6
     - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
-copyright: "Copyright &copy; 2024 - 2024 Krishnagopal Halder"
+copyright: "Copyright &copy; 2026 - 2026 Krishnagopal Halder"
 
 theme:
     palette:
@@ -123,6 +123,8 @@ nav:
                 - soil_nutrients: api/processes/soil_nutrients.md
                 - stress: api/processes/stress.md
                 - water_balance: api/processes/water_balance.md
+                - heat_stress: api/processes/heat_stress.md
+                - co2_transpiration: api/processes/co2_transpiration.md
           - Utils:
                 - io: api/utils/io.md
                 - validation: api/utils/validation.md
