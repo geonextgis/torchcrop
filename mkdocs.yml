@@ -20,13 +20,13 @@ theme:
           primary: deep orange
           accent: deep orange
           toggle:
-              icon: material/lightbulb-outline
+              icon: material/weather-sunny
               name: Switch to dark mode
         - scheme: slate
           primary: deep orange
           accent: deep orange
           toggle:
-              icon: material/lightbulb
+              icon: material/weather-night
               name: Switch to light mode
     name: material
     icon:
