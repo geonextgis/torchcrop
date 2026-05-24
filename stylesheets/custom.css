@@ -1,0 +1,46 @@
+/* TorchCrop gradient text effect */
+.torchcrop-gradient {
+    background: linear-gradient(
+        90deg,
+        #FF6B35 0%,      /* Deep PyTorch orange */
+        #FF8C42 20%,     /* Lighter orange */
+        #FFA54D 40%,     /* Blend zone - orange to green */
+        #66BB6A 60%,     /* Blend zone - green to orange */
+        #4CAF50 80%,     /* Deep green */
+        #388E3C 100%     /* Forest green */
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    animation: gradient-flow 4s ease-in-out infinite;
+}
+
+/* Smooth flowing animation */
+@keyframes gradient-flow {
+    0% {
+        background-position: 0% center;
+    }
+    50% {
+        background-position: 100% center;
+    }
+    100% {
+        background-position: 0% center;
+    }
+}
+
+/* Ensure animation works smoothly */
+.torchcrop-gradient {
+    background-size: 200% 200%;
+}
+
+/* Fallback for older browsers */
+@supports not (-webkit-background-clip: text) {
+    .torchcrop-gradient {
+        color: #FF6B35;
+        animation: none;
+        background: none;
+        -webkit-text-fill-color: auto;
+    }
+}
