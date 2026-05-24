@@ -4190,6 +4190,83 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--stress-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stress factors:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--photosynthesis-and-growth-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Photosynthesis and growth drivers:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--light-and-canopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Light and canopy:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--phenology-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phenology drivers:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--water-fluxes-mm-d1-and-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Water fluxes [mm d⁻¹] and contents:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--nutrient-fluxes-g-x-m2-d1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nutrient fluxes [g X m⁻² d⁻¹]:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--partitioning-fractions-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partitioning fractions [-]:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.DiagnosticState.field_names" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -9383,6 +9460,83 @@
   
     <nav class="md-nav" aria-label="DiagnosticState">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--stress-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stress factors:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--photosynthesis-and-growth-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Photosynthesis and growth drivers:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--light-and-canopy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Light and canopy:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--phenology-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phenology drivers:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--water-fluxes-mm-d1-and-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Water fluxes [mm d⁻¹] and contents:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--nutrient-fluxes-g-x-m2-d1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nutrient fluxes [g X m⁻² d⁻¹]:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState--partitioning-fractions-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Partitioning fractions [-]:
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.DiagnosticState.field_names" class="md-nav__link">
@@ -27653,54 +27807,68 @@ update, the diagnostic capture has zero impact on autograd or on
 the rate-update logic.</p>
 <p>All fields are <code>torch.Tensor</code> of shape <code>[B]</code>. Attributes are
 grouped below by physical role.</p>
-<p>Stress factors:
-    !!! tranrf "Water-stress (transpiration-reduction) factor in"
-        <code>[0, 1]</code>.
-    !!! rdry "Drought reduction component in <code>[0, 1]</code> (root-zone"
-        moisture vs. critical content).
-    !!! rwet "Oxygen-shortage reduction component in <code>[0, 1]</code>"
-        (waterlogging, ramped by the days-of-oxygen-shortage
-        counter).
-    !!! nstress "Combined NPK index <code>min(nni, pni, kni)</code> in"
-        <code>[0, 1]</code> — the nutrient multiplier on <code>gtotal</code>.
-    nni, pni, kni: Per-nutrient concentration-based nutrition
-        indices in <code>[0, 1]</code>.
-    !!! leaf_heat_factor "Per-day heat-stress acceleration of the"
-        relative leaf death rate (<code>≥ 1</code> in regime, <code>1</code>
-        otherwise).
-    !!! combined_stress "Final multiplicative growth reducer applied"
-        to <code>gtotal</code> (water × nutrient via the configured stress
-        combiner).
-    !!! co2_factor "CO₂ transpiration-reduction factor applied to"
-        potential transpiration before the water balance.</p>
-<p>Photosynthesis and growth drivers:
-    !!! gtotal "Gross daily assimilate, pre-partitioning"
-        [g DM m⁻² d⁻¹].
-    rue: Radiation use efficiency [g MJ⁻¹].
-    rtmco: Combined temperature × CO₂ correction factor on RUE.</p>
-<p>Light and canopy:
-    frac_intercepted: Beer–Lambert canopy interception fraction.
-    parint: Canopy-intercepted PAR [J m⁻² d⁻¹].</p>
-<p>Phenology drivers:
-    dtsu: Effective daily thermal time [°C d d⁻¹].
-    !!! photofac "Photoperiod factor (<code>1</code> when daylength response is"
-        disabled).
-    !!! vernfac "Vernalisation factor (<code>1</code> when vernalisation is"
-        disabled or no longer active).</p>
-<p>Water fluxes [mm d⁻¹] and contents:
-    tran, evap: Actual transpiration / soil evaporation.
-    runoff: Surface runoff (preliminary + rejected infiltration).
-    drain: Deep drainage below the lower zone.
-    rirr: Effective irrigation.
-    smact, smactl: Volumetric soil-moisture content in the rooted /
-        lower zone [m³ m⁻³].</p>
-<p>Nutrient fluxes [g X m⁻² d⁻¹]:
-    nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).
-    nfixtr: Daily biological N₂ fixation.
-    n_demand, p_demand, k_demand: Daily vegetative NPK demand.</p>
-<p>Partitioning fractions [-]:
-    fr, fl, fs, fo: Stress-modified fractions to root, leaf,
-        stem and storage organ. Root + above-ground sum to 1.</p>
+<h6 id="torchcrop.states.model_state.DiagnosticState--stress-factors">Stress factors:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--stress-factors" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>tranrf</code>: Water-stress (transpiration-reduction) factor in
+    <code>[0, 1]</code>.</li>
+<li><code>rdry</code>: Drought reduction component in <code>[0, 1]</code> (root-zone
+    moisture vs. critical content).</li>
+<li><code>rwet</code>: Oxygen-shortage reduction component in <code>[0, 1]</code>
+    (waterlogging, ramped by the days-of-oxygen-shortage
+    counter).</li>
+<li><code>nstress</code>: Combined NPK index <code>min(nni, pni, kni)</code> in
+    <code>[0, 1]</code> — the nutrient multiplier on <code>gtotal</code>.</li>
+<li><code>nni</code>, <code>pni</code>, <code>kni</code>: Per-nutrient concentration-based nutrition
+    indices in <code>[0, 1]</code>.</li>
+<li><code>leaf_heat_factor</code>: Per-day heat-stress acceleration of the
+    relative leaf death rate (<code>≥ 1</code> in regime, <code>1</code>
+    otherwise).</li>
+<li><code>combined_stress</code>: Final multiplicative growth reducer applied
+    to <code>gtotal</code> (water × nutrient via the configured stress
+    combiner).</li>
+<li><code>co2_factor</code>: CO₂ transpiration-reduction factor applied to
+    potential transpiration before the water balance.</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--photosynthesis-and-growth-drivers">Photosynthesis and growth drivers:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--photosynthesis-and-growth-drivers" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>gtotal</code>: Gross daily assimilate, pre-partitioning
+    [g DM m⁻² d⁻¹].</li>
+<li><code>rue</code>: Radiation use efficiency [g MJ⁻¹].</li>
+<li><code>rtmco</code>: Combined temperature × CO₂ correction factor on RUE.</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--light-and-canopy">Light and canopy:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--light-and-canopy" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>frac_intercepted</code>: Beer–Lambert canopy interception fraction.</li>
+<li><code>parint</code>: Canopy-intercepted PAR [J m⁻² d⁻¹].</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--phenology-drivers">Phenology drivers:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--phenology-drivers" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>dtsu</code>: Effective daily thermal time [°C d d⁻¹].</li>
+<li><code>photofac</code>: Photoperiod factor (<code>1</code> when daylength response is
+    disabled).</li>
+<li><code>vernfac</code>: Vernalisation factor (<code>1</code> when vernalisation is
+    disabled or no longer active).</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--water-fluxes-mm-d1-and-contents">Water fluxes [mm d⁻¹] and contents:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--water-fluxes-mm-d1-and-contents" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>tran</code>, <code>evap</code>: Actual transpiration / soil evaporation.</li>
+<li><code>runoff</code>: Surface runoff (preliminary + rejected infiltration).</li>
+<li><code>drain</code>: Deep drainage below the lower zone.</li>
+<li><code>rirr</code>: Effective irrigation.</li>
+<li><code>smact</code>, <code>smactl</code>: Volumetric soil-moisture content in the rooted /
+    lower zone [m³ m⁻³].</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--nutrient-fluxes-g-x-m2-d1">Nutrient fluxes [g X m⁻² d⁻¹]:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--nutrient-fluxes-g-x-m2-d1" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>nuptr</code>, <code>puptr</code>, <code>kuptr</code>: Daily soil NPK uptake (no fixation).</li>
+<li><code>nfixtr</code>: Daily biological N₂ fixation.</li>
+<li><code>n_demand</code>, <code>p_demand</code>, <code>k_demand</code>: Daily vegetative NPK demand.</li>
+</ul>
+<h6 id="torchcrop.states.model_state.DiagnosticState--partitioning-fractions-">Partitioning fractions [-]:<a class="headerlink" href="#torchcrop.states.model_state.DiagnosticState--partitioning-fractions-" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>fr</code>, <code>fl</code>, <code>fs</code>, <code>fo</code>: Stress-modified fractions to root, leaf,
+    stem and storage organ. Root + above-ground sum to 1.</li>
+</ul>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
@@ -27723,60 +27891,60 @@ grouped below by physical role.</p>
 <span class="sd">    All fields are ``torch.Tensor`` of shape ``[B]``. Attributes are</span>
 <span class="sd">    grouped below by physical role.</span>
 
-<span class="sd">    Stress factors:</span>
-<span class="sd">        tranrf: Water-stress (transpiration-reduction) factor in</span>
-<span class="sd">            ``[0, 1]``.</span>
-<span class="sd">        rdry: Drought reduction component in ``[0, 1]`` (root-zone</span>
-<span class="sd">            moisture vs. critical content).</span>
-<span class="sd">        rwet: Oxygen-shortage reduction component in ``[0, 1]``</span>
-<span class="sd">            (waterlogging, ramped by the days-of-oxygen-shortage</span>
-<span class="sd">            counter).</span>
-<span class="sd">        nstress: Combined NPK index ``min(nni, pni, kni)`` in</span>
-<span class="sd">            ``[0, 1]`` — the nutrient multiplier on ``gtotal``.</span>
-<span class="sd">        nni, pni, kni: Per-nutrient concentration-based nutrition</span>
-<span class="sd">            indices in ``[0, 1]``.</span>
-<span class="sd">        leaf_heat_factor: Per-day heat-stress acceleration of the</span>
-<span class="sd">            relative leaf death rate (``≥ 1`` in regime, ``1``</span>
-<span class="sd">            otherwise).</span>
-<span class="sd">        combined_stress: Final multiplicative growth reducer applied</span>
-<span class="sd">            to ``gtotal`` (water × nutrient via the configured stress</span>
-<span class="sd">            combiner).</span>
-<span class="sd">        co2_factor: CO₂ transpiration-reduction factor applied to</span>
-<span class="sd">            potential transpiration before the water balance.</span>
+<span class="sd">    ## Stress factors:</span>
+<span class="sd">    - `tranrf`: Water-stress (transpiration-reduction) factor in</span>
+<span class="sd">        ``[0, 1]``.</span>
+<span class="sd">    - `rdry`: Drought reduction component in ``[0, 1]`` (root-zone</span>
+<span class="sd">        moisture vs. critical content).</span>
+<span class="sd">    - `rwet`: Oxygen-shortage reduction component in ``[0, 1]``</span>
+<span class="sd">        (waterlogging, ramped by the days-of-oxygen-shortage</span>
+<span class="sd">        counter).</span>
+<span class="sd">    - `nstress`: Combined NPK index ``min(nni, pni, kni)`` in</span>
+<span class="sd">        ``[0, 1]`` — the nutrient multiplier on ``gtotal``.</span>
+<span class="sd">    - `nni`, `pni`, `kni`: Per-nutrient concentration-based nutrition</span>
+<span class="sd">        indices in ``[0, 1]``.</span>
+<span class="sd">    - `leaf_heat_factor`: Per-day heat-stress acceleration of the</span>
+<span class="sd">        relative leaf death rate (``≥ 1`` in regime, ``1``</span>
+<span class="sd">        otherwise).</span>
+<span class="sd">    - `combined_stress`: Final multiplicative growth reducer applied</span>
+<span class="sd">        to ``gtotal`` (water × nutrient via the configured stress</span>
+<span class="sd">        combiner).</span>
+<span class="sd">    - `co2_factor`: CO₂ transpiration-reduction factor applied to</span>
+<span class="sd">        potential transpiration before the water balance.</span>
 
-<span class="sd">    Photosynthesis and growth drivers:</span>
-<span class="sd">        gtotal: Gross daily assimilate, pre-partitioning</span>
-<span class="sd">            [g DM m⁻² d⁻¹].</span>
-<span class="sd">        rue: Radiation use efficiency [g MJ⁻¹].</span>
-<span class="sd">        rtmco: Combined temperature × CO₂ correction factor on RUE.</span>
+<span class="sd">    ## Photosynthesis and growth drivers:</span>
+<span class="sd">    - `gtotal`: Gross daily assimilate, pre-partitioning</span>
+<span class="sd">        [g DM m⁻² d⁻¹].</span>
+<span class="sd">    - `rue`: Radiation use efficiency [g MJ⁻¹].</span>
+<span class="sd">    - `rtmco`: Combined temperature × CO₂ correction factor on RUE.</span>
 
-<span class="sd">    Light and canopy:</span>
-<span class="sd">        frac_intercepted: Beer–Lambert canopy interception fraction.</span>
-<span class="sd">        parint: Canopy-intercepted PAR [J m⁻² d⁻¹].</span>
+<span class="sd">    ## Light and canopy:</span>
+<span class="sd">    - `frac_intercepted`: Beer–Lambert canopy interception fraction.</span>
+<span class="sd">    - `parint`: Canopy-intercepted PAR [J m⁻² d⁻¹].</span>
 
-<span class="sd">    Phenology drivers:</span>
-<span class="sd">        dtsu: Effective daily thermal time [°C d d⁻¹].</span>
-<span class="sd">        photofac: Photoperiod factor (``1`` when daylength response is</span>
-<span class="sd">            disabled).</span>
-<span class="sd">        vernfac: Vernalisation factor (``1`` when vernalisation is</span>
-<span class="sd">            disabled or no longer active).</span>
+<span class="sd">    ## Phenology drivers:</span>
+<span class="sd">    - `dtsu`: Effective daily thermal time [°C d d⁻¹].</span>
+<span class="sd">    - `photofac`: Photoperiod factor (``1`` when daylength response is</span>
+<span class="sd">        disabled).</span>
+<span class="sd">    - `vernfac`: Vernalisation factor (``1`` when vernalisation is</span>
+<span class="sd">        disabled or no longer active).</span>
 
-<span class="sd">    Water fluxes [mm d⁻¹] and contents:</span>
-<span class="sd">        tran, evap: Actual transpiration / soil evaporation.</span>
-<span class="sd">        runoff: Surface runoff (preliminary + rejected infiltration).</span>
-<span class="sd">        drain: Deep drainage below the lower zone.</span>
-<span class="sd">        rirr: Effective irrigation.</span>
-<span class="sd">        smact, smactl: Volumetric soil-moisture content in the rooted /</span>
-<span class="sd">            lower zone [m³ m⁻³].</span>
+<span class="sd">    ## Water fluxes [mm d⁻¹] and contents:</span>
+<span class="sd">    - `tran`, `evap`: Actual transpiration / soil evaporation.</span>
+<span class="sd">    - `runoff`: Surface runoff (preliminary + rejected infiltration).</span>
+<span class="sd">    - `drain`: Deep drainage below the lower zone.</span>
+<span class="sd">    - `rirr`: Effective irrigation.</span>
+<span class="sd">    - `smact`, `smactl`: Volumetric soil-moisture content in the rooted /</span>
+<span class="sd">        lower zone [m³ m⁻³].</span>
 
-<span class="sd">    Nutrient fluxes [g X m⁻² d⁻¹]:</span>
-<span class="sd">        nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).</span>
-<span class="sd">        nfixtr: Daily biological N₂ fixation.</span>
-<span class="sd">        n_demand, p_demand, k_demand: Daily vegetative NPK demand.</span>
+<span class="sd">    ## Nutrient fluxes [g X m⁻² d⁻¹]:</span>
+<span class="sd">    - `nuptr`, `puptr`, `kuptr`: Daily soil NPK uptake (no fixation).</span>
+<span class="sd">    - `nfixtr`: Daily biological N₂ fixation.</span>
+<span class="sd">    - `n_demand`, `p_demand`, `k_demand`: Daily vegetative NPK demand.</span>
 
-<span class="sd">    Partitioning fractions [-]:</span>
-<span class="sd">        fr, fl, fs, fo: Stress-modified fractions to root, leaf,</span>
-<span class="sd">            stem and storage organ. Root + above-ground sum to 1.</span>
+<span class="sd">    ## Partitioning fractions [-]:</span>
+<span class="sd">    - `fr`, `fl`, `fs`, `fo`: Stress-modified fractions to root, leaf,</span>
+<span class="sd">        stem and storage organ. Root + above-ground sum to 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Stress factors</span>
