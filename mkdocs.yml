@@ -14,16 +14,16 @@ copyright: "Copyright &copy; 2026 - 2026 Krishnagopal Halder"
 theme:
     palette:
         - scheme: default
-          primary: teal
-          accent: teal
+          primary: deep orange
+          accent: deep orange
           toggle:
-              icon: material/toggle-switch-off-outline
+              icon: material/lightbulb-outline
               name: Switch to dark mode
         - scheme: slate
-          primary: teal
-          accent: teal
+          primary: deep orange
+          accent: deep orange
           toggle:
-              icon: material/toggle-switch
+              icon: material/lightbulb
               name: Switch to light mode
     name: material
     icon:
