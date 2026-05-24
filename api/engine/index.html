@@ -2228,7 +2228,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StepResult</span><span class="p">:</span>
-        <span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates</span><span class="p">(</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
@@ -2236,8 +2236,16 @@ callable <code>update_state(state, rates, dt)</code>.</p>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="n">site_params</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="c1"># `compute_rates` may return either a rates dict (legacy) or a</span>
+        <span class="c1"># ``(rates, DiagnosticState)`` tuple. The diagnostic does not</span>
+        <span class="c1"># enter the Euler update — it is carried through `StepResult`</span>
+        <span class="c1"># for downstream collection only.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostic</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostic</span> <span class="o">=</span> <span class="n">result</span><span class="p">,</span> <span class="kc">None</span>
         <span class="n">new_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">StepResult</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span> <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">StepResult</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="n">new_state</span><span class="p">,</span> <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">,</span> <span class="n">diagnostic</span><span class="o">=</span><span class="n">diagnostic</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2247,7 +2255,11 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+        <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span>
+        <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
+        <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">        Args:</span>
@@ -2259,13 +2271,17 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="sd">            site_params: Site-level parameters (e.g. latitude).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">            ``T + 1`` of per-day `ModelState` snapshots (the first</span>
-<span class="sd">            entry is the initial state) and ``rates`` is a list of length</span>
-<span class="sd">            ``T`` of per-day rate dicts.</span>
+<span class="sd">            A ``(states, rates, diagnostics)`` tuple. ``states`` is a list</span>
+<span class="sd">            of length ``T + 1`` of per-day `ModelState` snapshots (the</span>
+<span class="sd">            first entry is the initial state); ``rates`` is a list of</span>
+<span class="sd">            length ``T`` of per-day rate dicts; ``diagnostics`` is a list</span>
+<span class="sd">            of length ``T`` of per-day `DiagnosticState` snapshots, or</span>
+<span class="sd">            entries of ``None`` when the configured ``compute_rates``</span>
+<span class="sd">            callable does not emit diagnostics.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
         <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">diagnostics_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">n_days</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_days</span><span class="p">):</span>
@@ -2284,7 +2300,8 @@ callable <code>update_state(state, rates, dt)</code>.</p>
             <span class="p">)</span>
             <span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
             <span class="n">rates_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">rates_all</span>
+            <span class="n">diagnostics_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">diagnostic</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">rates_all</span><span class="p">,</span> <span class="n">diagnostics_all</span>
 </code></pre></div>
         </details>
 
@@ -2374,11 +2391,14 @@ callable <code>update_state(state, rates, dt)</code>.</p>
   </thead>
   <tbody>
     <tr>
-      <td><code>tuple[list[ModelState], list[dict[str, torch.Tensor]]]</code></td>
-      <td><p>A <code>(states, rates)</code> tuple where <code>states</code> is a list of length
-<code>T + 1</code> of per-day <code>ModelState</code> snapshots (the first
-entry is the initial state) and <code>rates</code> is a list of length
-<code>T</code> of per-day rate dicts.</p></td>
+      <td><code>tuple[list[ModelState], list[dict[str, torch.Tensor]], list[DiagnosticState | None]]</code></td>
+      <td><p>A <code>(states, rates, diagnostics)</code> tuple. <code>states</code> is a list
+of length <code>T + 1</code> of per-day <code>ModelState</code> snapshots (the
+first entry is the initial state); <code>rates</code> is a list of
+length <code>T</code> of per-day rate dicts; <code>diagnostics</code> is a list
+of length <code>T</code> of per-day <code>DiagnosticState</code> snapshots, or
+entries of <code>None</code> when the configured <code>compute_rates</code>
+callable does not emit diagnostics.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2392,7 +2412,11 @@ entry is the initial state) and <code>rates</code> is a list of length
     <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
+    <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span>
+    <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
+    <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+<span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
 
 <span class="sd">    Args:</span>
@@ -2404,13 +2428,17 @@ entry is the initial state) and <code>rates</code> is a list of length
 <span class="sd">        site_params: Site-level parameters (e.g. latitude).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A ``(states, rates)`` tuple where ``states`` is a list of length</span>
-<span class="sd">        ``T + 1`` of per-day `ModelState` snapshots (the first</span>
-<span class="sd">        entry is the initial state) and ``rates`` is a list of length</span>
-<span class="sd">        ``T`` of per-day rate dicts.</span>
+<span class="sd">        A ``(states, rates, diagnostics)`` tuple. ``states`` is a list</span>
+<span class="sd">        of length ``T + 1`` of per-day `ModelState` snapshots (the</span>
+<span class="sd">        first entry is the initial state); ``rates`` is a list of</span>
+<span class="sd">        length ``T`` of per-day rate dicts; ``diagnostics`` is a list</span>
+<span class="sd">        of length ``T`` of per-day `DiagnosticState` snapshots, or</span>
+<span class="sd">        entries of ``None`` when the configured ``compute_rates``</span>
+<span class="sd">        callable does not emit diagnostics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
     <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">diagnostics_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="n">n_days</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_days</span><span class="p">):</span>
@@ -2429,7 +2457,8 @@ entry is the initial state) and <code>rates</code> is a list of length
         <span class="p">)</span>
         <span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
         <span class="n">rates_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">rates_all</span>
+        <span class="n">diagnostics_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">diagnostic</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">rates_all</span><span class="p">,</span> <span class="n">diagnostics_all</span>
 </code></pre></div>
         </details>
     </div>
@@ -2489,6 +2518,14 @@ StepResult        </code>
         <td><p>Dict of rate tensors produced by the process modules for the
 current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
       </tr>
+      <tr>
+        <td><code>diagnostic</code></td>
+        <td><code>torchcrop.states.model_state.DiagnosticState | None</code></td>
+        <td><p>Optional per-day <code>DiagnosticState</code> snapshot. Present
+when the <code>compute_rates</code> callable returns
+<code>(rates, diagnostic)</code>; <code>None</code> when it returns only a
+rates dict.</p></td>
+      </tr>
   </tbody>
 </table>
         <details class="quote">
@@ -2501,16 +2538,22 @@ current day, keyed by state-field name (e.g. <code>dvs_rate</code>).</p></td>
 <span class="sd">        state: The updated `ModelState` after applying the Euler step.</span>
 <span class="sd">        rates: Dict of rate tensors produced by the process modules for the</span>
 <span class="sd">            current day, keyed by state-field name (e.g. ``dvs_rate``).</span>
+<span class="sd">        diagnostic: Optional per-day `DiagnosticState` snapshot. Present</span>
+<span class="sd">            when the `compute_rates` callable returns</span>
+<span class="sd">            ``(rates, diagnostic)``; ``None`` when it returns only a</span>
+<span class="sd">            rates dict.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span>
     <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">diagnostic</span><span class="p">:</span> <span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 </code></pre></div>
         </details>
 
 
 
   <div class="doc doc-children">
+
 
 
 
@@ -2662,6 +2705,16 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
                 <span class="s2">&quot;kmint&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;tran_cum&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;evap_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;rain_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;irrig_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;runoff_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;drain_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nuptr_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;puptr_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;kuptr_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nfixtr_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;parint_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;gtotal_cum&quot;</span><span class="p">,</span>
             <span class="p">}:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dvs&quot;</span><span class="p">:</span>

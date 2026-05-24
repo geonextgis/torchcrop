@@ -1043,6 +1043,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DiagnosticState
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DiagnosticState">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState.field_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        field_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState.stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stack()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2057,6 +2096,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DiagnosticState
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DiagnosticState">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState.field_names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        field_names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.DiagnosticState.stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stack()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2148,33 +2226,40 @@
 <a id="torchcrop.states.model_state"></a>
     <div class="doc doc-contents first">
 
-      <p>Tensor container for all Lintul5 state variables.</p>
-<p>Every field has shape <code>[B]</code> for scalar-per-batch quantities. The container
-is a simple <code>@dataclass</code>; all operations that "update" state return a new
-<code>ModelState</code> instance so the computation graph is preserved for autograd.</p>
+      <p>Tensor containers for Lintul5 simulation state and per-day diagnostics.</p>
+<p>This module defines two dataclasses:</p>
+<ul>
+<li><code>ModelState</code> — the <strong>integrated</strong> state vector advanced by the engine
+  each day (phenology, biomass pools, canopy, water, NPK pools, soil
+  minerals, and a set of cumulative accumulators).</li>
+<li><code>DiagnosticState</code> — a <strong>non-integrated</strong> per-day snapshot of stress
+  factors, growth drivers, light interception, phenology modifiers and
+  daily fluxes, collected alongside <code>ModelState</code> for interpretation and
+  ML loss design.</li>
+</ul>
+<p>Every field has shape <code>[B]</code> for scalar-per-batch quantities. All
+containers are plain <code>@dataclass</code> instances; updates are <em>functional</em>
+(<code>replace</code> returns a new instance), so the autograd computation graph
+is preserved across the explicit-Euler step.</p>
 <div class="admonition terminology">
 <p class="admonition-title">Terminology</p>
 <ul>
-<li><strong>State variables</strong>: quantities that persist across time steps and
-  define the system at a given instant (e.g., <code>dvs</code>, <code>lai</code>, <code>wlv</code>,
-  <code>wa</code>). They are integrated over time via explicit Euler updates.</li>
-<li><strong>Rate variables</strong>: time derivatives of states (units of state-unit per
-  day) computed by the process modules each step (e.g., <code>dvs_rate</code>,
-  <code>wlv_rate</code>, <code>lai_rate</code>). Rates are <em>not</em> stored on <code>ModelState</code>;
-  they are produced by process <code>forward()</code> calls and consumed by the
-  state update step <code>s_{t+1} = s_t + r_t * dt</code>.</li>
-<li><strong>Output variables</strong>: per-step snapshots of selected states /
-  diagnostics collected by the engine and returned by <code>Lintul5Model</code>
-  as a <code>ModelOutput</code> (e.g., trajectories of <code>dvs</code>, <code>lai</code>, total
-  biomass, and final <code>yield_ = wso</code> at maturity).</li>
+<li><strong>State variables</strong> — quantities that persist across time steps
+  and define the system at an instant (e.g. <code>dvs</code>, <code>lai</code>,
+  <code>wlv</code>, <code>wa</code>). Integrated over time via explicit Euler.</li>
+<li><strong>Rate variables</strong> — time derivatives in units of state-unit per
+  day (e.g. <code>dvs_rate</code>, <code>wlv_rate</code>, <code>lai_rate</code>). Produced by
+  process <code>forward()</code> calls and consumed by the state update
+  <code>s_{t+1} = s_t + r_t · dt</code>. Rates are <em>not</em> stored on state.</li>
+<li><strong>Output variables</strong> — per-step snapshots collected by the engine
+  and returned by <code>Lintul5Model</code> as a <code>ModelOutput</code> (e.g.
+  trajectories of <code>dvs</code>, <code>lai</code>, biomass, and final
+  <code>yield_ = wso</code> at maturity).</li>
 </ul>
 </div>
-<div class="admonition references">
-<p class="admonition-title">References</p>
-<ul>
-<li>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.</li>
-<li>SIMPLACE reference: <code>simplace/sim/components/models/lintul5/</code>.</li>
-</ul>
+<div class="admonition reference">
+<p class="admonition-title">Reference</p>
+<p>Wolf, J. (2012). <em>User guide for LINTUL5</em>. Wageningen UR.</p>
 </div>
 
 
@@ -2184,6 +2269,371 @@ is a simple <code>@dataclass</code>; all operations that "update" state return a
 
 
 
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="torchcrop.states.model_state.DiagnosticState" class="doc doc-heading">
+        <code>
+DiagnosticState        </code>
+
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#torchcrop.states.model_state.DiagnosticState" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Per-day diagnostic snapshot — companion to <code>ModelState</code>.</p>
+<p>Holds quantities that are <strong>not</strong> integrated by the engine but are
+valuable for interpretation, attribution, and ML loss design:
+stress factors, photosynthesis drivers, light interception,
+phenology modifiers, and per-day water and nutrient fluxes.</p>
+<p>Instances are constructed fresh each step from the same intermediate
+tensors used to build the rates dict. The engine collects one
+<code>DiagnosticState</code> per simulated day alongside the <code>ModelState</code>
+trajectory. Because these tensors never feed back into the state
+update, the diagnostic capture has zero impact on autograd or on
+the rate-update logic.</p>
+<p>All fields are <code>torch.Tensor</code> of shape <code>[B]</code>. Attributes are
+grouped below by physical role.</p>
+<p>Stress factors:
+    !!! tranrf "Water-stress (transpiration-reduction) factor in"
+        <code>[0, 1]</code>.
+    !!! rdry "Drought reduction component in <code>[0, 1]</code> (root-zone"
+        moisture vs. critical content).
+    !!! rwet "Oxygen-shortage reduction component in <code>[0, 1]</code>"
+        (waterlogging, ramped by the days-of-oxygen-shortage
+        counter).
+    !!! nstress "Combined NPK index <code>min(nni, pni, kni)</code> in"
+        <code>[0, 1]</code> — the nutrient multiplier on <code>gtotal</code>.
+    nni, pni, kni: Per-nutrient concentration-based nutrition
+        indices in <code>[0, 1]</code>.
+    !!! leaf_heat_factor "Per-day heat-stress acceleration of the"
+        relative leaf death rate (<code>≥ 1</code> in regime, <code>1</code>
+        otherwise).
+    !!! combined_stress "Final multiplicative growth reducer applied"
+        to <code>gtotal</code> (water × nutrient via the configured stress
+        combiner).
+    !!! co2_factor "CO₂ transpiration-reduction factor applied to"
+        potential transpiration before the water balance.</p>
+<p>Photosynthesis and growth drivers:
+    !!! gtotal "Gross daily assimilate, pre-partitioning"
+        [g DM m⁻² d⁻¹].
+    rue: Radiation use efficiency [g MJ⁻¹].
+    rtmco: Combined temperature × CO₂ correction factor on RUE.</p>
+<p>Light and canopy:
+    frac_intercepted: Beer–Lambert canopy interception fraction.
+    parint: Canopy-intercepted PAR [J m⁻² d⁻¹].</p>
+<p>Phenology drivers:
+    dtsu: Effective daily thermal time [°C d d⁻¹].
+    !!! photofac "Photoperiod factor (<code>1</code> when daylength response is"
+        disabled).
+    !!! vernfac "Vernalisation factor (<code>1</code> when vernalisation is"
+        disabled or no longer active).</p>
+<p>Water fluxes [mm d⁻¹] and contents:
+    tran, evap: Actual transpiration / soil evaporation.
+    runoff: Surface runoff (preliminary + rejected infiltration).
+    drain: Deep drainage below the lower zone.
+    rirr: Effective irrigation.
+    smact, smactl: Volumetric soil-moisture content in the rooted /
+        lower zone [m³ m⁻³].</p>
+<p>Nutrient fluxes [g X m⁻² d⁻¹]:
+    nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).
+    nfixtr: Daily biological N₂ fixation.
+    n_demand, p_demand, k_demand: Daily vegetative NPK demand.</p>
+<p>Partitioning fractions [-]:
+    fr, fl, fs, fo: Stress-modified fractions to root, leaf,
+        stem and storage organ. Root + above-ground sum to 1.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DiagnosticState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-day diagnostic snapshot — companion to `ModelState`.</span>
+
+<span class="sd">    Holds quantities that are **not** integrated by the engine but are</span>
+<span class="sd">    valuable for interpretation, attribution, and ML loss design:</span>
+<span class="sd">    stress factors, photosynthesis drivers, light interception,</span>
+<span class="sd">    phenology modifiers, and per-day water and nutrient fluxes.</span>
+
+<span class="sd">    Instances are constructed fresh each step from the same intermediate</span>
+<span class="sd">    tensors used to build the rates dict. The engine collects one</span>
+<span class="sd">    `DiagnosticState` per simulated day alongside the `ModelState`</span>
+<span class="sd">    trajectory. Because these tensors never feed back into the state</span>
+<span class="sd">    update, the diagnostic capture has zero impact on autograd or on</span>
+<span class="sd">    the rate-update logic.</span>
+
+<span class="sd">    All fields are ``torch.Tensor`` of shape ``[B]``. Attributes are</span>
+<span class="sd">    grouped below by physical role.</span>
+
+<span class="sd">    Stress factors:</span>
+<span class="sd">        tranrf: Water-stress (transpiration-reduction) factor in</span>
+<span class="sd">            ``[0, 1]``.</span>
+<span class="sd">        rdry: Drought reduction component in ``[0, 1]`` (root-zone</span>
+<span class="sd">            moisture vs. critical content).</span>
+<span class="sd">        rwet: Oxygen-shortage reduction component in ``[0, 1]``</span>
+<span class="sd">            (waterlogging, ramped by the days-of-oxygen-shortage</span>
+<span class="sd">            counter).</span>
+<span class="sd">        nstress: Combined NPK index ``min(nni, pni, kni)`` in</span>
+<span class="sd">            ``[0, 1]`` — the nutrient multiplier on ``gtotal``.</span>
+<span class="sd">        nni, pni, kni: Per-nutrient concentration-based nutrition</span>
+<span class="sd">            indices in ``[0, 1]``.</span>
+<span class="sd">        leaf_heat_factor: Per-day heat-stress acceleration of the</span>
+<span class="sd">            relative leaf death rate (``≥ 1`` in regime, ``1``</span>
+<span class="sd">            otherwise).</span>
+<span class="sd">        combined_stress: Final multiplicative growth reducer applied</span>
+<span class="sd">            to ``gtotal`` (water × nutrient via the configured stress</span>
+<span class="sd">            combiner).</span>
+<span class="sd">        co2_factor: CO₂ transpiration-reduction factor applied to</span>
+<span class="sd">            potential transpiration before the water balance.</span>
+
+<span class="sd">    Photosynthesis and growth drivers:</span>
+<span class="sd">        gtotal: Gross daily assimilate, pre-partitioning</span>
+<span class="sd">            [g DM m⁻² d⁻¹].</span>
+<span class="sd">        rue: Radiation use efficiency [g MJ⁻¹].</span>
+<span class="sd">        rtmco: Combined temperature × CO₂ correction factor on RUE.</span>
+
+<span class="sd">    Light and canopy:</span>
+<span class="sd">        frac_intercepted: Beer–Lambert canopy interception fraction.</span>
+<span class="sd">        parint: Canopy-intercepted PAR [J m⁻² d⁻¹].</span>
+
+<span class="sd">    Phenology drivers:</span>
+<span class="sd">        dtsu: Effective daily thermal time [°C d d⁻¹].</span>
+<span class="sd">        photofac: Photoperiod factor (``1`` when daylength response is</span>
+<span class="sd">            disabled).</span>
+<span class="sd">        vernfac: Vernalisation factor (``1`` when vernalisation is</span>
+<span class="sd">            disabled or no longer active).</span>
+
+<span class="sd">    Water fluxes [mm d⁻¹] and contents:</span>
+<span class="sd">        tran, evap: Actual transpiration / soil evaporation.</span>
+<span class="sd">        runoff: Surface runoff (preliminary + rejected infiltration).</span>
+<span class="sd">        drain: Deep drainage below the lower zone.</span>
+<span class="sd">        rirr: Effective irrigation.</span>
+<span class="sd">        smact, smactl: Volumetric soil-moisture content in the rooted /</span>
+<span class="sd">            lower zone [m³ m⁻³].</span>
+
+<span class="sd">    Nutrient fluxes [g X m⁻² d⁻¹]:</span>
+<span class="sd">        nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).</span>
+<span class="sd">        nfixtr: Daily biological N₂ fixation.</span>
+<span class="sd">        n_demand, p_demand, k_demand: Daily vegetative NPK demand.</span>
+
+<span class="sd">    Partitioning fractions [-]:</span>
+<span class="sd">        fr, fl, fs, fo: Stress-modified fractions to root, leaf,</span>
+<span class="sd">            stem and storage organ. Root + above-ground sum to 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Stress factors</span>
+    <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">rdry</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">rwet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">nni</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">pni</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">kni</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">leaf_heat_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">combined_stress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">co2_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Photosynthesis / growth drivers</span>
+    <span class="n">gtotal</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">rtmco</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Light / canopy</span>
+    <span class="n">frac_intercepted</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">parint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Phenology drivers</span>
+    <span class="n">dtsu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">photofac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">vernfac</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Water fluxes (per-day, not cumulative)</span>
+    <span class="n">tran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">evap</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">runoff</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">drain</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">rirr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">smact</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">smactl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Nutrient fluxes (per-day)</span>
+    <span class="n">nuptr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">puptr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">kuptr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">nfixtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">n_demand</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">p_demand</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">k_demand</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="c1"># Partitioning fractions</span>
+    <span class="n">fr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">fl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">fs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">fo</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack all tensor fields into a single ``[B, C]`` tensor.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A ``[B, C]`` tensor laid out in field-definition order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">tensors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this `DiagnosticState`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+        <span class="p">]</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="torchcrop.states.model_state.DiagnosticState.field_names" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">field_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-property"><code>property</code></small>
+      <small class="doc doc-property doc-property-readonly"><code>readonly</code></small>
+  </span>
+
+<a href="#torchcrop.states.model_state.DiagnosticState.field_names" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Names of all tensor fields on this <code>DiagnosticState</code>.</p>
+    </div>
+
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.states.model_state.DiagnosticState.stack" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.states.model_state.DiagnosticState.stack" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Stack all tensor fields into a single <code>[B, C]</code> tensor.</p>
+
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>torch.Tensor</code></td>
+      <td><p>A <code>[B, C]</code> tensor laid out in field-definition order.</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stack all tensor fields into a single ``[B, C]`` tensor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A ``[B, C]`` tensor laid out in field-definition order.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">tensors</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
 
 
 
@@ -2205,168 +2655,82 @@ ModelState        </code>
     <div class="doc doc-contents ">
 
       <p>Full Lintul5 state vector.</p>
-<p>Holds every persistent quantity advanced by the simulation engine. All
-fields are <code>torch.Tensor</code> of shape <code>[B]</code> (one scalar per batch
-element) and units follow Wolf (2012). The container is purely a <em>state</em>
-snapshot — daily <em>rates</em> are produced by the process modules and the
-<em>outputs</em> (per-step trajectories, final yield, etc.) are assembled by the
-engine; see the module docstring for the full catalogue.</p>
-
-<p><strong>Attributes:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>dvs</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Development stage in <code>[0, 2]</code> (0=emergence, 1=anthesis,
-2=maturity), <code>[B]</code>, dimensionless.</p></td>
-      </tr>
-      <tr>
-        <td><code>tsum</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Thermal time accumulated since emergence, <code>[B]</code> [°C d].</p></td>
-      </tr>
-      <tr>
-        <td><code>tsump</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Thermal time accumulated since sowing, <code>[B]</code> [°C d].</p></td>
-      </tr>
-      <tr>
-        <td><code>vern</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Vernalisation days accumulated, <code>[B]</code> [d].</p></td>
-      </tr>
-      <tr>
-        <td><code>wlv</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Green leaf dry weight, <code>[B]</code> [g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>wlvd</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Dead leaf dry weight (senesced), <code>[B]</code> [g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>wst</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Stem dry weight, <code>[B]</code> [g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>wstd</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Dead stem dry weight (senesced), <code>[B]</code> [g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>wrt</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Root dry weight, <code>[B]</code> [g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>wrtd</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Dead root dry weight (senesced), <code>[B]</code> [g m⁻²];
-SIMPLACE <code>WRTD</code>. Accumulates the root senescence flux
-<code>DRRT</code> so that the N/P/K carried by dead roots is
-conserved rather than discarded.</p></td>
-      </tr>
-      <tr>
-        <td><code>wso</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Storage organ dry weight (drives final yield), <code>[B]</code>
-[g m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>lai</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Leaf area index, <code>[B]</code> [m² m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>rootd</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Rooting depth, <code>[B]</code> [m].</p></td>
-      </tr>
-      <tr>
-        <td><code>wa</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Total soil water in the rooted zone, <code>[B]</code> [mm].</p></td>
-      </tr>
-      <tr>
-        <td><code>wa_lower</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Total soil water in the lower zone (between <code>rootd</code> and
-the maximum rooting depth <code>rdm</code>), <code>[B]</code> [mm].</p></td>
-      </tr>
-      <tr>
-        <td><code>dslr</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Days since last (infiltrating) rain event, <code>[B]</code> [d];
-drives the Stroosnijder soil-evaporation model.</p></td>
-      </tr>
-      <tr>
-        <td><code>dsos</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Days of oxygen shortage, <code>[B]</code> [d], clipped to <code>[0, 4]</code>;
-drives the time-dependent <code>RWET</code> waterlogging factor.</p></td>
-      </tr>
-      <tr>
-        <td><code>anlv,</code></td>
-        <td><code>anst, anrt, anso</code></td>
-        <td><p>Nitrogen pools in leaves, stems, roots,
-storage organs, each <code>[B]</code> [g N m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>aplv,</code></td>
-        <td><code>apst, aprt, apso</code></td>
-        <td><p>Phosphorus pools, each <code>[B]</code> [g P m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>aklv,</code></td>
-        <td><code>akst, akrt, akso</code></td>
-        <td><p>Potassium pools, each <code>[B]</code> [g K m⁻²].</p></td>
-      </tr>
-      <tr>
-        <td><code>nmin,</code></td>
-        <td><code>pmin, kmin</code></td>
-        <td><p>Mineralisable soil organic N/P/K pools, each
-<code>[B]</code> [g X m⁻²]; SIMPLACE <code>sNMIN</code>/<code>sPMIN</code>/<code>sKMIN</code>.
-Depleted each day by the mineralisation flux <code>RNMINS</code>
-(handled with negative-rate sign convention).</p></td>
-      </tr>
-      <tr>
-        <td><code>nmint,</code></td>
-        <td><code>pmint, kmint</code></td>
-        <td><p>Directly available inorganic soil N/P/K
-pools, each <code>[B]</code> [g X m⁻²]; SIMPLACE
-<code>sNMINT</code>/<code>sPMINT</code>/<code>sKMINT</code>. Replenished daily by
-fertiliser (after recovery fraction) plus mineralisation
-from <code>nmin</code>/<code>pmin</code>/<code>kmin</code>, and drawn down by crop
-uptake (<code>NUPTR</code>/<code>PUPTR</code>/<code>KUPTR</code>). This is the pool
-that caps soil-limited uptake in IOPT ≥ 3.</p></td>
-      </tr>
-      <tr>
-        <td><code>tran_cum</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Cumulative actual transpiration, <code>[B]</code> [mm].</p></td>
-      </tr>
-      <tr>
-        <td><code>evap_cum</code></td>
-        <td><code>Tensor</code></td>
-        <td><p>Cumulative soil evaporation, <code>[B]</code> [mm].</p></td>
-      </tr>
-  </tbody>
-</table>      <div class="admonition note">
+<p>Holds every persistent quantity advanced by the simulation engine.
+All fields are <code>torch.Tensor</code> of shape <code>[B]</code> (one scalar per
+batch element) with units following Wolf (2012). The container is
+purely a <em>state</em> snapshot — daily <em>rates</em> are produced by the
+process modules and the <em>outputs</em> (per-step trajectories, final
+yield, etc.) are assembled by the engine.</p>
+<p>Attributes are grouped below by physical role.</p>
+<div class="admonition phenology">
+<p class="admonition-title">Phenology</p>
+<div class="admonition dvs">
+<p class="admonition-title">Development stage in <code>[0, 2]</code> (0 = emergence,</p>
+<p>1 = anthesis, 2 = maturity) [-].</p>
+</div>
+<p>tsum: Thermal time accumulated since emergence [°C d].
+tsump: Thermal time accumulated since sowing [°C d].
+vern: Vernalisation days accumulated [d].</p>
+</div>
+<p>Biomass pools [g DM m⁻²]:
+    wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,
+        and storage organs (<code>wso</code> drives final yield).
+    wlvd, wstd, wrtd: Dead (senesced) dry weight of leaves, stems,
+        and roots. Each accumulates the corresponding daily
+        senescence flux so the N/P/K carried by dead tissue is
+        conserved rather than discarded.</p>
+<p>Canopy and roots:
+    lai: Leaf area index [m² m⁻²].
+    rootd: Rooting depth [m].</p>
+<p>Soil water (two-zone bucket):
+    !!! wa "Water stored in the rooted zone (full column, not "above"
+        wilting point") [mm].
+    !!! wa_lower "Water stored in the lower zone, between <code>rootd</code> and"
+        the maximum rooting depth <code>rdm</code> [mm].
+    !!! dslr "Days since the last (infiltrating) rain event [d];"
+        drives the Stroosnijder soil-evaporation model. Maintained
+        as a 1-based counter (minimum value 1).
+    !!! dsos "Days of oxygen shortage [d], clipped to <code>[0, 4]</code>;"
+        drives the time-dependent <code>RWET</code> waterlogging factor.</p>
+<p>Per-organ nutrient pools [g X m⁻²]:
+    anlv, anst, anrt, anso: Nitrogen in leaves, stems, roots,
+        storage organs.
+    aplv, apst, aprt, apso: Phosphorus in the same four organs.
+    aklv, akst, akrt, akso: Potassium in the same four organs.</p>
+<p>Soil mineral pools [g X m⁻²]:
+    nmin, pmin, kmin: Mineralisable organic N/P/K pools. Depleted
+        each day by the mineralisation flux (handled with a
+        negative-rate sign convention).
+    nmint, pmint, kmint: Directly available inorganic N/P/K pools.
+        Replenished daily by fertiliser (after the recovery
+        fraction) plus mineralisation from
+        <code>nmin</code>/<code>pmin</code>/<code>kmin</code>, and drawn down by crop uptake.
+        This is the pool that caps soil-limited uptake under the
+        higher <code>IOPT</code> modes.</p>
+<p>Cumulative water accumulators [mm]:
+    tran_cum: Actual transpiration.
+    evap_cum: Soil evaporation.
+    rain_cum: Precipitation.
+    irrig_cum: Effective irrigation.
+    runoff_cum: Surface runoff.
+    drain_cum: Deep drainage (cascade flux below the lower zone).</p>
+<p>Cumulative nutrient accumulators [g X m⁻²]:
+    nuptr_cum, puptr_cum, kuptr_cum: Crop NPK uptake from the soil
+        (excludes biological N fixation).
+    nfixtr_cum: Biological N₂ fixation.</p>
+<p>Cumulative growth accumulators:
+    parint_cum: Canopy-intercepted PAR [MJ PAR m⁻²].
+    !!! gtotal_cum "Gross daily assimilate from photosynthesis,"
+        pre-partitioning [g DM m⁻²].</p>
+<div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Updates are functional: <code>replace</code> returns a <em>new</em>
-<code>ModelState</code> rather than mutating in place, so the autograd graph
-is preserved across the explicit-Euler step
-<code>s_{t+1} = s_t + r_t * dt</code>.</p>
+<p>Updates are functional — <code>replace</code> returns a <em>new</em> <code>ModelState</code>
+rather than mutating in place — so the autograd graph is
+preserved across the explicit-Euler step
+<code>s_{t+1} = s_t + r_t · dt</code>. All cumulative accumulators are
+integrated by the same <code>_rate</code> mechanism as <code>tran_cum</code> /
+<code>evap_cum</code>: a daily flux routed into <code>&lt;field&gt;_rate</code> and
+added by the engine with <code>dt = 1</code> day.</p>
 </div>
 
         <details class="quote">
@@ -2375,62 +2739,88 @@ is preserved across the explicit-Euler step
 <span class="k">class</span><span class="w"> </span><span class="nc">ModelState</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Full Lintul5 state vector.</span>
 
-<span class="sd">    Holds every persistent quantity advanced by the simulation engine. All</span>
-<span class="sd">    fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per batch</span>
-<span class="sd">    element) and units follow Wolf (2012). The container is purely a *state*</span>
-<span class="sd">    snapshot — daily *rates* are produced by the process modules and the</span>
-<span class="sd">    *outputs* (per-step trajectories, final yield, etc.) are assembled by the</span>
-<span class="sd">    engine; see the module docstring for the full catalogue.</span>
+<span class="sd">    Holds every persistent quantity advanced by the simulation engine.</span>
+<span class="sd">    All fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per</span>
+<span class="sd">    batch element) with units following Wolf (2012). The container is</span>
+<span class="sd">    purely a *state* snapshot — daily *rates* are produced by the</span>
+<span class="sd">    process modules and the *outputs* (per-step trajectories, final</span>
+<span class="sd">    yield, etc.) are assembled by the engine.</span>
 
-<span class="sd">    Attributes:</span>
-<span class="sd">        dvs: Development stage in ``[0, 2]`` (0=emergence, 1=anthesis,</span>
-<span class="sd">            2=maturity), ``[B]``, dimensionless.</span>
-<span class="sd">        tsum: Thermal time accumulated since emergence, ``[B]`` [°C d].</span>
-<span class="sd">        tsump: Thermal time accumulated since sowing, ``[B]`` [°C d].</span>
-<span class="sd">        vern: Vernalisation days accumulated, ``[B]`` [d].</span>
-<span class="sd">        wlv: Green leaf dry weight, ``[B]`` [g m⁻²].</span>
-<span class="sd">        wlvd: Dead leaf dry weight (senesced), ``[B]`` [g m⁻²].</span>
-<span class="sd">        wst: Stem dry weight, ``[B]`` [g m⁻²].</span>
-<span class="sd">        wstd: Dead stem dry weight (senesced), ``[B]`` [g m⁻²].</span>
-<span class="sd">        wrt: Root dry weight, ``[B]`` [g m⁻²].</span>
-<span class="sd">        wrtd: Dead root dry weight (senesced), ``[B]`` [g m⁻²];</span>
-<span class="sd">            SIMPLACE ``WRTD``. Accumulates the root senescence flux</span>
-<span class="sd">            ``DRRT`` so that the N/P/K carried by dead roots is</span>
+<span class="sd">    Attributes are grouped below by physical role.</span>
+
+<span class="sd">    Phenology:</span>
+<span class="sd">        dvs: Development stage in ``[0, 2]`` (0 = emergence,</span>
+<span class="sd">            1 = anthesis, 2 = maturity) [-].</span>
+<span class="sd">        tsum: Thermal time accumulated since emergence [°C d].</span>
+<span class="sd">        tsump: Thermal time accumulated since sowing [°C d].</span>
+<span class="sd">        vern: Vernalisation days accumulated [d].</span>
+
+<span class="sd">    Biomass pools [g DM m⁻²]:</span>
+<span class="sd">        wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,</span>
+<span class="sd">            and storage organs (``wso`` drives final yield).</span>
+<span class="sd">        wlvd, wstd, wrtd: Dead (senesced) dry weight of leaves, stems,</span>
+<span class="sd">            and roots. Each accumulates the corresponding daily</span>
+<span class="sd">            senescence flux so the N/P/K carried by dead tissue is</span>
 <span class="sd">            conserved rather than discarded.</span>
-<span class="sd">        wso: Storage organ dry weight (drives final yield), ``[B]``</span>
-<span class="sd">            [g m⁻²].</span>
-<span class="sd">        lai: Leaf area index, ``[B]`` [m² m⁻²].</span>
-<span class="sd">        rootd: Rooting depth, ``[B]`` [m].</span>
-<span class="sd">        wa: Total soil water in the rooted zone, ``[B]`` [mm].</span>
-<span class="sd">        wa_lower: Total soil water in the lower zone (between ``rootd`` and</span>
-<span class="sd">            the maximum rooting depth ``rdm``), ``[B]`` [mm].</span>
-<span class="sd">        dslr: Days since last (infiltrating) rain event, ``[B]`` [d];</span>
-<span class="sd">            drives the Stroosnijder soil-evaporation model.</span>
-<span class="sd">        dsos: Days of oxygen shortage, ``[B]`` [d], clipped to ``[0, 4]``;</span>
+
+<span class="sd">    Canopy and roots:</span>
+<span class="sd">        lai: Leaf area index [m² m⁻²].</span>
+<span class="sd">        rootd: Rooting depth [m].</span>
+
+<span class="sd">    Soil water (two-zone bucket):</span>
+<span class="sd">        wa: Water stored in the rooted zone (full column, not &quot;above</span>
+<span class="sd">            wilting point&quot;) [mm].</span>
+<span class="sd">        wa_lower: Water stored in the lower zone, between ``rootd`` and</span>
+<span class="sd">            the maximum rooting depth ``rdm`` [mm].</span>
+<span class="sd">        dslr: Days since the last (infiltrating) rain event [d];</span>
+<span class="sd">            drives the Stroosnijder soil-evaporation model. Maintained</span>
+<span class="sd">            as a 1-based counter (minimum value 1).</span>
+<span class="sd">        dsos: Days of oxygen shortage [d], clipped to ``[0, 4]``;</span>
 <span class="sd">            drives the time-dependent ``RWET`` waterlogging factor.</span>
-<span class="sd">        anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,</span>
-<span class="sd">            storage organs, each ``[B]`` [g N m⁻²].</span>
-<span class="sd">        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].</span>
-<span class="sd">        aklv, akst, akrt, akso: Potassium pools, each ``[B]`` [g K m⁻²].</span>
-<span class="sd">        nmin, pmin, kmin: Mineralisable soil organic N/P/K pools, each</span>
-<span class="sd">            ``[B]`` [g X m⁻²]; SIMPLACE ``sNMIN``/``sPMIN``/``sKMIN``.</span>
-<span class="sd">            Depleted each day by the mineralisation flux ``RNMINS``</span>
-<span class="sd">            (handled with negative-rate sign convention).</span>
-<span class="sd">        nmint, pmint, kmint: Directly available inorganic soil N/P/K</span>
-<span class="sd">            pools, each ``[B]`` [g X m⁻²]; SIMPLACE</span>
-<span class="sd">            ``sNMINT``/``sPMINT``/``sKMINT``. Replenished daily by</span>
-<span class="sd">            fertiliser (after recovery fraction) plus mineralisation</span>
-<span class="sd">            from ``nmin``/``pmin``/``kmin``, and drawn down by crop</span>
-<span class="sd">            uptake (``NUPTR``/``PUPTR``/``KUPTR``). This is the pool</span>
-<span class="sd">            that caps soil-limited uptake in IOPT ≥ 3.</span>
-<span class="sd">        tran_cum: Cumulative actual transpiration, ``[B]`` [mm].</span>
-<span class="sd">        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].</span>
+
+<span class="sd">    Per-organ nutrient pools [g X m⁻²]:</span>
+<span class="sd">        anlv, anst, anrt, anso: Nitrogen in leaves, stems, roots,</span>
+<span class="sd">            storage organs.</span>
+<span class="sd">        aplv, apst, aprt, apso: Phosphorus in the same four organs.</span>
+<span class="sd">        aklv, akst, akrt, akso: Potassium in the same four organs.</span>
+
+<span class="sd">    Soil mineral pools [g X m⁻²]:</span>
+<span class="sd">        nmin, pmin, kmin: Mineralisable organic N/P/K pools. Depleted</span>
+<span class="sd">            each day by the mineralisation flux (handled with a</span>
+<span class="sd">            negative-rate sign convention).</span>
+<span class="sd">        nmint, pmint, kmint: Directly available inorganic N/P/K pools.</span>
+<span class="sd">            Replenished daily by fertiliser (after the recovery</span>
+<span class="sd">            fraction) plus mineralisation from</span>
+<span class="sd">            ``nmin``/``pmin``/``kmin``, and drawn down by crop uptake.</span>
+<span class="sd">            This is the pool that caps soil-limited uptake under the</span>
+<span class="sd">            higher ``IOPT`` modes.</span>
+
+<span class="sd">    Cumulative water accumulators [mm]:</span>
+<span class="sd">        tran_cum: Actual transpiration.</span>
+<span class="sd">        evap_cum: Soil evaporation.</span>
+<span class="sd">        rain_cum: Precipitation.</span>
+<span class="sd">        irrig_cum: Effective irrigation.</span>
+<span class="sd">        runoff_cum: Surface runoff.</span>
+<span class="sd">        drain_cum: Deep drainage (cascade flux below the lower zone).</span>
+
+<span class="sd">    Cumulative nutrient accumulators [g X m⁻²]:</span>
+<span class="sd">        nuptr_cum, puptr_cum, kuptr_cum: Crop NPK uptake from the soil</span>
+<span class="sd">            (excludes biological N fixation).</span>
+<span class="sd">        nfixtr_cum: Biological N₂ fixation.</span>
+
+<span class="sd">    Cumulative growth accumulators:</span>
+<span class="sd">        parint_cum: Canopy-intercepted PAR [MJ PAR m⁻²].</span>
+<span class="sd">        gtotal_cum: Gross daily assimilate from photosynthesis,</span>
+<span class="sd">            pre-partitioning [g DM m⁻²].</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        Updates are functional: `replace` returns a *new*</span>
-<span class="sd">        ``ModelState`` rather than mutating in place, so the autograd graph</span>
-<span class="sd">        is preserved across the explicit-Euler step</span>
-<span class="sd">        ``s_{t+1} = s_t + r_t * dt``.</span>
+<span class="sd">        Updates are functional — `replace` returns a *new* ``ModelState``</span>
+<span class="sd">        rather than mutating in place — so the autograd graph is</span>
+<span class="sd">        preserved across the explicit-Euler step</span>
+<span class="sd">        ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are</span>
+<span class="sd">        integrated by the same ``_rate`` mechanism as ``tran_cum`` /</span>
+<span class="sd">        ``evap_cum``: a daily flux routed into ``&lt;field&gt;_rate`` and</span>
+<span class="sd">        added by the engine with ``dt = 1`` day.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Phenology</span>
@@ -2454,7 +2844,7 @@ is preserved across the explicit-Euler step
     <span class="c1"># Roots</span>
     <span class="n">rootd</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] m</span>
 
-    <span class="c1"># Water — two-zone bucket (SIMPLACE WATBALS)</span>
+    <span class="c1"># Water — two-zone bucket</span>
     <span class="n">wa</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] mm — total water in rooted zone</span>
     <span class="n">wa_lower</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] mm — total water in lower zone (between rootd and rdm)</span>
     <span class="n">dslr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] d — days since last rain (Stroosnijder evap model)</span>
@@ -2479,16 +2869,30 @@ is preserved across the explicit-Euler step
     <span class="n">akso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 
     <span class="c1"># Soil mineral pools [g X m-2]</span>
-    <span class="n">nmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic N pool (sNMIN)</span>
-    <span class="n">pmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic P pool (sPMIN)</span>
-    <span class="n">kmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic K pool (sKMIN)</span>
-    <span class="n">nmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic N pool (sNMINT)</span>
-    <span class="n">pmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic P pool (sPMINT)</span>
-    <span class="n">kmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic K pool (sKMINT)</span>
+    <span class="n">nmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic N pool</span>
+    <span class="n">pmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic P pool</span>
+    <span class="n">kmin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># mineralisable organic K pool</span>
+    <span class="n">nmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic N pool</span>
+    <span class="n">pmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic P pool</span>
+    <span class="n">kmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic K pool</span>
 
-    <span class="c1"># Optional bookkeeping</span>
+    <span class="c1"># Optional bookkeeping — cumulative water and growth accumulators.</span>
+    <span class="c1"># Each is integrated by the standard `_rate` mechanism: a daily flux</span>
+    <span class="c1"># is routed into ``&lt;field&gt;_rate`` in `_compute_rates_dispatch` and</span>
+    <span class="c1"># the engine applies forward-Euler exactly as for any other state</span>
+    <span class="c1"># field.</span>
     <span class="n">tran_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative transpiration [mm]</span>
     <span class="n">evap_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative evaporation [mm]</span>
+    <span class="n">rain_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative precipitation [mm]</span>
+    <span class="n">irrig_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative irrigation [mm]</span>
+    <span class="n">runoff_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative surface runoff [mm]</span>
+    <span class="n">drain_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative deep drainage [mm]</span>
+    <span class="n">nuptr_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative soil N uptake [g N m-2]</span>
+    <span class="n">puptr_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative soil P uptake [g P m-2]</span>
+    <span class="n">kuptr_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative soil K uptake [g K m-2]</span>
+    <span class="n">nfixtr_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative N fixation [g N m-2]</span>
+    <span class="n">parint_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative intercepted PAR [MJ m-2]</span>
+    <span class="n">gtotal_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative gross assimilate [g DM m-2]</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">initial</span><span class="p">(</span>
@@ -2511,28 +2915,30 @@ is preserved across the explicit-Euler step
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
+<span class="sd">        All biomass, per-organ nutrient, cumulative-accumulator, and</span>
+<span class="sd">        thermal-time fields are initialised to zero. The remaining</span>
+<span class="sd">        scalars are taken from the keyword arguments.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            batch_size: Number of parallel simulation instances ``B``.</span>
 <span class="sd">            dtype: Tensor dtype.</span>
 <span class="sd">            device: Torch device.</span>
-<span class="sd">            dvsi: Initial development stage ``DVSI``.</span>
-<span class="sd">            wai: Initial soil water content in the root zone [mm].</span>
+<span class="sd">            dvsi: Initial development stage.</span>
+<span class="sd">            wai: Initial soil water in the root zone [mm].</span>
 <span class="sd">            rootdi: Initial rooting depth [m].</span>
 <span class="sd">            wa_lower_i: Initial soil water in the lower zone [mm].</span>
 <span class="sd">            dslri: Initial days since last rain [d].</span>
 <span class="sd">            dsosi: Initial days of oxygen shortage [d].</span>
-<span class="sd">            nmini: Initial mineralisable organic N pool ``NMIN`` [g N m⁻²].</span>
-<span class="sd">            pmini: Initial mineralisable organic P pool ``PMIN`` [g P m⁻²].</span>
-<span class="sd">            kmini: Initial mineralisable organic K pool ``KMIN`` [g K m⁻²].</span>
-<span class="sd">            nminti: Initial directly available inorganic N pool ``NMINT``</span>
-<span class="sd">                [g N m⁻²]. SIMPLACE default is 0.</span>
-<span class="sd">            pminti: Initial directly available inorganic P pool.</span>
-<span class="sd">            kminti: Initial directly available inorganic K pool.</span>
+<span class="sd">            nmini, pmini, kmini: Initial mineralisable organic NPK</span>
+<span class="sd">                pools [g X m⁻²].</span>
+<span class="sd">            nminti, pminti, kminti: Initial directly available</span>
+<span class="sd">                inorganic NPK pools [g X m⁻²] (default 0).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh `ModelState` with all biomass / nutrient pools at</span>
-<span class="sd">            zero and the specified initial values for ``dvs``, ``rootd`` and</span>
-<span class="sd">            ``wa``.</span>
+<span class="sd">            A fresh `ModelState` with all biomass, nutrient, and</span>
+<span class="sd">            cumulative pools at zero and the specified initial values</span>
+<span class="sd">            for ``dvs``, ``rootd``, the two soil-water stores, the</span>
+<span class="sd">            counters ``dslr``/``dsos``, and the soil mineral pools.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -2574,6 +2980,16 @@ is preserved across the explicit-Euler step
             <span class="n">kmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kminti</span><span class="p">),</span>
             <span class="n">tran_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">evap_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">rain_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">irrig_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">runoff_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">drain_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nuptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">puptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">kuptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -2616,6 +3032,7 @@ is preserved across the explicit-Euler step
 
 
   <div class="doc doc-children">
+
 
 
 
@@ -2688,6 +3105,15 @@ is preserved across the explicit-Euler step
 
 
 
+
+
+
+
+
+
+
+
+
   <div class="doc doc-object doc-method">
 
 
@@ -2704,6 +3130,9 @@ is preserved across the explicit-Euler step
     <div class="doc doc-contents ">
 
       <p>Construct a zeroed initial state for a batch.</p>
+<p>All biomass, per-organ nutrient, cumulative-accumulator, and
+thermal-time fields are initialised to zero. The remaining
+scalars are taken from the keyword arguments.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2737,13 +3166,13 @@ is preserved across the explicit-Euler step
       <tr>
         <td><code>dvsi</code></td>
         <td><code>float</code></td>
-        <td><p>Initial development stage <code>DVSI</code>.</p></td>
+        <td><p>Initial development stage.</p></td>
         <td><code>0.0</code></td>
       </tr>
       <tr>
         <td><code>wai</code></td>
         <td><code>float</code></td>
-        <td><p>Initial soil water content in the root zone [mm].</p></td>
+        <td><p>Initial soil water in the root zone [mm].</p></td>
         <td><code>60.0</code></td>
       </tr>
       <tr>
@@ -2771,41 +3200,18 @@ is preserved across the explicit-Euler step
         <td><code>0.0</code></td>
       </tr>
       <tr>
-        <td><code>nmini</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial mineralisable organic N pool <code>NMIN</code> [g N m⁻²].</p></td>
-        <td><code>0.0</code></td>
+        <td><code>nmini,</code></td>
+        <td><code>pmini, kmini</code></td>
+        <td><p>Initial mineralisable organic NPK
+pools [g X m⁻²].</p></td>
+        <td><em>required</em></td>
       </tr>
       <tr>
-        <td><code>pmini</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial mineralisable organic P pool <code>PMIN</code> [g P m⁻²].</p></td>
-        <td><code>0.0</code></td>
-      </tr>
-      <tr>
-        <td><code>kmini</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial mineralisable organic K pool <code>KMIN</code> [g K m⁻²].</p></td>
-        <td><code>0.0</code></td>
-      </tr>
-      <tr>
-        <td><code>nminti</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial directly available inorganic N pool <code>NMINT</code>
-[g N m⁻²]. SIMPLACE default is 0.</p></td>
-        <td><code>0.0</code></td>
-      </tr>
-      <tr>
-        <td><code>pminti</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial directly available inorganic P pool.</p></td>
-        <td><code>0.0</code></td>
-      </tr>
-      <tr>
-        <td><code>kminti</code></td>
-        <td><code>float</code></td>
-        <td><p>Initial directly available inorganic K pool.</p></td>
-        <td><code>0.0</code></td>
+        <td><code>nminti,</code></td>
+        <td><code>pminti, kminti</code></td>
+        <td><p>Initial directly available
+inorganic NPK pools [g X m⁻²] (default 0).</p></td>
+        <td><em>required</em></td>
       </tr>
   </tbody>
 </table>
@@ -2820,9 +3226,10 @@ is preserved across the explicit-Euler step
   <tbody>
     <tr>
       <td><code>&#39;ModelState&#39;</code></td>
-      <td><p>A fresh <code>ModelState</code> with all biomass / nutrient pools at
-zero and the specified initial values for <code>dvs</code>, <code>rootd</code> and
-<code>wa</code>.</p></td>
+      <td><p>A fresh <code>ModelState</code> with all biomass, nutrient, and
+cumulative pools at zero and the specified initial values
+for <code>dvs</code>, <code>rootd</code>, the two soil-water stores, the
+counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2849,28 +3256,30 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
+<span class="sd">    All biomass, per-organ nutrient, cumulative-accumulator, and</span>
+<span class="sd">    thermal-time fields are initialised to zero. The remaining</span>
+<span class="sd">    scalars are taken from the keyword arguments.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: Number of parallel simulation instances ``B``.</span>
 <span class="sd">        dtype: Tensor dtype.</span>
 <span class="sd">        device: Torch device.</span>
-<span class="sd">        dvsi: Initial development stage ``DVSI``.</span>
-<span class="sd">        wai: Initial soil water content in the root zone [mm].</span>
+<span class="sd">        dvsi: Initial development stage.</span>
+<span class="sd">        wai: Initial soil water in the root zone [mm].</span>
 <span class="sd">        rootdi: Initial rooting depth [m].</span>
 <span class="sd">        wa_lower_i: Initial soil water in the lower zone [mm].</span>
 <span class="sd">        dslri: Initial days since last rain [d].</span>
 <span class="sd">        dsosi: Initial days of oxygen shortage [d].</span>
-<span class="sd">        nmini: Initial mineralisable organic N pool ``NMIN`` [g N m⁻²].</span>
-<span class="sd">        pmini: Initial mineralisable organic P pool ``PMIN`` [g P m⁻²].</span>
-<span class="sd">        kmini: Initial mineralisable organic K pool ``KMIN`` [g K m⁻²].</span>
-<span class="sd">        nminti: Initial directly available inorganic N pool ``NMINT``</span>
-<span class="sd">            [g N m⁻²]. SIMPLACE default is 0.</span>
-<span class="sd">        pminti: Initial directly available inorganic P pool.</span>
-<span class="sd">        kminti: Initial directly available inorganic K pool.</span>
+<span class="sd">        nmini, pmini, kmini: Initial mineralisable organic NPK</span>
+<span class="sd">            pools [g X m⁻²].</span>
+<span class="sd">        nminti, pminti, kminti: Initial directly available</span>
+<span class="sd">            inorganic NPK pools [g X m⁻²] (default 0).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh `ModelState` with all biomass / nutrient pools at</span>
-<span class="sd">        zero and the specified initial values for ``dvs``, ``rootd`` and</span>
-<span class="sd">        ``wa``.</span>
+<span class="sd">        A fresh `ModelState` with all biomass, nutrient, and</span>
+<span class="sd">        cumulative pools at zero and the specified initial values</span>
+<span class="sd">        for ``dvs``, ``rootd``, the two soil-water stores, the</span>
+<span class="sd">        counters ``dslr``/``dsos``, and the soil mineral pools.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
@@ -2912,6 +3321,16 @@ zero and the specified initial values for <code>dvs</code>, <code>rootd</code> a
         <span class="n">kmint</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">kminti</span><span class="p">),</span>
         <span class="n">tran_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">evap_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">rain_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">irrig_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">runoff_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">drain_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nuptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">puptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">kuptr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

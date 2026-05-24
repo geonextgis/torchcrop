@@ -2437,7 +2437,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="k">else</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span>
 
-        <span class="n">states</span><span class="p">,</span> <span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">states</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">weather</span><span class="o">=</span><span class="n">weather</span><span class="p">,</span>
             <span class="n">start_doy</span><span class="o">=</span><span class="n">start_doy</span><span class="p">,</span>
@@ -2466,6 +2466,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="k">return</span> <span class="n">ModelOutput</span><span class="p">(</span>
             <span class="n">states</span><span class="o">=</span><span class="n">states</span><span class="p">,</span>
             <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">,</span>
+            <span class="n">diagnostics</span><span class="o">=</span><span class="n">diagnostics</span><span class="p">,</span>
             <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
             <span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span>
             <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">,</span>
@@ -2494,9 +2495,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus diagnostics</span>
-<span class="sd">            (``tranrf``, ``nstress``, ``gtotal``).</span>
+<span class="sd">            (``tranrf``, ``nstress``, ``gtotal``). The companion</span>
+<span class="sd">            `DiagnosticState` is discarded here — use the full model</span>
+<span class="sd">            `forward` to access the diagnostic trajectory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
+        <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
@@ -2504,6 +2507,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rates</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update_state</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2535,7 +2539,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">DiagnosticState</span><span class="p">]:</span>
         <span class="c1"># Extract weather variables (SIMPLACE order)</span>
         <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
         <span class="n">tmin</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmin&quot;</span><span class="p">]</span>
@@ -2593,7 +2597,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="c1">#     before it enters the water balance, so elevated CO2</span>
         <span class="c1">#     propagates into the water-stress factor TRANRF (distinct</span>
         <span class="c1">#     from the CO2 correction already applied to reference ET).</span>
-        <span class="n">ptran_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_transpiration</span><span class="p">(</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">],</span> <span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">)[</span><span class="s2">&quot;ptran&quot;</span><span class="p">]</span>
+        <span class="n">co2_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_transpiration</span><span class="p">(</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">],</span> <span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
+        <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">]</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;co2_factor&quot;</span><span class="p">]</span>
 
         <span class="c1"># 5. Water balance (two-zone, with SIMPLACE percolation cascade)</span>
         <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
@@ -2786,6 +2792,22 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmint_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tran_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
             <span class="s2">&quot;evap_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
+            <span class="c1"># Cumulative water / nutrient / growth accumulators —</span>
+            <span class="c1"># integrated by the engine via the same `_rate` mechanism as</span>
+            <span class="c1"># `tran_cum`/`evap_cum`. The daily flux IS the increment</span>
+            <span class="c1"># because the engine uses dt = 1 day.</span>
+            <span class="s2">&quot;rain_cum_rate&quot;</span><span class="p">:</span> <span class="n">rain</span><span class="p">,</span>
+            <span class="s2">&quot;irrig_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rirr&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;runoff_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;runoff&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;drain_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;drain&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;nuptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;puptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kuptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;nfixtr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nfixtr&quot;</span><span class="p">],</span>
+            <span class="c1"># PAR stored in MJ m-2 (parint_mj is the same conversion</span>
+            <span class="c1"># used for the GTOTAL calculation upstream).</span>
+            <span class="s2">&quot;parint_cum_rate&quot;</span><span class="p">:</span> <span class="n">parint_mj</span><span class="p">,</span>
+            <span class="s2">&quot;gtotal_cum_rate&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
             <span class="c1"># Diagnostics (not integrated)</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
             <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress</span><span class="p">,</span>
@@ -2829,7 +2851,52 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
         <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
 
-        <span class="k">return</span> <span class="n">rates</span>
+        <span class="c1"># Per-day DiagnosticState snapshot — built from the same</span>
+        <span class="c1"># intermediate tensors used to assemble `rates`. Pure read-only:</span>
+        <span class="c1"># does not enter the Euler update, does not touch any state</span>
+        <span class="c1"># field, and adds no autograd ops beyond the broadcasting of</span>
+        <span class="c1"># scalars (`combined_stress`, `co2_factor`) to ``[B]``.</span>
+        <span class="n">b_shape</span> <span class="o">=</span> <span class="n">tranrf</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">diagnostic</span> <span class="o">=</span> <span class="n">DiagnosticState</span><span class="p">(</span>
+            <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
+            <span class="n">rdry</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rdry&quot;</span><span class="p">],</span>
+            <span class="n">rwet</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rwet&quot;</span><span class="p">],</span>
+            <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
+            <span class="n">pni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;pni&quot;</span><span class="p">],</span>
+            <span class="n">kni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kni&quot;</span><span class="p">],</span>
+            <span class="n">leaf_heat_factor</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">leaf_heat</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
+            <span class="n">combined_stress</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">combined_stress</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
+            <span class="n">co2_factor</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
+            <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
+            <span class="n">rue</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">],</span>
+            <span class="n">rtmco</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">],</span>
+            <span class="n">frac_intercepted</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
+            <span class="n">parint</span><span class="o">=</span><span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">],</span>
+            <span class="n">dtsu</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dtsu&quot;</span><span class="p">],</span>
+            <span class="n">photofac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;photofac&quot;</span><span class="p">],</span>
+            <span class="n">vernfac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vernfac&quot;</span><span class="p">],</span>
+            <span class="n">tran</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
+            <span class="n">evap</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
+            <span class="n">runoff</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;runoff&quot;</span><span class="p">],</span>
+            <span class="n">drain</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;drain&quot;</span><span class="p">],</span>
+            <span class="n">rirr</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rirr&quot;</span><span class="p">],</span>
+            <span class="n">smact</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">],</span>
+            <span class="n">smactl</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;smactl&quot;</span><span class="p">],</span>
+            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
+            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
+            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
+            <span class="n">nfixtr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nfixtr&quot;</span><span class="p">],</span>
+            <span class="n">n_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_demand&quot;</span><span class="p">],</span>
+            <span class="n">p_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_demand&quot;</span><span class="p">],</span>
+            <span class="n">k_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_demand&quot;</span><span class="p">],</span>
+            <span class="n">fr</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fr&quot;</span><span class="p">],</span>
+            <span class="n">fl</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fl&quot;</span><span class="p">],</span>
+            <span class="n">fs</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">],</span>
+            <span class="n">fo</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fo&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostic</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Convenience: flatten all learnable parameters across dataclasses</span>
@@ -2930,7 +2997,9 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
     <tr>
       <td><code>dict[str, torch.Tensor]</code></td>
       <td><p>Dict of rate tensors keyed by <code>"&lt;field&gt;_rate"</code> plus diagnostics
-(<code>tranrf</code>, <code>nstress</code>, <code>gtotal</code>).</p></td>
+(<code>tranrf</code>, <code>nstress</code>, <code>gtotal</code>). The companion
+<code>DiagnosticState</code> is discarded here — use the full model
+<code>forward</code> to access the diagnostic trajectory.</p></td>
     </tr>
   </tbody>
 </table>
@@ -2952,9 +3021,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus diagnostics</span>
-<span class="sd">        (``tranrf``, ``nstress``, ``gtotal``).</span>
+<span class="sd">        (``tranrf``, ``nstress``, ``gtotal``). The companion</span>
+<span class="sd">        `DiagnosticState` is discarded here — use the full model</span>
+<span class="sd">        `forward` to access the diagnostic trajectory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
+    <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
         <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
         <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
         <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
@@ -2962,6 +3033,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="k">return</span> <span class="n">rates</span>
 </code></pre></div>
         </details>
     </div>
@@ -3066,7 +3138,7 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
     <span class="k">else</span><span class="p">:</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span>
 
-    <span class="n">states</span><span class="p">,</span> <span class="n">rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">states</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
         <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
         <span class="n">weather</span><span class="o">=</span><span class="n">weather</span><span class="p">,</span>
         <span class="n">start_doy</span><span class="o">=</span><span class="n">start_doy</span><span class="p">,</span>
@@ -3095,6 +3167,7 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
     <span class="k">return</span> <span class="n">ModelOutput</span><span class="p">(</span>
         <span class="n">states</span><span class="o">=</span><span class="n">states</span><span class="p">,</span>
         <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">,</span>
+        <span class="n">diagnostics</span><span class="o">=</span><span class="n">diagnostics</span><span class="p">,</span>
         <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
         <span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span>
         <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">,</span>
@@ -3450,6 +3523,15 @@ the initial condition).</p></td>
         <td><p>Per-day rate dicts (length <code>T</code>).</p></td>
       </tr>
       <tr>
+        <td><code>diagnostics</code></td>
+        <td><code>list</code></td>
+        <td><p>Per-day <code>DiagnosticState</code> snapshots (length <code>T</code>).
+Holds non-integrated stress factors, growth drivers, light
+interception, phenology modifiers and per-day water/nutrient
+fluxes computed from the same intermediates as <code>rates</code> —
+see <code>DiagnosticState</code> for the full field list.</p></td>
+      </tr>
+      <tr>
         <td><code>yield_</code></td>
         <td><code>Tensor</code></td>
         <td><p>Final storage-organ dry weight <code>WSO</code> at the last step
@@ -3494,6 +3576,11 @@ the initial condition).</p></td>
 <span class="sd">        states: Per-day state snapshots (length ``T + 1``; the first entry is</span>
 <span class="sd">            the initial condition).</span>
 <span class="sd">        rates: Per-day rate dicts (length ``T``).</span>
+<span class="sd">        diagnostics: Per-day `DiagnosticState` snapshots (length ``T``).</span>
+<span class="sd">            Holds non-integrated stress factors, growth drivers, light</span>
+<span class="sd">            interception, phenology modifiers and per-day water/nutrient</span>
+<span class="sd">            fluxes computed from the same intermediates as ``rates`` —</span>
+<span class="sd">            see `DiagnosticState` for the full field list.</span>
 <span class="sd">        yield_: Final storage-organ dry weight ``WSO`` at the last step</span>
 <span class="sd">            [g m-2], *before* the heat-stress adjustment.</span>
 <span class="sd">        lai: LAI trajectory of shape ``[B, T + 1]``.</span>
@@ -3507,6 +3594,7 @@ the initial condition).</p></td>
 
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span>
     <span class="n">rates</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>
+    <span class="n">diagnostics</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span><span class="p">]</span>
     <span class="n">yield_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">lai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
     <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -3519,6 +3607,7 @@ the initial condition).</p></td>
 
 
   <div class="doc doc-children">
+
 
 
 
