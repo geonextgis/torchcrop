@@ -132,5 +132,3 @@ pre-commit run --all-files
   https://models.pps.wur.nl/lintul-5-crop-growth-simulation-model-potential-water-limited-n-limited-and-npk-limited-conditions
 - WUR-AI. _diffWOFOST — Differentiable WOFOST crop model_.
   https://github.com/WUR-AI/diffWOFOST
-- The SIMPLACE Java reference implementation of Lintul5 (read-only) lives
-  under `simplace/sim/components/models/lintul5/` in this repository.
