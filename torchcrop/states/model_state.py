@@ -60,72 +60,72 @@ class ModelState:
     - `tsump`: Thermal time accumulated since sowing [°C d].
     - `vern`: Vernalisation days accumulated [d].
 
-    Biomass pools [g DM m⁻²]:
-        wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,
-            and storage organs (``wso`` drives final yield).
-        wlvd, wstd, wrtd: Dead (senesced) dry weight of leaves, stems,
-            and roots. Each accumulates the corresponding daily
-            senescence flux so the N/P/K carried by dead tissue is
-            conserved rather than discarded.
+    ## Biomass pools [g DM m⁻²]:
+    - `wlv`, `wst`, `wrt`, `wso`: Living dry weight of leaves, stems, roots,
+        and storage organs (``wso`` drives final yield).
+    - `wlvd`, `wstd`, `wrtd`: Dead (senesced) dry weight of leaves, stems,
+        and roots. Each accumulates the corresponding daily
+        senescence flux so the N/P/K carried by dead tissue is
+        conserved rather than discarded.
 
-    Canopy and roots:
-        lai: Leaf area index [m² m⁻²].
-        rootd: Rooting depth [m].
+    ## Canopy and roots:
+    - `lai`: Leaf area index [m² m⁻²].
+    - `rootd`: Rooting depth [m].
 
-    Soil water (two-zone bucket):
-        wa: Water stored in the rooted zone (full column, not "above
-            wilting point") [mm].
-        wa_lower: Water stored in the lower zone, between ``rootd`` and
-            the maximum rooting depth ``rdm`` [mm].
-        dslr: Days since the last (infiltrating) rain event [d];
-            drives the Stroosnijder soil-evaporation model. Maintained
-            as a 1-based counter (minimum value 1).
-        dsos: Days of oxygen shortage [d], clipped to ``[0, 4]``;
-            drives the time-dependent ``RWET`` waterlogging factor.
+    ## Soil water (two-zone bucket):
+    - `wa`: Water stored in the rooted zone (full column, not "above
+        wilting point") [mm].
+    - `wa_lower`: Water stored in the lower zone, between ``rootd`` and
+        the maximum rooting depth ``rdm`` [mm].
+    - `dslr`: Days since the last (infiltrating) rain event [d];
+        drives the Stroosnijder soil-evaporation model. Maintained
+        as a 1-based counter (minimum value 1).
+    - `dsos`: Days of oxygen shortage [d], clipped to ``[0, 4]``;
+        drives the time-dependent ``RWET`` waterlogging factor.
 
-    Per-organ nutrient pools [g X m⁻²]:
-        anlv, anst, anrt, anso: Nitrogen in leaves, stems, roots,
-            storage organs.
-        aplv, apst, aprt, apso: Phosphorus in the same four organs.
-        aklv, akst, akrt, akso: Potassium in the same four organs.
+    ## Per-organ nutrient pools [g X m⁻²]:
+    - `anlv`, `anst`, `anrt`, `anso`: Nitrogen in leaves, stems, roots,
+        storage organs.
+    - `aplv`, `apst`, `aprt`, `apso`: Phosphorus in the same four organs.
+    - `aklv`, `akst`, `akrt`, `akso`: Potassium in the same four organs.
 
-    Soil mineral pools [g X m⁻²]:
-        nmin, pmin, kmin: Mineralisable organic N/P/K pools. Depleted
-            each day by the mineralisation flux (handled with a
-            negative-rate sign convention).
-        nmint, pmint, kmint: Directly available inorganic N/P/K pools.
-            Replenished daily by fertiliser (after the recovery
-            fraction) plus mineralisation from
-            ``nmin``/``pmin``/``kmin``, and drawn down by crop uptake.
-            This is the pool that caps soil-limited uptake under the
-            higher ``IOPT`` modes.
+    ## Soil mineral pools [g X m⁻²]:
+    - `nmin`, `pmin`, `kmin`: Mineralisable organic N/P/K pools. Depleted
+        each day by the mineralisation flux (handled with a
+        negative-rate sign convention).
+    - `nmint`, `pmint`, `kmint`: Directly available inorganic N/P/K pools.
+        Replenished daily by fertiliser (after the recovery
+        fraction) plus mineralisation from
+        ``nmin``/``pmin``/``kmin``, and drawn down by crop uptake.
+        This is the pool that caps soil-limited uptake under the
+        higher ``IOPT`` modes.
 
-    Cumulative water accumulators [mm]:
-        tran_cum: Actual transpiration.
-        evap_cum: Soil evaporation.
-        rain_cum: Precipitation.
-        irrig_cum: Effective irrigation.
-        runoff_cum: Surface runoff.
-        drain_cum: Deep drainage (cascade flux below the lower zone).
+    ## Cumulative water accumulators [mm]:
+    - `tran_cum`: Actual transpiration.
+    - `evap_cum`: Soil evaporation.
+    - `rain_cum`: Precipitation.
+    - `irrig_cum`: Effective irrigation.
+    - `runoff_cum`: Surface runoff.
+    - `drain_cum`: Deep drainage (cascade flux below the lower zone).
 
-    Cumulative nutrient accumulators [g X m⁻²]:
-        nuptr_cum, puptr_cum, kuptr_cum: Crop NPK uptake from the soil
-            (excludes biological N fixation).
-        nfixtr_cum: Biological N₂ fixation.
+    ## Cumulative nutrient accumulators [g X m⁻²]:
+    - `nuptr_cum`, `puptr_cum`, `kuptr_cum`: Crop NPK uptake from the soil
+        (excludes biological N fixation).
+    - `nfixtr_cum`: Biological N₂ fixation.
 
-    Cumulative growth accumulators:
-        parint_cum: Canopy-intercepted PAR [MJ PAR m⁻²].
-        gtotal_cum: Gross daily assimilate from photosynthesis,
+    ## Cumulative growth accumulators:
+    - `parint_cum`: Canopy-intercepted PAR [MJ PAR m⁻²].
+    - `gtotal_cum`: Gross daily assimilate from photosynthesis,
             pre-partitioning [g DM m⁻²].
 
-    Note:
-        Updates are functional — `replace` returns a *new* ``ModelState``
-        rather than mutating in place — so the autograd graph is
-        preserved across the explicit-Euler step
-        ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are
-        integrated by the same ``_rate`` mechanism as ``tran_cum`` /
-        ``evap_cum``: a daily flux routed into ``<field>_rate`` and
-        added by the engine with ``dt = 1`` day.
+    ## Note:
+    Updates are functional — `replace` returns a *new* ``ModelState``
+    rather than mutating in place — so the autograd graph is
+    preserved across the explicit-Euler step
+    ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are
+    integrated by the same ``_rate`` mechanism as ``tran_cum`` /
+    ``evap_cum``: a daily flux routed into ``<field>_rate`` and
+    added by the engine with ``dt = 1`` day.
     """
 
     # Phenology
