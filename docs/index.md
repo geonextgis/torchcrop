@@ -1,4 +1,4 @@
-# Welcome to TorchCrop
+# Welcome to <span class="torchcrop-gradient">TorchCrop</span>
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/geonextgis/torchcrop/blob/main)
 [![Open in Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/geonextgis/torchcrop/main?labpath=notebooks%2Fintro.ipynb)
