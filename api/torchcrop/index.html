@@ -4229,6 +4229,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.ModelState--phenology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phenology:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState.field_names" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -9312,6 +9323,17 @@
   
     <nav class="md-nav" aria-label="ModelState">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#torchcrop.states.model_state.ModelState--phenology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phenology:
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#torchcrop.states.model_state.ModelState.field_names" class="md-nav__link">
@@ -27793,16 +27815,14 @@ purely a <em>state</em> snapshot — daily <em>rates</em> are produced by the
 process modules and the <em>outputs</em> (per-step trajectories, final
 yield, etc.) are assembled by the engine.</p>
 <p>Attributes are grouped below by physical role.</p>
-<div class="admonition phenology">
-<p class="admonition-title">Phenology</p>
-<div class="admonition dvs">
-<p class="admonition-title">Development stage in <code>[0, 2]</code> (0 = emergence,</p>
-<p>1 = anthesis, 2 = maturity) [-].</p>
-</div>
-<p>tsum: Thermal time accumulated since emergence [°C d].
-tsump: Thermal time accumulated since sowing [°C d].
-vern: Vernalisation days accumulated [d].</p>
-</div>
+<h6 id="torchcrop.states.model_state.ModelState--phenology">Phenology:<a class="headerlink" href="#torchcrop.states.model_state.ModelState--phenology" title="Permanent link">&para;</a></h6>
+<ul>
+<li><code>dvs</code>: Development stage in <code>[0, 2]</code> (0 = emergence,
+        1 = anthesis, 2 = maturity) [-].</li>
+<li><code>tsum</code>: Thermal time accumulated since emergence [°C d].</li>
+<li><code>tsump</code>: Thermal time accumulated since sowing [°C d].</li>
+<li><code>vern</code>: Vernalisation days accumulated [d].</li>
+</ul>
 <p>Biomass pools [g DM m⁻²]:
     wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,
         and storage organs (<code>wso</code> drives final yield).
@@ -27879,12 +27899,12 @@ added by the engine with <code>dt = 1</code> day.</p>
 
 <span class="sd">    Attributes are grouped below by physical role.</span>
 
-<span class="sd">    Phenology:</span>
-<span class="sd">        dvs: Development stage in ``[0, 2]`` (0 = emergence,</span>
+<span class="sd">    ## Phenology:</span>
+<span class="sd">    - `dvs`: Development stage in ``[0, 2]`` (0 = emergence,</span>
 <span class="sd">            1 = anthesis, 2 = maturity) [-].</span>
-<span class="sd">        tsum: Thermal time accumulated since emergence [°C d].</span>
-<span class="sd">        tsump: Thermal time accumulated since sowing [°C d].</span>
-<span class="sd">        vern: Vernalisation days accumulated [d].</span>
+<span class="sd">    - `tsum`: Thermal time accumulated since emergence [°C d].</span>
+<span class="sd">    - `tsump`: Thermal time accumulated since sowing [°C d].</span>
+<span class="sd">    - `vern`: Vernalisation days accumulated [d].</span>
 
 <span class="sd">    Biomass pools [g DM m⁻²]:</span>
 <span class="sd">        wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,</span>
