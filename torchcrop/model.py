@@ -35,7 +35,7 @@ from torchcrop.processes import (
     StressFactors,
     WaterBalance,
 )
-from torchcrop.states.model_state import ModelState
+from torchcrop.states.model_state import DiagnosticState, ModelState
 
 
 @dataclass
@@ -46,6 +46,11 @@ class ModelOutput:
         states: Per-day state snapshots (length ``T + 1``; the first entry is
             the initial condition).
         rates: Per-day rate dicts (length ``T``).
+        diagnostics: Per-day `DiagnosticState` snapshots (length ``T``).
+            Holds non-integrated stress factors, growth drivers, light
+            interception, phenology modifiers and per-day water/nutrient
+            fluxes computed from the same intermediates as ``rates`` —
+            see `DiagnosticState` for the full field list.
         yield_: Final storage-organ dry weight ``WSO`` at the last step
             [g m-2], *before* the heat-stress adjustment.
         lai: LAI trajectory of shape ``[B, T + 1]``.
@@ -59,6 +64,7 @@ class ModelOutput:
 
     states: list[ModelState]
     rates: list[dict[str, torch.Tensor]]
+    diagnostics: list[DiagnosticState]
     yield_: torch.Tensor
     lai: torch.Tensor
     dvs: torch.Tensor
@@ -227,7 +233,7 @@ class Lintul5Model(nn.Module):
         else:
             state = initial_state
 
-        states, rates = self.engine.run(
+        states, rates, diagnostics = self.engine.run(
             state=state,
             weather=weather,
             start_doy=start_doy,
@@ -256,6 +262,7 @@ class Lintul5Model(nn.Module):
         return ModelOutput(
             states=states,
             rates=rates,
+            diagnostics=diagnostics,
             yield_=yield_,
             lai=lai,
             dvs=dvs,
@@ -284,9 +291,11 @@ class Lintul5Model(nn.Module):
 
         Returns:
             Dict of rate tensors keyed by ``"<field>_rate"`` plus diagnostics
-            (``tranrf``, ``nstress``, ``gtotal``).
+            (``tranrf``, ``nstress``, ``gtotal``). The companion
+            `DiagnosticState` is discarded here — use the full model
+            `forward` to access the diagnostic trajectory.
         """
-        return self._compute_rates_dispatch(
+        rates, _ = self._compute_rates_dispatch(
             state=state,
             weather_day=weather_day,
             doy=doy,
@@ -294,6 +303,7 @@ class Lintul5Model(nn.Module):
             soil_params=self.soil_params,
             site_params=self.site_params,
         )
+        return rates
 
     def update_state(
         self,
@@ -325,7 +335,7 @@ class Lintul5Model(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
         site_params: SiteParameters,
-    ) -> dict[str, torch.Tensor]:
+    ) -> tuple[dict[str, torch.Tensor], DiagnosticState]:
         # Extract weather variables (SIMPLACE order)
         davtmp = weather_day["davtmp"]
         tmin = weather_day["tmin"]
@@ -383,7 +393,9 @@ class Lintul5Model(nn.Module):
         #     before it enters the water balance, so elevated CO2
         #     propagates into the water-stress factor TRANRF (distinct
         #     from the CO2 correction already applied to reference ET).
-        ptran_eff = self.co2_transpiration(et["ptran"], site_params.co2)["ptran"]
+        co2_trans = self.co2_transpiration(et["ptran"], site_params.co2)
+        ptran_eff = co2_trans["ptran"]
+        co2_factor = co2_trans["co2_factor"]
 
         # 5. Water balance (two-zone, with SIMPLACE percolation cascade)
         rdm = torch.minimum(
@@ -576,6 +588,22 @@ class Lintul5Model(nn.Module):
             "kmint_rate": soil_nut["kmint_rate"],
             "tran_cum_rate": water["tran"],
             "evap_cum_rate": water["evap"],
+            # Cumulative water / nutrient / growth accumulators —
+            # integrated by the engine via the same `_rate` mechanism as
+            # `tran_cum`/`evap_cum`. The daily flux IS the increment
+            # because the engine uses dt = 1 day.
+            "rain_cum_rate": rain,
+            "irrig_cum_rate": water["rirr"],
+            "runoff_cum_rate": water["runoff"],
+            "drain_cum_rate": water["drain"],
+            "nuptr_cum_rate": nut["nuptr"],
+            "puptr_cum_rate": nut["puptr"],
+            "kuptr_cum_rate": nut["kuptr"],
+            "nfixtr_cum_rate": nut["nfixtr"],
+            # PAR stored in MJ m-2 (parint_mj is the same conversion
+            # used for the GTOTAL calculation upstream).
+            "parint_cum_rate": parint_mj,
+            "gtotal_cum_rate": gtotal,
             # Diagnostics (not integrated)
             "tranrf": tranrf,
             "nstress": nstress,
@@ -619,7 +647,52 @@ class Lintul5Model(nn.Module):
         rates["wso_rate"] = rates["wso_rate"] + emerg_now * wsoi / self.engine.dt
         rates["lai_rate"] = rates["lai_rate"] + emerg_now * laii_dyn / self.engine.dt
 
-        return rates
+        # Per-day DiagnosticState snapshot — built from the same
+        # intermediate tensors used to assemble `rates`. Pure read-only:
+        # does not enter the Euler update, does not touch any state
+        # field, and adds no autograd ops beyond the broadcasting of
+        # scalars (`combined_stress`, `co2_factor`) to ``[B]``.
+        b_shape = tranrf.shape
+        diagnostic = DiagnosticState(
+            tranrf=tranrf,
+            rdry=water["rdry"],
+            rwet=water["rwet"],
+            nstress=nstress,
+            nni=nut["nni"],
+            pni=nut["pni"],
+            kni=nut["kni"],
+            leaf_heat_factor=torch.broadcast_to(leaf_heat, b_shape),
+            combined_stress=torch.broadcast_to(combined_stress, b_shape),
+            co2_factor=torch.broadcast_to(co2_factor, b_shape),
+            gtotal=gtotal,
+            rue=photo["rue"],
+            rtmco=photo["rtmco"],
+            frac_intercepted=frac_int,
+            parint=irrad_out["parint"],
+            dtsu=pheno["dtsu"],
+            photofac=pheno["photofac"],
+            vernfac=pheno["vernfac"],
+            tran=water["tran"],
+            evap=water["evap"],
+            runoff=water["runoff"],
+            drain=water["drain"],
+            rirr=water["rirr"],
+            smact=water["smact"],
+            smactl=water["smactl"],
+            nuptr=nut["nuptr"],
+            puptr=nut["puptr"],
+            kuptr=nut["kuptr"],
+            nfixtr=nut["nfixtr"],
+            n_demand=nut["n_demand"],
+            p_demand=nut["p_demand"],
+            k_demand=nut["k_demand"],
+            fr=part["fr"],
+            fl=part["fl"],
+            fs=part["fs"],
+            fo=part["fo"],
+        )
+
+        return rates, diagnostic
 
     # ------------------------------------------------------------------ #
     # Convenience: flatten all learnable parameters across dataclasses

@@ -16,7 +16,7 @@ from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
-from torchcrop.states.model_state import ModelState
+from torchcrop.states.model_state import DiagnosticState, ModelState
 
 
 @dataclass
@@ -27,10 +27,15 @@ class StepResult:
         state: The updated `ModelState` after applying the Euler step.
         rates: Dict of rate tensors produced by the process modules for the
             current day, keyed by state-field name (e.g. ``dvs_rate``).
+        diagnostic: Optional per-day `DiagnosticState` snapshot. Present
+            when the `compute_rates` callable returns
+            ``(rates, diagnostic)``; ``None`` when it returns only a
+            rates dict.
     """
 
     state: ModelState
     rates: dict[str, torch.Tensor]
+    diagnostic: DiagnosticState | None = None
 
 
 class SimulationEngine(nn.Module):
@@ -68,7 +73,7 @@ class SimulationEngine(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
     ) -> StepResult:
-        rates = self._compute_rates(
+        result = self._compute_rates(
             state=state,
             weather_day=weather_day,
             doy=doy,
@@ -76,8 +81,16 @@ class SimulationEngine(nn.Module):
             soil_params=soil_params,
             site_params=site_params,
         )
+        # `compute_rates` may return either a rates dict (legacy) or a
+        # ``(rates, DiagnosticState)`` tuple. The diagnostic does not
+        # enter the Euler update — it is carried through `StepResult`
+        # for downstream collection only.
+        if isinstance(result, tuple):
+            rates, diagnostic = result
+        else:
+            rates, diagnostic = result, None
         new_state = self._update_state(state, rates, self.dt)
-        return StepResult(state=new_state, rates=rates)
+        return StepResult(state=new_state, rates=rates, diagnostic=diagnostic)
 
     def run(
         self,
@@ -87,7 +100,11 @@ class SimulationEngine(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
         site_params: SiteParameters,
-    ) -> tuple[list[ModelState], list[dict[str, torch.Tensor]]]:
+    ) -> tuple[
+        list[ModelState],
+        list[dict[str, torch.Tensor]],
+        list[DiagnosticState | None],
+    ]:
         """Run the full trajectory.
 
         Args:
@@ -99,13 +116,17 @@ class SimulationEngine(nn.Module):
             site_params: Site-level parameters (e.g. latitude).
 
         Returns:
-            A ``(states, rates)`` tuple where ``states`` is a list of length
-            ``T + 1`` of per-day `ModelState` snapshots (the first
-            entry is the initial state) and ``rates`` is a list of length
-            ``T`` of per-day rate dicts.
+            A ``(states, rates, diagnostics)`` tuple. ``states`` is a list
+            of length ``T + 1`` of per-day `ModelState` snapshots (the
+            first entry is the initial state); ``rates`` is a list of
+            length ``T`` of per-day rate dicts; ``diagnostics`` is a list
+            of length ``T`` of per-day `DiagnosticState` snapshots, or
+            entries of ``None`` when the configured ``compute_rates``
+            callable does not emit diagnostics.
         """
         states: list[ModelState] = [state]
         rates_all: list[dict[str, torch.Tensor]] = []
+        diagnostics_all: list[DiagnosticState | None] = []
 
         n_days = weather.n_days
         for t in range(n_days):
@@ -124,7 +145,8 @@ class SimulationEngine(nn.Module):
             )
             states.append(result.state)
             rates_all.append(result.rates)
-        return states, rates_all
+            diagnostics_all.append(result.diagnostic)
+        return states, rates_all, diagnostics_all
 
 
 def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -> ModelState:
@@ -186,6 +208,16 @@ def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -
                 "kmint",
                 "tran_cum",
                 "evap_cum",
+                "rain_cum",
+                "irrig_cum",
+                "runoff_cum",
+                "drain_cum",
+                "nuptr_cum",
+                "puptr_cum",
+                "kuptr_cum",
+                "nfixtr_cum",
+                "parint_cum",
+                "gtotal_cum",
             }:
                 new_val = torch.clamp(new_val, min=0.0)
             if f.name == "dvs":

@@ -1,26 +1,35 @@
-"""Tensor container for all Lintul5 state variables.
+"""Tensor containers for Lintul5 simulation state and per-day diagnostics.
 
-Every field has shape ``[B]`` for scalar-per-batch quantities. The container
-is a simple ``@dataclass``; all operations that "update" state return a new
-``ModelState`` instance so the computation graph is preserved for autograd.
+This module defines two dataclasses:
+
+* `ModelState` — the **integrated** state vector advanced by the engine
+  each day (phenology, biomass pools, canopy, water, NPK pools, soil
+  minerals, and a set of cumulative accumulators).
+* `DiagnosticState` — a **non-integrated** per-day snapshot of stress
+  factors, growth drivers, light interception, phenology modifiers and
+  daily fluxes, collected alongside `ModelState` for interpretation and
+  ML loss design.
+
+Every field has shape ``[B]`` for scalar-per-batch quantities. All
+containers are plain ``@dataclass`` instances; updates are *functional*
+(``replace`` returns a new instance), so the autograd computation graph
+is preserved across the explicit-Euler step.
 
 Terminology:
-    * **State variables**: quantities that persist across time steps and
-      define the system at a given instant (e.g., ``dvs``, ``lai``, ``wlv``,
-      ``wa``). They are integrated over time via explicit Euler updates.
-    * **Rate variables**: time derivatives of states (units of state-unit per
-      day) computed by the process modules each step (e.g., ``dvs_rate``,
-      ``wlv_rate``, ``lai_rate``). Rates are *not* stored on ``ModelState``;
-      they are produced by process ``forward()`` calls and consumed by the
-      state update step ``s_{t+1} = s_t + r_t * dt``.
-    * **Output variables**: per-step snapshots of selected states /
-      diagnostics collected by the engine and returned by ``Lintul5Model``
-      as a ``ModelOutput`` (e.g., trajectories of ``dvs``, ``lai``, total
-      biomass, and final ``yield_ = wso`` at maturity).
+    * **State variables** — quantities that persist across time steps
+      and define the system at an instant (e.g. ``dvs``, ``lai``,
+      ``wlv``, ``wa``). Integrated over time via explicit Euler.
+    * **Rate variables** — time derivatives in units of state-unit per
+      day (e.g. ``dvs_rate``, ``wlv_rate``, ``lai_rate``). Produced by
+      process ``forward()`` calls and consumed by the state update
+      ``s_{t+1} = s_t + r_t · dt``. Rates are *not* stored on state.
+    * **Output variables** — per-step snapshots collected by the engine
+      and returned by ``Lintul5Model`` as a ``ModelOutput`` (e.g.
+      trajectories of ``dvs``, ``lai``, biomass, and final
+      ``yield_ = wso`` at maturity).
 
-References:
-    * Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
-    * SIMPLACE reference: ``simplace/sim/components/models/lintul5/``.
+Reference:
+    Wolf, J. (2012). *User guide for LINTUL5*. Wageningen UR.
 """
 
 from __future__ import annotations
@@ -35,62 +44,88 @@ import torch
 class ModelState:
     """Full Lintul5 state vector.
 
-    Holds every persistent quantity advanced by the simulation engine. All
-    fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per batch
-    element) and units follow Wolf (2012). The container is purely a *state*
-    snapshot — daily *rates* are produced by the process modules and the
-    *outputs* (per-step trajectories, final yield, etc.) are assembled by the
-    engine; see the module docstring for the full catalogue.
+    Holds every persistent quantity advanced by the simulation engine.
+    All fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per
+    batch element) with units following Wolf (2012). The container is
+    purely a *state* snapshot — daily *rates* are produced by the
+    process modules and the *outputs* (per-step trajectories, final
+    yield, etc.) are assembled by the engine.
 
-    Attributes:
-        dvs: Development stage in ``[0, 2]`` (0=emergence, 1=anthesis,
-            2=maturity), ``[B]``, dimensionless.
-        tsum: Thermal time accumulated since emergence, ``[B]`` [°C d].
-        tsump: Thermal time accumulated since sowing, ``[B]`` [°C d].
-        vern: Vernalisation days accumulated, ``[B]`` [d].
-        wlv: Green leaf dry weight, ``[B]`` [g m⁻²].
-        wlvd: Dead leaf dry weight (senesced), ``[B]`` [g m⁻²].
-        wst: Stem dry weight, ``[B]`` [g m⁻²].
-        wstd: Dead stem dry weight (senesced), ``[B]`` [g m⁻²].
-        wrt: Root dry weight, ``[B]`` [g m⁻²].
-        wrtd: Dead root dry weight (senesced), ``[B]`` [g m⁻²];
-            SIMPLACE ``WRTD``. Accumulates the root senescence flux
-            ``DRRT`` so that the N/P/K carried by dead roots is
+    Attributes are grouped below by physical role.
+
+    Phenology:
+        dvs: Development stage in ``[0, 2]`` (0 = emergence,
+            1 = anthesis, 2 = maturity) [-].
+        tsum: Thermal time accumulated since emergence [°C d].
+        tsump: Thermal time accumulated since sowing [°C d].
+        vern: Vernalisation days accumulated [d].
+
+    Biomass pools [g DM m⁻²]:
+        wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,
+            and storage organs (``wso`` drives final yield).
+        wlvd, wstd, wrtd: Dead (senesced) dry weight of leaves, stems,
+            and roots. Each accumulates the corresponding daily
+            senescence flux so the N/P/K carried by dead tissue is
             conserved rather than discarded.
-        wso: Storage organ dry weight (drives final yield), ``[B]``
-            [g m⁻²].
-        lai: Leaf area index, ``[B]`` [m² m⁻²].
-        rootd: Rooting depth, ``[B]`` [m].
-        wa: Total soil water in the rooted zone, ``[B]`` [mm].
-        wa_lower: Total soil water in the lower zone (between ``rootd`` and
-            the maximum rooting depth ``rdm``), ``[B]`` [mm].
-        dslr: Days since last (infiltrating) rain event, ``[B]`` [d];
-            drives the Stroosnijder soil-evaporation model.
-        dsos: Days of oxygen shortage, ``[B]`` [d], clipped to ``[0, 4]``;
+
+    Canopy and roots:
+        lai: Leaf area index [m² m⁻²].
+        rootd: Rooting depth [m].
+
+    Soil water (two-zone bucket):
+        wa: Water stored in the rooted zone (full column, not "above
+            wilting point") [mm].
+        wa_lower: Water stored in the lower zone, between ``rootd`` and
+            the maximum rooting depth ``rdm`` [mm].
+        dslr: Days since the last (infiltrating) rain event [d];
+            drives the Stroosnijder soil-evaporation model. Maintained
+            as a 1-based counter (minimum value 1).
+        dsos: Days of oxygen shortage [d], clipped to ``[0, 4]``;
             drives the time-dependent ``RWET`` waterlogging factor.
-        anlv, anst, anrt, anso: Nitrogen pools in leaves, stems, roots,
-            storage organs, each ``[B]`` [g N m⁻²].
-        aplv, apst, aprt, apso: Phosphorus pools, each ``[B]`` [g P m⁻²].
-        aklv, akst, akrt, akso: Potassium pools, each ``[B]`` [g K m⁻²].
-        nmin, pmin, kmin: Mineralisable soil organic N/P/K pools, each
-            ``[B]`` [g X m⁻²]; SIMPLACE ``sNMIN``/``sPMIN``/``sKMIN``.
-            Depleted each day by the mineralisation flux ``RNMINS``
-            (handled with negative-rate sign convention).
-        nmint, pmint, kmint: Directly available inorganic soil N/P/K
-            pools, each ``[B]`` [g X m⁻²]; SIMPLACE
-            ``sNMINT``/``sPMINT``/``sKMINT``. Replenished daily by
-            fertiliser (after recovery fraction) plus mineralisation
-            from ``nmin``/``pmin``/``kmin``, and drawn down by crop
-            uptake (``NUPTR``/``PUPTR``/``KUPTR``). This is the pool
-            that caps soil-limited uptake in IOPT ≥ 3.
-        tran_cum: Cumulative actual transpiration, ``[B]`` [mm].
-        evap_cum: Cumulative soil evaporation, ``[B]`` [mm].
+
+    Per-organ nutrient pools [g X m⁻²]:
+        anlv, anst, anrt, anso: Nitrogen in leaves, stems, roots,
+            storage organs.
+        aplv, apst, aprt, apso: Phosphorus in the same four organs.
+        aklv, akst, akrt, akso: Potassium in the same four organs.
+
+    Soil mineral pools [g X m⁻²]:
+        nmin, pmin, kmin: Mineralisable organic N/P/K pools. Depleted
+            each day by the mineralisation flux (handled with a
+            negative-rate sign convention).
+        nmint, pmint, kmint: Directly available inorganic N/P/K pools.
+            Replenished daily by fertiliser (after the recovery
+            fraction) plus mineralisation from
+            ``nmin``/``pmin``/``kmin``, and drawn down by crop uptake.
+            This is the pool that caps soil-limited uptake under the
+            higher ``IOPT`` modes.
+
+    Cumulative water accumulators [mm]:
+        tran_cum: Actual transpiration.
+        evap_cum: Soil evaporation.
+        rain_cum: Precipitation.
+        irrig_cum: Effective irrigation.
+        runoff_cum: Surface runoff.
+        drain_cum: Deep drainage (cascade flux below the lower zone).
+
+    Cumulative nutrient accumulators [g X m⁻²]:
+        nuptr_cum, puptr_cum, kuptr_cum: Crop NPK uptake from the soil
+            (excludes biological N fixation).
+        nfixtr_cum: Biological N₂ fixation.
+
+    Cumulative growth accumulators:
+        parint_cum: Canopy-intercepted PAR [MJ PAR m⁻²].
+        gtotal_cum: Gross daily assimilate from photosynthesis,
+            pre-partitioning [g DM m⁻²].
 
     Note:
-        Updates are functional: `replace` returns a *new*
-        ``ModelState`` rather than mutating in place, so the autograd graph
-        is preserved across the explicit-Euler step
-        ``s_{t+1} = s_t + r_t * dt``.
+        Updates are functional — `replace` returns a *new* ``ModelState``
+        rather than mutating in place — so the autograd graph is
+        preserved across the explicit-Euler step
+        ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are
+        integrated by the same ``_rate`` mechanism as ``tran_cum`` /
+        ``evap_cum``: a daily flux routed into ``<field>_rate`` and
+        added by the engine with ``dt = 1`` day.
     """
 
     # Phenology
@@ -114,7 +149,7 @@ class ModelState:
     # Roots
     rootd: torch.Tensor  # [B] m
 
-    # Water — two-zone bucket (SIMPLACE WATBALS)
+    # Water — two-zone bucket
     wa: torch.Tensor  # [B] mm — total water in rooted zone
     wa_lower: torch.Tensor  # [B] mm — total water in lower zone (between rootd and rdm)
     dslr: torch.Tensor  # [B] d — days since last rain (Stroosnijder evap model)
@@ -139,16 +174,30 @@ class ModelState:
     akso: torch.Tensor
 
     # Soil mineral pools [g X m-2]
-    nmin: torch.Tensor  # mineralisable organic N pool (sNMIN)
-    pmin: torch.Tensor  # mineralisable organic P pool (sPMIN)
-    kmin: torch.Tensor  # mineralisable organic K pool (sKMIN)
-    nmint: torch.Tensor  # directly available inorganic N pool (sNMINT)
-    pmint: torch.Tensor  # directly available inorganic P pool (sPMINT)
-    kmint: torch.Tensor  # directly available inorganic K pool (sKMINT)
+    nmin: torch.Tensor  # mineralisable organic N pool
+    pmin: torch.Tensor  # mineralisable organic P pool
+    kmin: torch.Tensor  # mineralisable organic K pool
+    nmint: torch.Tensor  # directly available inorganic N pool
+    pmint: torch.Tensor  # directly available inorganic P pool
+    kmint: torch.Tensor  # directly available inorganic K pool
 
-    # Optional bookkeeping
+    # Optional bookkeeping — cumulative water and growth accumulators.
+    # Each is integrated by the standard `_rate` mechanism: a daily flux
+    # is routed into ``<field>_rate`` in `_compute_rates_dispatch` and
+    # the engine applies forward-Euler exactly as for any other state
+    # field.
     tran_cum: torch.Tensor = field(default=None)  # cumulative transpiration [mm]
     evap_cum: torch.Tensor = field(default=None)  # cumulative evaporation [mm]
+    rain_cum: torch.Tensor = field(default=None)  # cumulative precipitation [mm]
+    irrig_cum: torch.Tensor = field(default=None)  # cumulative irrigation [mm]
+    runoff_cum: torch.Tensor = field(default=None)  # cumulative surface runoff [mm]
+    drain_cum: torch.Tensor = field(default=None)  # cumulative deep drainage [mm]
+    nuptr_cum: torch.Tensor = field(default=None)  # cumulative soil N uptake [g N m-2]
+    puptr_cum: torch.Tensor = field(default=None)  # cumulative soil P uptake [g P m-2]
+    kuptr_cum: torch.Tensor = field(default=None)  # cumulative soil K uptake [g K m-2]
+    nfixtr_cum: torch.Tensor = field(default=None)  # cumulative N fixation [g N m-2]
+    parint_cum: torch.Tensor = field(default=None)  # cumulative intercepted PAR [MJ m-2]
+    gtotal_cum: torch.Tensor = field(default=None)  # cumulative gross assimilate [g DM m-2]
 
     @classmethod
     def initial(
@@ -171,28 +220,30 @@ class ModelState:
     ) -> "ModelState":
         """Construct a zeroed initial state for a batch.
 
+        All biomass, per-organ nutrient, cumulative-accumulator, and
+        thermal-time fields are initialised to zero. The remaining
+        scalars are taken from the keyword arguments.
+
         Args:
             batch_size: Number of parallel simulation instances ``B``.
             dtype: Tensor dtype.
             device: Torch device.
-            dvsi: Initial development stage ``DVSI``.
-            wai: Initial soil water content in the root zone [mm].
+            dvsi: Initial development stage.
+            wai: Initial soil water in the root zone [mm].
             rootdi: Initial rooting depth [m].
             wa_lower_i: Initial soil water in the lower zone [mm].
             dslri: Initial days since last rain [d].
             dsosi: Initial days of oxygen shortage [d].
-            nmini: Initial mineralisable organic N pool ``NMIN`` [g N m⁻²].
-            pmini: Initial mineralisable organic P pool ``PMIN`` [g P m⁻²].
-            kmini: Initial mineralisable organic K pool ``KMIN`` [g K m⁻²].
-            nminti: Initial directly available inorganic N pool ``NMINT``
-                [g N m⁻²]. SIMPLACE default is 0.
-            pminti: Initial directly available inorganic P pool.
-            kminti: Initial directly available inorganic K pool.
+            nmini, pmini, kmini: Initial mineralisable organic NPK
+                pools [g X m⁻²].
+            nminti, pminti, kminti: Initial directly available
+                inorganic NPK pools [g X m⁻²] (default 0).
 
         Returns:
-            A fresh `ModelState` with all biomass / nutrient pools at
-            zero and the specified initial values for ``dvs``, ``rootd`` and
-            ``wa``.
+            A fresh `ModelState` with all biomass, nutrient, and
+            cumulative pools at zero and the specified initial values
+            for ``dvs``, ``rootd``, the two soil-water stores, the
+            counters ``dslr``/``dsos``, and the soil mineral pools.
         """
         zeros = torch.zeros(batch_size, dtype=dtype, device=device)
         full = lambda v: torch.full((batch_size,), float(v), dtype=dtype, device=device)
@@ -234,6 +285,16 @@ class ModelState:
             kmint=full(kminti),
             tran_cum=zeros.clone(),
             evap_cum=zeros.clone(),
+            rain_cum=zeros.clone(),
+            irrig_cum=zeros.clone(),
+            runoff_cum=zeros.clone(),
+            drain_cum=zeros.clone(),
+            nuptr_cum=zeros.clone(),
+            puptr_cum=zeros.clone(),
+            kuptr_cum=zeros.clone(),
+            nfixtr_cum=zeros.clone(),
+            parint_cum=zeros.clone(),
+            gtotal_cum=zeros.clone(),
         )
 
     def replace(self, **updates: Any) -> "ModelState":
@@ -265,6 +326,154 @@ class ModelState:
     @property
     def field_names(self) -> list[str]:
         """Names of all tensor fields on this `ModelState`."""
+        return [
+            f.name
+            for f in fields(self)
+            if isinstance(getattr(self, f.name), torch.Tensor)
+        ]
+
+
+@dataclass
+class DiagnosticState:
+    """Per-day diagnostic snapshot — companion to `ModelState`.
+
+    Holds quantities that are **not** integrated by the engine but are
+    valuable for interpretation, attribution, and ML loss design:
+    stress factors, photosynthesis drivers, light interception,
+    phenology modifiers, and per-day water and nutrient fluxes.
+
+    Instances are constructed fresh each step from the same intermediate
+    tensors used to build the rates dict. The engine collects one
+    `DiagnosticState` per simulated day alongside the `ModelState`
+    trajectory. Because these tensors never feed back into the state
+    update, the diagnostic capture has zero impact on autograd or on
+    the rate-update logic.
+
+    All fields are ``torch.Tensor`` of shape ``[B]``. Attributes are
+    grouped below by physical role.
+
+    Stress factors:
+        tranrf: Water-stress (transpiration-reduction) factor in
+            ``[0, 1]``.
+        rdry: Drought reduction component in ``[0, 1]`` (root-zone
+            moisture vs. critical content).
+        rwet: Oxygen-shortage reduction component in ``[0, 1]``
+            (waterlogging, ramped by the days-of-oxygen-shortage
+            counter).
+        nstress: Combined NPK index ``min(nni, pni, kni)`` in
+            ``[0, 1]`` — the nutrient multiplier on ``gtotal``.
+        nni, pni, kni: Per-nutrient concentration-based nutrition
+            indices in ``[0, 1]``.
+        leaf_heat_factor: Per-day heat-stress acceleration of the
+            relative leaf death rate (``≥ 1`` in regime, ``1``
+            otherwise).
+        combined_stress: Final multiplicative growth reducer applied
+            to ``gtotal`` (water × nutrient via the configured stress
+            combiner).
+        co2_factor: CO₂ transpiration-reduction factor applied to
+            potential transpiration before the water balance.
+
+    Photosynthesis and growth drivers:
+        gtotal: Gross daily assimilate, pre-partitioning
+            [g DM m⁻² d⁻¹].
+        rue: Radiation use efficiency [g MJ⁻¹].
+        rtmco: Combined temperature × CO₂ correction factor on RUE.
+
+    Light and canopy:
+        frac_intercepted: Beer–Lambert canopy interception fraction.
+        parint: Canopy-intercepted PAR [J m⁻² d⁻¹].
+
+    Phenology drivers:
+        dtsu: Effective daily thermal time [°C d d⁻¹].
+        photofac: Photoperiod factor (``1`` when daylength response is
+            disabled).
+        vernfac: Vernalisation factor (``1`` when vernalisation is
+            disabled or no longer active).
+
+    Water fluxes [mm d⁻¹] and contents:
+        tran, evap: Actual transpiration / soil evaporation.
+        runoff: Surface runoff (preliminary + rejected infiltration).
+        drain: Deep drainage below the lower zone.
+        rirr: Effective irrigation.
+        smact, smactl: Volumetric soil-moisture content in the rooted /
+            lower zone [m³ m⁻³].
+
+    Nutrient fluxes [g X m⁻² d⁻¹]:
+        nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).
+        nfixtr: Daily biological N₂ fixation.
+        n_demand, p_demand, k_demand: Daily vegetative NPK demand.
+
+    Partitioning fractions [-]:
+        fr, fl, fs, fo: Stress-modified fractions to root, leaf,
+            stem and storage organ. Root + above-ground sum to 1.
+    """
+
+    # Stress factors
+    tranrf: torch.Tensor
+    rdry: torch.Tensor
+    rwet: torch.Tensor
+    nstress: torch.Tensor
+    nni: torch.Tensor
+    pni: torch.Tensor
+    kni: torch.Tensor
+    leaf_heat_factor: torch.Tensor
+    combined_stress: torch.Tensor
+    co2_factor: torch.Tensor
+
+    # Photosynthesis / growth drivers
+    gtotal: torch.Tensor
+    rue: torch.Tensor
+    rtmco: torch.Tensor
+
+    # Light / canopy
+    frac_intercepted: torch.Tensor
+    parint: torch.Tensor
+
+    # Phenology drivers
+    dtsu: torch.Tensor
+    photofac: torch.Tensor
+    vernfac: torch.Tensor
+
+    # Water fluxes (per-day, not cumulative)
+    tran: torch.Tensor
+    evap: torch.Tensor
+    runoff: torch.Tensor
+    drain: torch.Tensor
+    rirr: torch.Tensor
+    smact: torch.Tensor
+    smactl: torch.Tensor
+
+    # Nutrient fluxes (per-day)
+    nuptr: torch.Tensor
+    puptr: torch.Tensor
+    kuptr: torch.Tensor
+    nfixtr: torch.Tensor
+    n_demand: torch.Tensor
+    p_demand: torch.Tensor
+    k_demand: torch.Tensor
+
+    # Partitioning fractions
+    fr: torch.Tensor
+    fl: torch.Tensor
+    fs: torch.Tensor
+    fo: torch.Tensor
+
+    def stack(self) -> torch.Tensor:
+        """Stack all tensor fields into a single ``[B, C]`` tensor.
+
+        Returns:
+            A ``[B, C]`` tensor laid out in field-definition order.
+        """
+        tensors = [
+            getattr(self, f.name)
+            for f in fields(self)
+            if isinstance(getattr(self, f.name), torch.Tensor)
+        ]
+        return torch.stack(tensors, dim=-1)
+
+    @property
+    def field_names(self) -> list[str]:
+        """Names of all tensor fields on this `DiagnosticState`."""
         return [
             f.name
             for f in fields(self)

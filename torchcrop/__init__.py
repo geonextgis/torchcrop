@@ -17,10 +17,11 @@ from torchcrop.model import Lintul5Model, ModelOutput
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
-from torchcrop.states.model_state import ModelState
+from torchcrop.states.model_state import DiagnosticState, ModelState
 
 __all__ = [
     "CropParameters",
+    "DiagnosticState",
     "Lintul5Model",
     "ModelOutput",
     "ModelState",
