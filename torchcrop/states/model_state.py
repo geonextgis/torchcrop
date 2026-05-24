@@ -352,60 +352,60 @@ class DiagnosticState:
     All fields are ``torch.Tensor`` of shape ``[B]``. Attributes are
     grouped below by physical role.
 
-    Stress factors:
-        tranrf: Water-stress (transpiration-reduction) factor in
-            ``[0, 1]``.
-        rdry: Drought reduction component in ``[0, 1]`` (root-zone
-            moisture vs. critical content).
-        rwet: Oxygen-shortage reduction component in ``[0, 1]``
-            (waterlogging, ramped by the days-of-oxygen-shortage
-            counter).
-        nstress: Combined NPK index ``min(nni, pni, kni)`` in
-            ``[0, 1]`` — the nutrient multiplier on ``gtotal``.
-        nni, pni, kni: Per-nutrient concentration-based nutrition
-            indices in ``[0, 1]``.
-        leaf_heat_factor: Per-day heat-stress acceleration of the
-            relative leaf death rate (``≥ 1`` in regime, ``1``
-            otherwise).
-        combined_stress: Final multiplicative growth reducer applied
-            to ``gtotal`` (water × nutrient via the configured stress
-            combiner).
-        co2_factor: CO₂ transpiration-reduction factor applied to
-            potential transpiration before the water balance.
+    ## Stress factors:
+    - `tranrf`: Water-stress (transpiration-reduction) factor in
+        ``[0, 1]``.
+    - `rdry`: Drought reduction component in ``[0, 1]`` (root-zone
+        moisture vs. critical content).
+    - `rwet`: Oxygen-shortage reduction component in ``[0, 1]``
+        (waterlogging, ramped by the days-of-oxygen-shortage
+        counter).
+    - `nstress`: Combined NPK index ``min(nni, pni, kni)`` in
+        ``[0, 1]`` — the nutrient multiplier on ``gtotal``.
+    - `nni`, `pni`, `kni`: Per-nutrient concentration-based nutrition
+        indices in ``[0, 1]``.
+    - `leaf_heat_factor`: Per-day heat-stress acceleration of the
+        relative leaf death rate (``≥ 1`` in regime, ``1``
+        otherwise).
+    - `combined_stress`: Final multiplicative growth reducer applied
+        to ``gtotal`` (water × nutrient via the configured stress
+        combiner).
+    - `co2_factor`: CO₂ transpiration-reduction factor applied to
+        potential transpiration before the water balance.
 
-    Photosynthesis and growth drivers:
-        gtotal: Gross daily assimilate, pre-partitioning
-            [g DM m⁻² d⁻¹].
-        rue: Radiation use efficiency [g MJ⁻¹].
-        rtmco: Combined temperature × CO₂ correction factor on RUE.
+    ## Photosynthesis and growth drivers:
+    - `gtotal`: Gross daily assimilate, pre-partitioning
+        [g DM m⁻² d⁻¹].
+    - `rue`: Radiation use efficiency [g MJ⁻¹].
+    - `rtmco`: Combined temperature × CO₂ correction factor on RUE.
 
-    Light and canopy:
-        frac_intercepted: Beer–Lambert canopy interception fraction.
-        parint: Canopy-intercepted PAR [J m⁻² d⁻¹].
+    ## Light and canopy:
+    - `frac_intercepted`: Beer–Lambert canopy interception fraction.
+    - `parint`: Canopy-intercepted PAR [J m⁻² d⁻¹].
 
-    Phenology drivers:
-        dtsu: Effective daily thermal time [°C d d⁻¹].
-        photofac: Photoperiod factor (``1`` when daylength response is
-            disabled).
-        vernfac: Vernalisation factor (``1`` when vernalisation is
-            disabled or no longer active).
+    ## Phenology drivers:
+    - `dtsu`: Effective daily thermal time [°C d d⁻¹].
+    - `photofac`: Photoperiod factor (``1`` when daylength response is
+        disabled).
+    - `vernfac`: Vernalisation factor (``1`` when vernalisation is
+        disabled or no longer active).
 
-    Water fluxes [mm d⁻¹] and contents:
-        tran, evap: Actual transpiration / soil evaporation.
-        runoff: Surface runoff (preliminary + rejected infiltration).
-        drain: Deep drainage below the lower zone.
-        rirr: Effective irrigation.
-        smact, smactl: Volumetric soil-moisture content in the rooted /
-            lower zone [m³ m⁻³].
+    ## Water fluxes [mm d⁻¹] and contents:
+    - `tran`, `evap`: Actual transpiration / soil evaporation.
+    - `runoff`: Surface runoff (preliminary + rejected infiltration).
+    - `drain`: Deep drainage below the lower zone.
+    - `rirr`: Effective irrigation.
+    - `smact`, `smactl`: Volumetric soil-moisture content in the rooted /
+        lower zone [m³ m⁻³].
 
-    Nutrient fluxes [g X m⁻² d⁻¹]:
-        nuptr, puptr, kuptr: Daily soil NPK uptake (no fixation).
-        nfixtr: Daily biological N₂ fixation.
-        n_demand, p_demand, k_demand: Daily vegetative NPK demand.
+    ## Nutrient fluxes [g X m⁻² d⁻¹]:
+    - `nuptr`, `puptr`, `kuptr`: Daily soil NPK uptake (no fixation).
+    - `nfixtr`: Daily biological N₂ fixation.
+    - `n_demand`, `p_demand`, `k_demand`: Daily vegetative NPK demand.
 
-    Partitioning fractions [-]:
-        fr, fl, fs, fo: Stress-modified fractions to root, leaf,
-            stem and storage organ. Root + above-ground sum to 1.
+    ## Partitioning fractions [-]:
+    - `fr`, `fl`, `fs`, `fo`: Stress-modified fractions to root, leaf,
+        stem and storage organ. Root + above-ground sum to 1.
     """
 
     # Stress factors
