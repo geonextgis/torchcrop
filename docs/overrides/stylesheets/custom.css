@@ -9,12 +9,29 @@
         #4CAF50 80%,     /* Deep green */
         #388E3C 100%     /* Forest green */
     );
+    background-size: 200% 200%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 600;
     letter-spacing: 0.5px;
     animation: gradient-flow 4s ease-in-out infinite;
+}
+
+/* Animated gradient on the whole header bar */
+.md-header,
+.md-tabs {
+    background: linear-gradient(
+        90deg,
+        #FF6B35 0%,
+        #FF8C42 20%,
+        #FFA54D 40%,
+        #66BB6A 60%,
+        #4CAF50 80%,
+        #388E3C 100%
+    );
+    background-size: 200% 200%;
+    animation: gradient-flow 20s ease-in-out infinite;
 }
 
 /* Smooth flowing animation */
@@ -28,11 +45,6 @@
     100% {
         background-position: 0% center;
     }
-}
-
-/* Ensure animation works smoothly */
-.torchcrop-gradient {
-    background-size: 200% 200%;
 }
 
 /* Fallback for older browsers */
