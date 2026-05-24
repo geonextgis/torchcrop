@@ -53,12 +53,12 @@ class ModelState:
 
     Attributes are grouped below by physical role.
 
-    Phenology:
-        dvs: Development stage in ``[0, 2]`` (0 = emergence,
+    ## Phenology:
+    - `dvs`: Development stage in ``[0, 2]`` (0 = emergence,
             1 = anthesis, 2 = maturity) [-].
-        tsum: Thermal time accumulated since emergence [°C d].
-        tsump: Thermal time accumulated since sowing [°C d].
-        vern: Vernalisation days accumulated [d].
+    - `tsum`: Thermal time accumulated since emergence [°C d].
+    - `tsump`: Thermal time accumulated since sowing [°C d].
+    - `vern`: Vernalisation days accumulated [d].
 
     Biomass pools [g DM m⁻²]:
         wlv, wst, wrt, wso: Living dry weight of leaves, stems, roots,
