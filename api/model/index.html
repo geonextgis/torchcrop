@@ -2193,8 +2193,9 @@
     <div class="doc doc-contents first">
 
       <p>Top-level Lintul5 model.</p>
-<p>Wires all process sub-modules together and provides both a high-level and a
-low-level API.</p>
+<p>Wires the biophysical process sub-modules into a single differentiable
+crop simulation and exposes both a high-level (<code>forward</code>) and a
+low-level (<code>compute_rates</code> / <code>update_state</code>) API.</p>
 
 
 
@@ -2222,6 +2223,11 @@ Lintul5Model            (<span title="torch.nn.modules.module.Module">Module</sp
     <div class="doc doc-contents ">
 
       <p>Differentiable reimplementation of the Lintul5 crop growth model.</p>
+<p>The model assembles all biophysical process modules (phenology,
+photosynthesis, partitioning, water and nutrient balances, etc.)
+and integrates them with a forward-Euler scheme on a daily time
+step. The full simulation is autograd-friendly, so gradients flow
+end-to-end from any parameter to the simulated yield.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2270,9 +2276,12 @@ stage-based branching.</p></td>
         <td><code>residual_modules</code></td>
         <td><code>dict[str, nn.Module] | None</code></td>
         <td><p>Optional neural residual corrections keyed by
-process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
-<code>"partitioning"</code> adds to the four allocation fractions;
-<code>"leaf_dynamics"</code> adds to <code>lai_rate</code>).</p></td>
+process name:</p>
+<ul>
+<li><code>"photosynthesis"</code> adds to <code>gtotal</code>.</li>
+<li><code>"partitioning"</code> adds to the four allocation fractions.</li>
+<li><code>"leaf_dynamics"</code> adds to <code>lai_rate</code>.</li>
+</ul></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2281,6 +2290,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Lintul5Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable reimplementation of the Lintul5 crop growth model.</span>
+
+<span class="sd">    The model assembles all biophysical process modules (phenology,</span>
+<span class="sd">    photosynthesis, partitioning, water and nutrient balances, etc.)</span>
+<span class="sd">    and integrates them with a forward-Euler scheme on a daily time</span>
+<span class="sd">    step. The full simulation is autograd-friendly, so gradients flow</span>
+<span class="sd">    end-to-end from any parameter to the simulated yield.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        crop_params: Crop parameter container (see `torchcrop.parameters`).</span>
@@ -2291,9 +2306,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="sd">        stress_module: Optional replacement for the default</span>
 <span class="sd">            `StressFactors` combiner.</span>
 <span class="sd">        residual_modules: Optional neural residual corrections keyed by</span>
-<span class="sd">            process name (``&quot;photosynthesis&quot;`` adds to ``gtotal``;</span>
-<span class="sd">            ``&quot;partitioning&quot;`` adds to the four allocation fractions;</span>
-<span class="sd">            ``&quot;leaf_dynamics&quot;`` adds to ``lai_rate``).</span>
+<span class="sd">            process name:</span>
+
+<span class="sd">            * ``&quot;photosynthesis&quot;`` adds to ``gtotal``.</span>
+<span class="sd">            * ``&quot;partitioning&quot;`` adds to the four allocation fractions.</span>
+<span class="sd">            * ``&quot;leaf_dynamics&quot;`` adds to ``lai_rate``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2346,33 +2363,39 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build an initial state for a batch, using ``dvsi`` from crop params.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a sowing-day initial state for a batch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_size: Number of parallel simulation instances ``B``.</span>
-<span class="sd">            dtype: Tensor dtype.</span>
+<span class="sd">            dtype: Tensor dtype for all state fields.</span>
 <span class="sd">            device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A fresh `ModelState` with initial DVS, root depth, soil</span>
-<span class="sd">            water at field capacity, and a seeded leaf mass so that LAI</span>
-<span class="sd">            growth has a substrate post-emergence.</span>
+<span class="sd">            A fresh `ModelState` representing a bare-soil, pre-emergence</span>
+<span class="sd">            condition: initial DVS taken from ``crop_params.dvsi``,</span>
+<span class="sd">            rooting depth ``rootdi``, root-zone water at field capacity,</span>
+<span class="sd">            lower-zone water from ``wci_lower``, and the soil organic</span>
+<span class="sd">            (``nmin``/``pmin``/``kmin``) and inorganic</span>
+<span class="sd">            (``nmint``/``pmint``/``kmint``) mineral pools seeded from</span>
+<span class="sd">            soil parameters. Biomass pools and LAI start at zero;</span>
+<span class="sd">            their initial values are injected as a one-shot rate on</span>
+<span class="sd">            the emergence day inside `_compute_rates_dispatch`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rootdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="c1"># Initialise at field capacity × initial rooting depth (mm)</span>
+        <span class="c1"># Root-zone water at field capacity over the initial rooting depth.</span>
         <span class="n">wfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">wfc</span> <span class="o">*</span> <span class="n">rootdi</span>
-        <span class="c1"># Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI</span>
+        <span class="c1"># Lower-zone water spans the unrooted profile between ``rootdi``</span>
+        <span class="c1"># and the soil-/crop-limited maximum rooting depth ``rdm``.</span>
         <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
         <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
-        <span class="c1"># Seed the soil mineral pools from soil_params. The organic</span>
-        <span class="c1"># pools (NMIN/PMIN/KMIN) start at NMINI/PMINI/KMINI; the</span>
-        <span class="c1"># directly available inorganic pools (NMINT/PMINT/KMINT) start</span>
-        <span class="c1"># at NMINTI/PMINTI/KMINTI (Lintul5 default 0).</span>
+        <span class="c1"># Soil mineral pools: the organic (mineralisable) pools start at</span>
+        <span class="c1"># ``nmini``/``pmini``/``kmini`` and the directly available</span>
+        <span class="c1"># inorganic pools start at ``nminti``/``pminti``/``kminti``.</span>
         <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -2396,16 +2419,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
             <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
-        <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
-        <span class="c1"># but in SIMPLACE it runs on iDoSow and is implicitly *the*</span>
-        <span class="c1"># emergence event (Lintul5.java:1047). torchcrop simulates the</span>
-        <span class="c1"># sowing→emergence interval explicitly via tsump/tsumem in</span>
-        <span class="c1"># Phenology, so we leave biomass pools at zero here and inject</span>
-        <span class="c1"># the Java initValues deltas as a one-shot rate in</span>
-        <span class="c1"># `_compute_rates_dispatch` on the day tsump first crosses</span>
-        <span class="c1"># tsumem (LAI is bootstrapped separately by the GLA emergence</span>
-        <span class="c1"># branch in LeafDynamics).</span>
+        <span class="c1"># The sowing → emergence interval is simulated explicitly via</span>
+        <span class="c1"># the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so</span>
+        <span class="c1"># all biomass pools remain zero until emergence. The initial</span>
+        <span class="c1"># seed-reserve allocation is then injected as a one-shot rate</span>
+        <span class="c1"># on the day ``tsump`` first crosses ``tsumem``; see the</span>
+        <span class="c1"># emergence bootstrap block in `_compute_rates_dispatch`.</span>
         <span class="k">return</span> <span class="n">state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -2417,15 +2436,18 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">            weather: A `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">                daily weather forcing.</span>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">            initial_state: Optional pre-built `ModelState`. When</span>
-<span class="sd">                omitted, `initialize` is called automatically.</span>
+<span class="sd">                omitted, `initialize` is called automatically with the</span>
+<span class="sd">                weather batch size, dtype, and device.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A `ModelOutput` containing the full state/rate trajectories</span>
-<span class="sd">            and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
+<span class="sd">            A `ModelOutput` containing the full state, rate and</span>
+<span class="sd">            diagnostic trajectories together with summary variables</span>
+<span class="sd">            (``lai``, ``dvs``, ``biomass``, ``yield_`` and the</span>
+<span class="sd">            heat-stress-adjusted yield).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
@@ -2454,7 +2476,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
         <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-        <span class="c1"># entering each weather day is ``dvs[:, :-1]`` — the trajectory</span>
+        <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
         <span class="c1"># carries a leading initial-condition entry, so it has length</span>
         <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
         <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
@@ -2487,19 +2509,20 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`.</span>
-<span class="sd">            weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">                (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">            weather_day: Dict of named weather channels for the current</span>
+<span class="sd">                day (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">            doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus diagnostics</span>
-<span class="sd">            (``tranrf``, ``nstress``, ``gtotal``). The companion</span>
-<span class="sd">            `DiagnosticState` is discarded here — use the full model</span>
-<span class="sd">            `forward` to access the diagnostic trajectory.</span>
+<span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
+<span class="sd">            handful of scalar diagnostics (``tranrf``, ``nstress``,</span>
+<span class="sd">            ``gtotal``). The companion `DiagnosticState` is discarded</span>
+<span class="sd">            here; use the high-level `forward` to access the full</span>
+<span class="sd">            diagnostic trajectory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -2522,15 +2545,15 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`.</span>
 <span class="sd">            rates: Dict of rate tensors produced by `compute_rates`.</span>
-<span class="sd">            dt: Integration step in days.</span>
+<span class="sd">            dt: Integration step size in days.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A new `ModelState` advanced by one step.</span>
+<span class="sd">            A new `ModelState` advanced by one Euler step.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># Internal: one-day rate computation in the SIMPLACE execution order</span>
+    <span class="c1"># Internal: one-day rate computation</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_rates_dispatch</span><span class="p">(</span>
@@ -2542,7 +2565,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">DiagnosticState</span><span class="p">]:</span>
-        <span class="c1"># Extract weather variables (SIMPLACE order)</span>
+        <span class="c1"># Unpack the day&#39;s weather forcing.</span>
         <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
         <span class="n">tmin</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmin&quot;</span><span class="p">]</span>
         <span class="n">tmax</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmax&quot;</span><span class="p">]</span>
@@ -2577,12 +2600,10 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">atmtr</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;atmtr&quot;</span><span class="p">]</span>
         <span class="n">frac_int</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;frac_intercepted&quot;</span><span class="p">]</span>
 
-        <span class="c1"># 3. Phenology</span>
-        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">)</span>
-
-        <span class="c1"># 4. Evapotranspiration — PENMAN formula. CO2 is a site/scenario</span>
-        <span class="c1">#    property: SiteParameters.co2 is the single source of truth</span>
-        <span class="c1">#    feeding the ET0, RUE and transpiration CO2 corrections.</span>
+        <span class="c1"># 3. Evapotranspiration — Penman formulation. CO₂ is a</span>
+        <span class="c1">#    site/scenario property: ``SiteParameters.co2`` is the</span>
+        <span class="c1">#    single source of truth feeding the ET0, RUE and</span>
+        <span class="c1">#    transpiration CO₂ corrections.</span>
         <span class="n">et</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evapotranspiration</span><span class="p">(</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
@@ -2594,16 +2615,17 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># 4b. CO2 influence on transpiration — scale the potential</span>
-        <span class="c1">#     transpiration *demand* by the linear CO2 reduction factor</span>
-        <span class="c1">#     before it enters the water balance, so elevated CO2</span>
-        <span class="c1">#     propagates into the water-stress factor TRANRF (distinct</span>
-        <span class="c1">#     from the CO2 correction already applied to reference ET).</span>
+        <span class="c1"># 3b. CO₂ influence on transpiration — scale the potential</span>
+        <span class="c1">#     transpiration *demand* by the linear CO₂ reduction</span>
+        <span class="c1">#     factor before it enters the water balance, so elevated</span>
+        <span class="c1">#     CO₂ propagates into the water-stress factor ``TRANRF``.</span>
+        <span class="c1">#     This is distinct from the CO₂ correction already applied</span>
+        <span class="c1">#     to reference ET.</span>
         <span class="n">co2_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_transpiration</span><span class="p">(</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">],</span> <span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
         <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">]</span>
         <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;co2_factor&quot;</span><span class="p">]</span>
 
-        <span class="c1"># 5. Water balance (two-zone, with SIMPLACE percolation cascade)</span>
+        <span class="c1"># 4. Two-zone water balance with a percolation cascade.</span>
         <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
             <span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
@@ -2620,36 +2642,16 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="p">)</span>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span>
 
-        <span class="c1"># 6+7. Nutrient preliminary step — we first estimate partitioning</span>
-        <span class="c1">#      using a &quot;no nutrient stress&quot; GTOTAL to compute demand, then</span>
-        <span class="c1">#      finalise with the resulting nstress.</span>
-        <span class="n">photo_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span><span class="p">(</span>
-            <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
-            <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
-            <span class="n">dvs</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
-            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
-            <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="c1"># GTOTAL = RUE * RTMCO * PARINT * TRANRF * NSTRESS</span>
-        <span class="c1"># (LintulFunctions.GROWTH; NSTRESS=1 here for the pre-step).</span>
-        <span class="c1"># PARINT is in J m-2 d-1; SIMPLACE GROWTH expects MJ PAR m-2 d-1</span>
-        <span class="c1"># (LintulFunctions.java:852), so we convert here.</span>
+        <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
+        <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
+        <span class="c1">#    is independent of the water / ET branch.</span>
+        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">)</span>
+
+        <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
+        <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
+        <span class="c1">#    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹</span>
+        <span class="c1">#    here because the growth formula expects MJ.</span>
         <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
-        <span class="n">gtotal_pre</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">photo_pre</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">parint_mj</span>
-            <span class="o">*</span> <span class="n">tranrf</span>
-        <span class="p">)</span>
-        <span class="c1"># Pre-step: NNI is not yet known, so assume no N stress (nni=1).</span>
-        <span class="c1"># TRANRF is already known and feeds the water-stress branch of SUBPAR.</span>
-        <span class="n">part_pre</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
-            <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal_pre</span><span class="p">,</span>
-            <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
-            <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span>
-        <span class="p">)</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
@@ -2658,10 +2660,10 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="p">)</span>
         <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
 
-        <span class="c1"># Soil mineral-pool balance (SoilNutrientRates in Lintul5.java).</span>
-        <span class="c1"># Sits *after* NutrientDemand because it consumes the day&#39;s</span>
-        <span class="c1"># NUPTR/PUPTR/KUPTR (depletes NMINT/PMINT/KMINT) and the same</span>
-        <span class="c1"># NLIMIT/EMERG gates used by uptake.</span>
+        <span class="c1"># 7. Soil mineral-pool balance. Runs after NutrientDemand</span>
+        <span class="c1">#    because it consumes the day&#39;s NUPTR/PUPTR/KUPTR (which</span>
+        <span class="c1">#    deplete NMINT/PMINT/KMINT) and reuses the same</span>
+        <span class="c1">#    NLIMIT/EMERG gates that drive uptake.</span>
         <span class="n">soil_nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_nutrients</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
@@ -2674,7 +2676,14 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># 8. Photosynthesis (final) with nutrient + water stress</span>
+        <span class="c1"># 8. Photosynthesis with nutrient and water stress applied.</span>
+        <span class="c1">#</span>
+        <span class="c1"># ``GTOTAL = RUE · RTMCO · PARINT · TRANRF · combined_stress``,</span>
+        <span class="c1"># where ``combined_stress`` is the nutrient component obtained</span>
+        <span class="c1"># by dividing out ``TRANRF`` from ``self.stress(tranrf, nstress)``.</span>
+        <span class="c1"># This factoring keeps ``self.stress`` swappable (e.g. with a</span>
+        <span class="c1"># learned stress module) while preserving the explicit</span>
+        <span class="c1"># ``TRANRF`` multiplier.</span>
         <span class="n">photo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span><span class="p">(</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
@@ -2682,9 +2691,6 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># GTOTAL = RUE * RTMCO * PARINT * min(TRANRF, NPKREF)</span>
-        <span class="c1"># The combined stress is produced by self.stress; divide-cancel keeps</span>
-        <span class="c1"># the existing semantics of stress() returning TRANRF*combined.</span>
         <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
         <span class="n">gtotal</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
@@ -2694,7 +2700,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="o">*</span> <span class="n">combined_stress</span>
         <span class="p">)</span>
 
-        <span class="c1"># Residual correction on gtotal</span>
+        <span class="c1"># Optional neural residual correction on ``gtotal``.</span>
         <span class="k">if</span> <span class="s2">&quot;photosynthesis&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">:</span>
             <span class="n">ctx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
                 <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">dtr</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span><span class="p">,</span> <span class="n">doy</span><span class="p">],</span>
@@ -2703,8 +2709,8 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">[</span><span class="s2">&quot;photosynthesis&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">gtotal</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="c1"># 9. Partitioning (final, with water and N stress fed into SUBPAR;</span>
-        <span class="c1"># nstress here is the NPK index used as a proxy for NNI).</span>
+        <span class="c1"># 9. Partitioning. Water and N stress are fed into ``SUBPAR``;</span>
+        <span class="c1">#    ``nstress`` is used as the NPK proxy for ``NNI``.</span>
         <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
@@ -2713,10 +2719,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">nni</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># 10. Leaf dynamics — with heat-stress acceleration of senescence.</span>
-        <span class="c1"># HeatStressOnLeafSenescence returns a multiplier on RDR that is</span>
-        <span class="c1"># 1.0 outside the heat-stress regime (Tmax &lt; Tc or DVS &lt; DVS_c),</span>
-        <span class="c1"># so this is a no-op under non-stress conditions.</span>
+        <span class="c1"># 10. Leaf dynamics with heat-stress acceleration of senescence.</span>
+        <span class="c1">#     `HeatStressOnLeafSenescence` returns a multiplier on</span>
+        <span class="c1">#     ``RDR`` that equals ``1.0`` outside the heat-stress regime</span>
+        <span class="c1">#     (``Tmax &lt; Tc`` or ``DVS &lt; DVS_c``), so the heat term is a</span>
+        <span class="c1">#     no-op under non-stress conditions.</span>
         <span class="n">leaf_heat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaf_heat_stress</span><span class="p">(</span><span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">dvs</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">)</span>
         <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaf_dynamics</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -2744,7 +2751,8 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># Gate all growth/senescence rates post-maturity</span>
+        <span class="c1"># Mask used to switch off crop growth and senescence after</span>
+        <span class="c1"># maturity (``DVS ≥ 2``).</span>
         <span class="n">active</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">gate</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">active</span>  <span class="c1"># noqa: E731</span>
 
@@ -2778,14 +2786,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;akso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_so_rate&quot;</span><span class="p">]),</span>
-            <span class="c1"># Soil pool dynamics: organic pool depletion (negative</span>
-            <span class="c1"># rates) and inorganic pool balance (fertiliser +</span>
-            <span class="c1"># mineralisation − uptake). Mineralisation is already gated</span>
-            <span class="c1"># internally by EMERG/NLIMIT; we deliberately do *not*</span>
-            <span class="c1"># multiply by ``active`` so that mineralisation and</span>
-            <span class="c1"># fertiliser additions to NMINT continue post-maturity</span>
-            <span class="c1"># (matches SIMPLACE — the soil keeps running even when the</span>
-            <span class="c1"># crop has died).</span>
+            <span class="c1"># Soil pool dynamics. Organic pools deplete (negative</span>
+            <span class="c1"># rates); inorganic pools follow ``fertiliser +</span>
+            <span class="c1"># mineralisation − uptake``. Mineralisation is already</span>
+            <span class="c1"># gated internally by EMERG/NLIMIT, and the soil pools are</span>
+            <span class="c1"># *not* multiplied by ``active`` so that mineralisation</span>
+            <span class="c1"># and fertiliser additions continue after crop maturity.</span>
             <span class="s2">&quot;nmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;nmin_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;pmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;pmin_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;kmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmin_rate&quot;</span><span class="p">],</span>
@@ -2794,10 +2800,10 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmint_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tran_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
             <span class="s2">&quot;evap_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
-            <span class="c1"># Cumulative water / nutrient / growth accumulators —</span>
-            <span class="c1"># integrated by the engine via the same `_rate` mechanism as</span>
-            <span class="c1"># `tran_cum`/`evap_cum`. The daily flux IS the increment</span>
-            <span class="c1"># because the engine uses dt = 1 day.</span>
+            <span class="c1"># Cumulative water, nutrient and growth accumulators are</span>
+            <span class="c1"># integrated by the engine via the same ``_rate`` mechanism</span>
+            <span class="c1"># as ``tran_cum`` / ``evap_cum``. With ``dt = 1`` day, the</span>
+            <span class="c1"># daily flux is itself the increment.</span>
             <span class="s2">&quot;rain_cum_rate&quot;</span><span class="p">:</span> <span class="n">rain</span><span class="p">,</span>
             <span class="s2">&quot;irrig_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rirr&quot;</span><span class="p">],</span>
             <span class="s2">&quot;runoff_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;runoff&quot;</span><span class="p">],</span>
@@ -2806,28 +2812,27 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
             <span class="s2">&quot;puptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
             <span class="s2">&quot;kuptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
             <span class="s2">&quot;nfixtr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nfixtr&quot;</span><span class="p">],</span>
-            <span class="c1"># PAR stored in MJ m-2 (parint_mj is the same conversion</span>
-            <span class="c1"># used for the GTOTAL calculation upstream).</span>
+            <span class="c1"># PAR accumulated in MJ m⁻² (same conversion used in the</span>
+            <span class="c1"># GTOTAL calculation above).</span>
             <span class="s2">&quot;parint_cum_rate&quot;</span><span class="p">:</span> <span class="n">parint_mj</span><span class="p">,</span>
             <span class="s2">&quot;gtotal_cum_rate&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
-            <span class="c1"># Diagnostics (not integrated)</span>
+            <span class="c1"># Scalar diagnostics — not integrated by the engine.</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
             <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress</span><span class="p">,</span>
             <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="c1"># ---- Emergence-day bootstrap (Java Lintul5.java initValues,</span>
-        <span class="c1"># lines 793–810). Fires once per batch element on the step where</span>
-        <span class="c1"># tsump first crosses tsumem; injects WLVGI/WSTI/WRTI/WSOI and</span>
-        <span class="c1"># LAII = WLVGI · scale_factor_sla · SLATB(DVSI) as one-shot</span>
-        <span class="c1"># deltas, matching the SIMPLACE convention that the emergence</span>
-        <span class="c1"># event (iDoSow in Java) instantly mobilises seed reserves into</span>
-        <span class="c1"># a juvenile-canopy state. The resulting one-day LAI jump is</span>
-        <span class="c1"># part of the Lintul5 abstraction; if you need a gradient</span>
-        <span class="c1"># sowing-to-canopy ramp instead, lower `crop_params.tdwi` (less</span>
-        <span class="c1"># seed reserve) or raise `crop_params.rgrl` (faster juvenile</span>
-        <span class="c1"># expansion).</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">torchcrop.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span>
+        <span class="c1"># ---- Emergence-day bootstrap.</span>
+        <span class="c1"># Fires once per batch element on the step where ``tsump``</span>
+        <span class="c1"># first crosses ``tsumem``. The seed-reserve mass ``tdwi`` is</span>
+        <span class="c1"># partitioned at ``DVSI`` to give ``WRTI``/``WLVGI``/``WSTI``/</span>
+        <span class="c1"># ``WSOI`` and ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``,</span>
+        <span class="c1"># which are injected as one-shot rate deltas so that emergence</span>
+        <span class="c1"># instantly mobilises seed reserves into a juvenile-canopy</span>
+        <span class="c1"># state. The one-day LAI jump is intrinsic to the Lintul5</span>
+        <span class="c1"># abstraction; for a gradient sowing-to-canopy ramp, lower</span>
+        <span class="c1"># ``crop_params.tdwi`` (smaller seed reserve) or raise</span>
+        <span class="c1"># ``crop_params.rgrl`` (faster juvenile expansion).</span>
         <span class="n">dvsi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span>
         <span class="n">tdwi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tdwi</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dvsi</span>
@@ -2853,11 +2858,12 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
         <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
         <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
 
-        <span class="c1"># Per-day DiagnosticState snapshot — built from the same</span>
-        <span class="c1"># intermediate tensors used to assemble `rates`. Pure read-only:</span>
-        <span class="c1"># does not enter the Euler update, does not touch any state</span>
-        <span class="c1"># field, and adds no autograd ops beyond the broadcasting of</span>
-        <span class="c1"># scalars (`combined_stress`, `co2_factor`) to ``[B]``.</span>
+        <span class="c1"># Per-day `DiagnosticState` snapshot — built from the same</span>
+        <span class="c1"># intermediate tensors used to assemble ``rates``. It is</span>
+        <span class="c1"># read-only: it neither enters the Euler update nor touches</span>
+        <span class="c1"># any state field, and it adds no autograd ops beyond</span>
+        <span class="c1"># broadcasting scalar factors (``combined_stress``,</span>
+        <span class="c1"># ``co2_factor``) to ``[B]``.</span>
         <span class="n">b_shape</span> <span class="o">=</span> <span class="n">tranrf</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">diagnostic</span> <span class="o">=</span> <span class="n">DiagnosticState</span><span class="p">(</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
@@ -2905,14 +2911,15 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect every learnable parameter across the parameter containers.</span>
 
-<span class="sd">        Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">        collects every field that is an `nn.Parameter`.</span>
+<span class="sd">        Walks the ``crop``, ``soil`` and ``site`` parameter containers</span>
+<span class="sd">        and returns every field that is an `nn.Parameter` (i.e. has</span>
+<span class="sd">        been marked as learnable by the user).</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">            corresponding `nn.Parameter`.</span>
+<span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
+<span class="sd">            ``&quot;crop.rue&quot;``) mapping to the corresponding `nn.Parameter`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -2953,7 +2960,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
 
     <div class="doc doc-contents ">
 
-      <p>Compute the rate vector for a single day (low-level API).</p>
+      <p>Compute the daily rate vector for a single day (low-level API).</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -2975,8 +2982,8 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>weather_day</code></td>
         <td><code>dict[str, torch.Tensor]</code></td>
-        <td><p>Dict of named weather channels for the current day
-(see <code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
+        <td><p>Dict of named weather channels for the current
+day (see <code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2998,10 +3005,11 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
   <tbody>
     <tr>
       <td><code>dict[str, torch.Tensor]</code></td>
-      <td><p>Dict of rate tensors keyed by <code>"&lt;field&gt;_rate"</code> plus diagnostics
-(<code>tranrf</code>, <code>nstress</code>, <code>gtotal</code>). The companion
-<code>DiagnosticState</code> is discarded here — use the full model
-<code>forward</code> to access the diagnostic trajectory.</p></td>
+      <td><p>Dict of rate tensors keyed by <code>"&lt;field&gt;_rate"</code> plus a
+handful of scalar diagnostics (<code>tranrf</code>, <code>nstress</code>,
+<code>gtotal</code>). The companion <code>DiagnosticState</code> is discarded
+here; use the high-level <code>forward</code> to access the full
+diagnostic trajectory.</p></td>
     </tr>
   </tbody>
 </table>
@@ -3013,19 +3021,20 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
     <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the rate vector for a single day (low-level API).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`.</span>
-<span class="sd">        weather_day: Dict of named weather channels for the current day</span>
-<span class="sd">            (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
+<span class="sd">        weather_day: Dict of named weather channels for the current</span>
+<span class="sd">            day (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">        doy: Day-of-year tensor of shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus diagnostics</span>
-<span class="sd">        (``tranrf``, ``nstress``, ``gtotal``). The companion</span>
-<span class="sd">        `DiagnosticState` is discarded here — use the full model</span>
-<span class="sd">        `forward` to access the diagnostic trajectory.</span>
+<span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
+<span class="sd">        handful of scalar diagnostics (``tranrf``, ``nstress``,</span>
+<span class="sd">        ``gtotal``). The companion `DiagnosticState` is discarded</span>
+<span class="sd">        here; use the high-level `forward` to access the full</span>
+<span class="sd">        diagnostic trajectory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
         <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -3072,7 +3081,7 @@ process name (<code>"photosynthesis"</code> adds to <code>gtotal</code>;
       <tr>
         <td><code>weather</code></td>
         <td><code>WeatherDriver | torch.Tensor</code></td>
-        <td><p><code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
+        <td><p>A <code>WeatherDriver</code> or a raw <code>[B, T, C]</code> tensor of
 daily weather forcing.</p></td>
         <td><em>required</em></td>
       </tr>
@@ -3086,7 +3095,8 @@ daily weather forcing.</p></td>
         <td><code>initial_state</code></td>
         <td><code>ModelState | None</code></td>
         <td><p>Optional pre-built <code>ModelState</code>. When
-omitted, <code>initialize</code> is called automatically.</p></td>
+omitted, <code>initialize</code> is called automatically with the
+weather batch size, dtype, and device.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -3102,8 +3112,10 @@ omitted, <code>initialize</code> is called automatically.</p></td>
   <tbody>
     <tr>
       <td><code>ModelOutput</code></td>
-      <td><p>A <code>ModelOutput</code> containing the full state/rate trajectories
-and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code>).</p></td>
+      <td><p>A <code>ModelOutput</code> containing the full state, rate and
+diagnostic trajectories together with summary variables
+(<code>lai</code>, <code>dvs</code>, <code>biomass</code>, <code>yield_</code> and the
+heat-stress-adjusted yield).</p></td>
     </tr>
   </tbody>
 </table>
@@ -3118,15 +3130,18 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
+<span class="sd">        weather: A `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
 <span class="sd">            daily weather forcing.</span>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">        initial_state: Optional pre-built `ModelState`. When</span>
-<span class="sd">            omitted, `initialize` is called automatically.</span>
+<span class="sd">            omitted, `initialize` is called automatically with the</span>
+<span class="sd">            weather batch size, dtype, and device.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A `ModelOutput` containing the full state/rate trajectories</span>
-<span class="sd">        and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).</span>
+<span class="sd">        A `ModelOutput` containing the full state, rate and</span>
+<span class="sd">        diagnostic trajectories together with summary variables</span>
+<span class="sd">        (``lai``, ``dvs``, ``biomass``, ``yield_`` and the</span>
+<span class="sd">        heat-stress-adjusted yield).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
@@ -3155,7 +3170,7 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
     <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
     <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-    <span class="c1"># entering each weather day is ``dvs[:, :-1]`` — the trajectory</span>
+    <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
     <span class="c1"># carries a leading initial-condition entry, so it has length</span>
     <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
     <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
@@ -3197,7 +3212,7 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
 
     <div class="doc doc-contents ">
 
-      <p>Build an initial state for a batch, using <code>dvsi</code> from crop params.</p>
+      <p>Build a sowing-day initial state for a batch.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -3219,7 +3234,7 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
       <tr>
         <td><code>dtype</code></td>
         <td><code>torch.dtype</code></td>
-        <td><p>Tensor dtype.</p></td>
+        <td><p>Tensor dtype for all state fields.</p></td>
         <td><code>torch.float32</code></td>
       </tr>
       <tr>
@@ -3240,10 +3255,16 @@ and summary variables (<code>lai</code>, <code>dvs</code>, <code>biomass</code>,
   </thead>
   <tbody>
     <tr>
-      <td><code>ModelState</code></td>
-      <td><p>A fresh <code>ModelState</code> with initial DVS, root depth, soil
-water at field capacity, and a seeded leaf mass so that LAI
-growth has a substrate post-emergence.</p></td>
+      <td><code>A fresh `ModelState` representing a bare-soil, pre-emergence
+condition</code></td>
+      <td><p>initial DVS taken from <code>crop_params.dvsi</code>,
+rooting depth <code>rootdi</code>, root-zone water at field capacity,
+lower-zone water from <code>wci_lower</code>, and the soil organic
+(<code>nmin</code>/<code>pmin</code>/<code>kmin</code>) and inorganic
+(<code>nmint</code>/<code>pmint</code>/<code>kmint</code>) mineral pools seeded from
+soil parameters. Biomass pools and LAI start at zero;
+their initial values are injected as a one-shot rate on
+the emergence day inside <code>_compute_rates_dispatch</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -3255,33 +3276,39 @@ growth has a substrate post-emergence.</p></td>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build an initial state for a batch, using ``dvsi`` from crop params.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a sowing-day initial state for a batch.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: Number of parallel simulation instances ``B``.</span>
-<span class="sd">        dtype: Tensor dtype.</span>
+<span class="sd">        dtype: Tensor dtype for all state fields.</span>
 <span class="sd">        device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A fresh `ModelState` with initial DVS, root depth, soil</span>
-<span class="sd">        water at field capacity, and a seeded leaf mass so that LAI</span>
-<span class="sd">        growth has a substrate post-emergence.</span>
+<span class="sd">        A fresh `ModelState` representing a bare-soil, pre-emergence</span>
+<span class="sd">        condition: initial DVS taken from ``crop_params.dvsi``,</span>
+<span class="sd">        rooting depth ``rootdi``, root-zone water at field capacity,</span>
+<span class="sd">        lower-zone water from ``wci_lower``, and the soil organic</span>
+<span class="sd">        (``nmin``/``pmin``/``kmin``) and inorganic</span>
+<span class="sd">        (``nmint``/``pmint``/``kmint``) mineral pools seeded from</span>
+<span class="sd">        soil parameters. Biomass pools and LAI start at zero;</span>
+<span class="sd">        their initial values are injected as a one-shot rate on</span>
+<span class="sd">        the emergence day inside `_compute_rates_dispatch`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rootdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="c1"># Initialise at field capacity × initial rooting depth (mm)</span>
+    <span class="c1"># Root-zone water at field capacity over the initial rooting depth.</span>
     <span class="n">wfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">wfc</span> <span class="o">*</span> <span class="n">rootdi</span>
-    <span class="c1"># Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI</span>
+    <span class="c1"># Lower-zone water spans the unrooted profile between ``rootdi``</span>
+    <span class="c1"># and the soil-/crop-limited maximum rooting depth ``rdm``.</span>
     <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
     <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">wci_lower</span>
-    <span class="c1"># Seed the soil mineral pools from soil_params. The organic</span>
-    <span class="c1"># pools (NMIN/PMIN/KMIN) start at NMINI/PMINI/KMINI; the</span>
-    <span class="c1"># directly available inorganic pools (NMINT/PMINT/KMINT) start</span>
-    <span class="c1"># at NMINTI/PMINTI/KMINTI (Lintul5 default 0).</span>
+    <span class="c1"># Soil mineral pools: the organic (mineralisable) pools start at</span>
+    <span class="c1"># ``nmini``/``pmini``/``kmini`` and the directly available</span>
+    <span class="c1"># inorganic pools start at ``nminti``/``pminti``/``kminti``.</span>
     <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -3305,16 +3332,12 @@ growth has a substrate post-emergence.</p></td>
         <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
         <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="c1"># Sowing-day state: bare soil, no canopy. The Lintul5.java</span>
-    <span class="c1"># initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,</span>
-    <span class="c1"># but in SIMPLACE it runs on iDoSow and is implicitly *the*</span>
-    <span class="c1"># emergence event (Lintul5.java:1047). torchcrop simulates the</span>
-    <span class="c1"># sowing→emergence interval explicitly via tsump/tsumem in</span>
-    <span class="c1"># Phenology, so we leave biomass pools at zero here and inject</span>
-    <span class="c1"># the Java initValues deltas as a one-shot rate in</span>
-    <span class="c1"># `_compute_rates_dispatch` on the day tsump first crosses</span>
-    <span class="c1"># tsumem (LAI is bootstrapped separately by the GLA emergence</span>
-    <span class="c1"># branch in LeafDynamics).</span>
+    <span class="c1"># The sowing → emergence interval is simulated explicitly via</span>
+    <span class="c1"># the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so</span>
+    <span class="c1"># all biomass pools remain zero until emergence. The initial</span>
+    <span class="c1"># seed-reserve allocation is then injected as a one-shot rate</span>
+    <span class="c1"># on the day ``tsump`` first crosses ``tsumem``; see the</span>
+    <span class="c1"># emergence bootstrap block in `_compute_rates_dispatch`.</span>
     <span class="k">return</span> <span class="n">state</span>
 </code></pre></div>
         </details>
@@ -3336,9 +3359,10 @@ growth has a substrate post-emergence.</p></td>
 
     <div class="doc doc-contents ">
 
-      <p>Return a dict of named <code>nn.Parameter</code> tensors.</p>
-<p>Walks the <code>crop</code>/<code>soil</code>/<code>site</code> parameter containers and
-collects every field that is an <code>nn.Parameter</code>.</p>
+      <p>Collect every learnable parameter across the parameter containers.</p>
+<p>Walks the <code>crop</code>, <code>soil</code> and <code>site</code> parameter containers
+and returns every field that is an <code>nn.Parameter</code> (i.e. has
+been marked as learnable by the user).</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -3351,22 +3375,23 @@ collects every field that is an <code>nn.Parameter</code>.</p>
   <tbody>
     <tr>
       <td><code>dict[str, Any]</code></td>
-      <td><p>Dict keyed by <code>"&lt;container&gt;.&lt;field&gt;"</code> mapping to the
-corresponding <code>nn.Parameter</code>.</p></td>
+      <td><p>Dict keyed by <code>"&lt;container&gt;.&lt;field&gt;"</code> (for example,
+<code>"crop.rue"</code>) mapping to the corresponding <code>nn.Parameter</code>.</p></td>
     </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named `nn.Parameter` tensors.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect every learnable parameter across the parameter containers.</span>
 
-<span class="sd">    Walks the ``crop``/``soil``/``site`` parameter containers and</span>
-<span class="sd">    collects every field that is an `nn.Parameter`.</span>
+<span class="sd">    Walks the ``crop``, ``soil`` and ``site`` parameter containers</span>
+<span class="sd">    and returns every field that is an `nn.Parameter` (i.e. has</span>
+<span class="sd">    been marked as learnable by the user).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` mapping to the</span>
-<span class="sd">        corresponding `nn.Parameter`.</span>
+<span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
+<span class="sd">        ``&quot;crop.rue&quot;``) mapping to the corresponding `nn.Parameter`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
@@ -3427,7 +3452,7 @@ corresponding <code>nn.Parameter</code>.</p></td>
       <tr>
         <td><code>dt</code></td>
         <td><code>float</code></td>
-        <td><p>Integration step in days.</p></td>
+        <td><p>Integration step size in days.</p></td>
         <td><code>1.0</code></td>
       </tr>
   </tbody>
@@ -3443,7 +3468,7 @@ corresponding <code>nn.Parameter</code>.</p></td>
   <tbody>
     <tr>
       <td><code>ModelState</code></td>
-      <td><p>A new <code>ModelState</code> advanced by one step.</p></td>
+      <td><p>A new <code>ModelState</code> advanced by one Euler step.</p></td>
     </tr>
   </tbody>
 </table>
@@ -3460,10 +3485,10 @@ corresponding <code>nn.Parameter</code>.</p></td>
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`.</span>
 <span class="sd">        rates: Dict of rate tensors produced by `compute_rates`.</span>
-<span class="sd">        dt: Integration step in days.</span>
+<span class="sd">        dt: Integration step size in days.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A new `ModelState` advanced by one step.</span>
+<span class="sd">        A new `ModelState` advanced by one Euler step.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </code></pre></div>
@@ -3501,7 +3526,7 @@ ModelOutput        </code>
 
     <div class="doc doc-contents ">
 
-      <p>Container for a full simulation run.</p>
+      <p>Container for the results of a full simulation run.</p>
 
 <p><strong>Attributes:</strong></p>
 <table>
@@ -3516,38 +3541,38 @@ ModelOutput        </code>
       <tr>
         <td><code>states</code></td>
         <td><code>list</code></td>
-        <td><p>Per-day state snapshots (length <code>T + 1</code>; the first entry is
-the initial condition).</p></td>
+        <td><p>Per-day <code>ModelState</code> snapshots of length <code>T + 1</code>. The
+first entry is the initial condition.</p></td>
       </tr>
       <tr>
         <td><code>rates</code></td>
         <td><code>list</code></td>
-        <td><p>Per-day rate dicts (length <code>T</code>).</p></td>
+        <td><p>Per-day rate dicts of length <code>T</code>.</p></td>
       </tr>
       <tr>
         <td><code>diagnostics</code></td>
         <td><code>list</code></td>
-        <td><p>Per-day <code>DiagnosticState</code> snapshots (length <code>T</code>).
-Holds non-integrated stress factors, growth drivers, light
-interception, phenology modifiers and per-day water/nutrient
-fluxes computed from the same intermediates as <code>rates</code> —
-see <code>DiagnosticState</code> for the full field list.</p></td>
+        <td><p>Per-day <code>DiagnosticState</code> snapshots of length <code>T</code>,
+holding non-integrated stress factors, growth drivers,
+light interception, phenology modifiers and per-day
+water/nutrient fluxes. See <code>DiagnosticState</code> for the full
+field list.</p></td>
       </tr>
       <tr>
         <td><code>yield_</code></td>
         <td><code>Tensor</code></td>
         <td><p>Final storage-organ dry weight <code>WSO</code> at the last step
-[g m-2], <em>before</em> the heat-stress adjustment.</p></td>
+[g m⁻²], shape <code>[B]</code>, before the heat-stress adjustment.</p></td>
       </tr>
       <tr>
         <td><code>lai</code></td>
         <td><code>Tensor</code></td>
-        <td><p>LAI trajectory of shape <code>[B, T + 1]</code>.</p></td>
+        <td><p>Leaf area index trajectory of shape <code>[B, T + 1]</code>.</p></td>
       </tr>
       <tr>
         <td><code>dvs</code></td>
         <td><code>Tensor</code></td>
-        <td><p>DVS trajectory of shape <code>[B, T + 1]</code>.</p></td>
+        <td><p>Development-stage trajectory of shape <code>[B, T + 1]</code>.</p></td>
       </tr>
       <tr>
         <td><code>biomass</code></td>
@@ -3557,14 +3582,14 @@ see <code>DiagnosticState</code> for the full field list.</p></td>
       <tr>
         <td><code>heat_stress_factor</code></td>
         <td><code>Tensor</code></td>
-        <td><p>Around-anthesis heat-stress factor <code>HSF</code> in
-<code>[0, 1]</code> from <code>HeatStressOnGrain</code>, shape <code>[B]</code>.</p></td>
+        <td><p>Around-anthesis heat-stress factor <code>HSF</code>
+in <code>[0, 1]</code> from <code>HeatStressOnGrain</code>, shape <code>[B]</code>.</p></td>
       </tr>
       <tr>
         <td><code>adjusted_yield</code></td>
         <td><code>Tensor</code></td>
         <td><p>Heat-stress-adjusted yield
-<code>(1 − HSF) · yield_</code> [g m-2], shape <code>[B]</code>.</p></td>
+<code>(1 − HSF) · yield_</code> [g m⁻²], shape <code>[B]</code>.</p></td>
       </tr>
   </tbody>
 </table>
@@ -3572,26 +3597,26 @@ see <code>DiagnosticState</code> for the full field list.</p></td>
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ModelOutput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for a full simulation run.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for the results of a full simulation run.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        states: Per-day state snapshots (length ``T + 1``; the first entry is</span>
-<span class="sd">            the initial condition).</span>
-<span class="sd">        rates: Per-day rate dicts (length ``T``).</span>
-<span class="sd">        diagnostics: Per-day `DiagnosticState` snapshots (length ``T``).</span>
-<span class="sd">            Holds non-integrated stress factors, growth drivers, light</span>
-<span class="sd">            interception, phenology modifiers and per-day water/nutrient</span>
-<span class="sd">            fluxes computed from the same intermediates as ``rates`` —</span>
-<span class="sd">            see `DiagnosticState` for the full field list.</span>
+<span class="sd">        states: Per-day `ModelState` snapshots of length ``T + 1``. The</span>
+<span class="sd">            first entry is the initial condition.</span>
+<span class="sd">        rates: Per-day rate dicts of length ``T``.</span>
+<span class="sd">        diagnostics: Per-day `DiagnosticState` snapshots of length ``T``,</span>
+<span class="sd">            holding non-integrated stress factors, growth drivers,</span>
+<span class="sd">            light interception, phenology modifiers and per-day</span>
+<span class="sd">            water/nutrient fluxes. See `DiagnosticState` for the full</span>
+<span class="sd">            field list.</span>
 <span class="sd">        yield_: Final storage-organ dry weight ``WSO`` at the last step</span>
-<span class="sd">            [g m-2], *before* the heat-stress adjustment.</span>
-<span class="sd">        lai: LAI trajectory of shape ``[B, T + 1]``.</span>
-<span class="sd">        dvs: DVS trajectory of shape ``[B, T + 1]``.</span>
+<span class="sd">            [g m⁻²], shape ``[B]``, before the heat-stress adjustment.</span>
+<span class="sd">        lai: Leaf area index trajectory of shape ``[B, T + 1]``.</span>
+<span class="sd">        dvs: Development-stage trajectory of shape ``[B, T + 1]``.</span>
 <span class="sd">        biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.</span>
-<span class="sd">        heat_stress_factor: Around-anthesis heat-stress factor ``HSF`` in</span>
-<span class="sd">            ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.</span>
+<span class="sd">        heat_stress_factor: Around-anthesis heat-stress factor ``HSF``</span>
+<span class="sd">            in ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.</span>
 <span class="sd">        adjusted_yield: Heat-stress-adjusted yield</span>
-<span class="sd">            ``(1 − HSF) · yield_`` [g m-2], shape ``[B]``.</span>
+<span class="sd">            ``(1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span>
