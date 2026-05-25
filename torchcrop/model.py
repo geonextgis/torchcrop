@@ -1,7 +1,8 @@
 """Top-level Lintul5 model.
 
-Wires all process sub-modules together and provides both a high-level and a
-low-level API.
+Wires the biophysical process sub-modules into a single differentiable
+crop simulation and exposes both a high-level (``forward``) and a
+low-level (``compute_rates`` / ``update_state``) API.
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ import torch.nn as nn
 
 from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.engine import SimulationEngine, euler_update
+from torchcrop.functions import interpolate
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
@@ -40,26 +42,26 @@ from torchcrop.states.model_state import DiagnosticState, ModelState
 
 @dataclass
 class ModelOutput:
-    """Container for a full simulation run.
+    """Container for the results of a full simulation run.
 
     Attributes:
-        states: Per-day state snapshots (length ``T + 1``; the first entry is
-            the initial condition).
-        rates: Per-day rate dicts (length ``T``).
-        diagnostics: Per-day `DiagnosticState` snapshots (length ``T``).
-            Holds non-integrated stress factors, growth drivers, light
-            interception, phenology modifiers and per-day water/nutrient
-            fluxes computed from the same intermediates as ``rates`` —
-            see `DiagnosticState` for the full field list.
+        states: Per-day `ModelState` snapshots of length ``T + 1``. The
+            first entry is the initial condition.
+        rates: Per-day rate dicts of length ``T``.
+        diagnostics: Per-day `DiagnosticState` snapshots of length ``T``,
+            holding non-integrated stress factors, growth drivers,
+            light interception, phenology modifiers and per-day
+            water/nutrient fluxes. See `DiagnosticState` for the full
+            field list.
         yield_: Final storage-organ dry weight ``WSO`` at the last step
-            [g m-2], *before* the heat-stress adjustment.
-        lai: LAI trajectory of shape ``[B, T + 1]``.
-        dvs: DVS trajectory of shape ``[B, T + 1]``.
+            [g m⁻²], shape ``[B]``, before the heat-stress adjustment.
+        lai: Leaf area index trajectory of shape ``[B, T + 1]``.
+        dvs: Development-stage trajectory of shape ``[B, T + 1]``.
         biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.
-        heat_stress_factor: Around-anthesis heat-stress factor ``HSF`` in
-            ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.
+        heat_stress_factor: Around-anthesis heat-stress factor ``HSF``
+            in ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.
         adjusted_yield: Heat-stress-adjusted yield
-            ``(1 − HSF) · yield_`` [g m-2], shape ``[B]``.
+            ``(1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.
     """
 
     states: list[ModelState]
@@ -76,6 +78,12 @@ class ModelOutput:
 class Lintul5Model(nn.Module):
     """Differentiable reimplementation of the Lintul5 crop growth model.
 
+    The model assembles all biophysical process modules (phenology,
+    photosynthesis, partitioning, water and nutrient balances, etc.)
+    and integrates them with a forward-Euler scheme on a daily time
+    step. The full simulation is autograd-friendly, so gradients flow
+    end-to-end from any parameter to the simulated yield.
+
     Args:
         crop_params: Crop parameter container (see `torchcrop.parameters`).
         soil_params: Soil parameter container.
@@ -85,9 +93,11 @@ class Lintul5Model(nn.Module):
         stress_module: Optional replacement for the default
             `StressFactors` combiner.
         residual_modules: Optional neural residual corrections keyed by
-            process name (``"photosynthesis"`` adds to ``gtotal``;
-            ``"partitioning"`` adds to the four allocation fractions;
-            ``"leaf_dynamics"`` adds to ``lai_rate``).
+            process name:
+
+            * ``"photosynthesis"`` adds to ``gtotal``.
+            * ``"partitioning"`` adds to the four allocation fractions.
+            * ``"leaf_dynamics"`` adds to ``lai_rate``.
     """
 
     def __init__(
@@ -140,33 +150,39 @@ class Lintul5Model(nn.Module):
         dtype: torch.dtype = torch.float32,
         device: torch.device | str = "cpu",
     ) -> ModelState:
-        """Build an initial state for a batch, using ``dvsi`` from crop params.
+        """Build a sowing-day initial state for a batch.
 
         Args:
             batch_size: Number of parallel simulation instances ``B``.
-            dtype: Tensor dtype.
+            dtype: Tensor dtype for all state fields.
             device: Torch device (e.g. ``"cpu"``, ``"cuda"``).
 
         Returns:
-            A fresh `ModelState` with initial DVS, root depth, soil
-            water at field capacity, and a seeded leaf mass so that LAI
-            growth has a substrate post-emergence.
+            A fresh `ModelState` representing a bare-soil, pre-emergence
+            condition: initial DVS taken from ``crop_params.dvsi``,
+            rooting depth ``rootdi``, root-zone water at field capacity,
+            lower-zone water from ``wci_lower``, and the soil organic
+            (``nmin``/``pmin``/``kmin``) and inorganic
+            (``nmint``/``pmint``/``kmint``) mineral pools seeded from
+            soil parameters. Biomass pools and LAI start at zero;
+            their initial values are injected as a one-shot rate on
+            the emergence day inside `_compute_rates_dispatch`.
         """
         dvsi = float(self.crop_params.dvsi.detach().cpu().item())
         rootdi = float(self.crop_params.rootdi.detach().cpu().item())
-        # Initialise at field capacity × initial rooting depth (mm)
+        # Root-zone water at field capacity over the initial rooting depth.
         wfc = float(self.soil_params.wcfc.detach().cpu().item())
         wai = 1000.0 * wfc * rootdi
-        # Lower-zone initial water — SIMPLACE WTOTL = factor·(RDM − RDI)·SMLOWI
+        # Lower-zone water spans the unrooted profile between ``rootdi``
+        # and the soil-/crop-limited maximum rooting depth ``rdm``.
         rdmso = float(self.soil_params.rdmso.detach().cpu().item())
         rdmcr = float(self.crop_params.rdmcr.detach().cpu().item())
         rdm_val = min(rdmso, rdmcr)
         wci_lower = float(self.soil_params.wci_lower.detach().cpu().item())
         wa_lower_i = 1000.0 * max(rdm_val - rootdi, 1e-4) * wci_lower
-        # Seed the soil mineral pools from soil_params. The organic
-        # pools (NMIN/PMIN/KMIN) start at NMINI/PMINI/KMINI; the
-        # directly available inorganic pools (NMINT/PMINT/KMINT) start
-        # at NMINTI/PMINTI/KMINTI (Lintul5 default 0).
+        # Soil mineral pools: the organic (mineralisable) pools start at
+        # ``nmini``/``pmini``/``kmini`` and the directly available
+        # inorganic pools start at ``nminti``/``pminti``/``kminti``.
         nmini = float(self.soil_params.nmini.detach().cpu().item())
         pmini = float(self.soil_params.pmini.detach().cpu().item())
         kmini = float(self.soil_params.kmini.detach().cpu().item())
@@ -190,16 +206,12 @@ class Lintul5Model(nn.Module):
             pminti=pminti,
             kminti=kminti,
         )
-        # Sowing-day state: bare soil, no canopy. The Lintul5.java
-        # initValues block (lines 793–810) seeds WLVGI/WSTI/WRTI/WSOI/LAII,
-        # but in SIMPLACE it runs on iDoSow and is implicitly *the*
-        # emergence event (Lintul5.java:1047). torchcrop simulates the
-        # sowing→emergence interval explicitly via tsump/tsumem in
-        # Phenology, so we leave biomass pools at zero here and inject
-        # the Java initValues deltas as a one-shot rate in
-        # `_compute_rates_dispatch` on the day tsump first crosses
-        # tsumem (LAI is bootstrapped separately by the GLA emergence
-        # branch in LeafDynamics).
+        # The sowing → emergence interval is simulated explicitly via
+        # the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so
+        # all biomass pools remain zero until emergence. The initial
+        # seed-reserve allocation is then injected as a one-shot rate
+        # on the day ``tsump`` first crosses ``tsumem``; see the
+        # emergence bootstrap block in `_compute_rates_dispatch`.
         return state
 
     def forward(
@@ -211,15 +223,18 @@ class Lintul5Model(nn.Module):
         """Run a full simulation and return trajectories plus final yield.
 
         Args:
-            weather: `WeatherDriver` or a raw ``[B, T, C]`` tensor of
+            weather: A `WeatherDriver` or a raw ``[B, T, C]`` tensor of
                 daily weather forcing.
             start_doy: Day-of-year of the first simulated day.
             initial_state: Optional pre-built `ModelState`. When
-                omitted, `initialize` is called automatically.
+                omitted, `initialize` is called automatically with the
+                weather batch size, dtype, and device.
 
         Returns:
-            A `ModelOutput` containing the full state/rate trajectories
-            and summary variables (``lai``, ``dvs``, ``biomass``, ``yield_``).
+            A `ModelOutput` containing the full state, rate and
+            diagnostic trajectories together with summary variables
+            (``lai``, ``dvs``, ``biomass``, ``yield_`` and the
+            heat-stress-adjusted yield).
         """
         if isinstance(weather, torch.Tensor):
             weather = WeatherDriver(weather)
@@ -248,7 +263,7 @@ class Lintul5Model(nn.Module):
         yield_ = states[-1].wso
 
         # Heat-stress penalty on grain yield around anthesis. The DVS
-        # entering each weather day is ``dvs[:, :-1]`` — the trajectory
+        # entering each weather day is ``dvs[:, :-1]``: the trajectory
         # carries a leading initial-condition entry, so it has length
         # ``T + 1`` against the ``T`` weather days.
         hsg = self.heat_stress_grain(
@@ -281,19 +296,20 @@ class Lintul5Model(nn.Module):
         weather_day: dict[str, torch.Tensor],
         doy: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
-        """Compute the rate vector for a single day (low-level API).
+        """Compute the daily rate vector for a single day (low-level API).
 
         Args:
             state: Current `ModelState`.
-            weather_day: Dict of named weather channels for the current day
-                (see `WEATHER_CHANNELS`), each of shape ``[B]``.
+            weather_day: Dict of named weather channels for the current
+                day (see `WEATHER_CHANNELS`), each of shape ``[B]``.
             doy: Day-of-year tensor of shape ``[B]``.
 
         Returns:
-            Dict of rate tensors keyed by ``"<field>_rate"`` plus diagnostics
-            (``tranrf``, ``nstress``, ``gtotal``). The companion
-            `DiagnosticState` is discarded here — use the full model
-            `forward` to access the diagnostic trajectory.
+            Dict of rate tensors keyed by ``"<field>_rate"`` plus a
+            handful of scalar diagnostics (``tranrf``, ``nstress``,
+            ``gtotal``). The companion `DiagnosticState` is discarded
+            here; use the high-level `forward` to access the full
+            diagnostic trajectory.
         """
         rates, _ = self._compute_rates_dispatch(
             state=state,
@@ -316,15 +332,15 @@ class Lintul5Model(nn.Module):
         Args:
             state: Current `ModelState`.
             rates: Dict of rate tensors produced by `compute_rates`.
-            dt: Integration step in days.
+            dt: Integration step size in days.
 
         Returns:
-            A new `ModelState` advanced by one step.
+            A new `ModelState` advanced by one Euler step.
         """
         return euler_update(state, rates, dt)
 
     # ------------------------------------------------------------------ #
-    # Internal: one-day rate computation in the SIMPLACE execution order
+    # Internal: one-day rate computation
     # ------------------------------------------------------------------ #
 
     def _compute_rates_dispatch(
@@ -336,7 +352,7 @@ class Lintul5Model(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
     ) -> tuple[dict[str, torch.Tensor], DiagnosticState]:
-        # Extract weather variables (SIMPLACE order)
+        # Unpack the day's weather forcing.
         davtmp = weather_day["davtmp"]
         tmin = weather_day["tmin"]
         tmax = weather_day["tmax"]
@@ -371,12 +387,10 @@ class Lintul5Model(nn.Module):
         atmtr = irrad_out["atmtr"]
         frac_int = irrad_out["frac_intercepted"]
 
-        # 3. Phenology
-        pheno = self.phenology(state, davtmp, ddlp, crop_params)
-
-        # 4. Evapotranspiration — PENMAN formula. CO2 is a site/scenario
-        #    property: SiteParameters.co2 is the single source of truth
-        #    feeding the ET0, RUE and transpiration CO2 corrections.
+        # 3. Evapotranspiration — Penman formulation. CO₂ is a
+        #    site/scenario property: ``SiteParameters.co2`` is the
+        #    single source of truth feeding the ET0, RUE and
+        #    transpiration CO₂ corrections.
         et = self.evapotranspiration(
             tmin=tmin,
             tmax=tmax,
@@ -388,16 +402,17 @@ class Lintul5Model(nn.Module):
             co2=site_params.co2,
         )
 
-        # 4b. CO2 influence on transpiration — scale the potential
-        #     transpiration *demand* by the linear CO2 reduction factor
-        #     before it enters the water balance, so elevated CO2
-        #     propagates into the water-stress factor TRANRF (distinct
-        #     from the CO2 correction already applied to reference ET).
+        # 3b. CO₂ influence on transpiration — scale the potential
+        #     transpiration *demand* by the linear CO₂ reduction
+        #     factor before it enters the water balance, so elevated
+        #     CO₂ propagates into the water-stress factor ``TRANRF``.
+        #     This is distinct from the CO₂ correction already applied
+        #     to reference ET.
         co2_trans = self.co2_transpiration(et["ptran"], site_params.co2)
         ptran_eff = co2_trans["ptran"]
         co2_factor = co2_trans["co2_factor"]
 
-        # 5. Water balance (two-zone, with SIMPLACE percolation cascade)
+        # 4. Two-zone water balance with a percolation cascade.
         rdm = torch.minimum(
             soil_params.rdmso + torch.zeros_like(state.rootd),
             crop_params.rdmcr + torch.zeros_like(state.rootd),
@@ -414,36 +429,16 @@ class Lintul5Model(nn.Module):
         )
         tranrf = water["tranrf"]
 
-        # 6+7. Nutrient preliminary step — we first estimate partitioning
-        #      using a "no nutrient stress" GTOTAL to compute demand, then
-        #      finalise with the resulting nstress.
-        photo_pre = self.photosynthesis(
-            tmax=tmax,
-            tmin=tmin,
-            dvs=state.dvs,
-            params=crop_params,
-            co2=site_params.co2,
-        )
-        # GTOTAL = RUE * RTMCO * PARINT * TRANRF * NSTRESS
-        # (LintulFunctions.GROWTH; NSTRESS=1 here for the pre-step).
-        # PARINT is in J m-2 d-1; SIMPLACE GROWTH expects MJ PAR m-2 d-1
-        # (LintulFunctions.java:852), so we convert here.
+        # 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,
+        #    ``davtmp`` and ``ddlp``, so its position in the sequence
+        #    is independent of the water / ET branch.
+        pheno = self.phenology(state, davtmp, ddlp, crop_params)
+
+        # 6. Nutrient demand — independent of partitioning; produces the
+        #    NPK stress index that multiplies ``GTOTAL`` downstream.
+        #    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹
+        #    here because the growth formula expects MJ.
         parint_mj = irrad_out["parint"] * 1e-6
-        gtotal_pre = (
-            photo_pre["rue"]
-            * photo_pre["rtmco"]
-            * parint_mj
-            * tranrf
-        )
-        # Pre-step: NNI is not yet known, so assume no N stress (nni=1).
-        # TRANRF is already known and feeds the water-stress branch of SUBPAR.
-        part_pre = self.partitioning(
-            state=state,
-            gtotal=gtotal_pre,
-            params=crop_params,
-            tranrf=tranrf,
-            nni=torch.ones_like(tranrf),
-        )
         nut = self.nutrient_demand(
             state=state,
             crop_params=crop_params,
@@ -452,10 +447,10 @@ class Lintul5Model(nn.Module):
         )
         nstress = nut["nstress"]
 
-        # Soil mineral-pool balance (SoilNutrientRates in Lintul5.java).
-        # Sits *after* NutrientDemand because it consumes the day's
-        # NUPTR/PUPTR/KUPTR (depletes NMINT/PMINT/KMINT) and the same
-        # NLIMIT/EMERG gates used by uptake.
+        # 7. Soil mineral-pool balance. Runs after NutrientDemand
+        #    because it consumes the day's NUPTR/PUPTR/KUPTR (which
+        #    deplete NMINT/PMINT/KMINT) and reuses the same
+        #    NLIMIT/EMERG gates that drive uptake.
         soil_nut = self.soil_nutrients(
             state=state,
             nuptr=nut["nuptr"],
@@ -468,7 +463,14 @@ class Lintul5Model(nn.Module):
             soil_params=soil_params,
         )
 
-        # 8. Photosynthesis (final) with nutrient + water stress
+        # 8. Photosynthesis with nutrient and water stress applied.
+        #
+        # ``GTOTAL = RUE · RTMCO · PARINT · TRANRF · combined_stress``,
+        # where ``combined_stress`` is the nutrient component obtained
+        # by dividing out ``TRANRF`` from ``self.stress(tranrf, nstress)``.
+        # This factoring keeps ``self.stress`` swappable (e.g. with a
+        # learned stress module) while preserving the explicit
+        # ``TRANRF`` multiplier.
         photo = self.photosynthesis(
             tmax=tmax,
             tmin=tmin,
@@ -476,9 +478,6 @@ class Lintul5Model(nn.Module):
             params=crop_params,
             co2=site_params.co2,
         )
-        # GTOTAL = RUE * RTMCO * PARINT * min(TRANRF, NPKREF)
-        # The combined stress is produced by self.stress; divide-cancel keeps
-        # the existing semantics of stress() returning TRANRF*combined.
         combined_stress = self.stress(tranrf, nstress) / torch.clamp(tranrf, min=1e-6)
         gtotal = (
             photo["rue"]
@@ -488,7 +487,7 @@ class Lintul5Model(nn.Module):
             * combined_stress
         )
 
-        # Residual correction on gtotal
+        # Optional neural residual correction on ``gtotal``.
         if "photosynthesis" in self.residual_modules:
             ctx = torch.stack(
                 [state.lai, state.dvs, davtmp, dtr, tranrf, nstress, state.wa, doy],
@@ -497,8 +496,8 @@ class Lintul5Model(nn.Module):
             gtotal = gtotal + self.residual_modules["photosynthesis"](ctx).squeeze(-1)
             gtotal = torch.clamp(gtotal, min=0.0)
 
-        # 9. Partitioning (final, with water and N stress fed into SUBPAR;
-        # nstress here is the NPK index used as a proxy for NNI).
+        # 9. Partitioning. Water and N stress are fed into ``SUBPAR``;
+        #    ``nstress`` is used as the NPK proxy for ``NNI``.
         part = self.partitioning(
             state=state,
             gtotal=gtotal,
@@ -507,10 +506,11 @@ class Lintul5Model(nn.Module):
             nni=nstress,
         )
 
-        # 10. Leaf dynamics — with heat-stress acceleration of senescence.
-        # HeatStressOnLeafSenescence returns a multiplier on RDR that is
-        # 1.0 outside the heat-stress regime (Tmax < Tc or DVS < DVS_c),
-        # so this is a no-op under non-stress conditions.
+        # 10. Leaf dynamics with heat-stress acceleration of senescence.
+        #     `HeatStressOnLeafSenescence` returns a multiplier on
+        #     ``RDR`` that equals ``1.0`` outside the heat-stress regime
+        #     (``Tmax < Tc`` or ``DVS < DVS_c``), so the heat term is a
+        #     no-op under non-stress conditions.
         leaf_heat = self.leaf_heat_stress(tmax=tmax, dvs=state.dvs, params=crop_params)
         leaf = self.leaf_dynamics(
             state=state,
@@ -538,7 +538,8 @@ class Lintul5Model(nn.Module):
             params=crop_params,
         )
 
-        # Gate all growth/senescence rates post-maturity
+        # Mask used to switch off crop growth and senescence after
+        # maturity (``DVS ≥ 2``).
         active = (state.dvs < 2.0).to(davtmp.dtype)
         gate = lambda x: x * active  # noqa: E731
 
@@ -572,14 +573,12 @@ class Lintul5Model(nn.Module):
             "akst_rate": gate(nut["k_st_rate"]),
             "akrt_rate": gate(nut["k_rt_rate"]),
             "akso_rate": gate(nut["k_so_rate"]),
-            # Soil pool dynamics: organic pool depletion (negative
-            # rates) and inorganic pool balance (fertiliser +
-            # mineralisation − uptake). Mineralisation is already gated
-            # internally by EMERG/NLIMIT; we deliberately do *not*
-            # multiply by ``active`` so that mineralisation and
-            # fertiliser additions to NMINT continue post-maturity
-            # (matches SIMPLACE — the soil keeps running even when the
-            # crop has died).
+            # Soil pool dynamics. Organic pools deplete (negative
+            # rates); inorganic pools follow ``fertiliser +
+            # mineralisation − uptake``. Mineralisation is already
+            # gated internally by EMERG/NLIMIT, and the soil pools are
+            # *not* multiplied by ``active`` so that mineralisation
+            # and fertiliser additions continue after crop maturity.
             "nmin_rate": soil_nut["nmin_rate"],
             "pmin_rate": soil_nut["pmin_rate"],
             "kmin_rate": soil_nut["kmin_rate"],
@@ -588,10 +587,10 @@ class Lintul5Model(nn.Module):
             "kmint_rate": soil_nut["kmint_rate"],
             "tran_cum_rate": water["tran"],
             "evap_cum_rate": water["evap"],
-            # Cumulative water / nutrient / growth accumulators —
-            # integrated by the engine via the same `_rate` mechanism as
-            # `tran_cum`/`evap_cum`. The daily flux IS the increment
-            # because the engine uses dt = 1 day.
+            # Cumulative water, nutrient and growth accumulators are
+            # integrated by the engine via the same ``_rate`` mechanism
+            # as ``tran_cum`` / ``evap_cum``. With ``dt = 1`` day, the
+            # daily flux is itself the increment.
             "rain_cum_rate": rain,
             "irrig_cum_rate": water["rirr"],
             "runoff_cum_rate": water["runoff"],
@@ -600,28 +599,27 @@ class Lintul5Model(nn.Module):
             "puptr_cum_rate": nut["puptr"],
             "kuptr_cum_rate": nut["kuptr"],
             "nfixtr_cum_rate": nut["nfixtr"],
-            # PAR stored in MJ m-2 (parint_mj is the same conversion
-            # used for the GTOTAL calculation upstream).
+            # PAR accumulated in MJ m⁻² (same conversion used in the
+            # GTOTAL calculation above).
             "parint_cum_rate": parint_mj,
             "gtotal_cum_rate": gtotal,
-            # Diagnostics (not integrated)
+            # Scalar diagnostics — not integrated by the engine.
             "tranrf": tranrf,
             "nstress": nstress,
             "gtotal": gtotal,
         }
 
-        # ---- Emergence-day bootstrap (Java Lintul5.java initValues,
-        # lines 793–810). Fires once per batch element on the step where
-        # tsump first crosses tsumem; injects WLVGI/WSTI/WRTI/WSOI and
-        # LAII = WLVGI · scale_factor_sla · SLATB(DVSI) as one-shot
-        # deltas, matching the SIMPLACE convention that the emergence
-        # event (iDoSow in Java) instantly mobilises seed reserves into
-        # a juvenile-canopy state. The resulting one-day LAI jump is
-        # part of the Lintul5 abstraction; if you need a gradient
-        # sowing-to-canopy ramp instead, lower `crop_params.tdwi` (less
-        # seed reserve) or raise `crop_params.rgrl` (faster juvenile
-        # expansion).
-        from torchcrop.functions import interpolate
+        # ---- Emergence-day bootstrap.
+        # Fires once per batch element on the step where ``tsump``
+        # first crosses ``tsumem``. The seed-reserve mass ``tdwi`` is
+        # partitioned at ``DVSI`` to give ``WRTI``/``WLVGI``/``WSTI``/
+        # ``WSOI`` and ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``,
+        # which are injected as one-shot rate deltas so that emergence
+        # instantly mobilises seed reserves into a juvenile-canopy
+        # state. The one-day LAI jump is intrinsic to the Lintul5
+        # abstraction; for a gradient sowing-to-canopy ramp, lower
+        # ``crop_params.tdwi`` (smaller seed reserve) or raise
+        # ``crop_params.rgrl`` (faster juvenile expansion).
         dvsi = crop_params.dvsi
         tdwi = crop_params.tdwi
         x = dvsi.reshape(1) if dvsi.dim() == 0 else dvsi
@@ -647,11 +645,12 @@ class Lintul5Model(nn.Module):
         rates["wso_rate"] = rates["wso_rate"] + emerg_now * wsoi / self.engine.dt
         rates["lai_rate"] = rates["lai_rate"] + emerg_now * laii_dyn / self.engine.dt
 
-        # Per-day DiagnosticState snapshot — built from the same
-        # intermediate tensors used to assemble `rates`. Pure read-only:
-        # does not enter the Euler update, does not touch any state
-        # field, and adds no autograd ops beyond the broadcasting of
-        # scalars (`combined_stress`, `co2_factor`) to ``[B]``.
+        # Per-day `DiagnosticState` snapshot — built from the same
+        # intermediate tensors used to assemble ``rates``. It is
+        # read-only: it neither enters the Euler update nor touches
+        # any state field, and it adds no autograd ops beyond
+        # broadcasting scalar factors (``combined_stress``,
+        # ``co2_factor``) to ``[B]``.
         b_shape = tranrf.shape
         diagnostic = DiagnosticState(
             tranrf=tranrf,
@@ -699,14 +698,15 @@ class Lintul5Model(nn.Module):
     # ------------------------------------------------------------------ #
 
     def learnable_parameter_groups(self) -> dict[str, Any]:
-        """Return a dict of named `nn.Parameter` tensors.
+        """Collect every learnable parameter across the parameter containers.
 
-        Walks the ``crop``/``soil``/``site`` parameter containers and
-        collects every field that is an `nn.Parameter`.
+        Walks the ``crop``, ``soil`` and ``site`` parameter containers
+        and returns every field that is an `nn.Parameter` (i.e. has
+        been marked as learnable by the user).
 
         Returns:
-            Dict keyed by ``"<container>.<field>"`` mapping to the
-            corresponding `nn.Parameter`.
+            Dict keyed by ``"<container>.<field>"`` (for example,
+            ``"crop.rue"``) mapping to the corresponding `nn.Parameter`.
         """
         out: dict[str, Any] = {}
         for name, params in (
