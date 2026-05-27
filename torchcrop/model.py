@@ -58,10 +58,15 @@ class ModelOutput:
         lai: Leaf area index trajectory of shape ``[B, T + 1]``.
         dvs: Development-stage trajectory of shape ``[B, T + 1]``.
         biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.
-        heat_stress_factor: Around-anthesis heat-stress factor ``HSF``
-            in ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.
+        heat_stress_factor: Window-averaged around-anthesis heat-stress
+            factor ``HSF`` in ``[0, 1]`` from `HeatStressOnGrain`, shape
+            ``[B]``. Computed once over the full trajectory, not a
+            per-day series.
         adjusted_yield: Heat-stress-adjusted yield
-            ``(1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.
+            ``period_ended · (1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.
+            Equals ``0`` until the DVS trajectory exits the anthesis
+            window (``max(DVS) > grain_heat_end_devstage``), matching
+            SIMPLACE ``pPeriodEnded`` gating.
     """
 
     states: list[ModelState]
@@ -169,7 +174,10 @@ class Lintul5Model(nn.Module):
             soil parameters. Biomass pools, per-organ NPK pools and LAI
             start at zero; their initial values are injected as a
             one-shot rate on the emergence day inside
-            `_compute_rates_dispatch`.
+            `_compute_rates_dispatch`. The dead-tissue NPK loss
+            accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K
+            analogues) also start at zero and grow as senescence
+            proceeds.
         """
         dvsi = float(self.crop_params.dvsi.detach().cpu().item())
         rootdi = float(self.crop_params.rootdi.detach().cpu().item())
@@ -237,13 +245,26 @@ class Lintul5Model(nn.Module):
             start_doy: Day-of-year of the first simulated day.
             initial_state: Optional pre-built `ModelState`. When
                 omitted, `initialize` is called automatically with the
-                weather batch size, dtype, and device.
+                weather batch size, dtype, and device. When supplied,
+                the user is responsible for any
+                ``wci``/``wci_lower``/``rdm`` clipping — this path
+                bypasses the SIMPLACE-parity setup in `initialize`.
 
         Returns:
             A `ModelOutput` containing the full state, rate and
             diagnostic trajectories together with summary variables
             (``lai``, ``dvs``, ``biomass``, ``yield_`` and the
             heat-stress-adjusted yield).
+
+        Notes:
+            * ``HeatStressOnGrain`` is fed ``dvs[:, 1:]`` — the
+              *post-integration* DVS for each weather day — mirroring
+              SIMPLACE's component order (Phenology runs before HSG
+              within a day).
+            * ``adjusted_yield`` is gated by a ``period_ended`` mask
+              that fires only once ``max(DVS) > grain_heat_end_devstage``,
+              so a truncated run that never exits the anthesis window
+              returns ``0`` (matches SIMPLACE ``pPeriodEnded``).
         """
         if isinstance(weather, torch.Tensor):
             weather = WeatherDriver(weather)
