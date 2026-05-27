@@ -218,6 +218,15 @@ def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -
                 "nfixtr_cum",
                 "parint_cum",
                 "gtotal_cum",
+                "nlossl",
+                "nlossr",
+                "nlosss",
+                "plossl",
+                "plossr",
+                "plosss",
+                "klossl",
+                "klossr",
+                "klosss",
             }:
                 new_val = torch.clamp(new_val, min=0.0)
             if f.name == "dvs":

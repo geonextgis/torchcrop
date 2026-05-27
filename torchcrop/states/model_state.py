@@ -181,6 +181,21 @@ class ModelState:
     pmint: torch.Tensor  # directly available inorganic P pool
     kmint: torch.Tensor  # directly available inorganic K pool
 
+    # Cumulative per-organ NPK losses to dead tissue [g X m-2]
+    # (SIMPLACE NLOSSL / NLOSSR / NLOSSS and P, K analogues).
+    # Each is integrated from the daily residual-concentration flux
+    # ``rXfORG · dORG`` (e.g. ``RNLDLV = rnflv · dlv``) so that NPK
+    # carried by senesced biomass is conserved rather than discarded.
+    nlossl: torch.Tensor = field(default=None)
+    nlossr: torch.Tensor = field(default=None)
+    nlosss: torch.Tensor = field(default=None)
+    plossl: torch.Tensor = field(default=None)
+    plossr: torch.Tensor = field(default=None)
+    plosss: torch.Tensor = field(default=None)
+    klossl: torch.Tensor = field(default=None)
+    klossr: torch.Tensor = field(default=None)
+    klosss: torch.Tensor = field(default=None)
+
     # Optional bookkeeping — cumulative water and growth accumulators.
     # Each is integrated by the standard `_rate` mechanism: a daily flux
     # is routed into ``<field>_rate`` in `_compute_rates_dispatch` and
@@ -295,6 +310,15 @@ class ModelState:
             nfixtr_cum=zeros.clone(),
             parint_cum=zeros.clone(),
             gtotal_cum=zeros.clone(),
+            nlossl=zeros.clone(),
+            nlossr=zeros.clone(),
+            nlosss=zeros.clone(),
+            plossl=zeros.clone(),
+            plossr=zeros.clone(),
+            plosss=zeros.clone(),
+            klossl=zeros.clone(),
+            klossr=zeros.clone(),
+            klosss=zeros.clone(),
         )
 
     def replace(self, **updates: Any) -> "ModelState":

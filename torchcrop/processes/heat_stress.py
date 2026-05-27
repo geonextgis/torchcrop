@@ -207,8 +207,14 @@ class HeatStressOnGrain(nn.Module):
             * ``heat_stress_factor`` [-] — Window-averaged heat-stress
               factor ``HSF`` in ``[0, 1]``, shape ``[B]``. ``0`` when the
               window never opens (e.g. ``T`` too short) or never hot.
-            * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_``, shape
-              ``[B]``; only present when ``yield_`` is given.
+            * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_`` once the
+              anthesis window has fully closed (``max(DVS) >
+              DVS_end``); otherwise ``0`` (matches SIMPLACE
+              ``pPeriodEnded`` gating). Only present when ``yield_`` is
+              given.
+            * ``period_ended`` [-] — Mask in ``{0, 1}``, shape ``[B]``,
+              indicating that the DVS trajectory exited the anthesis
+              window.
             * ``daily_factor`` [-] — Daily stress intensity ``s_i``, shape
               ``[B, T]``.
             * ``window_mask`` [-] — ``1`` on days inside the
@@ -239,12 +245,20 @@ class HeatStressOnGrain(nn.Module):
         # window (no anthesis reached) so HSF = 0 in that case.
         heat_stress_factor = cumulated / torch.clamp(window_days, min=1.0)
 
+        # ``pPeriodEnded`` equivalent — true once DVS has crossed the
+        # upper window edge. SIMPLACE only publishes ``AdjustedYield``
+        # after this trigger; before it, the value is left at 0.
+        period_ended = (dvs.max(dim=1).values > end_devstage).to(
+            daily_factor.dtype
+        )
+
         out: dict[str, torch.Tensor] = {
             "heat_stress_factor": heat_stress_factor,
             "daily_factor": daily_factor,
             "window_mask": window_mask,
             "window_days": window_days,
+            "period_ended": period_ended,
         }
         if yield_ is not None:
-            out["adjusted_yield"] = (1.0 - heat_stress_factor) * yield_
+            out["adjusted_yield"] = period_ended * (1.0 - heat_stress_factor) * yield_
         return out

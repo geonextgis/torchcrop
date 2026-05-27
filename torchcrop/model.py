@@ -271,14 +271,15 @@ class Lintul5Model(nn.Module):
         biomass = torch.stack([s.wlv + s.wst + s.wso for s in states], dim=1)
         yield_ = states[-1].wso
 
-        # Heat-stress penalty on grain yield around anthesis. The DVS
-        # entering each weather day is ``dvs[:, :-1]``: the trajectory
-        # carries a leading initial-condition entry, so it has length
-        # ``T + 1`` against the ``T`` weather days.
+        # Heat-stress penalty on grain yield around anthesis. SIMPLACE
+        # runs Phenology before HeatStressOnGrain within a day, so HSG
+        # sees the *post-integration* DVS for that day → ``dvs[:, 1:]``
+        # (the trajectory carries a leading initial-condition entry, so
+        # it has length ``T + 1`` against the ``T`` weather days).
         hsg = self.heat_stress_grain(
             tmin=weather.channel("tmin"),
             tmax=weather.channel("tmax"),
-            dvs=dvs[:, :-1],
+            dvs=dvs[:, 1:],
             params=self.crop_params,
             yield_=yield_,
         )
@@ -552,6 +553,29 @@ class Lintul5Model(nn.Module):
         active = (state.dvs < 2.0).to(davtmp.dtype)
         gate = lambda x: x * active  # noqa: E731
 
+        # Per-organ NPK losses to dead tissue
+        # (``RNLDLV = rnflv · DLV``, etc.). The leaf/stem/root dynamics
+        # modules emit the daily senescence biomass fluxes
+        # ``wlvd_rate``/``wstd_rate``/``wrtd_rate`` (= ``dlv``/``drst``/
+        # ``drrt``); multiplying by the residual concentrations gives
+        # the corresponding N/P/K losses. These are subtracted from the
+        # living-organ NPK net rates and integrated into the
+        # ``nlossl``/``nlossr``/``nlosss`` (and P, K) accumulators so
+        # that the SIMPLACE balance ``NUPTT + NFIXTT + initial =
+        # ANLV+... + NLOSSL+...`` holds.
+        dlv = leaf["wlvd_rate"]
+        drst = stem["wstd_rate"]
+        drrt = root["wrtd_rate"]
+        rnldlv = crop_params.rnflv * dlv
+        rnldst = crop_params.rnfst * drst
+        rnldrt = crop_params.rnfrt * drrt
+        rpldlv = crop_params.rpflv * dlv
+        rpldst = crop_params.rpfst * drst
+        rpldrt = crop_params.rpfrt * drrt
+        rkldlv = crop_params.rkflv * dlv
+        rkldst = crop_params.rkfst * drst
+        rkldrt = crop_params.rkfrt * drrt
+
         rates: dict[str, torch.Tensor] = {
             "dvs_rate": pheno["dvs_rate"],
             "tsum_rate": pheno["tsum_rate"],
@@ -570,18 +594,30 @@ class Lintul5Model(nn.Module):
             "wa_lower_rate": water["wa_lower_rate"],
             "dslr_rate": water["dslr_rate"],
             "dsos_rate": water["dsos_rate"],
-            "anlv_rate": gate(nut["n_lv_rate"]),
-            "anst_rate": gate(nut["n_st_rate"]),
-            "anrt_rate": gate(nut["n_rt_rate"]),
+            "anlv_rate": gate(nut["n_lv_rate"] - rnldlv),
+            "anst_rate": gate(nut["n_st_rate"] - rnldst),
+            "anrt_rate": gate(nut["n_rt_rate"] - rnldrt),
             "anso_rate": gate(nut["n_so_rate"]),
-            "aplv_rate": gate(nut["p_lv_rate"]),
-            "apst_rate": gate(nut["p_st_rate"]),
-            "aprt_rate": gate(nut["p_rt_rate"]),
+            "aplv_rate": gate(nut["p_lv_rate"] - rpldlv),
+            "apst_rate": gate(nut["p_st_rate"] - rpldst),
+            "aprt_rate": gate(nut["p_rt_rate"] - rpldrt),
             "apso_rate": gate(nut["p_so_rate"]),
-            "aklv_rate": gate(nut["k_lv_rate"]),
-            "akst_rate": gate(nut["k_st_rate"]),
-            "akrt_rate": gate(nut["k_rt_rate"]),
+            "aklv_rate": gate(nut["k_lv_rate"] - rkldlv),
+            "akst_rate": gate(nut["k_st_rate"] - rkldst),
+            "akrt_rate": gate(nut["k_rt_rate"] - rkldrt),
             "akso_rate": gate(nut["k_so_rate"]),
+            # Dead-tissue NPK accumulators (SIMPLACE NLOSSL/NLOSSR/NLOSSS
+            # and P, K analogues). Gated by ``active`` so accumulation
+            # stops after maturity, mirroring the per-organ death rates.
+            "nlossl_rate": gate(rnldlv),
+            "nlossr_rate": gate(rnldrt),
+            "nlosss_rate": gate(rnldst),
+            "plossl_rate": gate(rpldlv),
+            "plossr_rate": gate(rpldrt),
+            "plosss_rate": gate(rpldst),
+            "klossl_rate": gate(rkldlv),
+            "klossr_rate": gate(rkldrt),
+            "klosss_rate": gate(rkldst),
             # Soil pool dynamics. Organic pools deplete (negative
             # rates); inorganic pools follow ``fertiliser +
             # mineralisation − uptake``. Mineralisation is already
