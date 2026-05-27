@@ -160,26 +160,35 @@ class Lintul5Model(nn.Module):
         Returns:
             A fresh `ModelState` representing a bare-soil, pre-emergence
             condition: initial DVS taken from ``crop_params.dvsi``,
-            rooting depth ``rootdi``, root-zone water at field capacity,
-            lower-zone water from ``wci_lower``, and the soil organic
+            rooting depth ``rootdi``, root- and lower-zone water from
+            ``wci`` / ``wci_lower`` clipped to the plant-available range
+            ``[wcwp, wcfc]`` (matching SIMPLACE
+            ``SMACT = max(SMW, min(SMI, SMFC))``), and the soil organic
             (``nmin``/``pmin``/``kmin``) and inorganic
             (``nmint``/``pmint``/``kmint``) mineral pools seeded from
-            soil parameters. Biomass pools and LAI start at zero;
-            their initial values are injected as a one-shot rate on
-            the emergence day inside `_compute_rates_dispatch`.
+            soil parameters. Biomass pools, per-organ NPK pools and LAI
+            start at zero; their initial values are injected as a
+            one-shot rate on the emergence day inside
+            `_compute_rates_dispatch`.
         """
         dvsi = float(self.crop_params.dvsi.detach().cpu().item())
         rootdi = float(self.crop_params.rootdi.detach().cpu().item())
-        # Root-zone water at field capacity over the initial rooting depth.
-        wfc = float(self.soil_params.wcfc.detach().cpu().item())
-        wai = 1000.0 * wfc * rootdi
+        # Root-zone water from the user-specified initial volumetric content
+        # ``wci``, clipped to the plant-available range ``[wcwp, wcfc]``
+        wcwp = float(self.soil_params.wcwp.detach().cpu().item())
+        wcfc = float(self.soil_params.wcfc.detach().cpu().item())
+        wci = float(self.soil_params.wci.detach().cpu().item())
+        smact_i = max(wcwp, min(wci, wcfc))
+        wai = 1000.0 * smact_i * rootdi
         # Lower-zone water spans the unrooted profile between ``rootdi``
-        # and the soil-/crop-limited maximum rooting depth ``rdm``.
+        # and the soil-/crop-limited maximum rooting depth ``rdm``. The
+        # lower-zone initial content is clipped to ``[wcwp, wcfc]``
         rdmso = float(self.soil_params.rdmso.detach().cpu().item())
         rdmcr = float(self.crop_params.rdmcr.detach().cpu().item())
         rdm_val = min(rdmso, rdmcr)
         wci_lower = float(self.soil_params.wci_lower.detach().cpu().item())
-        wa_lower_i = 1000.0 * max(rdm_val - rootdi, 1e-4) * wci_lower
+        smactl_i = max(wcwp, min(wci_lower, wcfc))
+        wa_lower_i = 1000.0 * max(rdm_val - rootdi, 1e-4) * smactl_i
         # Soil mineral pools: the organic (mineralisable) pools start at
         # ``nmini``/``pmini``/``kmini`` and the directly available
         # inorganic pools start at ``nminti``/``pminti``/``kminti``.
@@ -635,6 +644,23 @@ class Lintul5Model(nn.Module):
         wsoi = fotb_d * tagb
         laii_dyn = wlvgi * crop_params.scale_factor_sla * sla_d
 
+        # Seed NPK content per organ — ``ANLVI = NMAXLV(DVSI) · WLVGI``
+        # etc. in SIMPLACE ``Lintul5.java`` initValues(). Stems and roots
+        # use the leaf max-concentration scaled by ``LSNR``/``LRNR`` (and
+        # the P/K analogues). Storage organs start empty (``ANSOI = 0``).
+        nmaxlv_i = interpolate(crop_params.nmxlv, x).reshape(())
+        pmaxlv_i = interpolate(crop_params.pmxlv, x).reshape(())
+        kmaxlv_i = interpolate(crop_params.kmxlv, x).reshape(())
+        anlvi = nmaxlv_i * wlvgi
+        ansti = crop_params.lsnr * nmaxlv_i * wsti
+        anrti = crop_params.lrnr * nmaxlv_i * wrti
+        aplvi = pmaxlv_i * wlvgi
+        apsti = crop_params.lspr * pmaxlv_i * wsti
+        aprti = crop_params.lrpr * pmaxlv_i * wrti
+        aklvi = kmaxlv_i * wlvgi
+        aksti = crop_params.lskr * kmaxlv_i * wsti
+        akrti = crop_params.lrkr * kmaxlv_i * wrti
+
         tsump_next = state.tsump + rates["tsump_rate"] * self.engine.dt
         emerg_now = (
             (state.tsump < crop_params.tsumem) & (tsump_next >= crop_params.tsumem)
@@ -644,6 +670,15 @@ class Lintul5Model(nn.Module):
         rates["wrt_rate"] = rates["wrt_rate"] + emerg_now * wrti / self.engine.dt
         rates["wso_rate"] = rates["wso_rate"] + emerg_now * wsoi / self.engine.dt
         rates["lai_rate"] = rates["lai_rate"] + emerg_now * laii_dyn / self.engine.dt
+        rates["anlv_rate"] = rates["anlv_rate"] + emerg_now * anlvi / self.engine.dt
+        rates["anst_rate"] = rates["anst_rate"] + emerg_now * ansti / self.engine.dt
+        rates["anrt_rate"] = rates["anrt_rate"] + emerg_now * anrti / self.engine.dt
+        rates["aplv_rate"] = rates["aplv_rate"] + emerg_now * aplvi / self.engine.dt
+        rates["apst_rate"] = rates["apst_rate"] + emerg_now * apsti / self.engine.dt
+        rates["aprt_rate"] = rates["aprt_rate"] + emerg_now * aprti / self.engine.dt
+        rates["aklv_rate"] = rates["aklv_rate"] + emerg_now * aklvi / self.engine.dt
+        rates["akst_rate"] = rates["akst_rate"] + emerg_now * aksti / self.engine.dt
+        rates["akrt_rate"] = rates["akrt_rate"] + emerg_now * akrti / self.engine.dt
 
         # Per-day `DiagnosticState` snapshot — built from the same
         # intermediate tensors used to assemble ``rates``. It is
