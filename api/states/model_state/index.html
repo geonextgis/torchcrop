@@ -3278,6 +3278,21 @@ added by the engine with <code>dt = 1</code> day.</p>
     <span class="n">pmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic P pool</span>
     <span class="n">kmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic K pool</span>
 
+    <span class="c1"># Cumulative per-organ NPK losses to dead tissue [g X m-2]</span>
+    <span class="c1"># (SIMPLACE NLOSSL / NLOSSR / NLOSSS and P, K analogues).</span>
+    <span class="c1"># Each is integrated from the daily residual-concentration flux</span>
+    <span class="c1"># ``rXfORG · dORG`` (e.g. ``RNLDLV = rnflv · dlv``) so that NPK</span>
+    <span class="c1"># carried by senesced biomass is conserved rather than discarded.</span>
+    <span class="n">nlossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">nlossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">nlosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
     <span class="c1"># Optional bookkeeping — cumulative water and growth accumulators.</span>
     <span class="c1"># Each is integrated by the standard `_rate` mechanism: a daily flux</span>
     <span class="c1"># is routed into ``&lt;field&gt;_rate`` in `_compute_rates_dispatch` and</span>
@@ -3392,6 +3407,15 @@ added by the engine with <code>dt = 1</code> day.</p>
             <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -3477,6 +3501,15 @@ added by the engine with <code>dt = 1</code> day.</p>
     </div>
 
   </div>
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3733,6 +3766,15 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

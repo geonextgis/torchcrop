@@ -11235,6 +11235,15 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
                 <span class="s2">&quot;nfixtr_cum&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;parint_cum&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;gtotal_cum&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nlossl&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nlossr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;nlosss&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;plossl&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;plossr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;plosss&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;klossl&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;klossr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;klosss&quot;</span><span class="p">,</span>
             <span class="p">}:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dvs&quot;</span><span class="p">:</span>
@@ -12771,14 +12780,15 @@ process name:</p>
         <span class="n">biomass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">wlv</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wst</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wso</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
-        <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-        <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
-        <span class="c1"># carries a leading initial-condition entry, so it has length</span>
-        <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
+        <span class="c1"># Heat-stress penalty on grain yield around anthesis. SIMPLACE</span>
+        <span class="c1"># runs Phenology before HeatStressOnGrain within a day, so HSG</span>
+        <span class="c1"># sees the *post-integration* DVS for that day → ``dvs[:, 1:]``</span>
+        <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
+        <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
         <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
-            <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
             <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
         <span class="p">)</span>
@@ -13052,6 +13062,29 @@ process name:</p>
         <span class="n">active</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">gate</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">active</span>  <span class="c1"># noqa: E731</span>
 
+        <span class="c1"># Per-organ NPK losses to dead tissue</span>
+        <span class="c1"># (``RNLDLV = rnflv · DLV``, etc.). The leaf/stem/root dynamics</span>
+        <span class="c1"># modules emit the daily senescence biomass fluxes</span>
+        <span class="c1"># ``wlvd_rate``/``wstd_rate``/``wrtd_rate`` (= ``dlv``/``drst``/</span>
+        <span class="c1"># ``drrt``); multiplying by the residual concentrations gives</span>
+        <span class="c1"># the corresponding N/P/K losses. These are subtracted from the</span>
+        <span class="c1"># living-organ NPK net rates and integrated into the</span>
+        <span class="c1"># ``nlossl``/``nlossr``/``nlosss`` (and P, K) accumulators so</span>
+        <span class="c1"># that the SIMPLACE balance ``NUPTT + NFIXTT + initial =</span>
+        <span class="c1"># ANLV+... + NLOSSL+...`` holds.</span>
+        <span class="n">dlv</span> <span class="o">=</span> <span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]</span>
+        <span class="n">drst</span> <span class="o">=</span> <span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wstd_rate&quot;</span><span class="p">]</span>
+        <span class="n">drrt</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]</span>
+        <span class="n">rnldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rnldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rnldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+        <span class="n">rpldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rpldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rpldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+        <span class="n">rkldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rkldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+
         <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dvs_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
@@ -13070,18 +13103,30 @@ process name:</p>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
             <span class="s2">&quot;anso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aplv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;apst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aprt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;aplv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">&quot;apst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">&quot;aprt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldrt</span><span class="p">),</span>
             <span class="s2">&quot;apso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aklv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;aklv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldst</span><span class="p">),</span>
+            <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldrt</span><span class="p">),</span>
             <span class="s2">&quot;akso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_so_rate&quot;</span><span class="p">]),</span>
+            <span class="c1"># Dead-tissue NPK accumulators (SIMPLACE NLOSSL/NLOSSR/NLOSSS</span>
+            <span class="c1"># and P, K analogues). Gated by ``active`` so accumulation</span>
+            <span class="c1"># stops after maturity, mirroring the per-organ death rates.</span>
+            <span class="s2">&quot;nlossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">&quot;nlossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldrt</span><span class="p">),</span>
+            <span class="s2">&quot;nlosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">&quot;plossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">&quot;plossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldrt</span><span class="p">),</span>
+            <span class="s2">&quot;plosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">&quot;klossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">&quot;klossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldrt</span><span class="p">),</span>
+            <span class="s2">&quot;klosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldst</span><span class="p">),</span>
             <span class="c1"># Soil pool dynamics. Organic pools deplete (negative</span>
             <span class="c1"># rates); inorganic pools follow ``fertiliser +</span>
             <span class="c1"># mineralisation − uptake``. Mineralisation is already</span>
@@ -13491,14 +13536,15 @@ heat-stress-adjusted yield).</p></td>
     <span class="n">biomass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">wlv</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wst</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wso</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
-    <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-    <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
-    <span class="c1"># carries a leading initial-condition entry, so it has length</span>
-    <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
+    <span class="c1"># Heat-stress penalty on grain yield around anthesis. SIMPLACE</span>
+    <span class="c1"># runs Phenology before HeatStressOnGrain within a day, so HSG</span>
+    <span class="c1"># sees the *post-integration* DVS for that day → ``dvs[:, 1:]``</span>
+    <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
+    <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
     <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
         <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
         <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
-        <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
         <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
     <span class="p">)</span>
@@ -21701,8 +21747,14 @@ file.</p>
 <span class="sd">            * ``heat_stress_factor`` [-] — Window-averaged heat-stress</span>
 <span class="sd">              factor ``HSF`` in ``[0, 1]``, shape ``[B]``. ``0`` when the</span>
 <span class="sd">              window never opens (e.g. ``T`` too short) or never hot.</span>
-<span class="sd">            * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_``, shape</span>
-<span class="sd">              ``[B]``; only present when ``yield_`` is given.</span>
+<span class="sd">            * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_`` once the</span>
+<span class="sd">              anthesis window has fully closed (``max(DVS) &gt;</span>
+<span class="sd">              DVS_end``); otherwise ``0`` (matches SIMPLACE</span>
+<span class="sd">              ``pPeriodEnded`` gating). Only present when ``yield_`` is</span>
+<span class="sd">              given.</span>
+<span class="sd">            * ``period_ended`` [-] — Mask in ``{0, 1}``, shape ``[B]``,</span>
+<span class="sd">              indicating that the DVS trajectory exited the anthesis</span>
+<span class="sd">              window.</span>
 <span class="sd">            * ``daily_factor`` [-] — Daily stress intensity ``s_i``, shape</span>
 <span class="sd">              ``[B, T]``.</span>
 <span class="sd">            * ``window_mask`` [-] — ``1`` on days inside the</span>
@@ -21733,14 +21785,22 @@ file.</p>
         <span class="c1"># window (no anthesis reached) so HSF = 0 in that case.</span>
         <span class="n">heat_stress_factor</span> <span class="o">=</span> <span class="n">cumulated</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">window_days</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
+        <span class="c1"># ``pPeriodEnded`` equivalent — true once DVS has crossed the</span>
+        <span class="c1"># upper window edge. SIMPLACE only publishes ``AdjustedYield``</span>
+        <span class="c1"># after this trigger; before it, the value is left at 0.</span>
+        <span class="n">period_ended</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="n">end_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">daily_factor</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="p">)</span>
+
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
             <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
             <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
             <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+            <span class="s2">&quot;period_ended&quot;</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
         <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -21834,8 +21894,14 @@ and <code>grain_heat_end_devstage</code>.</p></td>
 <li><code>heat_stress_factor</code> [-] — Window-averaged heat-stress
   factor <code>HSF</code> in <code>[0, 1]</code>, shape <code>[B]</code>. <code>0</code> when the
   window never opens (e.g. <code>T</code> too short) or never hot.</li>
-<li><code>adjusted_yield</code> [g m⁻²] — <code>(1 − HSF) · yield_</code>, shape
-  <code>[B]</code>; only present when <code>yield_</code> is given.</li>
+<li><code>adjusted_yield</code> [g m⁻²] — <code>(1 − HSF) · yield_</code> once the
+  anthesis window has fully closed (<code>max(DVS) &gt;
+  DVS_end</code>); otherwise <code>0</code> (matches SIMPLACE
+  <code>pPeriodEnded</code> gating). Only present when <code>yield_</code> is
+  given.</li>
+<li><code>period_ended</code> [-] — Mask in <code>{0, 1}</code>, shape <code>[B]</code>,
+  indicating that the DVS trajectory exited the anthesis
+  window.</li>
 <li><code>daily_factor</code> [-] — Daily stress intensity <code>s_i</code>, shape
   <code>[B, T]</code>.</li>
 <li><code>window_mask</code> [-] — <code>1</code> on days inside the
@@ -21876,8 +21942,14 @@ and <code>grain_heat_end_devstage</code>.</p></td>
 <span class="sd">        * ``heat_stress_factor`` [-] — Window-averaged heat-stress</span>
 <span class="sd">          factor ``HSF`` in ``[0, 1]``, shape ``[B]``. ``0`` when the</span>
 <span class="sd">          window never opens (e.g. ``T`` too short) or never hot.</span>
-<span class="sd">        * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_``, shape</span>
-<span class="sd">          ``[B]``; only present when ``yield_`` is given.</span>
+<span class="sd">        * ``adjusted_yield`` [g m⁻²] — ``(1 − HSF) · yield_`` once the</span>
+<span class="sd">          anthesis window has fully closed (``max(DVS) &gt;</span>
+<span class="sd">          DVS_end``); otherwise ``0`` (matches SIMPLACE</span>
+<span class="sd">          ``pPeriodEnded`` gating). Only present when ``yield_`` is</span>
+<span class="sd">          given.</span>
+<span class="sd">        * ``period_ended`` [-] — Mask in ``{0, 1}``, shape ``[B]``,</span>
+<span class="sd">          indicating that the DVS trajectory exited the anthesis</span>
+<span class="sd">          window.</span>
 <span class="sd">        * ``daily_factor`` [-] — Daily stress intensity ``s_i``, shape</span>
 <span class="sd">          ``[B, T]``.</span>
 <span class="sd">        * ``window_mask`` [-] — ``1`` on days inside the</span>
@@ -21908,14 +21980,22 @@ and <code>grain_heat_end_devstage</code>.</p></td>
     <span class="c1"># window (no anthesis reached) so HSF = 0 in that case.</span>
     <span class="n">heat_stress_factor</span> <span class="o">=</span> <span class="n">cumulated</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">window_days</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
+    <span class="c1"># ``pPeriodEnded`` equivalent — true once DVS has crossed the</span>
+    <span class="c1"># upper window edge. SIMPLACE only publishes ``AdjustedYield``</span>
+    <span class="c1"># after this trigger; before it, the value is left at 0.</span>
+    <span class="n">period_ended</span> <span class="o">=</span> <span class="p">(</span><span class="n">dvs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="n">end_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+        <span class="n">daily_factor</span><span class="o">.</span><span class="n">dtype</span>
+    <span class="p">)</span>
+
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
         <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
         <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
         <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+        <span class="s2">&quot;period_ended&quot;</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
     <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -28481,6 +28561,21 @@ added by the engine with <code>dt = 1</code> day.</p>
     <span class="n">pmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic P pool</span>
     <span class="n">kmint</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># directly available inorganic K pool</span>
 
+    <span class="c1"># Cumulative per-organ NPK losses to dead tissue [g X m-2]</span>
+    <span class="c1"># (SIMPLACE NLOSSL / NLOSSR / NLOSSS and P, K analogues).</span>
+    <span class="c1"># Each is integrated from the daily residual-concentration flux</span>
+    <span class="c1"># ``rXfORG · dORG`` (e.g. ``RNLDLV = rnflv · dlv``) so that NPK</span>
+    <span class="c1"># carried by senesced biomass is conserved rather than discarded.</span>
+    <span class="n">nlossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">nlossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">nlosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">plosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klossl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">klosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
     <span class="c1"># Optional bookkeeping — cumulative water and growth accumulators.</span>
     <span class="c1"># Each is integrated by the standard `_rate` mechanism: a daily flux</span>
     <span class="c1"># is routed into ``&lt;field&gt;_rate`` in `_compute_rates_dispatch` and</span>
@@ -28595,6 +28690,15 @@ added by the engine with <code>dt = 1</code> day.</p>
             <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nlosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">plosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -28680,6 +28784,15 @@ added by the engine with <code>dt = 1</code> day.</p>
     </div>
 
   </div>
+
+
+
+
+
+
+
+
+
 
 
 
@@ -28936,6 +29049,15 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">nfixtr_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">parint_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">gtotal_cum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nlosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">plosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

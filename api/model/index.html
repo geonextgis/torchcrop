@@ -2484,14 +2484,15 @@ process name:</p>
         <span class="n">biomass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">wlv</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wst</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wso</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
-        <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-        <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
-        <span class="c1"># carries a leading initial-condition entry, so it has length</span>
-        <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
+        <span class="c1"># Heat-stress penalty on grain yield around anthesis. SIMPLACE</span>
+        <span class="c1"># runs Phenology before HeatStressOnGrain within a day, so HSG</span>
+        <span class="c1"># sees the *post-integration* DVS for that day → ``dvs[:, 1:]``</span>
+        <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
+        <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
         <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
-            <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
             <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
         <span class="p">)</span>
@@ -2765,6 +2766,29 @@ process name:</p>
         <span class="n">active</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">gate</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">active</span>  <span class="c1"># noqa: E731</span>
 
+        <span class="c1"># Per-organ NPK losses to dead tissue</span>
+        <span class="c1"># (``RNLDLV = rnflv · DLV``, etc.). The leaf/stem/root dynamics</span>
+        <span class="c1"># modules emit the daily senescence biomass fluxes</span>
+        <span class="c1"># ``wlvd_rate``/``wstd_rate``/``wrtd_rate`` (= ``dlv``/``drst``/</span>
+        <span class="c1"># ``drrt``); multiplying by the residual concentrations gives</span>
+        <span class="c1"># the corresponding N/P/K losses. These are subtracted from the</span>
+        <span class="c1"># living-organ NPK net rates and integrated into the</span>
+        <span class="c1"># ``nlossl``/``nlossr``/``nlosss`` (and P, K) accumulators so</span>
+        <span class="c1"># that the SIMPLACE balance ``NUPTT + NFIXTT + initial =</span>
+        <span class="c1"># ANLV+... + NLOSSL+...`` holds.</span>
+        <span class="n">dlv</span> <span class="o">=</span> <span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]</span>
+        <span class="n">drst</span> <span class="o">=</span> <span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wstd_rate&quot;</span><span class="p">]</span>
+        <span class="n">drrt</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]</span>
+        <span class="n">rnldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rnldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rnldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+        <span class="n">rpldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rpldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rpldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rpfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+        <span class="n">rkldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkflv</span> <span class="o">*</span> <span class="n">dlv</span>
+        <span class="n">rkldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfst</span> <span class="o">*</span> <span class="n">drst</span>
+        <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
+
         <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dvs_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
@@ -2783,18 +2807,30 @@ process name:</p>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
             <span class="s2">&quot;anso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aplv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;apst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aprt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;aplv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">&quot;apst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">&quot;aprt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldrt</span><span class="p">),</span>
             <span class="s2">&quot;apso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aklv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_lv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;aklv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldst</span><span class="p">),</span>
+            <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldrt</span><span class="p">),</span>
             <span class="s2">&quot;akso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_so_rate&quot;</span><span class="p">]),</span>
+            <span class="c1"># Dead-tissue NPK accumulators (SIMPLACE NLOSSL/NLOSSR/NLOSSS</span>
+            <span class="c1"># and P, K analogues). Gated by ``active`` so accumulation</span>
+            <span class="c1"># stops after maturity, mirroring the per-organ death rates.</span>
+            <span class="s2">&quot;nlossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">&quot;nlossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldrt</span><span class="p">),</span>
+            <span class="s2">&quot;nlosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">&quot;plossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">&quot;plossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldrt</span><span class="p">),</span>
+            <span class="s2">&quot;plosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">&quot;klossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">&quot;klossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldrt</span><span class="p">),</span>
+            <span class="s2">&quot;klosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldst</span><span class="p">),</span>
             <span class="c1"># Soil pool dynamics. Organic pools deplete (negative</span>
             <span class="c1"># rates); inorganic pools follow ``fertiliser +</span>
             <span class="c1"># mineralisation − uptake``. Mineralisation is already</span>
@@ -3204,14 +3240,15 @@ heat-stress-adjusted yield).</p></td>
     <span class="n">biomass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">wlv</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wst</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">wso</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">yield_</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">wso</span>
 
-    <span class="c1"># Heat-stress penalty on grain yield around anthesis. The DVS</span>
-    <span class="c1"># entering each weather day is ``dvs[:, :-1]``: the trajectory</span>
-    <span class="c1"># carries a leading initial-condition entry, so it has length</span>
-    <span class="c1"># ``T + 1`` against the ``T`` weather days.</span>
+    <span class="c1"># Heat-stress penalty on grain yield around anthesis. SIMPLACE</span>
+    <span class="c1"># runs Phenology before HeatStressOnGrain within a day, so HSG</span>
+    <span class="c1"># sees the *post-integration* DVS for that day → ``dvs[:, 1:]``</span>
+    <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
+    <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
     <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
         <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
         <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
-        <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
         <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
     <span class="p">)</span>
