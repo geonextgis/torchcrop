@@ -2382,7 +2382,10 @@ process name:</p>
 <span class="sd">            soil parameters. Biomass pools, per-organ NPK pools and LAI</span>
 <span class="sd">            start at zero; their initial values are injected as a</span>
 <span class="sd">            one-shot rate on the emergence day inside</span>
-<span class="sd">            `_compute_rates_dispatch`.</span>
+<span class="sd">            `_compute_rates_dispatch`. The dead-tissue NPK loss</span>
+<span class="sd">            accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
+<span class="sd">            analogues) also start at zero and grow as senescence</span>
+<span class="sd">            proceeds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
         <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rootdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -2450,13 +2453,26 @@ process name:</p>
 <span class="sd">            start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">            initial_state: Optional pre-built `ModelState`. When</span>
 <span class="sd">                omitted, `initialize` is called automatically with the</span>
-<span class="sd">                weather batch size, dtype, and device.</span>
+<span class="sd">                weather batch size, dtype, and device. When supplied,</span>
+<span class="sd">                the user is responsible for any</span>
+<span class="sd">                ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
+<span class="sd">                bypasses the SIMPLACE-parity setup in `initialize`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A `ModelOutput` containing the full state, rate and</span>
 <span class="sd">            diagnostic trajectories together with summary variables</span>
 <span class="sd">            (``lai``, ``dvs``, ``biomass``, ``yield_`` and the</span>
 <span class="sd">            heat-stress-adjusted yield).</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            * ``HeatStressOnGrain`` is fed ``dvs[:, 1:]`` — the</span>
+<span class="sd">              *post-integration* DVS for each weather day — mirroring</span>
+<span class="sd">              SIMPLACE&#39;s component order (Phenology runs before HSG</span>
+<span class="sd">              within a day).</span>
+<span class="sd">            * ``adjusted_yield`` is gated by a ``period_ended`` mask</span>
+<span class="sd">              that fires only once ``max(DVS) &gt; grain_heat_end_devstage``,</span>
+<span class="sd">              so a truncated run that never exits the anthesis window</span>
+<span class="sd">              returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
@@ -3167,7 +3183,10 @@ daily weather forcing.</p></td>
         <td><code>ModelState | None</code></td>
         <td><p>Optional pre-built <code>ModelState</code>. When
 omitted, <code>initialize</code> is called automatically with the
-weather batch size, dtype, and device.</p></td>
+weather batch size, dtype, and device. When supplied,
+the user is responsible for any
+<code>wci</code>/<code>wci_lower</code>/<code>rdm</code> clipping — this path
+bypasses the SIMPLACE-parity setup in <code>initialize</code>.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -3189,7 +3208,20 @@ diagnostic trajectories together with summary variables
 heat-stress-adjusted yield).</p></td>
     </tr>
   </tbody>
-</table>
+</table>      <div class="admonition notes">
+<p class="admonition-title">Notes</p>
+<ul>
+<li><code>HeatStressOnGrain</code> is fed <code>dvs[:, 1:]</code> — the
+  <em>post-integration</em> DVS for each weather day — mirroring
+  SIMPLACE's component order (Phenology runs before HSG
+  within a day).</li>
+<li><code>adjusted_yield</code> is gated by a <code>period_ended</code> mask
+  that fires only once <code>max(DVS) &gt; grain_heat_end_devstage</code>,
+  so a truncated run that never exits the anthesis window
+  returns <code>0</code> (matches SIMPLACE <code>pPeriodEnded</code>).</li>
+</ul>
+</div>
+
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -3206,13 +3238,26 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">        start_doy: Day-of-year of the first simulated day.</span>
 <span class="sd">        initial_state: Optional pre-built `ModelState`. When</span>
 <span class="sd">            omitted, `initialize` is called automatically with the</span>
-<span class="sd">            weather batch size, dtype, and device.</span>
+<span class="sd">            weather batch size, dtype, and device. When supplied,</span>
+<span class="sd">            the user is responsible for any</span>
+<span class="sd">            ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
+<span class="sd">            bypasses the SIMPLACE-parity setup in `initialize`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A `ModelOutput` containing the full state, rate and</span>
 <span class="sd">        diagnostic trajectories together with summary variables</span>
 <span class="sd">        (``lai``, ``dvs``, ``biomass``, ``yield_`` and the</span>
 <span class="sd">        heat-stress-adjusted yield).</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        * ``HeatStressOnGrain`` is fed ``dvs[:, 1:]`` — the</span>
+<span class="sd">          *post-integration* DVS for each weather day — mirroring</span>
+<span class="sd">          SIMPLACE&#39;s component order (Phenology runs before HSG</span>
+<span class="sd">          within a day).</span>
+<span class="sd">        * ``adjusted_yield`` is gated by a ``period_ended`` mask</span>
+<span class="sd">          that fires only once ``max(DVS) &gt; grain_heat_end_devstage``,</span>
+<span class="sd">          so a truncated run that never exits the anthesis window</span>
+<span class="sd">          returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
@@ -3339,7 +3384,10 @@ rooting depth <code>rootdi</code>, root- and lower-zone water from
 soil parameters. Biomass pools, per-organ NPK pools and LAI
 start at zero; their initial values are injected as a
 one-shot rate on the emergence day inside
-<code>_compute_rates_dispatch</code>.</p></td>
+<code>_compute_rates_dispatch</code>. The dead-tissue NPK loss
+accumulators (<code>nlossl</code>/<code>nlossr</code>/<code>nlosss</code> and the P, K
+analogues) also start at zero and grow as senescence
+proceeds.</p></td>
     </tr>
   </tbody>
 </table>
@@ -3370,7 +3418,10 @@ one-shot rate on the emergence day inside
 <span class="sd">        soil parameters. Biomass pools, per-organ NPK pools and LAI</span>
 <span class="sd">        start at zero; their initial values are injected as a</span>
 <span class="sd">        one-shot rate on the emergence day inside</span>
-<span class="sd">        `_compute_rates_dispatch`.</span>
+<span class="sd">        `_compute_rates_dispatch`. The dead-tissue NPK loss</span>
+<span class="sd">        accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
+<span class="sd">        analogues) also start at zero and grow as senescence</span>
+<span class="sd">        proceeds.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rootdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
@@ -3666,14 +3717,19 @@ field list.</p></td>
       <tr>
         <td><code>heat_stress_factor</code></td>
         <td><code>Tensor</code></td>
-        <td><p>Around-anthesis heat-stress factor <code>HSF</code>
-in <code>[0, 1]</code> from <code>HeatStressOnGrain</code>, shape <code>[B]</code>.</p></td>
+        <td><p>Window-averaged around-anthesis heat-stress
+factor <code>HSF</code> in <code>[0, 1]</code> from <code>HeatStressOnGrain</code>, shape
+<code>[B]</code>. Computed once over the full trajectory, not a
+per-day series.</p></td>
       </tr>
       <tr>
         <td><code>adjusted_yield</code></td>
         <td><code>Tensor</code></td>
         <td><p>Heat-stress-adjusted yield
-<code>(1 − HSF) · yield_</code> [g m⁻²], shape <code>[B]</code>.</p></td>
+<code>period_ended · (1 − HSF) · yield_</code> [g m⁻²], shape <code>[B]</code>.
+Equals <code>0</code> until the DVS trajectory exits the anthesis
+window (<code>max(DVS) &gt; grain_heat_end_devstage</code>), matching
+SIMPLACE <code>pPeriodEnded</code> gating.</p></td>
       </tr>
   </tbody>
 </table>
@@ -3697,10 +3753,15 @@ in <code>[0, 1]</code> from <code>HeatStressOnGrain</code>, shape <code>[B]</cod
 <span class="sd">        lai: Leaf area index trajectory of shape ``[B, T + 1]``.</span>
 <span class="sd">        dvs: Development-stage trajectory of shape ``[B, T + 1]``.</span>
 <span class="sd">        biomass: Above-ground biomass trajectory of shape ``[B, T + 1]``.</span>
-<span class="sd">        heat_stress_factor: Around-anthesis heat-stress factor ``HSF``</span>
-<span class="sd">            in ``[0, 1]`` from `HeatStressOnGrain`, shape ``[B]``.</span>
+<span class="sd">        heat_stress_factor: Window-averaged around-anthesis heat-stress</span>
+<span class="sd">            factor ``HSF`` in ``[0, 1]`` from `HeatStressOnGrain`, shape</span>
+<span class="sd">            ``[B]``. Computed once over the full trajectory, not a</span>
+<span class="sd">            per-day series.</span>
 <span class="sd">        adjusted_yield: Heat-stress-adjusted yield</span>
-<span class="sd">            ``(1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.</span>
+<span class="sd">            ``period_ended · (1 − HSF) · yield_`` [g m⁻²], shape ``[B]``.</span>
+<span class="sd">            Equals ``0`` until the DVS trajectory exits the anthesis</span>
+<span class="sd">            window (``max(DVS) &gt; grain_heat_end_devstage``), matching</span>
+<span class="sd">            SIMPLACE ``pPeriodEnded`` gating.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span>
