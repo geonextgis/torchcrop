@@ -496,12 +496,18 @@ class Lintul5Model(nn.Module):
 
         # 8. Photosynthesis with nutrient and water stress applied.
         #
-        # ``GTOTAL = RUE · RTMCO · PARINT · TRANRF · combined_stress``,
-        # where ``combined_stress`` is the nutrient component obtained
-        # by dividing out ``TRANRF`` from ``self.stress(tranrf, nstress)``.
-        # This factoring keeps ``self.stress`` swappable (e.g. with a
-        # learned stress module) while preserving the explicit
-        # ``TRANRF`` multiplier.
+        # ``GTOTAL = RUE · RTMCO · PARINT · min(TRANRF, NPKREF)`` — the
+        # SIMPLACE ``GROWTH`` law of the minimum, where the more
+        # limiting of water (``TRANRF``) and nutrient (``NPKREF``)
+        # stress governs growth. ``NPKREF`` is the RUE reduction factor
+        # derived from the NPK index ``nstress`` (= ``NPKI``) via the
+        # ``NLUE`` coefficient:
+        #
+        #     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)
+        #
+        # The two factors are combined by ``self.stress`` (kept
+        # swappable for the hybrid API; the default `StressFactors`
+        # returns ``min(tranrf, npkref)``).
         photo = self.photosynthesis(
             tmax=tmax,
             tmin=tmin,
@@ -509,14 +515,13 @@ class Lintul5Model(nn.Module):
             params=crop_params,
             co2=site_params.co2,
         )
-        combined_stress = self.stress(tranrf, nstress) / torch.clamp(tranrf, min=1e-6)
-        gtotal = (
-            photo["rue"]
-            * photo["rtmco"]
-            * parint_mj
-            * tranrf
-            * combined_stress
+        npkref = torch.clamp(
+            1.0 - crop_params.nlue * (1.0001 - nstress) ** 2,
+            min=0.0,
+            max=1.0,
         )
+        combined_stress = self.stress(tranrf, npkref)
+        gtotal = photo["rue"] * photo["rtmco"] * parint_mj * combined_stress
 
         # Optional neural residual correction on ``gtotal``.
         if "photosynthesis" in self.residual_modules:
@@ -528,13 +533,13 @@ class Lintul5Model(nn.Module):
             gtotal = torch.clamp(gtotal, min=0.0)
 
         # 9. Partitioning. Water and N stress are fed into ``SUBPAR``;
-        #    ``nstress`` is used as the NPK proxy for ``NNI``.
+        #    SIMPLACE passes the nitrogen-only index ``NNI``.
         part = self.partitioning(
             state=state,
             gtotal=gtotal,
             params=crop_params,
             tranrf=tranrf,
-            nni=nstress,
+            nni=nut["nni"],
         )
 
         # 10. Leaf dynamics with heat-stress acceleration of senescence.
