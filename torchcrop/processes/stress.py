@@ -1,8 +1,9 @@
 """Composite stress factors.
 
 A light wrapper module that bundles the water-stress factor
-``TRANRF`` and the nutrient-stress factor ``NSTRESS`` into a single
-multiplicative reducer.
+``TRANRF`` and the nutrient reduction factor ``NPKREF`` into a single
+growth reducer via the **law of the minimum** — the more limiting of
+the two factors governs growth, matching SIMPLACE Lintul5 ``GROWTH``.
 
 This module is deliberately minimal — the substantive computations
 live in `WaterBalance` and `NutrientDemand`. Use `StressFactors` if
@@ -28,14 +29,17 @@ class StressFactors(nn.Module):
         Args:
             tranrf: Water-stress factor in ``[0, 1]`` from
                 `WaterBalance`, shape ``[B]``.
-            nstress: Nutrient-stress factor in ``[0, 1]`` from
-                `NutrientDemand`, shape ``[B]``.
+            nstress: Nutrient reduction factor ``NPKREF`` in ``[0, 1]``
+                (the ``NLUE``-transformed NPK index), shape ``[B]``.
 
         Returns:
-            Combined stress reducer ``= tranrf · nstress`` in
-            ``[0, 1]``, shape ``[B]``. This is *not* a rate — it is a
-            multiplicative factor that scales the gross growth rate
-            ``gtotal`` and therefore propagates into every per-organ
-            rate (``g_lv``/``g_st``/``g_root``/``g_so``).
+            Combined stress reducer ``= min(tranrf, nstress)`` in
+            ``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so
+            the more limiting of water/nutrient stress governs growth
+            (matches SIMPLACE ``GROWTH``: ``min(TRANRF, NPKREF)``).
+            This is *not* a rate — it is a multiplicative factor that
+            scales the gross growth rate ``gtotal`` and therefore
+            propagates into every per-organ rate
+            (``g_lv``/``g_st``/``g_root``/``g_so``).
         """
-        return tranrf * nstress
+        return torch.minimum(tranrf, nstress)
