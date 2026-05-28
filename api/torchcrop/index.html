@@ -13000,12 +13000,18 @@ process name:</p>
 
         <span class="c1"># 8. Photosynthesis with nutrient and water stress applied.</span>
         <span class="c1">#</span>
-        <span class="c1"># ``GTOTAL = RUE · RTMCO · PARINT · TRANRF · combined_stress``,</span>
-        <span class="c1"># where ``combined_stress`` is the nutrient component obtained</span>
-        <span class="c1"># by dividing out ``TRANRF`` from ``self.stress(tranrf, nstress)``.</span>
-        <span class="c1"># This factoring keeps ``self.stress`` swappable (e.g. with a</span>
-        <span class="c1"># learned stress module) while preserving the explicit</span>
-        <span class="c1"># ``TRANRF`` multiplier.</span>
+        <span class="c1"># ``GTOTAL = RUE · RTMCO · PARINT · min(TRANRF, NPKREF)`` — the</span>
+        <span class="c1"># SIMPLACE ``GROWTH`` law of the minimum, where the more</span>
+        <span class="c1"># limiting of water (``TRANRF``) and nutrient (``NPKREF``)</span>
+        <span class="c1"># stress governs growth. ``NPKREF`` is the RUE reduction factor</span>
+        <span class="c1"># derived from the NPK index ``nstress`` (= ``NPKI``) via the</span>
+        <span class="c1"># ``NLUE`` coefficient:</span>
+        <span class="c1">#</span>
+        <span class="c1">#     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)</span>
+        <span class="c1">#</span>
+        <span class="c1"># The two factors are combined by ``self.stress`` (kept</span>
+        <span class="c1"># swappable for the hybrid API; the default `StressFactors`</span>
+        <span class="c1"># returns ``min(tranrf, npkref)``).</span>
         <span class="n">photo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span><span class="p">(</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
@@ -13013,14 +13019,13 @@ process name:</p>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-        <span class="n">gtotal</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">parint_mj</span>
-            <span class="o">*</span> <span class="n">tranrf</span>
-            <span class="o">*</span> <span class="n">combined_stress</span>
+        <span class="n">npkref</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">nlue</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0001</span> <span class="o">-</span> <span class="n">nstress</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">npkref</span><span class="p">)</span>
+        <span class="n">gtotal</span> <span class="o">=</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">parint_mj</span> <span class="o">*</span> <span class="n">combined_stress</span>
 
         <span class="c1"># Optional neural residual correction on ``gtotal``.</span>
         <span class="k">if</span> <span class="s2">&quot;photosynthesis&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">:</span>
@@ -13032,13 +13037,13 @@ process name:</p>
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">gtotal</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># 9. Partitioning. Water and N stress are fed into ``SUBPAR``;</span>
-        <span class="c1">#    ``nstress`` is used as the NPK proxy for ``NNI``.</span>
+        <span class="c1">#    SIMPLACE passes the nitrogen-only index ``NNI``.</span>
         <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="c1"># 10. Leaf dynamics with heat-stress acceleration of senescence.</span>
@@ -26941,8 +26946,9 @@ Rate variables (consumed by the engine for state update)</code></td>
 
       <p>Composite stress factors.</p>
 <p>A light wrapper module that bundles the water-stress factor
-<code>TRANRF</code> and the nutrient-stress factor <code>NSTRESS</code> into a single
-multiplicative reducer.</p>
+<code>TRANRF</code> and the nutrient reduction factor <code>NPKREF</code> into a single
+growth reducer via the <strong>law of the minimum</strong> — the more limiting of
+the two factors governs growth, matching SIMPLACE Lintul5 <code>GROWTH</code>.</p>
 <p>This module is deliberately minimal — the substantive computations
 live in <code>WaterBalance</code> and <code>NutrientDemand</code>. Use <code>StressFactors</code> if
 you want to swap in a learned alternative via the hybrid API.</p>
@@ -26989,17 +26995,20 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
 <span class="sd">                `WaterBalance`, shape ``[B]``.</span>
-<span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                `NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            nstress: Nutrient reduction factor ``NPKREF`` in ``[0, 1]``</span>
+<span class="sd">                (the ``NLUE``-transformed NPK index), shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Combined stress reducer ``= tranrf · nstress`` in</span>
-<span class="sd">            ``[0, 1]``, shape ``[B]``. This is *not* a rate — it is a</span>
-<span class="sd">            multiplicative factor that scales the gross growth rate</span>
-<span class="sd">            ``gtotal`` and therefore propagates into every per-organ</span>
-<span class="sd">            rate (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
+<span class="sd">            Combined stress reducer ``= min(tranrf, nstress)`` in</span>
+<span class="sd">            ``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so</span>
+<span class="sd">            the more limiting of water/nutrient stress governs growth</span>
+<span class="sd">            (matches SIMPLACE ``GROWTH``: ``min(TRANRF, NPKREF)``).</span>
+<span class="sd">            This is *not* a rate — it is a multiplicative factor that</span>
+<span class="sd">            scales the gross growth rate ``gtotal`` and therefore</span>
+<span class="sd">            propagates into every per-organ rate</span>
+<span class="sd">            (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">tranrf</span> <span class="o">*</span> <span class="n">nstress</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>
 
@@ -27050,8 +27059,8 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
       <tr>
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
-<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+        <td><p>Nutrient reduction factor <code>NPKREF</code> in <code>[0, 1]</code>
+(the <code>NLUE</code>-transformed NPK index), shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -27066,12 +27075,15 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
   </thead>
   <tbody>
     <tr>
-      <td><code>torch.Tensor</code></td>
-      <td><p>Combined stress reducer <code>= tranrf · nstress</code> in
-<code>[0, 1]</code>, shape <code>[B]</code>. This is <em>not</em> a rate — it is a
-multiplicative factor that scales the gross growth rate
-<code>gtotal</code> and therefore propagates into every per-organ
-rate (<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>).</p></td>
+      <td><code>Combined stress reducer ``= min(tranrf, nstress)`` in
+``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so
+the more limiting of water/nutrient stress governs growth
+(matches SIMPLACE ``GROWTH``</code></td>
+      <td><p><code>min(TRANRF, NPKREF)</code>).
+This is <em>not</em> a rate — it is a multiplicative factor that
+scales the gross growth rate <code>gtotal</code> and therefore
+propagates into every per-organ rate
+(<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>).</p></td>
     </tr>
   </tbody>
 </table>
@@ -27087,17 +27099,20 @@ rate (<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>)
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
 <span class="sd">            `WaterBalance`, shape ``[B]``.</span>
-<span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            `NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">        nstress: Nutrient reduction factor ``NPKREF`` in ``[0, 1]``</span>
+<span class="sd">            (the ``NLUE``-transformed NPK index), shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Combined stress reducer ``= tranrf · nstress`` in</span>
-<span class="sd">        ``[0, 1]``, shape ``[B]``. This is *not* a rate — it is a</span>
-<span class="sd">        multiplicative factor that scales the gross growth rate</span>
-<span class="sd">        ``gtotal`` and therefore propagates into every per-organ</span>
-<span class="sd">        rate (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
+<span class="sd">        Combined stress reducer ``= min(tranrf, nstress)`` in</span>
+<span class="sd">        ``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so</span>
+<span class="sd">        the more limiting of water/nutrient stress governs growth</span>
+<span class="sd">        (matches SIMPLACE ``GROWTH``: ``min(TRANRF, NPKREF)``).</span>
+<span class="sd">        This is *not* a rate — it is a multiplicative factor that</span>
+<span class="sd">        scales the gross growth rate ``gtotal`` and therefore</span>
+<span class="sd">        propagates into every per-organ rate</span>
+<span class="sd">        (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tranrf</span> <span class="o">*</span> <span class="n">nstress</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>

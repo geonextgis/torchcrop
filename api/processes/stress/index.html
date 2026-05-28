@@ -2086,8 +2086,9 @@
 
       <p>Composite stress factors.</p>
 <p>A light wrapper module that bundles the water-stress factor
-<code>TRANRF</code> and the nutrient-stress factor <code>NSTRESS</code> into a single
-multiplicative reducer.</p>
+<code>TRANRF</code> and the nutrient reduction factor <code>NPKREF</code> into a single
+growth reducer via the <strong>law of the minimum</strong> — the more limiting of
+the two factors governs growth, matching SIMPLACE Lintul5 <code>GROWTH</code>.</p>
 <p>This module is deliberately minimal — the substantive computations
 live in <code>WaterBalance</code> and <code>NutrientDemand</code>. Use <code>StressFactors</code> if
 you want to swap in a learned alternative via the hybrid API.</p>
@@ -2134,17 +2135,20 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
 <span class="sd">                `WaterBalance`, shape ``[B]``.</span>
-<span class="sd">            nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">                `NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">            nstress: Nutrient reduction factor ``NPKREF`` in ``[0, 1]``</span>
+<span class="sd">                (the ``NLUE``-transformed NPK index), shape ``[B]``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Combined stress reducer ``= tranrf · nstress`` in</span>
-<span class="sd">            ``[0, 1]``, shape ``[B]``. This is *not* a rate — it is a</span>
-<span class="sd">            multiplicative factor that scales the gross growth rate</span>
-<span class="sd">            ``gtotal`` and therefore propagates into every per-organ</span>
-<span class="sd">            rate (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
+<span class="sd">            Combined stress reducer ``= min(tranrf, nstress)`` in</span>
+<span class="sd">            ``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so</span>
+<span class="sd">            the more limiting of water/nutrient stress governs growth</span>
+<span class="sd">            (matches SIMPLACE ``GROWTH``: ``min(TRANRF, NPKREF)``).</span>
+<span class="sd">            This is *not* a rate — it is a multiplicative factor that</span>
+<span class="sd">            scales the gross growth rate ``gtotal`` and therefore</span>
+<span class="sd">            propagates into every per-organ rate</span>
+<span class="sd">            (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">tranrf</span> <span class="o">*</span> <span class="n">nstress</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>
 
@@ -2195,8 +2199,8 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
       <tr>
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>Nutrient-stress factor in <code>[0, 1]</code> from
-<code>NutrientDemand</code>, shape <code>[B]</code>.</p></td>
+        <td><p>Nutrient reduction factor <code>NPKREF</code> in <code>[0, 1]</code>
+(the <code>NLUE</code>-transformed NPK index), shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2211,12 +2215,15 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
   </thead>
   <tbody>
     <tr>
-      <td><code>torch.Tensor</code></td>
-      <td><p>Combined stress reducer <code>= tranrf · nstress</code> in
-<code>[0, 1]</code>, shape <code>[B]</code>. This is <em>not</em> a rate — it is a
-multiplicative factor that scales the gross growth rate
-<code>gtotal</code> and therefore propagates into every per-organ
-rate (<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>).</p></td>
+      <td><code>Combined stress reducer ``= min(tranrf, nstress)`` in
+``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so
+the more limiting of water/nutrient stress governs growth
+(matches SIMPLACE ``GROWTH``</code></td>
+      <td><p><code>min(TRANRF, NPKREF)</code>).
+This is <em>not</em> a rate — it is a multiplicative factor that
+scales the gross growth rate <code>gtotal</code> and therefore
+propagates into every per-organ rate
+(<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>).</p></td>
     </tr>
   </tbody>
 </table>
@@ -2232,17 +2239,20 @@ rate (<code>g_lv</code>/<code>g_st</code>/<code>g_root</code>/<code>g_so</code>)
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
 <span class="sd">            `WaterBalance`, shape ``[B]``.</span>
-<span class="sd">        nstress: Nutrient-stress factor in ``[0, 1]`` from</span>
-<span class="sd">            `NutrientDemand`, shape ``[B]``.</span>
+<span class="sd">        nstress: Nutrient reduction factor ``NPKREF`` in ``[0, 1]``</span>
+<span class="sd">            (the ``NLUE``-transformed NPK index), shape ``[B]``.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Combined stress reducer ``= tranrf · nstress`` in</span>
-<span class="sd">        ``[0, 1]``, shape ``[B]``. This is *not* a rate — it is a</span>
-<span class="sd">        multiplicative factor that scales the gross growth rate</span>
-<span class="sd">        ``gtotal`` and therefore propagates into every per-organ</span>
-<span class="sd">        rate (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
+<span class="sd">        Combined stress reducer ``= min(tranrf, nstress)`` in</span>
+<span class="sd">        ``[0, 1]``, shape ``[B]`` — the **law of the minimum**, so</span>
+<span class="sd">        the more limiting of water/nutrient stress governs growth</span>
+<span class="sd">        (matches SIMPLACE ``GROWTH``: ``min(TRANRF, NPKREF)``).</span>
+<span class="sd">        This is *not* a rate — it is a multiplicative factor that</span>
+<span class="sd">        scales the gross growth rate ``gtotal`` and therefore</span>
+<span class="sd">        propagates into every per-organ rate</span>
+<span class="sd">        (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">tranrf</span> <span class="o">*</span> <span class="n">nstress</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>

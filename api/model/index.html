@@ -2704,12 +2704,18 @@ process name:</p>
 
         <span class="c1"># 8. Photosynthesis with nutrient and water stress applied.</span>
         <span class="c1">#</span>
-        <span class="c1"># ``GTOTAL = RUE · RTMCO · PARINT · TRANRF · combined_stress``,</span>
-        <span class="c1"># where ``combined_stress`` is the nutrient component obtained</span>
-        <span class="c1"># by dividing out ``TRANRF`` from ``self.stress(tranrf, nstress)``.</span>
-        <span class="c1"># This factoring keeps ``self.stress`` swappable (e.g. with a</span>
-        <span class="c1"># learned stress module) while preserving the explicit</span>
-        <span class="c1"># ``TRANRF`` multiplier.</span>
+        <span class="c1"># ``GTOTAL = RUE · RTMCO · PARINT · min(TRANRF, NPKREF)`` — the</span>
+        <span class="c1"># SIMPLACE ``GROWTH`` law of the minimum, where the more</span>
+        <span class="c1"># limiting of water (``TRANRF``) and nutrient (``NPKREF``)</span>
+        <span class="c1"># stress governs growth. ``NPKREF`` is the RUE reduction factor</span>
+        <span class="c1"># derived from the NPK index ``nstress`` (= ``NPKI``) via the</span>
+        <span class="c1"># ``NLUE`` coefficient:</span>
+        <span class="c1">#</span>
+        <span class="c1">#     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)</span>
+        <span class="c1">#</span>
+        <span class="c1"># The two factors are combined by ``self.stress`` (kept</span>
+        <span class="c1"># swappable for the hybrid API; the default `StressFactors`</span>
+        <span class="c1"># returns ``min(tranrf, npkref)``).</span>
         <span class="n">photo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span><span class="p">(</span>
             <span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span>
             <span class="n">tmin</span><span class="o">=</span><span class="n">tmin</span><span class="p">,</span>
@@ -2717,14 +2723,13 @@ process name:</p>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-        <span class="n">gtotal</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span>
-            <span class="o">*</span> <span class="n">parint_mj</span>
-            <span class="o">*</span> <span class="n">tranrf</span>
-            <span class="o">*</span> <span class="n">combined_stress</span>
+        <span class="n">npkref</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">nlue</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0001</span> <span class="o">-</span> <span class="n">nstress</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">npkref</span><span class="p">)</span>
+        <span class="n">gtotal</span> <span class="o">=</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">parint_mj</span> <span class="o">*</span> <span class="n">combined_stress</span>
 
         <span class="c1"># Optional neural residual correction on ``gtotal``.</span>
         <span class="k">if</span> <span class="s2">&quot;photosynthesis&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">:</span>
@@ -2736,13 +2741,13 @@ process name:</p>
             <span class="n">gtotal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">gtotal</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># 9. Partitioning. Water and N stress are fed into ``SUBPAR``;</span>
-        <span class="c1">#    ``nstress`` is used as the NPK proxy for ``NNI``.</span>
+        <span class="c1">#    SIMPLACE passes the nitrogen-only index ``NNI``.</span>
         <span class="n">part</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="c1"># 10. Leaf dynamics with heat-stress acceleration of senescence.</span>
