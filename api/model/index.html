@@ -1335,6 +1335,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../nn/hybrid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hybrid
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../nn/learned_stress/" class="md-nav__link">
         
   
@@ -2273,15 +2301,30 @@ stage-based branching.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>residual_modules</code></td>
-        <td><code>dict[str, nn.Module] | None</code></td>
-        <td><p>Optional neural residual corrections keyed by
-process name:</p>
-<ul>
-<li><code>"photosynthesis"</code> adds to <code>gtotal</code>.</li>
-<li><code>"partitioning"</code> adds to the four allocation fractions.</li>
-<li><code>"leaf_dynamics"</code> adds to <code>lai_rate</code>.</li>
-</ul></td>
+        <td><code>residual_specs</code></td>
+        <td><code>Sequence[ResidualSpec] | None</code></td>
+        <td><p>Optional list of <code>ResidualSpec</code> slots enabling
+constraint-aware neural residual corrections on individual
+mechanistic quantities (see <code>torchcrop.nn.hybrid</code>). Each slot
+targets one quantity by name and is projected onto that
+quantity's natural geometry (non-negative rate, <code>[0, 1]</code>
+factor, or simplex of fractions), so corrections preserve sign,
+mass balance and numerical stability. Slots are zero-initialised
+and therefore start as the identity — a model built with specs
+but untrained reproduces the pure mechanistic trajectory.
+<code>None</code> (the default) disables all corrections.</p>
+<p>Supported slot names: <code>"photosynthesis.gtotal"</code>,
+<code>"water.tranrf"</code>, <code>"partitioning.aboveground"</code>,
+<code>"partitioning.fr"</code>, <code>"leaf.rdr"</code>,
+<code>"phenology.dvs_rate"</code>. See <code>torchcrop.nn.hybrid.default_slots</code>
+for the recommended catalogue.</p>
+<p>Enable only the slots whose pathway is constrained by an
+observable in your calibration data; turning on every slot at
+once invites identifiability and compensation problems (several
+residuals, and the mechanistic parameters they shadow, become
+degenerate). Prefer a minimal observable-tied subset, calibrate
+mechanistic parameters before adding residuals, and regularise
+with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2305,12 +2348,30 @@ process name:</p>
 <span class="sd">            stage-based branching.</span>
 <span class="sd">        stress_module: Optional replacement for the default</span>
 <span class="sd">            `StressFactors` combiner.</span>
-<span class="sd">        residual_modules: Optional neural residual corrections keyed by</span>
-<span class="sd">            process name:</span>
+<span class="sd">        residual_specs: Optional list of `ResidualSpec` slots enabling</span>
+<span class="sd">            constraint-aware neural residual corrections on individual</span>
+<span class="sd">            mechanistic quantities (see `torchcrop.nn.hybrid`). Each slot</span>
+<span class="sd">            targets one quantity by name and is projected onto that</span>
+<span class="sd">            quantity&#39;s natural geometry (non-negative rate, ``[0, 1]``</span>
+<span class="sd">            factor, or simplex of fractions), so corrections preserve sign,</span>
+<span class="sd">            mass balance and numerical stability. Slots are zero-initialised</span>
+<span class="sd">            and therefore start as the identity — a model built with specs</span>
+<span class="sd">            but untrained reproduces the pure mechanistic trajectory.</span>
+<span class="sd">            ``None`` (the default) disables all corrections.</span>
 
-<span class="sd">            * ``&quot;photosynthesis&quot;`` adds to ``gtotal``.</span>
-<span class="sd">            * ``&quot;partitioning&quot;`` adds to the four allocation fractions.</span>
-<span class="sd">            * ``&quot;leaf_dynamics&quot;`` adds to ``lai_rate``.</span>
+<span class="sd">            Supported slot names: ``&quot;photosynthesis.gtotal&quot;``,</span>
+<span class="sd">            ``&quot;water.tranrf&quot;``, ``&quot;partitioning.aboveground&quot;``,</span>
+<span class="sd">            ``&quot;partitioning.fr&quot;``, ``&quot;leaf.rdr&quot;``,</span>
+<span class="sd">            ``&quot;phenology.dvs_rate&quot;``. See `torchcrop.nn.hybrid.default_slots`</span>
+<span class="sd">            for the recommended catalogue.</span>
+
+<span class="sd">            Enable only the slots whose pathway is constrained by an</span>
+<span class="sd">            observable in your calibration data; turning on every slot at</span>
+<span class="sd">            once invites identifiability and compensation problems (several</span>
+<span class="sd">            residuals, and the mechanistic parameters they shadow, become</span>
+<span class="sd">            degenerate). Prefer a minimal observable-tied subset, calibrate</span>
+<span class="sd">            mechanistic parameters before adding residuals, and regularise</span>
+<span class="sd">            with ``self.hybrid.penalty()`` to anchor corrections toward zero.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -2320,7 +2381,7 @@ process name:</p>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">stress_module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">residual_modules</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">residual_specs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ResidualSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span> <span class="o">=</span> <span class="n">crop_params</span> <span class="ow">or</span> <span class="n">CropParameters</span><span class="p">()</span>
@@ -2345,7 +2406,7 @@ process name:</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span> <span class="o">=</span> <span class="n">HeatStressOnGrain</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">stress_module</span> <span class="ow">or</span> <span class="n">StressFactors</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span><span class="n">residual_modules</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span> <span class="o">=</span> <span class="n">HybridManager</span><span class="p">(</span><span class="n">residual_specs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">SimulationEngine</span><span class="p">(</span>
             <span class="n">compute_rates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">,</span>
@@ -2486,6 +2547,10 @@ process name:</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span>
 
+        <span class="c1"># Clear the residual-magnitude accumulator so ``hybrid.penalty()``</span>
+        <span class="c1"># reflects only this simulation (no-op when no slots are enabled).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">reset_penalty</span><span class="p">()</span>
+
         <span class="n">states</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">weather</span><span class="o">=</span><span class="n">weather</span><span class="p">,</span>
@@ -2612,6 +2677,18 @@ process name:</p>
         <span class="n">cosld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;cosld&quot;</span><span class="p">]</span>
         <span class="n">ddlp</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;ddlp&quot;</span><span class="p">]</span>
 
+        <span class="c1"># Per-day feature dict for optional neural residual corrections.</span>
+        <span class="c1"># Populated progressively as quantities become available and consumed</span>
+        <span class="c1"># by ``self.hybrid.correct`` at each slot site (a no-op when the</span>
+        <span class="c1"># corresponding slot is not configured).</span>
+        <span class="n">feats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lai&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span>
+            <span class="s2">&quot;dvs&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
+            <span class="s2">&quot;rootd&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span>
+            <span class="s2">&quot;davtmp&quot;</span><span class="p">:</span> <span class="n">davtmp</span><span class="p">,</span>
+            <span class="s2">&quot;ddlp&quot;</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
+        <span class="p">}</span>
+
         <span class="c1"># 2. Irradiation — daily total irradiation and PAR interception</span>
         <span class="n">irrad_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">irradiation</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -2666,7 +2743,13 @@ process name:</p>
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">tranrf</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span>
+        <span class="c1"># Optional correction of the water-stress factor at source, so the</span>
+        <span class="c1"># corrected value propagates through every downstream consumer</span>
+        <span class="c1"># (nutrient demand, photosynthesis stress, partitioning, leaf/root).</span>
+        <span class="c1"># The ``unit_interval`` projection keeps ``tranrf`` within ``(0, 1)``.</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">]</span>
+        <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
@@ -2685,6 +2768,7 @@ process name:</p>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nstress</span>
 
         <span class="c1"># 7. Soil mineral-pool balance. Runs after NutrientDemand</span>
         <span class="c1">#    because it consumes the day&#39;s NUPTR/PUPTR/KUPTR (which</span>
@@ -2731,14 +2815,11 @@ process name:</p>
         <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">npkref</span><span class="p">)</span>
         <span class="n">gtotal</span> <span class="o">=</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">parint_mj</span> <span class="o">*</span> <span class="n">combined_stress</span>
 
-        <span class="c1"># Optional neural residual correction on ``gtotal``.</span>
-        <span class="k">if</span> <span class="s2">&quot;photosynthesis&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">:</span>
-            <span class="n">ctx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">dtr</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">wa</span><span class="p">,</span> <span class="n">doy</span><span class="p">],</span>
-                <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">gtotal</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">residual_modules</span><span class="p">[</span><span class="s2">&quot;photosynthesis&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">gtotal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">gtotal</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># Optional neural residual correction on ``gtotal`` — the highest-</span>
+        <span class="c1"># leverage hybridisation point, where all carbon enters the plant.</span>
+        <span class="c1"># The ``rate_factor`` projection is multiplicative (``base · exp(δ)``),</span>
+        <span class="c1"># so the corrected value stays non-negative without a hard clamp.</span>
+        <span class="n">gtotal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;photosynthesis.gtotal&quot;</span><span class="p">,</span> <span class="n">gtotal</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
 
         <span class="c1"># 9. Partitioning. Water and N stress are fed into ``SUBPAR``;</span>
         <span class="c1">#    SIMPLACE passes the nitrogen-only index ``NNI``.</span>
@@ -2749,6 +2830,36 @@ process name:</p>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
         <span class="p">)</span>
+
+        <span class="c1"># Optional correction of the biomass partitioning. The above-ground</span>
+        <span class="c1"># split is projected onto the simplex (``fl + fs + fo = 1`` exactly)</span>
+        <span class="c1"># and the root/shoot fraction stays in ``(0, 1)``; organ growth is</span>
+        <span class="c1"># then recomputed from the corrected fractions so carbon is conserved</span>
+        <span class="c1"># (``g_lv + g_st + g_so == gtotal · (1 − fr)``).</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;partitioning.fr&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span>
+            <span class="s2">&quot;partitioning.aboveground&quot;</span>
+        <span class="p">):</span>
+            <span class="n">fr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;partitioning.fr&quot;</span><span class="p">,</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fr&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
+            <span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span> <span class="o">=</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fl&quot;</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fo&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;partitioning.aboveground&quot;</span><span class="p">):</span>
+                <span class="n">fvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
+                    <span class="s2">&quot;partitioning.aboveground&quot;</span><span class="p">,</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">feats</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span> <span class="o">=</span> <span class="n">fvec</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">agrt</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fr</span><span class="p">)</span>
+            <span class="n">part</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="o">**</span><span class="n">part</span><span class="p">,</span>
+                <span class="s2">&quot;fr&quot;</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
+                <span class="s2">&quot;fl&quot;</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
+                <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
+                <span class="s2">&quot;fo&quot;</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
+                <span class="s2">&quot;g_root&quot;</span><span class="p">:</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="n">fr</span><span class="p">,</span>
+                <span class="s2">&quot;g_lv&quot;</span><span class="p">:</span> <span class="n">fl</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+                <span class="s2">&quot;g_st&quot;</span><span class="p">:</span> <span class="n">fs</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+                <span class="s2">&quot;g_so&quot;</span><span class="p">:</span> <span class="n">fo</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+            <span class="p">}</span>
 
         <span class="c1"># 10. Leaf dynamics with heat-stress acceleration of senescence.</span>
         <span class="c1">#     `HeatStressOnLeafSenescence` returns a multiplier on</span>
@@ -2765,6 +2876,8 @@ process name:</p>
             <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">heat_stress</span><span class="o">=</span><span class="n">leaf_heat</span><span class="p">,</span>
+            <span class="n">hybrid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="p">,</span>
+            <span class="n">features</span><span class="o">=</span><span class="n">feats</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># 11. Root dynamics</span>
@@ -2811,7 +2924,9 @@ process name:</p>
         <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
 
         <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dvs_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
+                <span class="s2">&quot;phenology.dvs_rate&quot;</span><span class="p">,</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dvs_rate&quot;</span><span class="p">],</span> <span class="n">feats</span>
+            <span class="p">),</span>
             <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vern_rate&quot;</span><span class="p">],</span>
@@ -3275,6 +3390,10 @@ heat-stress-adjusted yield).</p></td>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">initial_state</span>
+
+    <span class="c1"># Clear the residual-magnitude accumulator so ``hybrid.penalty()``</span>
+    <span class="c1"># reflects only this simulation (no-op when no slots are enabled).</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">reset_penalty</span><span class="p">()</span>
 
     <span class="n">states</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
         <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>

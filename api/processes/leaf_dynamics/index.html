@@ -1194,6 +1194,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../nn/hybrid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    hybrid
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../nn/learned_stress/" class="md-nav__link">
         
   
@@ -2209,6 +2237,8 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">heat_stress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">hybrid</span><span class="p">:</span> <span class="s2">&quot;HybridManager | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute leaf area and leaf-biomass rates for one day.</span>
 
@@ -2235,6 +2265,14 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                are forced to zero so pre-emergence leaves neither grow</span>
 <span class="sd">                nor senesce. Defaults to</span>
 <span class="sd">                ``state.tsump &gt;= params.tsumem``.</span>
+<span class="sd">            hybrid: Optional `HybridManager`. When supplied together with</span>
+<span class="sd">                ``features`` and a ``&quot;leaf.rdr&quot;`` slot is configured, the</span>
+<span class="sd">                relative death rate ``RDR`` receives a bounded multiplicative</span>
+<span class="sd">                residual correction before the ≤ 1 cap. ``None`` disables</span>
+<span class="sd">                the correction (pure mechanistic behaviour).</span>
+<span class="sd">            features: Optional per-day feature dict supplying the context</span>
+<span class="sd">                tensors for the ``&quot;leaf.rdr&quot;`` slot. Ignored when ``hybrid``</span>
+<span class="sd">                is ``None``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2306,6 +2344,13 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="p">)</span>
         <span class="n">rdrdry</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">tranrf</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">rdrl</span>
         <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">rdrdv</span><span class="p">,</span> <span class="n">rdrsh</span><span class="p">),</span> <span class="n">rdrdry</span><span class="p">)</span> <span class="o">*</span> <span class="n">heat_stress</span>
+        <span class="c1"># Optional residual correction on the relative death rate, applied</span>
+        <span class="c1"># *before* the ≤ 1 cap. Correcting the rate constant (not the output</span>
+        <span class="c1"># flux) keeps the mass leg (``dlvs = wlv · rdr``) and the area leg</span>
+        <span class="c1"># (``dlais = lai · rdr``) consistent, so the green→dead-leaf transfer</span>
+        <span class="c1"># remains mass-conserving.</span>
+        <span class="k">if</span> <span class="n">hybrid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;leaf.rdr&quot;</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
         <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdr</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
         <span class="c1"># Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).</span>
@@ -2360,7 +2405,7 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 
 
 <h3 id="torchcrop.processes.leaf_dynamics.LeafDynamics.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">g_lv</span><span class="p">,</span> <span class="n">dtsu</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">heat_stress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">g_lv</span><span class="p">,</span> <span class="n">dtsu</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">heat_stress</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hybrid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.leaf_dynamics.LeafDynamics.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2447,6 +2492,24 @@ nor senesce. Defaults to
 <code>state.tsump &gt;= params.tsumem</code>.</p></td>
         <td><code>None</code></td>
       </tr>
+      <tr>
+        <td><code>hybrid</code></td>
+        <td><code>&#39;HybridManager | None&#39;</code></td>
+        <td><p>Optional <code>HybridManager</code>. When supplied together with
+<code>features</code> and a <code>"leaf.rdr"</code> slot is configured, the
+relative death rate <code>RDR</code> receives a bounded multiplicative
+residual correction before the ≤ 1 cap. <code>None</code> disables
+the correction (pure mechanistic behaviour).</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>features</code></td>
+        <td><code>dict[str, torch.Tensor] | None</code></td>
+        <td><p>Optional per-day feature dict supplying the context
+tensors for the <code>"leaf.rdr"</code> slot. Ignored when <code>hybrid</code>
+is <code>None</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -2498,6 +2561,8 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">heat_stress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">hybrid</span><span class="p">:</span> <span class="s2">&quot;HybridManager | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">features</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute leaf area and leaf-biomass rates for one day.</span>
 
@@ -2524,6 +2589,14 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            are forced to zero so pre-emergence leaves neither grow</span>
 <span class="sd">            nor senesce. Defaults to</span>
 <span class="sd">            ``state.tsump &gt;= params.tsumem``.</span>
+<span class="sd">        hybrid: Optional `HybridManager`. When supplied together with</span>
+<span class="sd">            ``features`` and a ``&quot;leaf.rdr&quot;`` slot is configured, the</span>
+<span class="sd">            relative death rate ``RDR`` receives a bounded multiplicative</span>
+<span class="sd">            residual correction before the ≤ 1 cap. ``None`` disables</span>
+<span class="sd">            the correction (pure mechanistic behaviour).</span>
+<span class="sd">        features: Optional per-day feature dict supplying the context</span>
+<span class="sd">            tensors for the ``&quot;leaf.rdr&quot;`` slot. Ignored when ``hybrid``</span>
+<span class="sd">            is ``None``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors grouped as follows.</span>
@@ -2595,6 +2668,13 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="p">)</span>
     <span class="n">rdrdry</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">tranrf</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">rdrl</span>
     <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">rdrdv</span><span class="p">,</span> <span class="n">rdrsh</span><span class="p">),</span> <span class="n">rdrdry</span><span class="p">)</span> <span class="o">*</span> <span class="n">heat_stress</span>
+    <span class="c1"># Optional residual correction on the relative death rate, applied</span>
+    <span class="c1"># *before* the ≤ 1 cap. Correcting the rate constant (not the output</span>
+    <span class="c1"># flux) keeps the mass leg (``dlvs = wlv · rdr``) and the area leg</span>
+    <span class="c1"># (``dlais = lai · rdr``) consistent, so the green→dead-leaf transfer</span>
+    <span class="c1"># remains mass-conserving.</span>
+    <span class="k">if</span> <span class="n">hybrid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;leaf.rdr&quot;</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
     <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdr</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="c1"># Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).</span>
