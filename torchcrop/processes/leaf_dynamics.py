@@ -31,12 +31,17 @@ SLA itself carries an ``exp(−NSLA · (1 − NPKI))`` reduction.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import torch
 import torch.nn as nn
 
 from torchcrop.functions import interpolate
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.states.model_state import ModelState
+
+if TYPE_CHECKING:
+    from torchcrop.nn.hybrid import HybridManager
 
 
 class LeafDynamics(nn.Module):
@@ -53,6 +58,8 @@ class LeafDynamics(nn.Module):
         params: CropParameters,
         heat_stress: torch.Tensor | None = None,
         emerg: torch.Tensor | None = None,
+        hybrid: "HybridManager | None" = None,
+        features: dict[str, torch.Tensor] | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute leaf area and leaf-biomass rates for one day.
 
@@ -79,6 +86,14 @@ class LeafDynamics(nn.Module):
                 are forced to zero so pre-emergence leaves neither grow
                 nor senesce. Defaults to
                 ``state.tsump >= params.tsumem``.
+            hybrid: Optional `HybridManager`. When supplied together with
+                ``features`` and a ``"leaf.rdr"`` slot is configured, the
+                relative death rate ``RDR`` receives a bounded multiplicative
+                residual correction before the ≤ 1 cap. ``None`` disables
+                the correction (pure mechanistic behaviour).
+            features: Optional per-day feature dict supplying the context
+                tensors for the ``"leaf.rdr"`` slot. Ignored when ``hybrid``
+                is ``None``.
 
         Returns:
             Dict of ``[B]`` tensors grouped as follows.
@@ -150,6 +165,13 @@ class LeafDynamics(nn.Module):
         )
         rdrdry = (1.0 - tranrf) * params.rdrl
         rdr = torch.maximum(torch.maximum(rdrdv, rdrsh), rdrdry) * heat_stress
+        # Optional residual correction on the relative death rate, applied
+        # *before* the ≤ 1 cap. Correcting the rate constant (not the output
+        # flux) keeps the mass leg (``dlvs = wlv · rdr``) and the area leg
+        # (``dlais = lai · rdr``) consistent, so the green→dead-leaf transfer
+        # remains mass-conserving.
+        if hybrid is not None and features is not None:
+            rdr = hybrid.correct("leaf.rdr", rdr, features)
         rdr = torch.clamp(rdr, max=1.0)
 
         # Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).
