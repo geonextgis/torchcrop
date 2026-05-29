@@ -109,6 +109,7 @@ nav:
                 - interpolation: api/functions/interpolation.md
                 - smoothing: api/functions/smoothing.md
           - Neural Networks:
+                - hybrid: api/nn/hybrid.md
                 - learned_stress: api/nn/learned_stress.md
                 - param_net: api/nn/param_net.md
                 - residual: api/nn/residual.md
