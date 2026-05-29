@@ -8,7 +8,7 @@ low-level (``compute_rates`` / ``update_state``) API.
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, Sequence
 
 import torch
 import torch.nn as nn
@@ -16,6 +16,7 @@ import torch.nn as nn
 from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.engine import SimulationEngine, euler_update
 from torchcrop.functions import interpolate
+from torchcrop.nn.hybrid import HybridManager, ResidualSpec
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
@@ -97,12 +98,30 @@ class Lintul5Model(nn.Module):
             stage-based branching.
         stress_module: Optional replacement for the default
             `StressFactors` combiner.
-        residual_modules: Optional neural residual corrections keyed by
-            process name:
+        residual_specs: Optional list of `ResidualSpec` slots enabling
+            constraint-aware neural residual corrections on individual
+            mechanistic quantities (see `torchcrop.nn.hybrid`). Each slot
+            targets one quantity by name and is projected onto that
+            quantity's natural geometry (non-negative rate, ``[0, 1]``
+            factor, or simplex of fractions), so corrections preserve sign,
+            mass balance and numerical stability. Slots are zero-initialised
+            and therefore start as the identity — a model built with specs
+            but untrained reproduces the pure mechanistic trajectory.
+            ``None`` (the default) disables all corrections.
 
-            * ``"photosynthesis"`` adds to ``gtotal``.
-            * ``"partitioning"`` adds to the four allocation fractions.
-            * ``"leaf_dynamics"`` adds to ``lai_rate``.
+            Supported slot names: ``"photosynthesis.gtotal"``,
+            ``"water.tranrf"``, ``"partitioning.aboveground"``,
+            ``"partitioning.fr"``, ``"leaf.rdr"``,
+            ``"phenology.dvs_rate"``. See `torchcrop.nn.hybrid.default_slots`
+            for the recommended catalogue.
+
+            Enable only the slots whose pathway is constrained by an
+            observable in your calibration data; turning on every slot at
+            once invites identifiability and compensation problems (several
+            residuals, and the mechanistic parameters they shadow, become
+            degenerate). Prefer a minimal observable-tied subset, calibrate
+            mechanistic parameters before adding residuals, and regularise
+            with ``self.hybrid.penalty()`` to anchor corrections toward zero.
     """
 
     def __init__(
@@ -112,7 +131,7 @@ class Lintul5Model(nn.Module):
         site_params: SiteParameters | None = None,
         smooth: bool = False,
         stress_module: nn.Module | None = None,
-        residual_modules: dict[str, nn.Module] | None = None,
+        residual_specs: Sequence[ResidualSpec] | None = None,
     ) -> None:
         super().__init__()
         self.crop_params = crop_params or CropParameters()
@@ -137,7 +156,7 @@ class Lintul5Model(nn.Module):
         self.heat_stress_grain = HeatStressOnGrain()
         self.stress = stress_module or StressFactors()
 
-        self.residual_modules = nn.ModuleDict(residual_modules or {})
+        self.hybrid = HybridManager(residual_specs)
 
         self.engine = SimulationEngine(
             compute_rates=self._compute_rates_dispatch,
@@ -278,6 +297,10 @@ class Lintul5Model(nn.Module):
         else:
             state = initial_state
 
+        # Clear the residual-magnitude accumulator so ``hybrid.penalty()``
+        # reflects only this simulation (no-op when no slots are enabled).
+        self.hybrid.reset_penalty()
+
         states, rates, diagnostics = self.engine.run(
             state=state,
             weather=weather,
@@ -404,6 +427,18 @@ class Lintul5Model(nn.Module):
         cosld = astro["cosld"]
         ddlp = astro["ddlp"]
 
+        # Per-day feature dict for optional neural residual corrections.
+        # Populated progressively as quantities become available and consumed
+        # by ``self.hybrid.correct`` at each slot site (a no-op when the
+        # corresponding slot is not configured).
+        feats: dict[str, torch.Tensor] = {
+            "lai": state.lai,
+            "dvs": state.dvs,
+            "rootd": state.rootd,
+            "davtmp": davtmp,
+            "ddlp": ddlp,
+        }
+
         # 2. Irradiation — daily total irradiation and PAR interception
         irrad_out = self.irradiation(
             state=state,
@@ -458,7 +493,13 @@ class Lintul5Model(nn.Module):
             etc=et["etc"],
             doy=doy,
         )
-        tranrf = water["tranrf"]
+        # Optional correction of the water-stress factor at source, so the
+        # corrected value propagates through every downstream consumer
+        # (nutrient demand, photosynthesis stress, partitioning, leaf/root).
+        # The ``unit_interval`` projection keeps ``tranrf`` within ``(0, 1)``.
+        feats["smact"] = water["smact"]
+        tranrf = self.hybrid.correct("water.tranrf", water["tranrf"], feats)
+        feats["tranrf"] = tranrf
 
         # 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,
         #    ``davtmp`` and ``ddlp``, so its position in the sequence
@@ -477,6 +518,7 @@ class Lintul5Model(nn.Module):
             tranrf=tranrf,
         )
         nstress = nut["nstress"]
+        feats["nstress"] = nstress
 
         # 7. Soil mineral-pool balance. Runs after NutrientDemand
         #    because it consumes the day's NUPTR/PUPTR/KUPTR (which
@@ -523,14 +565,11 @@ class Lintul5Model(nn.Module):
         combined_stress = self.stress(tranrf, npkref)
         gtotal = photo["rue"] * photo["rtmco"] * parint_mj * combined_stress
 
-        # Optional neural residual correction on ``gtotal``.
-        if "photosynthesis" in self.residual_modules:
-            ctx = torch.stack(
-                [state.lai, state.dvs, davtmp, dtr, tranrf, nstress, state.wa, doy],
-                dim=-1,
-            )
-            gtotal = gtotal + self.residual_modules["photosynthesis"](ctx).squeeze(-1)
-            gtotal = torch.clamp(gtotal, min=0.0)
+        # Optional neural residual correction on ``gtotal`` — the highest-
+        # leverage hybridisation point, where all carbon enters the plant.
+        # The ``rate_factor`` projection is multiplicative (``base · exp(δ)``),
+        # so the corrected value stays non-negative without a hard clamp.
+        gtotal = self.hybrid.correct("photosynthesis.gtotal", gtotal, feats)
 
         # 9. Partitioning. Water and N stress are fed into ``SUBPAR``;
         #    SIMPLACE passes the nitrogen-only index ``NNI``.
@@ -541,6 +580,36 @@ class Lintul5Model(nn.Module):
             tranrf=tranrf,
             nni=nut["nni"],
         )
+
+        # Optional correction of the biomass partitioning. The above-ground
+        # split is projected onto the simplex (``fl + fs + fo = 1`` exactly)
+        # and the root/shoot fraction stays in ``(0, 1)``; organ growth is
+        # then recomputed from the corrected fractions so carbon is conserved
+        # (``g_lv + g_st + g_so == gtotal · (1 − fr)``).
+        if self.hybrid.enabled("partitioning.fr") or self.hybrid.enabled(
+            "partitioning.aboveground"
+        ):
+            fr = self.hybrid.correct("partitioning.fr", part["fr"], feats)
+            fl, fs, fo = part["fl"], part["fs"], part["fo"]
+            if self.hybrid.enabled("partitioning.aboveground"):
+                fvec = self.hybrid.correct(
+                    "partitioning.aboveground",
+                    torch.stack([fl, fs, fo], dim=-1),
+                    feats,
+                )
+                fl, fs, fo = fvec.unbind(-1)
+            agrt = gtotal * (1.0 - fr)
+            part = {
+                **part,
+                "fr": fr,
+                "fl": fl,
+                "fs": fs,
+                "fo": fo,
+                "g_root": gtotal * fr,
+                "g_lv": fl * agrt,
+                "g_st": fs * agrt,
+                "g_so": fo * agrt,
+            }
 
         # 10. Leaf dynamics with heat-stress acceleration of senescence.
         #     `HeatStressOnLeafSenescence` returns a multiplier on
@@ -557,6 +626,8 @@ class Lintul5Model(nn.Module):
             nstress=nstress,
             params=crop_params,
             heat_stress=leaf_heat,
+            hybrid=self.hybrid,
+            features=feats,
         )
 
         # 11. Root dynamics
@@ -603,7 +674,9 @@ class Lintul5Model(nn.Module):
         rkldrt = crop_params.rkfrt * drrt
 
         rates: dict[str, torch.Tensor] = {
-            "dvs_rate": pheno["dvs_rate"],
+            "dvs_rate": self.hybrid.correct(
+                "phenology.dvs_rate", pheno["dvs_rate"], feats
+            ),
             "tsum_rate": pheno["tsum_rate"],
             "tsump_rate": pheno["tsump_rate"],
             "vern_rate": pheno["vern_rate"],
