@@ -7,6 +7,7 @@ low-level (``compute_rates`` / ``update_state``) API.
 
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, fields
 from typing import Any, Sequence
 
@@ -123,6 +124,25 @@ class Lintul5Model(nn.Module):
             mechanistic parameters before adding residuals, and regularise
             with ``self.hybrid.penalty()`` to anchor corrections toward zero.
     """
+
+    #: Discrete/categorical parameter fields, keyed by container name.
+    #: These select behaviour through hard thresholds or int casts, so they
+    #: are detached from the autograd graph and cannot be calibrated by
+    #: gradient descent even when wrapped as `nn.Parameter`:
+    #:
+    #:   * ``crop.idsl``  — phenology mode {0,1,2} (``idsl >= 1`` / ``>= 2``).
+    #:   * ``crop.iopt``  — run mode {1,2,3,4} (``iopt <= 2.5`` / ``<= 3.5``).
+    #:   * ``soil.irri``  — irrigation mode {0,1,2} (``isclose`` matching).
+    #:   * ``soil.iairdu`` — aquatic-roots flag {0,1} (``iairdu > 0.5``).
+    #:   * ``site.plant_at_sowing`` — start-at-planting flag {0,1}.
+    #:   * ``site.idpl`` / ``site.idem`` — planting / emergence day-of-year.
+    #:
+    #: `learnable_parameter_groups` excludes them and warns the user.
+    _NON_DIFFERENTIABLE_FIELDS: dict[str, frozenset[str]] = {
+        "crop": frozenset({"idsl", "iopt"}),
+        "soil": frozenset({"irri", "iairdu"}),
+        "site": frozenset({"plant_at_sowing", "idpl", "idem"}),
+    }
 
     def __init__(
         self,
@@ -255,6 +275,7 @@ class Lintul5Model(nn.Module):
         weather: WeatherDriver | torch.Tensor,
         start_doy: int = 1,
         initial_state: ModelState | None = None,
+        irrigation: torch.Tensor | None = None,
     ) -> ModelOutput:
         """Run a full simulation and return trajectories plus final yield.
 
@@ -268,6 +289,13 @@ class Lintul5Model(nn.Module):
                 the user is responsible for any
                 ``wci``/``wci_lower``/``rdm`` clipping — this path
                 bypasses the SIMPLACE-parity setup in `initialize`.
+            irrigation: Optional externally supplied daily irrigation of
+                shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.
+                When provided, day ``t``'s value overrides the
+                ``soil_params.irri`` mode in the water balance, so the
+                schedule can be a fixed plan or an `nn.Parameter`
+                optimised through the simulation. ``None`` (the default)
+                leaves the internal IRRI logic (modes 0/1/2) in control.
 
         Returns:
             A `ModelOutput` containing the full state, rate and
@@ -285,9 +313,26 @@ class Lintul5Model(nn.Module):
               so a truncated run that never exits the anthesis window
               returns ``0`` (matches SIMPLACE ``pPeriodEnded``).
         """
+        # Validate discrete config (irrigation / phenology / run modes,
+        # start-mode flag) once per run, before entering the per-day loop
+        # — keeps the hot path free of CPU-syncing value checks.
+        self.crop_params.validate()
+        self.soil_params.validate()
+        self.site_params.validate()
+
         if isinstance(weather, torch.Tensor):
             weather = WeatherDriver(weather)
         batch_size = weather.batch_size
+        if irrigation is not None:
+            expected = (batch_size, weather.n_days)
+            if irrigation.shape != expected:
+                raise ValueError(
+                    "irrigation must have shape [B, T] = "
+                    f"{expected}; got {tuple(irrigation.shape)}"
+                )
+            irrigation = irrigation.to(
+                dtype=weather.data.dtype, device=weather.data.device
+            )
         if initial_state is None:
             state = self.initialize(
                 batch_size=batch_size,
@@ -308,6 +353,7 @@ class Lintul5Model(nn.Module):
             crop_params=self.crop_params,
             soil_params=self.soil_params,
             site_params=self.site_params,
+            irrigation=irrigation,
         )
 
         lai = torch.stack([s.lai for s in states], dim=1)  # [B, T+1]
@@ -349,6 +395,7 @@ class Lintul5Model(nn.Module):
         state: ModelState,
         weather_day: dict[str, torch.Tensor],
         doy: torch.Tensor,
+        irrigation: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute the daily rate vector for a single day (low-level API).
 
@@ -357,6 +404,10 @@ class Lintul5Model(nn.Module):
             weather_day: Dict of named weather channels for the current
                 day (see `WEATHER_CHANNELS`), each of shape ``[B]``.
             doy: Day-of-year tensor of shape ``[B]``.
+            irrigation: Optional externally supplied irrigation for this
+                day ``[B]`` [mm d⁻¹]. When provided it overrides the
+                ``soil_params.irri`` mode in the water balance; ``None``
+                leaves the internal IRRI logic in control.
 
         Returns:
             Dict of rate tensors keyed by ``"<field>_rate"`` plus a
@@ -372,6 +423,7 @@ class Lintul5Model(nn.Module):
             crop_params=self.crop_params,
             soil_params=self.soil_params,
             site_params=self.site_params,
+            irrigation=irrigation,
         )
         return rates
 
@@ -405,6 +457,7 @@ class Lintul5Model(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
         site_params: SiteParameters,
+        irrigation: torch.Tensor | None = None,
     ) -> tuple[dict[str, torch.Tensor], DiagnosticState]:
         # Unpack the day's weather forcing.
         davtmp = weather_day["davtmp"]
@@ -492,6 +545,7 @@ class Lintul5Model(nn.Module):
             rdm=rdm,
             etc=et["etc"],
             doy=doy,
+            irrigation=irrigation,
         )
         # Optional correction of the water-stress factor at source, so the
         # corrected value propagates through every downstream consumer
@@ -874,6 +928,13 @@ class Lintul5Model(nn.Module):
         and returns every field that is an `nn.Parameter` (i.e. has
         been marked as learnable by the user).
 
+        Discrete/categorical switches listed in
+        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)
+        are *excluded* even when wrapped as `nn.Parameter`: they gate
+        behaviour through hard thresholds, so they are detached from the
+        autograd graph and would silently never receive a gradient. A
+        `UserWarning` is emitted in that case to flag the no-op.
+
         Returns:
             Dict keyed by ``"<container>.<field>"`` (for example,
             ``"crop.rue"``) mapping to the corresponding `nn.Parameter`.
@@ -884,8 +945,18 @@ class Lintul5Model(nn.Module):
             ("soil", self.soil_params),
             ("site", self.site_params),
         ):
+            non_diff = self._NON_DIFFERENTIABLE_FIELDS.get(name, frozenset())
             for f in fields(params):
                 v = getattr(params, f.name)
                 if isinstance(v, nn.Parameter):
+                    if f.name in non_diff:
+                        warnings.warn(
+                            f"{name}.{f.name} is a discrete (non-differentiable) "
+                            "switch and cannot be calibrated by gradient descent; "
+                            "excluding it from the learnable parameter groups.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                        continue
                     out[f"{name}.{f.name}"] = v
         return out
