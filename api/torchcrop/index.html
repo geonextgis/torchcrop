@@ -2734,28 +2734,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_a" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        angstrom_a
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        angstrom_b
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -7986,28 +7964,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_a" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        angstrom_a
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_b" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        angstrom_b
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -12996,6 +12952,9 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">atmtr</span><span class="o">=</span><span class="n">atmtr</span><span class="p">,</span>
             <span class="n">frac_int</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
+            <span class="n">altitude</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">altitude</span><span class="p">,</span>
+            <span class="n">cfet</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">cfet</span><span class="p">,</span>
+            <span class="n">fpenmtb</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">fpenmtb</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># 3b. CO₂ influence on transpiration — scale the potential</span>
@@ -19609,21 +19568,7 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 <span class="sd">    of atmospheric CO₂ concentration [ppm] (C3 crops).&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 3. Solar-radiation reconstruction (when only sunshine duration is</span>
-    <span class="c1">#    available — Ångström–Prescott formula).</span>
-    <span class="c1"># ------------------------------------------------------------------ #</span>
-
-    <span class="n">angstrom_a</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.25</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ångström–Prescott coefficient ``a`` [-]: fraction of extra-</span>
-<span class="sd">    terrestrial radiation reaching the surface on overcast days.&quot;&quot;&quot;</span>
-
-    <span class="n">angstrom_b</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.50</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ångström–Prescott coefficient ``b`` [-]: additional fraction</span>
-<span class="sd">    reaching the surface on cloudless days, multiplied by relative</span>
-<span class="sd">    sunshine duration.&quot;&quot;&quot;</span>
-
-    <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 4. Sowing / emergence calendar (from Phenology.java)</span>
+    <span class="c1"># 3. Sowing / emergence calendar (from Phenology.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">plant_at_sowing</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
@@ -19711,53 +19656,6 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
       <p><code>cALTI</code>. Site / weather-station altitude [m a.s.l.]. Used in the
 psychrometric-constant calculation of the Penman ET₀ routine.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="torchcrop.parameters.site_params.SiteParameters.angstrom_a" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">angstrom_a</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_a" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p>Ångström–Prescott coefficient <code>a</code> [-]: fraction of extra-
-terrestrial radiation reaching the surface on overcast days.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="torchcrop.parameters.site_params.SiteParameters.angstrom_b" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">angstrom_b</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.site_params.SiteParameters.angstrom_b" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p>Ångström–Prescott coefficient <code>b</code> [-]: additional fraction
-reaching the surface on cloudless days, multiplied by relative
-sunshine duration.</p>
     </div>
 
   </div>
@@ -22029,33 +21927,11 @@ PotentialEvapoTranspiration            (<span title="torch.nn.modules.module.Mod
 <p>Implements the full PENMAN formula and outputs reference ET
 (<code>E0</code>, <code>ES0</code>, <code>ETC</code>), which is then split into potential
 transpiration and soil evaporation based on light interception.</p>
+<p>The site/crop drivers (<code>altitude</code>, <code>cfet</code>, <code>co2</code>, <code>fpenmtb</code>)
+are supplied per call through <code>forward</code> rather than at construction,
+so they flow directly from the <code>SiteParameters</code> dataclass and can be
+made batch-varying or learnable.</p>
 
-<p><strong>Parameters:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Default</th>
-    </tr>
-  </thead>
-  <tbody>
-      <tr>
-        <td><code>altitude</code></td>
-        <td><code>float</code></td>
-        <td><p>Station altitude [m] (default <code>0</code>).</p></td>
-        <td><code>0.0</code></td>
-      </tr>
-      <tr>
-        <td><code>cfet</code></td>
-        <td><code>float</code></td>
-        <td><p>Crop-specific correction factor for transpiration
-(default <code>1.0</code>).</p></td>
-        <td><code>1.0</code></td>
-      </tr>
-  </tbody>
-</table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PotentialEvapoTranspiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -22065,34 +21941,22 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">    (``E0``, ``ES0``, ``ETC``), which is then split into potential</span>
 <span class="sd">    transpiration and soil evaporation based on light interception.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        altitude: Station altitude [m] (default ``0``).</span>
-<span class="sd">        cfet: Crop-specific correction factor for transpiration</span>
-<span class="sd">            (default ``1.0``).</span>
+<span class="sd">    The site/crop drivers (``altitude``, ``cfet``, ``co2``, ``fpenmtb``)</span>
+<span class="sd">    are supplied per call through `forward` rather than at construction,</span>
+<span class="sd">    so they flow directly from the `SiteParameters` dataclass and can be</span>
+<span class="sd">    made batch-varying or learnable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">altitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">cfet</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">=</span> <span class="n">altitude</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">=</span> <span class="n">cfet</span>
-
-        <span class="c1"># CO2 correction table (concentration [ppm] → ET0 factor).</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span>
-            <span class="s2">&quot;co2_table&quot;</span><span class="p">,</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
-                <span class="p">[</span>
-                    <span class="p">[</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">],</span>
-                    <span class="p">[</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">],</span>
-                    <span class="p">[</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">],</span>
-                    <span class="p">[</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">],</span>
-                    <span class="p">[</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">],</span>
-                <span class="p">]</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
+    <span class="c1"># Default Penman ET0 CO₂-correction table (concentration [ppm] →</span>
+    <span class="c1"># factor), used when ``fpenmtb`` is not supplied. Mirrors the</span>
+    <span class="c1"># ``SiteParameters.fpenmtb`` default (SIMPLACE ``cFPENMTB``).</span>
+    <span class="n">_DEFAULT_FPENMTB</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">),</span>
+        <span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">),</span>
+    <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -22104,6 +21968,9 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">atmtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">frac_int</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
+        <span class="n">altitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
@@ -22118,6 +21985,17 @@ transpiration and soil evaporation based on light interception.</p>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], a scalar or</span>
 <span class="sd">                shape broadcastable to ``[B]`` (default ``370``).</span>
 <span class="sd">                Supplied by ``SiteParameters.co2`` in the model.</span>
+<span class="sd">            altitude: Site altitude [m a.s.l.], scalar or broadcastable</span>
+<span class="sd">                to ``[B]`` (default ``0``). Supplied by</span>
+<span class="sd">                ``SiteParameters.altitude``; enters the barometric</span>
+<span class="sd">                pressure used by the psychrometric constant.</span>
+<span class="sd">            cfet: Crop-specific transpiration correction factor [-],</span>
+<span class="sd">                scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
+<span class="sd">                Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">            fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
+<span class="sd">                (concentration [ppm] → factor). Supplied by</span>
+<span class="sd">                ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>
+<span class="sd">                falls back to the standard C3 table when ``None``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -22154,7 +22032,8 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">bu</span> <span class="o">=</span> <span class="mf">0.54</span> <span class="o">+</span> <span class="mf">0.35</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tdif</span> <span class="o">-</span> <span class="mf">12.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
         <span class="c1"># Barometric pressure [mbar]</span>
-        <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
+        <span class="n">altitude_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">altitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmpa</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmpa</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="n">altitude_t</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
 
         <span class="c1"># Psychrometric constant [mbar K-1]</span>
         <span class="n">gamma</span> <span class="o">=</span> <span class="n">PSYCON</span> <span class="o">*</span> <span class="n">pbar</span>
@@ -22202,14 +22081,19 @@ transpiration and soil evaporation based on light interception.</p>
         <span class="n">es0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">es0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="c1"># CO2 correction for ET0</span>
+        <span class="c1"># CO2 correction for ET0 (Penman ET0 × FPENMTB(CO2);</span>
+        <span class="c1"># SIMPLACE PotentialEvapoTranspiration.java:194).</span>
+        <span class="k">if</span> <span class="n">fpenmtb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fpenmtb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_FPENMTB</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
         <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">e0</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
-        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">co2_table</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">fpenmtb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
         <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
         <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
-        <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+        <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
         <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -22234,13 +22118,12 @@ transpiration and soil evaporation based on light interception.</p>
 
 
 
-
   <div class="doc doc-object doc-method">
 
 
 
 <h5 id="torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">wind</span><span class="p">,</span> <span class="n">vap</span><span class="p">,</span> <span class="n">avrad</span><span class="p">,</span> <span class="n">atmtr</span><span class="p">,</span> <span class="n">frac_int</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="mf">370.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">wind</span><span class="p">,</span> <span class="n">vap</span><span class="p">,</span> <span class="n">avrad</span><span class="p">,</span> <span class="n">atmtr</span><span class="p">,</span> <span class="n">frac_int</span><span class="p">,</span> <span class="n">co2</span><span class="o">=</span><span class="mf">370.0</span><span class="p">,</span> <span class="n">altitude</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cfet</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fpenmtb</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.evapotranspiration.PotentialEvapoTranspiration.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -22310,6 +22193,32 @@ shape broadcastable to <code>[B]</code> (default <code>370</code>).
 Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
         <td><code>370.0</code></td>
       </tr>
+      <tr>
+        <td><code>altitude</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Site altitude [m a.s.l.], scalar or broadcastable
+to <code>[B]</code> (default <code>0</code>). Supplied by
+<code>SiteParameters.altitude</code>; enters the barometric
+pressure used by the psychrometric constant.</p></td>
+        <td><code>0.0</code></td>
+      </tr>
+      <tr>
+        <td><code>cfet</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Crop-specific transpiration correction factor [-],
+scalar or broadcastable to <code>[B]</code> (default <code>1.0</code>).
+Supplied by <code>SiteParameters.cfet</code>.</p></td>
+        <td><code>1.0</code></td>
+      </tr>
+      <tr>
+        <td><code>fpenmtb</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Penman ET0 CO₂-correction table <code>[N, 2]</code>
+(concentration [ppm] → factor). Supplied by
+<code>SiteParameters.fpenmtb</code> (SIMPLACE <code>cFPENMTB</code>);
+falls back to the standard C3 table when <code>None</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -22348,6 +22257,9 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
     <span class="n">atmtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">frac_int</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
+    <span class="n">altitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
@@ -22362,6 +22274,17 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], a scalar or</span>
 <span class="sd">            shape broadcastable to ``[B]`` (default ``370``).</span>
 <span class="sd">            Supplied by ``SiteParameters.co2`` in the model.</span>
+<span class="sd">        altitude: Site altitude [m a.s.l.], scalar or broadcastable</span>
+<span class="sd">            to ``[B]`` (default ``0``). Supplied by</span>
+<span class="sd">            ``SiteParameters.altitude``; enters the barometric</span>
+<span class="sd">            pressure used by the psychrometric constant.</span>
+<span class="sd">        cfet: Crop-specific transpiration correction factor [-],</span>
+<span class="sd">            scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
+<span class="sd">            Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">        fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
+<span class="sd">            (concentration [ppm] → factor). Supplied by</span>
+<span class="sd">            ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>
+<span class="sd">            falls back to the standard C3 table when ``None``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
@@ -22398,7 +22321,8 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
     <span class="n">bu</span> <span class="o">=</span> <span class="mf">0.54</span> <span class="o">+</span> <span class="mf">0.35</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">tdif</span> <span class="o">-</span> <span class="mf">12.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="c1"># Barometric pressure [mbar]</span>
-    <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">altitude</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
+    <span class="n">altitude_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">altitude</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tmpa</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tmpa</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">pbar</span> <span class="o">=</span> <span class="mf">1013.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.034</span> <span class="o">*</span> <span class="n">altitude_t</span> <span class="o">/</span> <span class="p">(</span><span class="n">tmpa</span> <span class="o">+</span> <span class="mf">273.0</span><span class="p">))</span>
 
     <span class="c1"># Psychrometric constant [mbar K-1]</span>
     <span class="n">gamma</span> <span class="o">=</span> <span class="n">PSYCON</span> <span class="o">*</span> <span class="n">pbar</span>
@@ -22446,14 +22370,19 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
     <span class="n">es0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">es0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">et0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">et0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-    <span class="c1"># CO2 correction for ET0</span>
+    <span class="c1"># CO2 correction for ET0 (Penman ET0 × FPENMTB(CO2);</span>
+    <span class="c1"># SIMPLACE PotentialEvapoTranspiration.java:194).</span>
+    <span class="k">if</span> <span class="n">fpenmtb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fpenmtb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_FPENMTB</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
     <span class="n">co2_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">co2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">e0</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="n">co2_b</span> <span class="o">=</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">e0</span><span class="p">)</span> <span class="k">if</span> <span class="n">co2_t</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">co2_t</span>
-    <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">co2_table</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
+    <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">fpenmtb</span><span class="p">,</span> <span class="n">co2_b</span><span class="p">)</span>
     <span class="n">etc</span> <span class="o">=</span> <span class="n">et0</span> <span class="o">*</span> <span class="n">co2_factor</span>
 
     <span class="c1"># Potential transpiration and soil evaporation split by light interception</span>
-    <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
+    <span class="n">ptran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">cfet</span> <span class="o">*</span> <span class="n">etc</span> <span class="o">*</span> <span class="n">frac_int</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)</span>
     <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
