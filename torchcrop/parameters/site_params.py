@@ -48,6 +48,31 @@ def _table(
     return torch.tensor(rows, dtype=dtype)
 
 
+def _check_discrete(
+    name: str, value: torch.Tensor, allowed: tuple[float, ...]
+) -> None:
+    """Assert that every element of ``value`` is one of ``allowed``.
+
+    Args:
+        name: Field name, used in the error message.
+        value: Tensor of switch values (scalar or batched ``[B]``).
+        allowed: The permitted discrete values.
+
+    Raises:
+        ValueError: If any element of ``value`` is not in ``allowed``.
+    """
+    valid = torch.zeros_like(value, dtype=torch.bool)
+    for a in allowed:
+        valid = valid | torch.isclose(value, torch.full_like(value, a))
+    if not bool(valid.all()):
+        allowed_str = ", ".join(
+            str(int(a)) if float(a).is_integer() else str(a) for a in allowed
+        )
+        raise ValueError(
+            f"{name} must be one of {{{allowed_str}}}; got {value.tolist()}"
+        )
+
+
 @dataclass
 class SiteParameters:
     """Geographical, atmospheric, and calendar parameters for a site.
@@ -129,6 +154,22 @@ class SiteParameters:
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+
+    def validate(self) -> None:
+        """Validate discrete/categorical site fields.
+
+        Checks the ``plant_at_sowing`` start-mode flag against its
+        boolean domain ``{0, 1}`` (``1`` → start at planting,
+        ``0`` → start at emergence). The companion calendar selectors
+        ``idpl`` / ``idem`` are day-of-year integers spanning a wide
+        range and are left unconstrained here.
+
+        Raises:
+            ValueError: If ``plant_at_sowing`` is not ``0`` or ``1``.
+        """
+        _check_discrete(
+            "site_params.plant_at_sowing", self.plant_at_sowing, (0.0, 1.0)
+        )
 
     def to(
         self,
