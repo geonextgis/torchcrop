@@ -49,7 +49,6 @@ def test_leaf_dynamics_output_shapes():
     out = leaf(
         state=s,
         g_lv=z + 2.0,
-        dtsu=z + 5.0,
         davtmp=z + 15.0,
         tranrf=z + 1.0,
         nstress=z + 1.0,
@@ -71,7 +70,6 @@ def test_emergence_branch_uses_laii():
     out = leaf(
         state=s,
         g_lv=z + 0.0,
-        dtsu=z + 10.0,
         davtmp=z + 15.0,
         tranrf=z + 1.0,
         nstress=z + 1.0,
@@ -94,13 +92,11 @@ def test_juvenile_branch_formula():
     lai = 0.5
     s = _state(b=1, dvs=dvs, lai=lai, wlv=20.0)
     p = _params()
-    dtsu = torch.tensor([12.0], dtype=torch.float64)
     tranrf = torch.tensor([0.7], dtype=torch.float64)
     nstress = torch.tensor([0.8], dtype=torch.float64)
     out = leaf(
         state=s,
         g_lv=torch.tensor([1.5], dtype=torch.float64),
-        dtsu=dtsu,
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=tranrf,
         nstress=nstress,
@@ -108,14 +104,58 @@ def test_juvenile_branch_formula():
     )
     rgrl = float(p.rgrl.item())
     nlai = float(p.nlai.item())
+    # DTEFF = max(0, davtmp - tbase); tbase defaults to 0 -> dteff = 15.
+    dteff = 15.0 - float(p.tbase.item())
     expected = (
         lai
-        * (math.exp(rgrl * 12.0) - 1.0)
+        * (math.exp(rgrl * dteff) - 1.0)
         * 0.7
         * math.exp(-nlai * (1.0 - 0.8))
     )
     assert torch.allclose(
         out["lai_growth"], torch.tensor([expected], dtype=torch.float64), atol=1e-12
+    )
+
+
+def test_juvenile_thermal_time_uses_tbase():
+    """Juvenile DTEFF = max(0, davtmp - tbase) (Lintul5.java:1436).
+
+    With a non-zero base temperature the effective thermal time — and
+    therefore the exponential LAI growth — must shrink accordingly, and
+    clamp to zero when davtmp <= tbase.
+    """
+    leaf = LeafDynamics()
+    dvs, lai = 0.1, 0.5
+    s = _state(b=1, dvs=dvs, lai=lai, wlv=20.0)
+    p = _params()
+    p.tbase = torch.tensor(8.0, dtype=torch.float64)  # e.g. maize-like base
+    rgrl = float(p.rgrl.item())
+
+    # davtmp = 20 -> dteff = 12.
+    out = leaf(
+        state=s,
+        g_lv=torch.tensor([1.5], dtype=torch.float64),
+        davtmp=torch.tensor([20.0], dtype=torch.float64),
+        tranrf=torch.tensor([1.0], dtype=torch.float64),
+        nstress=torch.tensor([1.0], dtype=torch.float64),
+        params=p,
+    )
+    expected = lai * (math.exp(rgrl * 12.0) - 1.0)
+    assert torch.allclose(
+        out["lai_growth"], torch.tensor([expected], dtype=torch.float64), atol=1e-12
+    )
+
+    # davtmp = 5 < tbase=8 -> dteff clamps to 0 -> no juvenile growth.
+    out_cold = leaf(
+        state=s,
+        g_lv=torch.tensor([1.5], dtype=torch.float64),
+        davtmp=torch.tensor([5.0], dtype=torch.float64),
+        tranrf=torch.tensor([1.0], dtype=torch.float64),
+        nstress=torch.tensor([1.0], dtype=torch.float64),
+        params=p,
+    )
+    assert torch.allclose(
+        out_cold["lai_growth"], torch.zeros(1, dtype=torch.float64), atol=1e-12
     )
 
 
@@ -132,7 +172,6 @@ def test_mature_branch_is_sla_times_glv():
     out = leaf(
         state=s,
         g_lv=glv,
-        dtsu=torch.tensor([5.0], dtype=torch.float64),
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=torch.tensor([1.0], dtype=torch.float64),
         nstress=nstress,
@@ -156,7 +195,6 @@ def test_rdrdv_zero_before_dvsdlt():
     out = leaf(
         state=s,
         g_lv=torch.tensor([0.0], dtype=torch.float64),
-        dtsu=torch.tensor([0.0], dtype=torch.float64),
         davtmp=torch.tensor([50.0], dtype=torch.float64),  # extreme T → RDRTMP large
         tranrf=torch.tensor([1.0], dtype=torch.float64),   # no drought
         nstress=torch.tensor([1.0], dtype=torch.float64),  # no NPK death
@@ -175,7 +213,6 @@ def test_rdrdv_active_after_dvsdlt_uses_temperature_table():
     out = leaf(
         state=s,
         g_lv=torch.tensor([0.0], dtype=torch.float64),
-        dtsu=torch.tensor([0.0], dtype=torch.float64),
         davtmp=torch.tensor([30.0], dtype=torch.float64),  # RDRLTB(30) = 0.05
         tranrf=torch.tensor([1.0], dtype=torch.float64),
         nstress=torch.tensor([1.0], dtype=torch.float64),
@@ -204,7 +241,6 @@ def test_rdrsh_above_laicr():
     out = leaf(
         state=s,
         g_lv=torch.tensor([0.0], dtype=torch.float64),
-        dtsu=torch.tensor([0.0], dtype=torch.float64),
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=torch.tensor([1.0], dtype=torch.float64),
         nstress=torch.tensor([1.0], dtype=torch.float64),
@@ -227,7 +263,6 @@ def test_rdrdry_under_water_stress():
     out = leaf(
         state=s,
         g_lv=torch.tensor([0.0], dtype=torch.float64),
-        dtsu=torch.tensor([0.0], dtype=torch.float64),
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=torch.tensor([0.5], dtype=torch.float64),
         nstress=torch.tensor([1.0], dtype=torch.float64),
@@ -251,7 +286,6 @@ def test_npk_death_is_additive_and_uses_sla_for_area():
     out = leaf(
         state=s,
         g_lv=torch.tensor([0.0], dtype=torch.float64),
-        dtsu=torch.tensor([0.0], dtype=torch.float64),
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=torch.tensor([1.0], dtype=torch.float64),
         nstress=nstress,
@@ -293,7 +327,6 @@ def test_gradient_flow_through_leaf_dynamics():
     out = leaf(
         state=s,
         g_lv=g_lv,
-        dtsu=torch.tensor([5.0], dtype=torch.float64),
         davtmp=davtmp,
         tranrf=tranrf,
         nstress=nstress,
@@ -316,7 +349,6 @@ def test_emergence_wins_over_juvenile_when_lai_zero():
     out = leaf(
         state=s,
         g_lv=torch.tensor([3.0], dtype=torch.float64),
-        dtsu=torch.tensor([15.0], dtype=torch.float64),
         davtmp=torch.tensor([15.0], dtype=torch.float64),
         tranrf=torch.tensor([1.0], dtype=torch.float64),
         nstress=torch.tensor([1.0], dtype=torch.float64),
