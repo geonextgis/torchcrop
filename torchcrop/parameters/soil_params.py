@@ -195,6 +195,31 @@ class SoilParameters:
     # Helpers
     # ------------------------------------------------------------------ #
 
+    def validate(self) -> None:
+        """Validate discrete/categorical soil fields.
+
+        Checks that the irrigation mode ``irri`` holds only the
+        supported discrete values ``{0, 1, 2}`` (per element when
+        batched). The water-balance selection logic matches these modes
+        by exact equality, so an off-grid value (e.g. ``1.5`` or ``3``)
+        would silently fall through to "no irrigation"; this guard turns
+        that into an explicit error.
+
+        Raises:
+            ValueError: If any ``irri`` element is not one of
+                ``{0, 1, 2}``.
+        """
+        valid = torch.zeros_like(self.irri, dtype=torch.bool)
+        for mode in (0.0, 1.0, 2.0):
+            valid = valid | torch.isclose(
+                self.irri, torch.full_like(self.irri, mode)
+            )
+        if not bool(valid.all()):
+            raise ValueError(
+                "soil_params.irri must be one of {0, 1, 2} (0=none, "
+                f"1=auto refill, 2=irrtab); got {self.irri.tolist()}"
+            )
+
     def to(
         self,
         dtype: torch.dtype | None = None,
