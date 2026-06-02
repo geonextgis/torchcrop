@@ -1007,17 +1007,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.drate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        drate
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.iairdu" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2407,17 +2396,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.drate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        drate
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.iairdu" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2841,10 +2819,6 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRUNFR``. Average fraction [0–1] of incoming precipitation lost</span>
 <span class="sd">    to surface runoff.&quot;&quot;&quot;</span>
 
-    <span class="n">drate</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">50.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum drainage rate [mm d⁻¹] out of the rooted zone (used by the</span>
-<span class="sd">    simplified bucket implementation; replaces SIMPLACE&#39;s WTRLOS).&quot;&quot;&quot;</span>
-
     <span class="n">cfev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFEV``. Correction factor [-] for the time course of soil</span>
 <span class="sd">    evaporation under drying conditions (Stroosnijder; range 1 – 4).&quot;&quot;&quot;</span>
@@ -3067,29 +3041,6 @@ below this air-filled porosity the crop suffers waterlogging stress.</p>
       <p><code>cDEPNR</code>. Crop group number [-] for soil-water depletion
 (Doorenbos &amp; Kassam). Used to compute the critical soil-moisture
 content above which transpiration is unrestricted.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.drate" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">drate</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.soil_params.SoilParameters.drate" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p>Maximum drainage rate [mm d⁻¹] out of the rooted zone (used by the
-simplified bucket implementation; replaces SIMPLACE's WTRLOS).</p>
     </div>
 
   </div>
