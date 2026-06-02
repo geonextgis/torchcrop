@@ -219,7 +219,7 @@ class Lintul5Model(nn.Module):
             proceeds.
         """
         dvsi = float(self.crop_params.dvsi.detach().cpu().item())
-        rootdi = float(self.crop_params.rootdi.detach().cpu().item())
+        rootdi = float(self.crop_params.rdi.detach().cpu().item())
         # Root-zone water from the user-specified initial volumetric content
         # ``wci``, clipped to the plant-available range ``[wcwp, wcfc]``
         wcwp = float(self.soil_params.wcwp.detach().cpu().item())
