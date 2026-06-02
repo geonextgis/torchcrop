@@ -36,7 +36,12 @@ $$
 $$
 
 PAR is taken as 50 % of global radiation and intercepted following
-Beer–Lambert extinction with coefficient $K$:
+Beer–Lambert extinction with a DVS-dependent extinction coefficient
+$K$ for diffuse PAR (``KDIFTB``), scaled by ``cScaleFactorKDIF``:
+
+$$
+K = \\text{cScaleFactorKDIF} \\cdot \\text{AFGEN}(\\text{KDIFTB}, \\text{DVS})
+$$
 
 $$
 \\text{PAR} = 0.5 \\cdot \\text{AVRAD}, \\qquad
@@ -51,6 +56,7 @@ import math
 import torch
 import torch.nn as nn
 
+from torchcrop.functions import interpolate
 from torchcrop.parameters.crop_params import CropParameters
 from torchcrop.states.model_state import ModelState
 
@@ -76,15 +82,18 @@ class Irradiation(nn.Module):
         """Compute daily irradiation and canopy PAR interception.
 
         Args:
-            state: Current model state (uses ``state.lai``).
+            state: Current model state (uses ``state.lai``,
+                ``state.dvs``).
             doy: Day of year [1-365], shape ``[B]``.
             dayl: Daylength [hours], shape ``[B]``.
             sinld: sin(declination) [dimensionless], shape ``[B]``.
             cosld: cos(declination) [dimensionless], shape ``[B]``.
             dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.
                 Converted to J m⁻² d⁻¹ for the PENMAN calculation.
-            params: Crop parameters; uses ``params.k`` (extinction
-                coefficient).
+            params: Crop parameters; uses ``params.kdiftb`` (DVS-indexed
+                diffuse-PAR extinction table) and
+                ``params.scale_factor_kdif`` (sensitivity scale on its
+                y-values).
 
         Returns:
             Dict of ``[B]`` tensors:
@@ -125,8 +134,12 @@ class Irradiation(nn.Module):
         # PAR (50 % of global radiation).
         par = 0.5 * avrad
 
+        # DVS-dependent diffuse-PAR extinction coefficient
+        # K = cScaleFactorKDIF · KDIFTB(DVS)
+        kdif = params.scale_factor_kdif * interpolate(params.kdiftb, state.dvs)
+
         # Beer–Lambert interception by canopy.
-        frac = 1.0 - torch.exp(-params.k * state.lai)
+        frac = 1.0 - torch.exp(-kdif * state.lai)
         parint = par * frac
 
         return {
