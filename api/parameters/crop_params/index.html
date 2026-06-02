@@ -2314,6 +2314,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#torchcrop.parameters.crop_params.CropParameters.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4859,6 +4870,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#torchcrop.parameters.crop_params.CropParameters.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -5638,6 +5660,28 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical crop fields.</span>
+
+<span class="sd">        Checks the two enumerated run-mode selectors against their</span>
+<span class="sd">        supported discrete domains (per element when batched):</span>
+
+<span class="sd">        * ``idsl`` ∈ {0, 1, 2} — phenology mode (temperature only /</span>
+<span class="sd">          + day length / + vernalisation).</span>
+<span class="sd">        * ``iopt`` ∈ {1, 2, 3, 4} — run mode (optimal / water-limited /</span>
+<span class="sd">          + N-limited / + NPK-limited).</span>
+
+<span class="sd">        Both are consumed through hard threshold comparisons</span>
+<span class="sd">        (``idsl &gt;= 1``/``&gt;= 2``; ``iopt &lt;= 2.5``/``&lt;= 3.5``), so an</span>
+<span class="sd">        off-domain value would silently snap to the nearest mode.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If ``idsl`` or ``iopt`` holds an unsupported</span>
+<span class="sd">                value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.idsl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iopt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -8632,6 +8676,78 @@ are copied through unchanged.</p></td>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
     <span class="k">return</span> <span class="n">CropParameters</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.parameters.crop_params.CropParameters.validate" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.parameters.crop_params.CropParameters.validate" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Validate discrete/categorical crop fields.</p>
+<p>Checks the two enumerated run-mode selectors against their
+supported discrete domains (per element when batched):</p>
+<ul>
+<li><code>idsl</code> ∈ {0, 1, 2} — phenology mode (temperature only /</li>
+<li>day length / + vernalisation).</li>
+<li><code>iopt</code> ∈ {1, 2, 3, 4} — run mode (optimal / water-limited /</li>
+<li>N-limited / + NPK-limited).</li>
+</ul>
+<p>Both are consumed through hard threshold comparisons
+(<code>idsl &gt;= 1</code>/<code>&gt;= 2</code>; <code>iopt &lt;= 2.5</code>/<code>&lt;= 3.5</code>), so an
+off-domain value would silently snap to the nearest mode.</p>
+
+<p><strong>Exceptions:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ValueError</code></td>
+        <td><p>If <code>idsl</code> or <code>iopt</code> holds an unsupported
+value.</p></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical crop fields.</span>
+
+<span class="sd">    Checks the two enumerated run-mode selectors against their</span>
+<span class="sd">    supported discrete domains (per element when batched):</span>
+
+<span class="sd">    * ``idsl`` ∈ {0, 1, 2} — phenology mode (temperature only /</span>
+<span class="sd">      + day length / + vernalisation).</span>
+<span class="sd">    * ``iopt`` ∈ {1, 2, 3, 4} — run mode (optimal / water-limited /</span>
+<span class="sd">      + N-limited / + NPK-limited).</span>
+
+<span class="sd">    Both are consumed through hard threshold comparisons</span>
+<span class="sd">    (``idsl &gt;= 1``/``&gt;= 2``; ``iopt &lt;= 2.5``/``&lt;= 3.5``), so an</span>
+<span class="sd">    off-domain value would silently snap to the nearest mode.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If ``idsl`` or ``iopt`` holds an unsupported</span>
+<span class="sd">            value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.idsl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iopt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>

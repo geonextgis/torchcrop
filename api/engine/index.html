@@ -2257,6 +2257,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StepResult</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
@@ -2265,6 +2266,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="n">site_params</span><span class="p">,</span>
+            <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># `compute_rates` may return either a rates dict (legacy) or a</span>
         <span class="c1"># ``(rates, DiagnosticState)`` tuple. The diagnostic does not</span>
@@ -2285,6 +2287,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
         <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span>
         <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
@@ -2299,6 +2302,11 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="sd">            crop_params: Species-specific crop parameters.</span>
 <span class="sd">            soil_params: Soil-specific parameters.</span>
 <span class="sd">            site_params: Site-level parameters (e.g. latitude).</span>
+<span class="sd">            irrigation: Optional externally supplied daily irrigation</span>
+<span class="sd">                ``[B, T]`` [mm d⁻¹]. When provided, the value for day</span>
+<span class="sd">                ``t`` overrides the ``soil_params.irri`` mode in the</span>
+<span class="sd">                water balance; ``None`` leaves the internal IRRI logic</span>
+<span class="sd">                in control.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``(states, rates, diagnostics)`` tuple. ``states`` is a list</span>
@@ -2320,6 +2328,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
                 <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
                 <span class="nb">float</span><span class="p">(((</span><span class="n">start_doy</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="mi">365</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
             <span class="p">)</span>
+            <span class="n">irrig_t</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">irrigation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">irrigation</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
                 <span class="n">state</span><span class="o">=</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                 <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
@@ -2327,6 +2336,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
                 <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
                 <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
                 <span class="n">site_params</span><span class="o">=</span><span class="n">site_params</span><span class="p">,</span>
+                <span class="n">irrigation</span><span class="o">=</span><span class="n">irrig_t</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
             <span class="n">rates_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>
@@ -2353,7 +2363,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 
 
 <h3 id="torchcrop.engine.SimulationEngine.run" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">soil_params</span><span class="p">,</span> <span class="n">site_params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">soil_params</span><span class="p">,</span> <span class="n">site_params</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.engine.SimulationEngine.run" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2409,6 +2419,16 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <td><p>Site-level parameters (e.g. latitude).</p></td>
         <td><em>required</em></td>
       </tr>
+      <tr>
+        <td><code>irrigation</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied daily irrigation
+<code>[B, T]</code> [mm d⁻¹]. When provided, the value for day
+<code>t</code> overrides the <code>soil_params.irri</code> mode in the
+water balance; <code>None</code> leaves the internal IRRI logic
+in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -2442,6 +2462,7 @@ callable does not emit diagnostics.</p></td>
     <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
+    <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span>
     <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">],</span>
     <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
@@ -2456,6 +2477,11 @@ callable does not emit diagnostics.</p></td>
 <span class="sd">        crop_params: Species-specific crop parameters.</span>
 <span class="sd">        soil_params: Soil-specific parameters.</span>
 <span class="sd">        site_params: Site-level parameters (e.g. latitude).</span>
+<span class="sd">        irrigation: Optional externally supplied daily irrigation</span>
+<span class="sd">            ``[B, T]`` [mm d⁻¹]. When provided, the value for day</span>
+<span class="sd">            ``t`` overrides the ``soil_params.irri`` mode in the</span>
+<span class="sd">            water balance; ``None`` leaves the internal IRRI logic</span>
+<span class="sd">            in control.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``(states, rates, diagnostics)`` tuple. ``states`` is a list</span>
@@ -2477,6 +2503,7 @@ callable does not emit diagnostics.</p></td>
             <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
             <span class="nb">float</span><span class="p">(((</span><span class="n">start_doy</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="mi">365</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
         <span class="p">)</span>
+        <span class="n">irrig_t</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">irrigation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">irrigation</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
             <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
@@ -2484,6 +2511,7 @@ callable does not emit diagnostics.</p></td>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="n">site_params</span><span class="p">,</span>
+            <span class="n">irrigation</span><span class="o">=</span><span class="n">irrig_t</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
         <span class="n">rates_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">rates</span><span class="p">)</span>

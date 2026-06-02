@@ -1270,6 +1270,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2659,6 +2670,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#torchcrop.parameters.soil_params.SoilParameters.validate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validate()
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2921,6 +2943,31 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical soil fields.</span>
+
+<span class="sd">        Checks that the irrigation mode ``irri`` holds only the</span>
+<span class="sd">        supported discrete values ``{0, 1, 2}`` (per element when</span>
+<span class="sd">        batched). The water-balance selection logic matches these modes</span>
+<span class="sd">        by exact equality, so an off-grid value (e.g. ``1.5`` or ``3``)</span>
+<span class="sd">        would silently fall through to &quot;no irrigation&quot;; this guard turns</span>
+<span class="sd">        that into an explicit error.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If any ``irri`` element is not one of</span>
+<span class="sd">                ``{0, 1, 2}``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">):</span>
+            <span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;soil_params.irri must be one of {0, 1, 2} (0=none, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -3649,6 +3696,76 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
     <span class="k">return</span> <span class="n">SoilParameters</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="torchcrop.parameters.soil_params.SoilParameters.validate" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#torchcrop.parameters.soil_params.SoilParameters.validate" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Validate discrete/categorical soil fields.</p>
+<p>Checks that the irrigation mode <code>irri</code> holds only the
+supported discrete values <code>{0, 1, 2}</code> (per element when
+batched). The water-balance selection logic matches these modes
+by exact equality, so an off-grid value (e.g. <code>1.5</code> or <code>3</code>)
+would silently fall through to "no irrigation"; this guard turns
+that into an explicit error.</p>
+
+<p><strong>Exceptions:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>ValueError</code></td>
+        <td><p>If any <code>irri</code> element is not one of
+<code>{0, 1, 2}</code>.</p></td>
+      </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical soil fields.</span>
+
+<span class="sd">    Checks that the irrigation mode ``irri`` holds only the</span>
+<span class="sd">    supported discrete values ``{0, 1, 2}`` (per element when</span>
+<span class="sd">    batched). The water-balance selection logic matches these modes</span>
+<span class="sd">    by exact equality, so an off-grid value (e.g. ``1.5`` or ``3``)</span>
+<span class="sd">    would silently fall through to &quot;no irrigation&quot;; this guard turns</span>
+<span class="sd">    that into an explicit error.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If any ``irri`` element is not one of</span>
+<span class="sd">            ``{0, 1, 2}``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;soil_params.irri must be one of {0, 1, 2} (0=none, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 </code></pre></div>
         </details>
     </div>

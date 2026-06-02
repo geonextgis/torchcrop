@@ -2374,6 +2374,25 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">            with ``self.hybrid.penalty()`` to anchor corrections toward zero.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1">#: Discrete/categorical parameter fields, keyed by container name.</span>
+    <span class="c1">#: These select behaviour through hard thresholds or int casts, so they</span>
+    <span class="c1">#: are detached from the autograd graph and cannot be calibrated by</span>
+    <span class="c1">#: gradient descent even when wrapped as `nn.Parameter`:</span>
+    <span class="c1">#:</span>
+    <span class="c1">#:   * ``crop.idsl``  — phenology mode {0,1,2} (``idsl &gt;= 1`` / ``&gt;= 2``).</span>
+    <span class="c1">#:   * ``crop.iopt``  — run mode {1,2,3,4} (``iopt &lt;= 2.5`` / ``&lt;= 3.5``).</span>
+    <span class="c1">#:   * ``soil.irri``  — irrigation mode {0,1,2} (``isclose`` matching).</span>
+    <span class="c1">#:   * ``soil.iairdu`` — aquatic-roots flag {0,1} (``iairdu &gt; 0.5``).</span>
+    <span class="c1">#:   * ``site.plant_at_sowing`` — start-at-planting flag {0,1}.</span>
+    <span class="c1">#:   * ``site.idpl`` / ``site.idem`` — planting / emergence day-of-year.</span>
+    <span class="c1">#:</span>
+    <span class="c1">#: `learnable_parameter_groups` excludes them and warns the user.</span>
+    <span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;idsl&quot;</span><span class="p">,</span> <span class="s2">&quot;iopt&quot;</span><span class="p">}),</span>
+        <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;irri&quot;</span><span class="p">,</span> <span class="s2">&quot;iairdu&quot;</span><span class="p">}),</span>
+        <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;plant_at_sowing&quot;</span><span class="p">,</span> <span class="s2">&quot;idpl&quot;</span><span class="p">,</span> <span class="s2">&quot;idem&quot;</span><span class="p">}),</span>
+    <span class="p">}</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2505,6 +2524,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">weather</span><span class="p">:</span> <span class="n">WeatherDriver</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">initial_state</span><span class="p">:</span> <span class="n">ModelState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
@@ -2518,6 +2538,13 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">                the user is responsible for any</span>
 <span class="sd">                ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">                bypasses the SIMPLACE-parity setup in `initialize`.</span>
+<span class="sd">            irrigation: Optional externally supplied daily irrigation of</span>
+<span class="sd">                shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.</span>
+<span class="sd">                When provided, day ``t``&#39;s value overrides the</span>
+<span class="sd">                ``soil_params.irri`` mode in the water balance, so the</span>
+<span class="sd">                schedule can be a fixed plan or an `nn.Parameter`</span>
+<span class="sd">                optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">                leaves the internal IRRI logic (modes 0/1/2) in control.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A `ModelOutput` containing the full state, rate and</span>
@@ -2535,9 +2562,26 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">              so a truncated run that never exits the anthesis window</span>
 <span class="sd">              returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate discrete config (irrigation / phenology / run modes,</span>
+        <span class="c1"># start-mode flag) once per run, before entering the per-day loop</span>
+        <span class="c1"># — keeps the hot path free of CPU-syncing value checks.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
         <span class="n">batch_size</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">batch_size</span>
+        <span class="k">if</span> <span class="n">irrigation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;irrigation must have shape [B, T] = &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
@@ -2558,6 +2602,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">crop_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
+            <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">lai</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">lai</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, T+1]</span>
@@ -2599,6 +2644,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span>
         <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
@@ -2607,6 +2653,10 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">            weather_day: Dict of named weather channels for the current</span>
 <span class="sd">                day (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">            doy: Day-of-year tensor of shape ``[B]``.</span>
+<span class="sd">            irrigation: Optional externally supplied irrigation for this</span>
+<span class="sd">                day ``[B]`` [mm d⁻¹]. When provided it overrides the</span>
+<span class="sd">                ``soil_params.irri`` mode in the water balance; ``None``</span>
+<span class="sd">                leaves the internal IRRI logic in control.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
@@ -2622,6 +2672,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">crop_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
+            <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">rates</span>
 
@@ -2655,6 +2706,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">DiagnosticState</span><span class="p">]:</span>
         <span class="c1"># Unpack the day&#39;s weather forcing.</span>
         <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
@@ -2742,6 +2794,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
+            <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Optional correction of the water-stress factor at source, so the</span>
         <span class="c1"># corrected value propagates through every downstream consumer</span>
@@ -3124,6 +3177,13 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">        and returns every field that is an `nn.Parameter` (i.e. has</span>
 <span class="sd">        been marked as learnable by the user).</span>
 
+<span class="sd">        Discrete/categorical switches listed in</span>
+<span class="sd">        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)</span>
+<span class="sd">        are *excluded* even when wrapped as `nn.Parameter`: they gate</span>
+<span class="sd">        behaviour through hard thresholds, so they are detached from the</span>
+<span class="sd">        autograd graph and would silently never receive a gradient. A</span>
+<span class="sd">        `UserWarning` is emitted in that case to flag the no-op.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
 <span class="sd">            ``&quot;crop.rue&quot;``) mapping to the corresponding `nn.Parameter`.</span>
@@ -3134,9 +3194,19 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="p">(</span><span class="s2">&quot;soil&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
         <span class="p">):</span>
+            <span class="n">non_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">non_diff</span><span class="p">:</span>
+                        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) &quot;</span>
+                            <span class="s2">&quot;switch and cannot be calibrated by gradient descent; &quot;</span>
+                            <span class="s2">&quot;excluding it from the learnable parameter groups.&quot;</span><span class="p">,</span>
+                            <span class="ne">UserWarning</span><span class="p">,</span>
+                            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">continue</span>
                     <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
@@ -3160,7 +3230,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 
 
 <h3 id="torchcrop.model.Lintul5Model.compute_rates" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather_day</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather_day</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.model.Lintul5Model.compute_rates" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -3199,6 +3269,15 @@ day (see <code>WEATHER_CHANNELS</code>), each of shape <code>[B]</code>.</p></td
         <td><p>Day-of-year tensor of shape <code>[B]</code>.</p></td>
         <td><em>required</em></td>
       </tr>
+      <tr>
+        <td><code>irrigation</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied irrigation for this
+day <code>[B]</code> [mm d⁻¹]. When provided it overrides the
+<code>soil_params.irri</code> mode in the water balance; <code>None</code>
+leaves the internal IRRI logic in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -3227,6 +3306,7 @@ diagnostic trajectory.</p></td>
     <span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span>
     <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
@@ -3235,6 +3315,10 @@ diagnostic trajectory.</p></td>
 <span class="sd">        weather_day: Dict of named weather channels for the current</span>
 <span class="sd">            day (see `WEATHER_CHANNELS`), each of shape ``[B]``.</span>
 <span class="sd">        doy: Day-of-year tensor of shape ``[B]``.</span>
+<span class="sd">        irrigation: Optional externally supplied irrigation for this</span>
+<span class="sd">            day ``[B]`` [mm d⁻¹]. When provided it overrides the</span>
+<span class="sd">            ``soil_params.irri`` mode in the water balance; ``None``</span>
+<span class="sd">            leaves the internal IRRI logic in control.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
@@ -3250,6 +3334,7 @@ diagnostic trajectory.</p></td>
         <span class="n">crop_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">rates</span>
 </code></pre></div>
@@ -3265,7 +3350,7 @@ diagnostic trajectory.</p></td>
 
 
 <h3 id="torchcrop.model.Lintul5Model.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.model.Lintul5Model.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -3309,6 +3394,18 @@ the user is responsible for any
 bypasses the SIMPLACE-parity setup in <code>initialize</code>.</p></td>
         <td><code>None</code></td>
       </tr>
+      <tr>
+        <td><code>irrigation</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied daily irrigation of
+shape <code>[B, T]</code> [mm d⁻¹], aligned with the weather days.
+When provided, day <code>t</code>'s value overrides the
+<code>soil_params.irri</code> mode in the water balance, so the
+schedule can be a fixed plan or an <code>nn.Parameter</code>
+optimised through the simulation. <code>None</code> (the default)
+leaves the internal IRRI logic (modes 0/1/2) in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -3349,6 +3446,7 @@ heat-stress-adjusted yield).</p></td>
     <span class="n">weather</span><span class="p">:</span> <span class="n">WeatherDriver</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">initial_state</span><span class="p">:</span> <span class="n">ModelState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
@@ -3362,6 +3460,13 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">            the user is responsible for any</span>
 <span class="sd">            ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">            bypasses the SIMPLACE-parity setup in `initialize`.</span>
+<span class="sd">        irrigation: Optional externally supplied daily irrigation of</span>
+<span class="sd">            shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.</span>
+<span class="sd">            When provided, day ``t``&#39;s value overrides the</span>
+<span class="sd">            ``soil_params.irri`` mode in the water balance, so the</span>
+<span class="sd">            schedule can be a fixed plan or an `nn.Parameter`</span>
+<span class="sd">            optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">            leaves the internal IRRI logic (modes 0/1/2) in control.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A `ModelOutput` containing the full state, rate and</span>
@@ -3379,9 +3484,26 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">          so a truncated run that never exits the anthesis window</span>
 <span class="sd">          returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Validate discrete config (irrigation / phenology / run modes,</span>
+    <span class="c1"># start-mode flag) once per run, before entering the per-day loop</span>
+    <span class="c1"># — keeps the hot path free of CPU-syncing value checks.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weather</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="n">weather</span> <span class="o">=</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="n">weather</span><span class="p">)</span>
     <span class="n">batch_size</span> <span class="o">=</span> <span class="n">weather</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="k">if</span> <span class="n">irrigation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;irrigation must have shape [B, T] = &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
@@ -3402,6 +3524,7 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">crop_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
+        <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">lai</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">lai</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, T+1]</span>
@@ -3622,6 +3745,12 @@ proceeds.</p></td>
 <p>Walks the <code>crop</code>, <code>soil</code> and <code>site</code> parameter containers
 and returns every field that is an <code>nn.Parameter</code> (i.e. has
 been marked as learnable by the user).</p>
+<p>Discrete/categorical switches listed in
+<code>_NON_DIFFERENTIABLE_FIELDS</code> (e.g. <code>soil.irri</code>, <code>soil.iairdu</code>)
+are <em>excluded</em> even when wrapped as <code>nn.Parameter</code>: they gate
+behaviour through hard thresholds, so they are detached from the
+autograd graph and would silently never receive a gradient. A
+<code>UserWarning</code> is emitted in that case to flag the no-op.</p>
 
 <p><strong>Returns:</strong></p>
 <table>
@@ -3648,6 +3777,13 @@ been marked as learnable by the user).</p>
 <span class="sd">    and returns every field that is an `nn.Parameter` (i.e. has</span>
 <span class="sd">    been marked as learnable by the user).</span>
 
+<span class="sd">    Discrete/categorical switches listed in</span>
+<span class="sd">    `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)</span>
+<span class="sd">    are *excluded* even when wrapped as `nn.Parameter`: they gate</span>
+<span class="sd">    behaviour through hard thresholds, so they are detached from the</span>
+<span class="sd">    autograd graph and would silently never receive a gradient. A</span>
+<span class="sd">    `UserWarning` is emitted in that case to flag the no-op.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
 <span class="sd">        ``&quot;crop.rue&quot;``) mapping to the corresponding `nn.Parameter`.</span>
@@ -3658,9 +3794,19 @@ been marked as learnable by the user).</p>
         <span class="p">(</span><span class="s2">&quot;soil&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
         <span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
     <span class="p">):</span>
+        <span class="n">non_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
             <span class="n">v</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">non_diff</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) &quot;</span>
+                        <span class="s2">&quot;switch and cannot be calibrated by gradient descent; &quot;</span>
+                        <span class="s2">&quot;excluding it from the learnable parameter groups.&quot;</span><span class="p">,</span>
+                        <span class="ne">UserWarning</span><span class="p">,</span>
+                        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">continue</span>
                 <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
