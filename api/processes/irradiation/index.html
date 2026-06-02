@@ -2173,7 +2173,11 @@ the extraterrestrial value:</p>
 \text{AVRAD} = \min(0.80 \cdot \text{ANGOT},\; \text{DTR})
 \]</div>
 <p>PAR is taken as 50 % of global radiation and intercepted following
-Beer–Lambert extinction with coefficient <span class="arithmatex">\(K\)</span>:</p>
+Beer–Lambert extinction with a DVS-dependent extinction coefficient
+<span class="arithmatex">\(K\)</span> for diffuse PAR (<code>KDIFTB</code>), scaled by <code>cScaleFactorKDIF</code>:</p>
+<div class="arithmatex">\[
+K = \text{cScaleFactorKDIF} \cdot \text{AFGEN}(\text{KDIFTB}, \text{DVS})
+\]</div>
 <div class="arithmatex">\[
 \text{PAR} = 0.5 \cdot \text{AVRAD}, \qquad
 \text{PARINT} = \text{PAR} \cdot \bigl(1 - e^{-K \, \text{LAI}}\bigr)
@@ -2232,15 +2236,18 @@ law.</p>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute daily irradiation and canopy PAR interception.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            state: Current model state (uses ``state.lai``).</span>
+<span class="sd">            state: Current model state (uses ``state.lai``,</span>
+<span class="sd">                ``state.dvs``).</span>
 <span class="sd">            doy: Day of year [1-365], shape ``[B]``.</span>
 <span class="sd">            dayl: Daylength [hours], shape ``[B]``.</span>
 <span class="sd">            sinld: sin(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">            cosld: cos(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">            dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
 <span class="sd">                Converted to J m⁻² d⁻¹ for the PENMAN calculation.</span>
-<span class="sd">            params: Crop parameters; uses ``params.k`` (extinction</span>
-<span class="sd">                coefficient).</span>
+<span class="sd">            params: Crop parameters; uses ``params.kdiftb`` (DVS-indexed</span>
+<span class="sd">                diffuse-PAR extinction table) and</span>
+<span class="sd">                ``params.scale_factor_kdif`` (sensitivity scale on its</span>
+<span class="sd">                y-values).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors:</span>
@@ -2281,8 +2288,12 @@ law.</p>
         <span class="c1"># PAR (50 % of global radiation).</span>
         <span class="n">par</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">avrad</span>
 
+        <span class="c1"># DVS-dependent diffuse-PAR extinction coefficient</span>
+        <span class="c1"># K = cScaleFactorKDIF · KDIFTB(DVS)</span>
+        <span class="n">kdif</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_kdif</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">kdiftb</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span>
+
         <span class="c1"># Beer–Lambert interception by canopy.</span>
-        <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">params</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
+        <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">kdif</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
         <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2335,7 +2346,8 @@ law.</p>
       <tr>
         <td><code>state</code></td>
         <td><code>ModelState</code></td>
-        <td><p>Current model state (uses <code>state.lai</code>).</p></td>
+        <td><p>Current model state (uses <code>state.lai</code>,
+<code>state.dvs</code>).</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -2372,8 +2384,10 @@ Converted to J m⁻² d⁻¹ for the PENMAN calculation.</p></td>
       <tr>
         <td><code>params</code></td>
         <td><code>CropParameters</code></td>
-        <td><p>Crop parameters; uses <code>params.k</code> (extinction
-coefficient).</p></td>
+        <td><p>Crop parameters; uses <code>params.kdiftb</code> (DVS-indexed
+diffuse-PAR extinction table) and
+<code>params.scale_factor_kdif</code> (sensitivity scale on its
+y-values).</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -2418,15 +2432,18 @@ coefficient).</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute daily irradiation and canopy PAR interception.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        state: Current model state (uses ``state.lai``).</span>
+<span class="sd">        state: Current model state (uses ``state.lai``,</span>
+<span class="sd">            ``state.dvs``).</span>
 <span class="sd">        doy: Day of year [1-365], shape ``[B]``.</span>
 <span class="sd">        dayl: Daylength [hours], shape ``[B]``.</span>
 <span class="sd">        sinld: sin(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">        cosld: cos(declination) [dimensionless], shape ``[B]``.</span>
 <span class="sd">        dtr: Daily total radiation [MJ m⁻² d⁻¹], shape ``[B]``.</span>
 <span class="sd">            Converted to J m⁻² d⁻¹ for the PENMAN calculation.</span>
-<span class="sd">        params: Crop parameters; uses ``params.k`` (extinction</span>
-<span class="sd">            coefficient).</span>
+<span class="sd">        params: Crop parameters; uses ``params.kdiftb`` (DVS-indexed</span>
+<span class="sd">            diffuse-PAR extinction table) and</span>
+<span class="sd">            ``params.scale_factor_kdif`` (sensitivity scale on its</span>
+<span class="sd">            y-values).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors:</span>
@@ -2467,8 +2484,12 @@ coefficient).</p></td>
     <span class="c1"># PAR (50 % of global radiation).</span>
     <span class="n">par</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">avrad</span>
 
+    <span class="c1"># DVS-dependent diffuse-PAR extinction coefficient</span>
+    <span class="c1"># K = cScaleFactorKDIF · KDIFTB(DVS)</span>
+    <span class="n">kdif</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_kdif</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">kdiftb</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span>
+
     <span class="c1"># Beer–Lambert interception by canopy.</span>
-    <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">params</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
+    <span class="n">frac</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">kdif</span> <span class="o">*</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">)</span>
     <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 
     <span class="k">return</span> <span class="p">{</span>
