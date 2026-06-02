@@ -120,21 +120,7 @@ class SiteParameters:
     of atmospheric CO₂ concentration [ppm] (C3 crops)."""
 
     # ------------------------------------------------------------------ #
-    # 3. Solar-radiation reconstruction (when only sunshine duration is
-    #    available — Ångström–Prescott formula).
-    # ------------------------------------------------------------------ #
-
-    angstrom_a: torch.Tensor = field(default_factory=lambda: _t(0.25))
-    """Ångström–Prescott coefficient ``a`` [-]: fraction of extra-
-    terrestrial radiation reaching the surface on overcast days."""
-
-    angstrom_b: torch.Tensor = field(default_factory=lambda: _t(0.50))
-    """Ångström–Prescott coefficient ``b`` [-]: additional fraction
-    reaching the surface on cloudless days, multiplied by relative
-    sunshine duration."""
-
-    # ------------------------------------------------------------------ #
-    # 4. Sowing / emergence calendar (from Phenology.java)
+    # 3. Sowing / emergence calendar (from Phenology.java)
     # ------------------------------------------------------------------ #
 
     plant_at_sowing: torch.Tensor = field(default_factory=lambda: _t(1.0))
