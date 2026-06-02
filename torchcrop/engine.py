@@ -72,6 +72,7 @@ class SimulationEngine(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
         site_params: SiteParameters,
+        irrigation: torch.Tensor | None = None,
     ) -> StepResult:
         result = self._compute_rates(
             state=state,
@@ -80,6 +81,7 @@ class SimulationEngine(nn.Module):
             crop_params=crop_params,
             soil_params=soil_params,
             site_params=site_params,
+            irrigation=irrigation,
         )
         # `compute_rates` may return either a rates dict (legacy) or a
         # ``(rates, DiagnosticState)`` tuple. The diagnostic does not
@@ -100,6 +102,7 @@ class SimulationEngine(nn.Module):
         crop_params: CropParameters,
         soil_params: SoilParameters,
         site_params: SiteParameters,
+        irrigation: torch.Tensor | None = None,
     ) -> tuple[
         list[ModelState],
         list[dict[str, torch.Tensor]],
@@ -114,6 +117,11 @@ class SimulationEngine(nn.Module):
             crop_params: Species-specific crop parameters.
             soil_params: Soil-specific parameters.
             site_params: Site-level parameters (e.g. latitude).
+            irrigation: Optional externally supplied daily irrigation
+                ``[B, T]`` [mm d⁻¹]. When provided, the value for day
+                ``t`` overrides the ``soil_params.irri`` mode in the
+                water balance; ``None`` leaves the internal IRRI logic
+                in control.
 
         Returns:
             A ``(states, rates, diagnostics)`` tuple. ``states`` is a list
@@ -135,6 +143,7 @@ class SimulationEngine(nn.Module):
                 state.dvs,
                 float(((start_doy - 1 + t) % 365) + 1),
             )
+            irrig_t = None if irrigation is None else irrigation[:, t]
             result = self.step(
                 state=states[-1],
                 weather_day=weather_day,
@@ -142,6 +151,7 @@ class SimulationEngine(nn.Module):
                 crop_params=crop_params,
                 soil_params=soil_params,
                 site_params=site_params,
+                irrigation=irrig_t,
             )
             states.append(result.state)
             rates_all.append(result.rates)
