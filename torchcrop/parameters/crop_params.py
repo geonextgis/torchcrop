@@ -247,10 +247,6 @@ class CropParameters:
     # 3. Light interception / canopy (from Lintul5.java)
     # ------------------------------------------------------------------ #
 
-    k: torch.Tensor = field(default_factory=lambda: _t(0.60))
-    """Effective canopy light extinction coefficient [-]; scalar fallback
-    when `kdiftb` is collapsed to a constant."""
-
     kdiftb: torch.Tensor = field(
         default_factory=lambda: _table([(0.0, 0.6), (2.0, 0.6)])
     )
