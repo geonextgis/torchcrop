@@ -289,10 +289,6 @@ class CropParameters:
     # 5. Leaf dynamics & senescence (from Lintul5.java)
     # ------------------------------------------------------------------ #
 
-    sla: torch.Tensor = field(default_factory=lambda: _t(0.0212))
-    """Reference specific leaf area [m² leaf · g⁻¹ DM]; scalar fallback
-    used when `slatb` is collapsed."""
-
     slatb: torch.Tensor = field(
         default_factory=lambda: _table([(0.0, 0.0212), (2.0, 0.0212)])
     )
@@ -630,86 +626,7 @@ class CropParameters:
     Stored as float so it can be used in masking; cast to int for branching."""
 
     # ------------------------------------------------------------------ #
-    # 12. Scaffold convenience scalars
-    # ------------------------------------------------------------------ #
-    # The fields below are simplified scalar surrogates used by the v0.0.1
-    # process scaffold (single-value alternatives to the SIMPLACE
-    # interpolation tables / fraction-based per-organ derivations above).
-    # They are retained so existing process modules keep importing while
-    # the table-based equations are progressively wired in.
-    # ------------------------------------------------------------------ #
-
-    rootdi: torch.Tensor = field(default_factory=lambda: _t(0.10))
-    """Scaffold alias of `rdi` — initial rooting depth [m]."""
-
-    rootdm: torch.Tensor = field(default_factory=lambda: _t(1.20))
-    """Scaffold alias of `rdmcr` — maximum rooting depth [m]."""
-
-    rrdmax: torch.Tensor = field(default_factory=lambda: _t(0.012))
-    """Scaffold alias of `rri` — maximum daily root-depth growth
-    rate [m d⁻¹]."""
-
-    rdrtb: torch.Tensor = field(
-        default_factory=lambda: _table(
-            [(0.0, 0.0), (1.0, 0.0), (1.5, 0.02), (2.0, 0.05)]
-        )
-    )
-    """Simplified DVS-indexed leaf relative-death-rate table [d⁻¹] used
-    by `LeafDynamics` for developmental senescence. Not a direct
-    SIMPLACE constant (SIMPLACE separates leaf senescence into
-    `rdrltb` (vs T), `rdrrtb` and `rdrstb` (vs DVS))."""
-
-    nmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.050))
-    """Scalar max N concentration in leaves [g N · g⁻¹ DM] (scaffold
-    surrogate of `nmxlv` table)."""
-
-    nmaxst: torch.Tensor = field(default_factory=lambda: _t(0.020))
-    """Scalar max N concentration in stems (≈ ``lsnr × nmaxlv``)."""
-
-    nmaxrt: torch.Tensor = field(default_factory=lambda: _t(0.015))
-    """Scalar max N concentration in roots (≈ ``lrnr × nmaxlv``)."""
-
-    pmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.008))
-    """Scalar max P concentration in leaves (scaffold surrogate of
-    `pmxlv` table)."""
-
-    pmaxst: torch.Tensor = field(default_factory=lambda: _t(0.004))
-    """Scalar max P concentration in stems (≈ ``lspr × pmaxlv``)."""
-
-    pmaxrt: torch.Tensor = field(default_factory=lambda: _t(0.003))
-    """Scalar max P concentration in roots (≈ ``lrpr × pmaxlv``)."""
-
-    kmaxlv: torch.Tensor = field(default_factory=lambda: _t(0.040))
-    """Scalar max K concentration in leaves (scaffold surrogate of
-    `kmxlv` table)."""
-
-    kmaxst: torch.Tensor = field(default_factory=lambda: _t(0.025))
-    """Scalar max K concentration in stems (≈ ``lskr × kmaxlv``)."""
-
-    kmaxrt: torch.Tensor = field(default_factory=lambda: _t(0.015))
-    """Scalar max K concentration in roots (≈ ``lrkr × kmaxlv``)."""
-
-    nresid: torch.Tensor = field(default_factory=lambda: _t(0.004))
-    """Aggregated residual N concentration [g N · g⁻¹ DM] used by the
-    scaffold (compare per-organ `rnflv`/`rnfst`/`rnfrt`)."""
-
-    presid: torch.Tensor = field(default_factory=lambda: _t(0.001))
-    """Aggregated residual P concentration."""
-
-    kresid: torch.Tensor = field(default_factory=lambda: _t(0.005))
-    """Aggregated residual K concentration."""
-
-    tmpf_tb: torch.Tensor = field(
-        default_factory=lambda: _table(
-            [(-10.0, 0.0), (0.0, 0.0), (10.0, 0.6), (20.0, 1.0), (30.0, 1.0), (40.0, 0.0)]
-        )
-    )
-    """Scaffold alias of `tmpftb` (T-response of RUE) used by the
-    current `Photosynthesis` module. Will be merged with
-    `tmpftb` once the full SIMPLACE RUE chain is wired in."""
-
-    # ------------------------------------------------------------------ #
-    # 13. Heat stress (optional add-on components)
+    # 12. Heat stress (optional add-on components)
     # ------------------------------------------------------------------ #
     # Crop-specific constants for the optional SIMPLACE heat-stress
     # components, which sit *outside* the core Lintul5 time loop:
