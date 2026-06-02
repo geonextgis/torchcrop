@@ -674,7 +674,6 @@ class Lintul5Model(nn.Module):
         leaf = self.leaf_dynamics(
             state=state,
             g_lv=part["g_lv"],
-            dtsu=pheno["dtsu"],
             davtmp=davtmp,
             tranrf=tranrf,
             nstress=nstress,
