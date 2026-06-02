@@ -92,10 +92,6 @@ class SoilParameters:
     """``cRUNFR``. Average fraction [0–1] of incoming precipitation lost
     to surface runoff."""
 
-    drate: torch.Tensor = field(default_factory=lambda: _t(50.0))
-    """Maximum drainage rate [mm d⁻¹] out of the rooted zone (used by the
-    simplified bucket implementation; replaces SIMPLACE's WTRLOS)."""
-
     cfev: torch.Tensor = field(default_factory=lambda: _t(2.0))
     """``cCFEV``. Correction factor [-] for the time course of soil
     evaporation under drying conditions (Stroosnijder; range 1 – 4)."""
