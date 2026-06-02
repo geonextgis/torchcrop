@@ -51,7 +51,6 @@ class LeafDynamics(nn.Module):
         self,
         state: ModelState,
         g_lv: torch.Tensor,
-        dtsu: torch.Tensor,
         davtmp: torch.Tensor,
         tranrf: torch.Tensor,
         nstress: torch.Tensor,
@@ -68,14 +67,14 @@ class LeafDynamics(nn.Module):
                 ``state.dvs``.
             g_lv: Leaf growth allocated by partitioning
                 [g DM m⁻² d⁻¹], shape ``[B]``.
-            dtsu: Effective thermal time for LAI growth
-                [°C d d⁻¹], shape ``[B]``.
             davtmp: Mean daily air temperature [°C], shape ``[B]``.
-                Drives ``RDRTMP`` via interpolation on ``rdrltb``.
+                Drives ``RDRTMP`` via interpolation on ``rdrltb`` and the
+                juvenile-phase thermal time
+                ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).
             tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.
             nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,
                 shape ``[B]``.
-            params: Crop parameters; uses ``laicr``, ``rgrl``,
+            params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,
                 ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,
                 ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,
                 ``scale_factor_rdr_leaves``, ``dvsdlt``.
@@ -139,10 +138,14 @@ class LeafDynamics(nn.Module):
 
         # ----- GLA: daily increase in leaf area index -----
         # Branch precedence: emergence > juvenile > mature.
+        # Juvenile growth is driven by its own thermal time with base
+        # temperature TBASE (distinct from the phenology DTSMTB sum):
+        #   DTEFF = max(0, davtmp - tbase)
+        dteff = torch.clamp(davtmp - params.tbase, min=0.0)
         glai_mature = sla * g_lv
         glai_juv = (
             lai
-            * (torch.exp(params.rgrl * dtsu) - 1.0)
+            * (torch.exp(params.rgrl * dteff) - 1.0)
             * tranrf
             * torch.exp(-params.nlai * (1.0 - nstress))
         )
