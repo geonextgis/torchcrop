@@ -60,6 +60,35 @@ def _table(
     return torch.tensor(rows, dtype=dtype)
 
 
+def _check_discrete(
+    name: str, value: torch.Tensor, allowed: tuple[float, ...]
+) -> None:
+    """Assert that every element of ``value`` is one of ``allowed``.
+
+    Discrete switch fields are matched by exact equality downstream, so
+    an off-domain value would silently snap to the nearest mode. This
+    helper turns that into an explicit error.
+
+    Args:
+        name: Field name, used in the error message.
+        value: Tensor of switch values (scalar or batched ``[B]``).
+        allowed: The permitted discrete values.
+
+    Raises:
+        ValueError: If any element of ``value`` is not in ``allowed``.
+    """
+    valid = torch.zeros_like(value, dtype=torch.bool)
+    for a in allowed:
+        valid = valid | torch.isclose(value, torch.full_like(value, a))
+    if not bool(valid.all()):
+        allowed_str = ", ".join(
+            str(int(a)) if float(a).is_integer() else str(a) for a in allowed
+        )
+        raise ValueError(
+            f"{name} must be one of {{{allowed_str}}}; got {value.tolist()}"
+        )
+
+
 @dataclass
 class CropParameters:
     """Species-specific Lintul5 crop parameters.
@@ -737,6 +766,28 @@ class CropParameters:
     # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+
+    def validate(self) -> None:
+        """Validate discrete/categorical crop fields.
+
+        Checks the two enumerated run-mode selectors against their
+        supported discrete domains (per element when batched):
+
+        * ``idsl`` ∈ {0, 1, 2} — phenology mode (temperature only /
+          + day length / + vernalisation).
+        * ``iopt`` ∈ {1, 2, 3, 4} — run mode (optimal / water-limited /
+          + N-limited / + NPK-limited).
+
+        Both are consumed through hard threshold comparisons
+        (``idsl >= 1``/``>= 2``; ``iopt <= 2.5``/``<= 3.5``), so an
+        off-domain value would silently snap to the nearest mode.
+
+        Raises:
+            ValueError: If ``idsl`` or ``iopt`` holds an unsupported
+                value.
+        """
+        _check_discrete("crop_params.idsl", self.idsl, (0.0, 1.0, 2.0))
+        _check_discrete("crop_params.iopt", self.iopt, (1.0, 2.0, 3.0, 4.0))
 
     def to(
         self,
