@@ -48,34 +48,22 @@ class PotentialEvapoTranspiration(nn.Module):
     (``E0``, ``ES0``, ``ETC``), which is then split into potential
     transpiration and soil evaporation based on light interception.
 
-    Args:
-        altitude: Station altitude [m] (default ``0``).
-        cfet: Crop-specific correction factor for transpiration
-            (default ``1.0``).
+    The site/crop drivers (``altitude``, ``cfet``, ``co2``, ``fpenmtb``)
+    are supplied per call through `forward` rather than at construction,
+    so they flow directly from the `SiteParameters` dataclass and can be
+    made batch-varying or learnable.
     """
 
-    def __init__(
-        self,
-        altitude: float = 0.0,
-        cfet: float = 1.0,
-    ) -> None:
-        super().__init__()
-        self.altitude = altitude
-        self.cfet = cfet
-
-        # CO2 correction table (concentration [ppm] → ET0 factor).
-        self.register_buffer(
-            "co2_table",
-            torch.tensor(
-                [
-                    [40.0, 1.05],
-                    [360.0, 1.00],
-                    [720.0, 0.95],
-                    [1000.0, 0.92],
-                    [2000.0, 0.92],
-                ]
-            ),
-        )
+    # Default Penman ET0 CO₂-correction table (concentration [ppm] →
+    # factor), used when ``fpenmtb`` is not supplied. Mirrors the
+    # ``SiteParameters.fpenmtb`` default (SIMPLACE ``cFPENMTB``).
+    _DEFAULT_FPENMTB = (
+        (40.0, 1.05),
+        (360.0, 1.00),
+        (720.0, 0.95),
+        (1000.0, 0.92),
+        (2000.0, 0.92),
+    )
 
     def forward(
         self,
@@ -87,6 +75,9 @@ class PotentialEvapoTranspiration(nn.Module):
         atmtr: torch.Tensor,
         frac_int: torch.Tensor,
         co2: torch.Tensor | float = 370.0,
+        altitude: torch.Tensor | float = 0.0,
+        cfet: torch.Tensor | float = 1.0,
+        fpenmtb: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute PENMAN potential ET and split into canopy/soil fluxes.
 
@@ -101,6 +92,17 @@ class PotentialEvapoTranspiration(nn.Module):
             co2: Atmospheric CO₂ concentration [ppm], a scalar or
                 shape broadcastable to ``[B]`` (default ``370``).
                 Supplied by ``SiteParameters.co2`` in the model.
+            altitude: Site altitude [m a.s.l.], scalar or broadcastable
+                to ``[B]`` (default ``0``). Supplied by
+                ``SiteParameters.altitude``; enters the barometric
+                pressure used by the psychrometric constant.
+            cfet: Crop-specific transpiration correction factor [-],
+                scalar or broadcastable to ``[B]`` (default ``1.0``).
+                Supplied by ``SiteParameters.cfet``.
+            fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``
+                (concentration [ppm] → factor). Supplied by
+                ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);
+                falls back to the standard C3 table when ``None``.
 
         Returns:
             Dict of ``[B]`` tensors:
@@ -137,7 +139,8 @@ class PotentialEvapoTranspiration(nn.Module):
         bu = 0.54 + 0.35 * torch.clamp((tdif - 12.0) / 4.0, min=0.0, max=1.0)
 
         # Barometric pressure [mbar]
-        pbar = 1013.0 * torch.exp(-0.034 * self.altitude / (tmpa + 273.0))
+        altitude_t = torch.as_tensor(altitude, dtype=tmpa.dtype, device=tmpa.device)
+        pbar = 1013.0 * torch.exp(-0.034 * altitude_t / (tmpa + 273.0))
 
         # Psychrometric constant [mbar K-1]
         gamma = PSYCON * pbar
@@ -185,14 +188,19 @@ class PotentialEvapoTranspiration(nn.Module):
         es0 = torch.clamp(es0, min=0.0)
         et0 = torch.clamp(et0, min=0.0)
 
-        # CO2 correction for ET0
+        # CO2 correction for ET0 (Penman ET0 × FPENMTB(CO2);
+        # SIMPLACE PotentialEvapoTranspiration.java:194).
+        if fpenmtb is None:
+            fpenmtb = torch.tensor(
+                self._DEFAULT_FPENMTB, dtype=e0.dtype, device=e0.device
+            )
         co2_t = torch.as_tensor(co2, dtype=e0.dtype, device=e0.device)
         co2_b = co2_t.expand_as(e0) if co2_t.dim() == 0 else co2_t
-        co2_factor = interpolate(self.co2_table, co2_b)
+        co2_factor = interpolate(fpenmtb, co2_b)
         etc = et0 * co2_factor
 
         # Potential transpiration and soil evaporation split by light interception
-        ptran = torch.clamp(self.cfet * etc * frac_int, min=0.0001)
+        ptran = torch.clamp(cfet * etc * frac_int, min=0.0001)
         pevap = es0 * (1.0 - frac_int)
 
         return {
