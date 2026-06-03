@@ -276,6 +276,7 @@ class Lintul5Model(nn.Module):
         start_doy: int = 1,
         initial_state: ModelState | None = None,
         irrigation: torch.Tensor | None = None,
+        fertilizer: torch.Tensor | None = None,
     ) -> ModelOutput:
         """Run a full simulation and return trajectories plus final yield.
 
@@ -296,6 +297,18 @@ class Lintul5Model(nn.Module):
                 schedule can be a fixed plan or an `nn.Parameter`
                 optimised through the simulation. ``None`` (the default)
                 leaves the internal IRRI logic (modes 0/1/2) in control.
+            fertilizer: Optional externally supplied daily fertiliser of
+                shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the
+                weather days, with the last axis ordered ``(N, P, K)``.
+                When provided, day ``t``'s slice overrides the
+                ``ferntab``/``ferptab``/``ferktab`` applications in the
+                soil mineral balance — the scale factors
+                ``scale_factor_fer*`` and recovery fractions
+                ``nrf``/``prf``/``krf`` are still applied, so the
+                soil-chemistry logic is unchanged. Like ``irrigation``,
+                the schedule can be a fixed plan or an `nn.Parameter`
+                optimised through the simulation. ``None`` (the default)
+                leaves the internal table-driven application in control.
 
         Returns:
             A `ModelOutput` containing the full state, rate and
@@ -333,6 +346,16 @@ class Lintul5Model(nn.Module):
             irrigation = irrigation.to(
                 dtype=weather.data.dtype, device=weather.data.device
             )
+        if fertilizer is not None:
+            expected = (batch_size, weather.n_days, 3)
+            if fertilizer.shape != expected:
+                raise ValueError(
+                    "fertilizer must have shape [B, T, 3] = "
+                    f"{expected}; got {tuple(fertilizer.shape)}"
+                )
+            fertilizer = fertilizer.to(
+                dtype=weather.data.dtype, device=weather.data.device
+            )
         if initial_state is None:
             state = self.initialize(
                 batch_size=batch_size,
@@ -354,6 +377,7 @@ class Lintul5Model(nn.Module):
             soil_params=self.soil_params,
             site_params=self.site_params,
             irrigation=irrigation,
+            fertilizer=fertilizer,
         )
 
         lai = torch.stack([s.lai for s in states], dim=1)  # [B, T+1]
@@ -396,6 +420,7 @@ class Lintul5Model(nn.Module):
         weather_day: dict[str, torch.Tensor],
         doy: torch.Tensor,
         irrigation: torch.Tensor | None = None,
+        fertilizer: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute the daily rate vector for a single day (low-level API).
 
@@ -408,6 +433,12 @@ class Lintul5Model(nn.Module):
                 day ``[B]`` [mm d⁻¹]. When provided it overrides the
                 ``soil_params.irri`` mode in the water balance; ``None``
                 leaves the internal IRRI logic in control.
+            fertilizer: Optional externally supplied fertiliser for this
+                day ``[B, 3]`` [g X m⁻² d⁻¹], last axis ordered
+                ``(N, P, K)``. When provided it overrides the
+                ``ferntab``/``ferptab``/``ferktab`` look-ups (scale
+                factors and recovery fractions still apply); ``None``
+                leaves the internal table-driven application in control.
 
         Returns:
             Dict of rate tensors keyed by ``"<field>_rate"`` plus a
@@ -424,6 +455,7 @@ class Lintul5Model(nn.Module):
             soil_params=self.soil_params,
             site_params=self.site_params,
             irrigation=irrigation,
+            fertilizer=fertilizer,
         )
         return rates
 
@@ -458,6 +490,7 @@ class Lintul5Model(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
+        fertilizer: torch.Tensor | None = None,
     ) -> tuple[dict[str, torch.Tensor], DiagnosticState]:
         # Unpack the day's weather forcing.
         davtmp = weather_day["davtmp"]
@@ -591,6 +624,7 @@ class Lintul5Model(nn.Module):
             doy=doy,
             crop_params=crop_params,
             soil_params=soil_params,
+            external=fertilizer,
         )
 
         # 8. Photosynthesis with nutrient and water stress applied.
