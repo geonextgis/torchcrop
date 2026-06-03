@@ -128,14 +128,6 @@ class CropParameters:
     """``cTSUM2``. Required temperature sum [°C·d] from anthesis to
     maturity (generative period, DVS 1 → 2)."""
 
-    tsum_branching: torch.Tensor = field(default_factory=lambda: _t(700.0))
-    """``cTSUMBranching``. Optional temperature sum [°C·d] from emergence
-    to branching (used by some calibrations; ignored otherwise)."""
-
-    tsum_milkripeness: torch.Tensor = field(default_factory=lambda: _t(700.0))
-    """``cTSUMMilkripeness``. Optional temperature sum [°C·d] from
-    anthesis to milk-ripeness."""
-
     dvsi: torch.Tensor = field(default_factory=lambda: _t(0.0))
     """``cDVSI``. Initial development stage of the crop at the start of
     the simulation (in the range ``0`` … ``2``)."""
@@ -276,10 +268,6 @@ class CropParameters:
 
     rdmcr: torch.Tensor = field(default_factory=lambda: _t(1.20))
     """``cRDMCR``. Crop-specific maximum rooting depth [m]."""
-
-    rwrti: torch.Tensor = field(default_factory=lambda: _t(0.0))
-    """``cRWRTI``. Initial change in living root biomass
-    [g DM m⁻² d⁻¹]."""
 
     # ------------------------------------------------------------------ #
     # 5. Leaf dynamics & senescence (from Lintul5.java)
