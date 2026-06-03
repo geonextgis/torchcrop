@@ -2337,17 +2337,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.rwrti" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        rwrti
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.crop_params.CropParameters.scale_factor_ferk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2572,28 +2561,6 @@
     <span class="md-ellipsis">
       
         tsum2
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.tsum_branching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        tsum_branching
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.tsum_milkripeness" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        tsum_milkripeness
       
     </span>
   </a>
@@ -7567,17 +7534,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.rwrti" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        rwrti
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.crop_params.CropParameters.scale_factor_ferk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -7802,28 +7758,6 @@
     <span class="md-ellipsis">
       
         tsum2
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.tsum_branching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        tsum_branching
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.crop_params.CropParameters.tsum_milkripeness" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        tsum_milkripeness
       
     </span>
   </a>
@@ -16154,14 +16088,6 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUM2``. Required temperature sum [°C·d] from anthesis to</span>
 <span class="sd">    maturity (generative period, DVS 1 → 2).&quot;&quot;&quot;</span>
 
-    <span class="n">tsum_branching</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">700.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUMBranching``. Optional temperature sum [°C·d] from emergence</span>
-<span class="sd">    to branching (used by some calibrations; ignored otherwise).&quot;&quot;&quot;</span>
-
-    <span class="n">tsum_milkripeness</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">700.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUMMilkripeness``. Optional temperature sum [°C·d] from</span>
-<span class="sd">    anthesis to milk-ripeness.&quot;&quot;&quot;</span>
-
     <span class="n">dvsi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSI``. Initial development stage of the crop at the start of</span>
 <span class="sd">    the simulation (in the range ``0`` … ``2``).&quot;&quot;&quot;</span>
@@ -16302,10 +16228,6 @@ Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).</p>
 
     <span class="n">rdmcr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.20</span><span class="p">))</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDMCR``. Crop-specific maximum rooting depth [m].&quot;&quot;&quot;</span>
-
-    <span class="n">rwrti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRWRTI``. Initial change in living root biomass</span>
-<span class="sd">    [g DM m⁻² d⁻¹].&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 5. Leaf dynamics &amp; senescence (from Lintul5.java)</span>
@@ -18547,29 +18469,6 @@ grain filling).</p>
 
 
 
-<h5 id="torchcrop.parameters.crop_params.CropParameters.rwrti" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">rwrti</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.crop_params.CropParameters.rwrti" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cRWRTI</code>. Initial change in living root biomass
-[g DM m⁻² d⁻¹].</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
 <h5 id="torchcrop.parameters.crop_params.CropParameters.scale_factor_ferk" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">scale_factor_ferk</span><span class="p">:</span> <span class="n">Tensor</span></code>
 
@@ -19033,52 +18932,6 @@ flowering / anthesis (vegetative period, DVS 0 → 1).</p>
 
       <p><code>cTSUM2</code>. Required temperature sum [°C·d] from anthesis to
 maturity (generative period, DVS 1 → 2).</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="torchcrop.parameters.crop_params.CropParameters.tsum_branching" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">tsum_branching</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.crop_params.CropParameters.tsum_branching" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cTSUMBranching</code>. Optional temperature sum [°C·d] from emergence
-to branching (used by some calibrations; ignored otherwise).</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="torchcrop.parameters.crop_params.CropParameters.tsum_milkripeness" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">tsum_milkripeness</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.crop_params.CropParameters.tsum_milkripeness" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cTSUMMilkripeness</code>. Optional temperature sum [°C·d] from
-anthesis to milk-ripeness.</p>
     </div>
 
   </div>
