@@ -2188,6 +2188,7 @@ simulation pipeline without breaking autograd or batching.</p>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
+        <span class="n">external</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute mineralisation + fertiliser + pool-balance rates.</span>
 
@@ -2215,6 +2216,15 @@ simulation pipeline without breaking autograd or batching.</p>
 <span class="sd">            crop_params: Fertiliser tables and scale factors, plus the</span>
 <span class="sd">                scalar default recovery fractions</span>
 <span class="sd">                ``nrf``/``prf``/``krf``.</span>
+<span class="sd">            external: Optional externally supplied fertiliser application</span>
+<span class="sd">                of shape ``[B, 3]`` with the last axis ordered</span>
+<span class="sd">                ``(N, P, K)`` [g X m⁻² d⁻¹]. When provided it overrides</span>
+<span class="sd">                the ``ferntab``/``ferptab``/``ferktab`` table look-ups</span>
+<span class="sd">                (the *raw* applied amount); the scale factors</span>
+<span class="sd">                ``scale_factor_fer*`` and the recovery fractions</span>
+<span class="sd">                ``nrf``/``prf``/``krf`` are still applied downstream, so</span>
+<span class="sd">                the soil-chemistry logic is unchanged. ``None`` leaves</span>
+<span class="sd">                the internal table-driven application in control.</span>
 <span class="sd">            soil_params: Mineralisation kinetics</span>
 <span class="sd">                ``rtnmins``/``rtpmins``/``rtkmins`` and the initial</span>
 <span class="sd">                organic pools ``nmini``/``pmini``/``kmini``. The</span>
@@ -2244,10 +2254,18 @@ simulation pipeline without breaking autograd or batching.</p>
 
         <span class="c1"># Look up fertiliser applications and recovery fractions.</span>
         <span class="c1"># Missing tables ⇒ no application / use scalar recovery</span>
-        <span class="c1"># fraction default.</span>
-        <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
-        <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
-        <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+        <span class="c1"># fraction default. An externally supplied ``[B, 3]`` driver</span>
+        <span class="c1"># short-circuits the table look-up at the *raw application*</span>
+        <span class="c1"># level (last axis ordered N, P, K); the scale factors and</span>
+        <span class="c1"># recovery fractions below are applied to it unchanged.</span>
+        <span class="k">if</span> <span class="n">external</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+            <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+            <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
         <span class="n">nrf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">nrftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">nrf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>
         <span class="n">prf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">prftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">prf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>
         <span class="n">krf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">krftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">krf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>
@@ -2327,7 +2345,7 @@ simulation pipeline without breaking autograd or batching.</p>
 
 
 <h3 id="torchcrop.processes.soil_nutrients.SoilNutrients.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">nuptr</span><span class="p">,</span> <span class="n">puptr</span><span class="p">,</span> <span class="n">kuptr</span><span class="p">,</span> <span class="n">nlimit</span><span class="p">,</span> <span class="n">emerg</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">soil_params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">nuptr</span><span class="p">,</span> <span class="n">puptr</span><span class="p">,</span> <span class="n">kuptr</span><span class="p">,</span> <span class="n">nlimit</span><span class="p">,</span> <span class="n">emerg</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">soil_params</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.soil_nutrients.SoilNutrients.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2411,6 +2429,20 @@ scalar default recovery fractions
         <td><em>required</em></td>
       </tr>
       <tr>
+        <td><code>external</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied fertiliser application
+of shape <code>[B, 3]</code> with the last axis ordered
+<code>(N, P, K)</code> [g X m⁻² d⁻¹]. When provided it overrides
+the <code>ferntab</code>/<code>ferptab</code>/<code>ferktab</code> table look-ups
+(the <em>raw</em> applied amount); the scale factors
+<code>scale_factor_fer*</code> and the recovery fractions
+<code>nrf</code>/<code>prf</code>/<code>krf</code> are still applied downstream, so
+the soil-chemistry logic is unchanged. <code>None</code> leaves
+the internal table-driven application in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
         <td><code>soil_params</code></td>
         <td><code>SoilParameters</code></td>
         <td><p>Mineralisation kinetics
@@ -2465,6 +2497,7 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">crop_params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
+    <span class="n">external</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute mineralisation + fertiliser + pool-balance rates.</span>
 
@@ -2492,6 +2525,15 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">        crop_params: Fertiliser tables and scale factors, plus the</span>
 <span class="sd">            scalar default recovery fractions</span>
 <span class="sd">            ``nrf``/``prf``/``krf``.</span>
+<span class="sd">        external: Optional externally supplied fertiliser application</span>
+<span class="sd">            of shape ``[B, 3]`` with the last axis ordered</span>
+<span class="sd">            ``(N, P, K)`` [g X m⁻² d⁻¹]. When provided it overrides</span>
+<span class="sd">            the ``ferntab``/``ferptab``/``ferktab`` table look-ups</span>
+<span class="sd">            (the *raw* applied amount); the scale factors</span>
+<span class="sd">            ``scale_factor_fer*`` and the recovery fractions</span>
+<span class="sd">            ``nrf``/``prf``/``krf`` are still applied downstream, so</span>
+<span class="sd">            the soil-chemistry logic is unchanged. ``None`` leaves</span>
+<span class="sd">            the internal table-driven application in control.</span>
 <span class="sd">        soil_params: Mineralisation kinetics</span>
 <span class="sd">            ``rtnmins``/``rtpmins``/``rtkmins`` and the initial</span>
 <span class="sd">            organic pools ``nmini``/``pmini``/``kmini``. The</span>
@@ -2521,10 +2563,18 @@ six soil pools, plus diagnostics</code></td>
 
     <span class="c1"># Look up fertiliser applications and recovery fractions.</span>
     <span class="c1"># Missing tables ⇒ no application / use scalar recovery</span>
-    <span class="c1"># fraction default.</span>
-    <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
-    <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
-    <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+    <span class="c1"># fraction default. An externally supplied ``[B, 3]`` driver</span>
+    <span class="c1"># short-circuits the table look-up at the *raw application*</span>
+    <span class="c1"># level (last axis ordered N, P, K); the scale factors and</span>
+    <span class="c1"># recovery fractions below are applied to it unchanged.</span>
+    <span class="k">if</span> <span class="n">external</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">external</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fertn_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferntab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+        <span class="n">fertp_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferptab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
+        <span class="n">fertk_raw</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">ferktab</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">doy</span><span class="p">),</span> <span class="n">doy</span><span class="p">)</span>
     <span class="n">nrf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">nrftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">nrf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>
     <span class="n">prf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">prftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">prf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>
     <span class="n">krf</span> <span class="o">=</span> <span class="n">_lookup_or_scalar</span><span class="p">(</span><span class="n">cp</span><span class="o">.</span><span class="n">krftab</span><span class="p">,</span> <span class="n">cp</span><span class="o">.</span><span class="n">krf</span><span class="p">,</span> <span class="n">doy</span><span class="p">)</span>

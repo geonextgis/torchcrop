@@ -2525,6 +2525,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">initial_state</span><span class="p">:</span> <span class="n">ModelState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
@@ -2545,6 +2546,18 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">                schedule can be a fixed plan or an `nn.Parameter`</span>
 <span class="sd">                optimised through the simulation. ``None`` (the default)</span>
 <span class="sd">                leaves the internal IRRI logic (modes 0/1/2) in control.</span>
+<span class="sd">            fertilizer: Optional externally supplied daily fertiliser of</span>
+<span class="sd">                shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the</span>
+<span class="sd">                weather days, with the last axis ordered ``(N, P, K)``.</span>
+<span class="sd">                When provided, day ``t``&#39;s slice overrides the</span>
+<span class="sd">                ``ferntab``/``ferptab``/``ferktab`` applications in the</span>
+<span class="sd">                soil mineral balance — the scale factors</span>
+<span class="sd">                ``scale_factor_fer*`` and recovery fractions</span>
+<span class="sd">                ``nrf``/``prf``/``krf`` are still applied, so the</span>
+<span class="sd">                soil-chemistry logic is unchanged. Like ``irrigation``,</span>
+<span class="sd">                the schedule can be a fixed plan or an `nn.Parameter`</span>
+<span class="sd">                optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">                leaves the internal table-driven application in control.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A `ModelOutput` containing the full state, rate and</span>
@@ -2582,6 +2595,16 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
             <span class="p">)</span>
+        <span class="k">if</span> <span class="n">fertilizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;fertilizer must have shape [B, T, 3] = &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">fertilizer</span> <span class="o">=</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
                 <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
@@ -2603,6 +2626,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">fertilizer</span><span class="o">=</span><span class="n">fertilizer</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="n">lai</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">lai</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, T+1]</span>
@@ -2645,6 +2669,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
@@ -2657,6 +2682,12 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">                day ``[B]`` [mm d⁻¹]. When provided it overrides the</span>
 <span class="sd">                ``soil_params.irri`` mode in the water balance; ``None``</span>
 <span class="sd">                leaves the internal IRRI logic in control.</span>
+<span class="sd">            fertilizer: Optional externally supplied fertiliser for this</span>
+<span class="sd">                day ``[B, 3]`` [g X m⁻² d⁻¹], last axis ordered</span>
+<span class="sd">                ``(N, P, K)``. When provided it overrides the</span>
+<span class="sd">                ``ferntab``/``ferptab``/``ferktab`` look-ups (scale</span>
+<span class="sd">                factors and recovery fractions still apply); ``None``</span>
+<span class="sd">                leaves the internal table-driven application in control.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
@@ -2673,6 +2704,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">fertilizer</span><span class="o">=</span><span class="n">fertilizer</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">rates</span>
 
@@ -2707,6 +2739,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">DiagnosticState</span><span class="p">]:</span>
         <span class="c1"># Unpack the day&#39;s weather forcing.</span>
         <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
@@ -2840,6 +2873,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
+            <span class="n">external</span><span class="o">=</span><span class="n">fertilizer</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># 8. Photosynthesis with nutrient and water stress applied.</span>
@@ -3232,7 +3266,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 
 
 <h3 id="torchcrop.model.Lintul5Model.compute_rates" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather_day</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">compute_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">weather_day</span><span class="p">,</span> <span class="n">doy</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fertilizer</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.model.Lintul5Model.compute_rates" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -3280,6 +3314,17 @@ day <code>[B]</code> [mm d⁻¹]. When provided it overrides the
 leaves the internal IRRI logic in control.</p></td>
         <td><code>None</code></td>
       </tr>
+      <tr>
+        <td><code>fertilizer</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied fertiliser for this
+day <code>[B, 3]</code> [g X m⁻² d⁻¹], last axis ordered
+<code>(N, P, K)</code>. When provided it overrides the
+<code>ferntab</code>/<code>ferptab</code>/<code>ferktab</code> look-ups (scale
+factors and recovery fractions still apply); <code>None</code>
+leaves the internal table-driven application in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -3309,6 +3354,7 @@ diagnostic trajectory.</p></td>
     <span class="n">weather_day</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
 
@@ -3321,6 +3367,12 @@ diagnostic trajectory.</p></td>
 <span class="sd">            day ``[B]`` [mm d⁻¹]. When provided it overrides the</span>
 <span class="sd">            ``soil_params.irri`` mode in the water balance; ``None``</span>
 <span class="sd">            leaves the internal IRRI logic in control.</span>
+<span class="sd">        fertilizer: Optional externally supplied fertiliser for this</span>
+<span class="sd">            day ``[B, 3]`` [g X m⁻² d⁻¹], last axis ordered</span>
+<span class="sd">            ``(N, P, K)``. When provided it overrides the</span>
+<span class="sd">            ``ferntab``/``ferptab``/``ferktab`` look-ups (scale</span>
+<span class="sd">            factors and recovery fractions still apply); ``None``</span>
+<span class="sd">            leaves the internal table-driven application in control.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
@@ -3337,6 +3389,7 @@ diagnostic trajectory.</p></td>
         <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+        <span class="n">fertilizer</span><span class="o">=</span><span class="n">fertilizer</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">rates</span>
 </code></pre></div>
@@ -3352,7 +3405,7 @@ diagnostic trajectory.</p></td>
 
 
 <h3 id="torchcrop.model.Lintul5Model.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weather</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">initial_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fertilizer</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.model.Lintul5Model.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -3408,6 +3461,23 @@ optimised through the simulation. <code>None</code> (the default)
 leaves the internal IRRI logic (modes 0/1/2) in control.</p></td>
         <td><code>None</code></td>
       </tr>
+      <tr>
+        <td><code>fertilizer</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional externally supplied daily fertiliser of
+shape <code>[B, T, 3]</code> [g X m⁻² d⁻¹], aligned with the
+weather days, with the last axis ordered <code>(N, P, K)</code>.
+When provided, day <code>t</code>'s slice overrides the
+<code>ferntab</code>/<code>ferptab</code>/<code>ferktab</code> applications in the
+soil mineral balance — the scale factors
+<code>scale_factor_fer*</code> and recovery fractions
+<code>nrf</code>/<code>prf</code>/<code>krf</code> are still applied, so the
+soil-chemistry logic is unchanged. Like <code>irrigation</code>,
+the schedule can be a fixed plan or an <code>nn.Parameter</code>
+optimised through the simulation. <code>None</code> (the default)
+leaves the internal table-driven application in control.</p></td>
+        <td><code>None</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -3449,6 +3519,7 @@ heat-stress-adjusted yield).</p></td>
     <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">initial_state</span><span class="p">:</span> <span class="n">ModelState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
 
@@ -3469,6 +3540,18 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">            schedule can be a fixed plan or an `nn.Parameter`</span>
 <span class="sd">            optimised through the simulation. ``None`` (the default)</span>
 <span class="sd">            leaves the internal IRRI logic (modes 0/1/2) in control.</span>
+<span class="sd">        fertilizer: Optional externally supplied daily fertiliser of</span>
+<span class="sd">            shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the</span>
+<span class="sd">            weather days, with the last axis ordered ``(N, P, K)``.</span>
+<span class="sd">            When provided, day ``t``&#39;s slice overrides the</span>
+<span class="sd">            ``ferntab``/``ferptab``/``ferktab`` applications in the</span>
+<span class="sd">            soil mineral balance — the scale factors</span>
+<span class="sd">            ``scale_factor_fer*`` and recovery fractions</span>
+<span class="sd">            ``nrf``/``prf``/``krf`` are still applied, so the</span>
+<span class="sd">            soil-chemistry logic is unchanged. Like ``irrigation``,</span>
+<span class="sd">            the schedule can be a fixed plan or an `nn.Parameter`</span>
+<span class="sd">            optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">            leaves the internal table-driven application in control.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A `ModelOutput` containing the full state, rate and</span>
@@ -3506,6 +3589,16 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
         <span class="p">)</span>
+    <span class="k">if</span> <span class="n">fertilizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;fertilizer must have shape [B, T, 3] = &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">fertilizer</span> <span class="o">=</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
     <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
@@ -3527,6 +3620,7 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">soil_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
         <span class="n">site_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+        <span class="n">fertilizer</span><span class="o">=</span><span class="n">fertilizer</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">lai</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">lai</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, T+1]</span>
