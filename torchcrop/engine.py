@@ -73,6 +73,7 @@ class SimulationEngine(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
+        fertilizer: torch.Tensor | None = None,
     ) -> StepResult:
         result = self._compute_rates(
             state=state,
@@ -82,6 +83,7 @@ class SimulationEngine(nn.Module):
             soil_params=soil_params,
             site_params=site_params,
             irrigation=irrigation,
+            fertilizer=fertilizer,
         )
         # `compute_rates` may return either a rates dict (legacy) or a
         # ``(rates, DiagnosticState)`` tuple. The diagnostic does not
@@ -103,6 +105,7 @@ class SimulationEngine(nn.Module):
         soil_params: SoilParameters,
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
+        fertilizer: torch.Tensor | None = None,
     ) -> tuple[
         list[ModelState],
         list[dict[str, torch.Tensor]],
@@ -122,6 +125,13 @@ class SimulationEngine(nn.Module):
                 ``t`` overrides the ``soil_params.irri`` mode in the
                 water balance; ``None`` leaves the internal IRRI logic
                 in control.
+            fertilizer: Optional externally supplied daily fertiliser
+                ``[B, T, 3]`` [g X m⁻² d⁻¹], last axis ordered
+                ``(N, P, K)``. When provided, the slice for day ``t``
+                overrides the ``ferntab``/``ferptab``/``ferktab``
+                applications in the soil mineral balance (scale factors
+                and recovery fractions still apply); ``None`` leaves the
+                internal table-driven application in control.
 
         Returns:
             A ``(states, rates, diagnostics)`` tuple. ``states`` is a list
@@ -144,6 +154,7 @@ class SimulationEngine(nn.Module):
                 float(((start_doy - 1 + t) % 365) + 1),
             )
             irrig_t = None if irrigation is None else irrigation[:, t]
+            fert_t = None if fertilizer is None else fertilizer[:, t, :]
             result = self.step(
                 state=states[-1],
                 weather_day=weather_day,
@@ -152,6 +163,7 @@ class SimulationEngine(nn.Module):
                 soil_params=soil_params,
                 site_params=site_params,
                 irrigation=irrig_t,
+                fertilizer=fert_t,
             )
             states.append(result.state)
             rates_all.append(result.rates)
