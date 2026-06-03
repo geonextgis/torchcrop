@@ -72,6 +72,7 @@ class SoilNutrients(nn.Module):
         doy: torch.Tensor,
         crop_params: CropParameters,
         soil_params: SoilParameters,
+        external: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute mineralisation + fertiliser + pool-balance rates.
 
@@ -99,6 +100,15 @@ class SoilNutrients(nn.Module):
             crop_params: Fertiliser tables and scale factors, plus the
                 scalar default recovery fractions
                 ``nrf``/``prf``/``krf``.
+            external: Optional externally supplied fertiliser application
+                of shape ``[B, 3]`` with the last axis ordered
+                ``(N, P, K)`` [g X m⁻² d⁻¹]. When provided it overrides
+                the ``ferntab``/``ferptab``/``ferktab`` table look-ups
+                (the *raw* applied amount); the scale factors
+                ``scale_factor_fer*`` and the recovery fractions
+                ``nrf``/``prf``/``krf`` are still applied downstream, so
+                the soil-chemistry logic is unchanged. ``None`` leaves
+                the internal table-driven application in control.
             soil_params: Mineralisation kinetics
                 ``rtnmins``/``rtpmins``/``rtkmins`` and the initial
                 organic pools ``nmini``/``pmini``/``kmini``. The
@@ -128,10 +138,18 @@ class SoilNutrients(nn.Module):
 
         # Look up fertiliser applications and recovery fractions.
         # Missing tables ⇒ no application / use scalar recovery
-        # fraction default.
-        fertn_raw = _lookup_or_scalar(cp.ferntab, torch.zeros_like(doy), doy)
-        fertp_raw = _lookup_or_scalar(cp.ferptab, torch.zeros_like(doy), doy)
-        fertk_raw = _lookup_or_scalar(cp.ferktab, torch.zeros_like(doy), doy)
+        # fraction default. An externally supplied ``[B, 3]`` driver
+        # short-circuits the table look-up at the *raw application*
+        # level (last axis ordered N, P, K); the scale factors and
+        # recovery fractions below are applied to it unchanged.
+        if external is not None:
+            fertn_raw = external[..., 0]
+            fertp_raw = external[..., 1]
+            fertk_raw = external[..., 2]
+        else:
+            fertn_raw = _lookup_or_scalar(cp.ferntab, torch.zeros_like(doy), doy)
+            fertp_raw = _lookup_or_scalar(cp.ferptab, torch.zeros_like(doy), doy)
+            fertk_raw = _lookup_or_scalar(cp.ferktab, torch.zeros_like(doy), doy)
         nrf = _lookup_or_scalar(cp.nrftab, cp.nrf, doy)
         prf = _lookup_or_scalar(cp.prftab, cp.prf, doy)
         krf = _lookup_or_scalar(cp.krftab, cp.krf, doy)
