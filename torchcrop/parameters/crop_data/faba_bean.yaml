@@ -1,0 +1,135 @@
+# Auto-generated from simplace/crop_default/fbe0801.xml
+# by scripts/convert_crop_xml_to_yaml.py. Do not edit by hand.
+crop_name: faba_bean
+source_file: fbe0801.xml
+source_crop_name: faba bean
+description: CROP DATA FILE for use with LINTUL5 (NPK lim.) for faba bean Based on
+  WOFOST crop data set for Faba bean 801 (Vicia faba) Sowing date in France, Northern
+  Italy (R31,R32,R33,R34,R35,R36) 11 March Germany, Luxembourg, United Kingdom, Ireland,
+  Denmark 26 March The Netherlands, Belgium 31 MArch Spain (RB1,RB2,RB3,RB4) 5 April
+  Southern Italy (R37,R38,R39,R3A,R3B), Greece, S. Spain (RB5,RB6), Portugal 1 December
+  Derived from data set for field beans Grashoff (1992).
+scalars: {tbasem: 0.0, teffmx: 20.0, tsumem: 100.0, idsl: 0.0, tsum1: 833.0, tsum2: 1351.0,
+  dvsi: 0.0, tdwi: 4.5, rgrl: 0.011, laicr: 4.0, tbase: 0.0, rdrl: 0.05, rdrshm: 0.03,
+  rdi: 0.1, rri: 0.012, rdmcr: 1.0, dvsdr: 1.0, dvsdlt: 1.0, rdrns: 0.05, dvsnlt: 1.3,
+  dvsnt: 0.8, fntrt: 0.15, frnx: 1.0, frpx: 1.0, frkx: 1.0, lrnr: 0.5, lsnr: 0.5,
+  lrpr: 0.5, lspr: 0.5, lrkr: 0.5, lskr: 0.5, nlai: 1.0, nlue: 1.1, nmaxso: 0.048,
+  pmaxso: 0.0042, kmaxso: 0.0128, npart: 1.0, nsla: 0.5, rnflv: 0.0107, rnfst: 0.0053,
+  rnfrt: 0.0053, rpflv: 0.00107, rpfst: 0.00053, rpfrt: 0.00053, rkflv: 0.0133, rkfst: 0.0067,
+  rkfrt: 0.0067, tcnt: 10.0, tcpt: 10.0, tckt: 10.0, nfixf: 0.8}
+tables:
+  dtsmtb:
+  - [-5.0, 0.0]
+  - [0.0, 0.0]
+  - [20.0, 20.0]
+  - [25.0, 25.0]
+  - [35.0, 25.0]
+  phottb:
+  - [0.0, 0.0]
+  - [8.0, 1.0]
+  - [10.0, 1.0]
+  - [12.0, 1.0]
+  - [18.0, 1.0]
+  slatb:
+  - [0.0, 0.031]
+  - [0.1, 0.036]
+  - [0.5, 0.042]
+  - [2.0, 0.042]
+  kdiftb:
+  - [0.0, 0.8]
+  - [2.0, 0.8]
+  ruetb:
+  - [0.0, 3.0]
+  - [1.0, 3.0]
+  - [1.3, 3.0]
+  - [2.0, 0.4]
+  tmpftb:
+  - [-1.0, 0.0]
+  - [0.0, 0.0]
+  - [10.0, 0.59]
+  - [15.0, 0.76]
+  - [20.0, 0.93]
+  - [25.0, 1.0]
+  - [30.0, 0.92]
+  - [35.0, 0.84]
+  - [40.0, 0.75]
+  tmnftb:
+  - [-5.0, 0.0]
+  - [0.0, 0.0]
+  - [3.0, 1.0]
+  - [30.0, 1.0]
+  cotb:
+  - [40.0, 0.0]
+  - [360.0, 1.0]
+  - [720.0, 1.35]
+  - [1000.0, 1.5]
+  - [2000.0, 1.5]
+  frtb:
+  - [0.0, 0.5]
+  - [0.54, 0.3]
+  - [1.0, 0.2]
+  - [1.2, 0.0]
+  - [2.0, 0.0]
+  fltb:
+  - [0.0, 0.5]
+  - [0.54, 0.6]
+  - [1.0, 0.25]
+  - [1.2, 0.04]
+  - [1.42, 0.02]
+  - [1.51, 0.0]
+  - [2.0, 0.0]
+  fstb:
+  - [0.0, 0.5]
+  - [0.54, 0.4]
+  - [1.0, 0.5]
+  - [1.2, 0.25]
+  - [1.42, 0.14]
+  - [1.51, 0.01]
+  - [1.71, 0.0]
+  - [2.0, 0.0]
+  fotb:
+  - [0.0, 0.0]
+  - [0.54, 0.0]
+  - [1.0, 0.25]
+  - [1.2, 0.71]
+  - [1.42, 0.84]
+  - [1.51, 0.99]
+  - [1.71, 1.0]
+  - [2.0, 1.0]
+  rdrltb:
+  - [-10.0, 0.0]
+  - [10.0, 0.02]
+  - [15.0, 0.03]
+  - [30.0, 0.05]
+  - [50.0, 0.09]
+  rdrrtb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  rdrstb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  nmxlv:
+  - [0.0, 0.06]
+  - [0.4, 0.04]
+  - [0.7, 0.04]
+  - [1.0, 0.035]
+  - [2.0, 0.033]
+  - [2.1, 0.033]
+  pmxlv:
+  - [0.0, 0.0096]
+  - [0.4, 0.0064]
+  - [0.7, 0.0064]
+  - [1.0, 0.0056]
+  - [2.0, 0.0053]
+  - [2.1, 0.0053]
+  kmxlv:
+  - [0.0, 0.072]
+  - [0.4, 0.048]
+  - [0.7, 0.048]
+  - [1.0, 0.042]
+  - [2.0, 0.04]
+  - [2.1, 0.04]

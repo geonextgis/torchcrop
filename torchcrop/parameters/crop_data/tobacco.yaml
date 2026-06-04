@@ -1,0 +1,119 @@
+# Auto-generated from simplace/crop_default/tobacco.xml
+# by scripts/convert_crop_xml_to_yaml.py. Do not edit by hand.
+crop_name: tobacco
+source_file: tobacco.xml
+source_crop_name: tobacco
+description: 'CROP DATA FILE for use with LINTUL5 (NPK lim.) for tobacco, August 2011
+  Based on WOFOST crop data set TOBACCO.W41 Derived from WOFOST41 data set published
+  in: Diepen, C.A. van,  C. Rappoldt, J. Wolf & H. van Keulen, 1988. Crop growth simulation
+  model WOFOST. Documentation version 4.1, Centre for world food studies, Wageningen,
+  299 pp.'
+scalars: {tbasem: 0.0, teffmx: 30.0, tsumem: 0.0, idsl: 0.0, tsum1: 1948.0, tsum2: 1948.0,
+  dvsi: 0.0, tdwi: 6.5, rgrl: 0.05, laicr: 4.0, tbase: 0.0, rdrl: 0.05, rdrshm: 0.03,
+  rdi: 0.1, rri: 0.012, rdmcr: 0.7, dvsdr: 1.0, dvsdlt: 1.0, rdrns: 0.05, dvsnlt: 1.3,
+  dvsnt: 0.8, fntrt: 0.15, frnx: 1.0, frpx: 1.0, frkx: 1.0, lrnr: 0.5, lsnr: 0.5,
+  lrpr: 0.5, lspr: 0.5, lrkr: 0.5, lskr: 0.5, nlai: 1.0, nlue: 1.1, nmaxso: 0.0168,
+  pmaxso: 0.0024, kmaxso: 0.0152, npart: 1.0, nsla: 0.5, rnflv: 0.014, rnfst: 0.007,
+  rnfrt: 0.007, rpflv: 0.002, rpfst: 0.001, rpfrt: 0.001, rkflv: 0.0127, rkfst: 0.0063,
+  rkfrt: 0.0063, tcnt: 10.0, tcpt: 10.0, tckt: 10.0, nfixf: 0.0}
+tables:
+  dtsmtb:
+  - [-5.0, 0.0]
+  - [0.0, 0.0]
+  - [30.0, 30.0]
+  - [35.0, 30.0]
+  phottb:
+  - [0.0, 0.0]
+  - [8.0, 1.0]
+  - [10.0, 1.0]
+  - [12.0, 1.0]
+  - [18.0, 1.0]
+  slatb:
+  - [0.0, 0.02]
+  - [2.0, 0.008]
+  kdiftb:
+  - [0.0, 0.6]
+  - [2.0, 0.6]
+  ruetb:
+  - [0.0, 3.0]
+  - [1.0, 3.0]
+  - [1.3, 3.0]
+  - [2.0, 0.4]
+  tmpftb:
+  - [-1.0, 0.0]
+  - [0.0, 0.0]
+  - [10.0, 0.8]
+  - [20.0, 0.9]
+  - [35.0, 1.0]
+  - [45.0, 1.0]
+  - [51.0, 0.0]
+  - [55.0, 0.0]
+  tmnftb:
+  - [-5.0, 0.0]
+  - [0.0, 0.0]
+  - [3.0, 1.0]
+  - [30.0, 1.0]
+  cotb:
+  - [40.0, 0.0]
+  - [360.0, 1.0]
+  - [720.0, 1.35]
+  - [1000.0, 1.5]
+  - [2000.0, 1.5]
+  frtb:
+  - [0.0, 0.2]
+  - [0.25, 0.25]
+  - [1.5, 0.15]
+  - [2.0, 0.25]
+  fltb:
+  - [0.0, 0.7]
+  - [0.3, 0.85]
+  - [0.45, 0.85]
+  - [1.0, 0.4]
+  - [2.0, 0.4]
+  fstb:
+  - [0.0, 0.3]
+  - [0.3, 0.15]
+  - [0.45, 0.15]
+  - [1.0, 0.6]
+  - [2.0, 0.32]
+  fotb:
+  - [0.0, 0.0]
+  - [1.0, 0.0]
+  - [2.0, 0.28]
+  rdrltb:
+  - [-10.0, 0.0]
+  - [10.0, 0.02]
+  - [15.0, 0.03]
+  - [30.0, 0.05]
+  - [50.0, 0.09]
+  rdrrtb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  rdrstb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  nmxlv:
+  - [0.0, 0.06]
+  - [0.4, 0.05]
+  - [0.7, 0.045]
+  - [1.0, 0.04]
+  - [2.0, 0.04]
+  - [2.1, 0.04]
+  pmxlv:
+  - [0.0, 0.0078]
+  - [0.4, 0.0065]
+  - [0.7, 0.0059]
+  - [1.0, 0.0052]
+  - [2.0, 0.0052]
+  - [2.1, 0.0052]
+  kmxlv:
+  - [0.0, 0.071]
+  - [0.4, 0.059]
+  - [0.7, 0.053]
+  - [1.0, 0.048]
+  - [2.0, 0.048]
+  - [2.1, 0.048]

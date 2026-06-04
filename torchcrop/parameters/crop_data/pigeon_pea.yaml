@@ -1,0 +1,123 @@
+# Auto-generated from simplace/crop_default/pigeopea.xml
+# by scripts/convert_crop_xml_to_yaml.py. Do not edit by hand.
+crop_name: pigeon_pea
+source_file: pigeopea.xml
+source_crop_name: pigeon pea
+description: 'CROP DATA FILE for use with LINTUL5 (NPK lim.) for pigeon pea, August
+  2011 Basen on WOFOST crop data set  PIGEONPEA.W41  Derived from WOFOST41 data set
+  published in: Diepen, C.A. van,  C. Rappoldt, J. Wolf & H. van Keulen, 1988. Crop
+  growth simulation model WOFOST. Documentation version 4.1, Centre for world food
+  studies, Wageningen, 299 pp.'
+scalars: {tbasem: 10.0, teffmx: 30.0, tsumem: 70.0, idsl: 0.0, tsum1: 700.0, tsum2: 700.0,
+  dvsi: 0.0, tdwi: 0.6, rgrl: 0.05, laicr: 4.0, tbase: 11.0, rdrl: 0.05, rdrshm: 0.03,
+  rdi: 0.1, rri: 0.012, rdmcr: 1.8, dvsdr: 1.0, dvsdlt: 1.0, rdrns: 0.05, dvsnlt: 1.3,
+  dvsnt: 0.8, fntrt: 0.15, frnx: 1.0, frpx: 1.0, frkx: 1.0, lrnr: 0.5, lsnr: 0.5,
+  lrpr: 0.5, lspr: 0.5, lrkr: 0.5, lskr: 0.5, nlai: 1.0, nlue: 1.1, nmaxso: 0.0336,
+  pmaxso: 0.0024, kmaxso: 0.0096, npart: 1.0, nsla: 0.5, rnflv: 0.0093, rnfst: 0.0047,
+  rnfrt: 0.0047, rpflv: 0.00093, rpfst: 0.00047, rpfrt: 0.00047, rkflv: 0.004, rkfst: 0.002,
+  rkfrt: 0.002, tcnt: 10.0, tcpt: 10.0, tckt: 10.0, nfixf: 0.8}
+tables:
+  dtsmtb:
+  - [0.0, 0.0]
+  - [11.0, 0.0]
+  - [25.0, 14.0]
+  - [35.0, 14.0]
+  phottb:
+  - [0.0, 0.0]
+  - [8.0, 1.0]
+  - [10.0, 1.0]
+  - [12.0, 1.0]
+  - [18.0, 1.0]
+  slatb:
+  - [0.0, 0.02]
+  - [1.35, 0.034]
+  - [1.6, 0.028]
+  - [2.0, 0.028]
+  kdiftb:
+  - [0.0, 0.69]
+  - [2.0, 0.69]
+  ruetb:
+  - [0.0, 3.0]
+  - [1.0, 3.0]
+  - [1.3, 3.0]
+  - [2.0, 0.4]
+  tmpftb:
+  - [-1.0, 0.0]
+  - [0.0, 0.0]
+  - [10.0, 1.0]
+  - [30.0, 1.0]
+  - [42.0, 0.68]
+  tmnftb:
+  - [-5.0, 0.0]
+  - [0.0, 0.0]
+  - [3.0, 1.0]
+  - [30.0, 1.0]
+  cotb:
+  - [40.0, 0.0]
+  - [360.0, 1.0]
+  - [720.0, 1.35]
+  - [1000.0, 1.5]
+  - [2000.0, 1.5]
+  frtb:
+  - [0.0, 0.3]
+  - [1.3, 0.3]
+  - [1.75, 0.0]
+  - [2.0, 0.0]
+  fltb:
+  - [0.0, 0.5]
+  - [0.65, 0.5]
+  - [1.0, 0.43]
+  - [1.45, 0.34]
+  - [1.85, 0.0]
+  - [2.0, 0.0]
+  fstb:
+  - [0.0, 0.5]
+  - [0.65, 0.5]
+  - [1.0, 0.57]
+  - [1.45, 0.5]
+  - [1.85, 0.0]
+  - [2.0, 0.0]
+  fotb:
+  - [0.0, 0.0]
+  - [0.65, 0.0]
+  - [1.0, 0.0]
+  - [1.45, 0.16]
+  - [1.85, 1.0]
+  - [2.0, 1.0]
+  rdrltb:
+  - [-10.0, 0.0]
+  - [10.0, 0.02]
+  - [15.0, 0.03]
+  - [30.0, 0.05]
+  - [50.0, 0.09]
+  rdrrtb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  rdrstb:
+  - [0.0, 0.0]
+  - [1.5, 0.0]
+  - [1.5001, 0.02]
+  - [2.0, 0.02]
+  nmxlv:
+  - [0.0, 0.06]
+  - [0.4, 0.04]
+  - [0.7, 0.04]
+  - [1.0, 0.03]
+  - [2.0, 0.027]
+  - [2.1, 0.027]
+  pmxlv:
+  - [0.0, 0.0051]
+  - [0.4, 0.0034]
+  - [0.7, 0.0034]
+  - [1.0, 0.0026]
+  - [2.0, 0.0023]
+  - [2.1, 0.0023]
+  kmxlv:
+  - [0.0, 0.03]
+  - [0.4, 0.02]
+  - [0.7, 0.02]
+  - [1.0, 0.015]
+  - [2.0, 0.013]
+  - [2.1, 0.013]
