@@ -110,5 +110,7 @@ simplace/
 torchcrop_test/
 graphify-out/
 scripts/
+docs/examples/others/
+docs/examples/data/
 nitrogen_limited_winter_wheat/
 CLAUDE.md
