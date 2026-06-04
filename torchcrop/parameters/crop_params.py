@@ -24,10 +24,16 @@ References:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields
+import functools
+from dataclasses import InitVar, dataclass, field, fields
+from pathlib import Path
 from typing import Any
 
 import torch
+
+# Directory holding the per-crop YAML presets generated from the SIMPLACE
+# reference XML files by ``scripts/convert_crop_xml_to_yaml.py``.
+_CROP_DATA_DIR = Path(__file__).resolve().parent / "crop_data"
 
 
 def _t(x: float, dtype: torch.dtype = torch.float32) -> torch.Tensor:
@@ -89,13 +95,138 @@ def _check_discrete(
         )
 
 
+def _import_yaml():
+    """Import PyYAML lazily with a helpful error if it is missing.
+
+    PyYAML is only needed to read the bundled crop presets; importing it
+    lazily keeps ``import torchcrop`` working when the optional dependency
+    is absent (until a crop preset is actually requested).
+
+    Returns:
+        The imported ``yaml`` module.
+
+    Raises:
+        ImportError: If PyYAML is not installed.
+    """
+    try:
+        import yaml  # noqa: PLC0415
+    except ImportError as exc:  # pragma: no cover - exercised only without PyYAML
+        raise ImportError(
+            "Loading crop presets by name requires PyYAML. "
+            "Install it with `pip install pyyaml`."
+        ) from exc
+    return yaml
+
+
+# Default crop name loaded by ``CropParameters()`` when neither ``crop_name``
+# nor ``config_file`` is supplied.
+_DEFAULT_CROP = "default"
+
+# Sentinel for the ``crop_name`` init-var: distinguishes "argument omitted"
+# (→ load the default preset) from an explicit ``crop_name=None`` (→ skip
+# preset loading and keep the field values as passed, used internally by
+# `CropParameters.to`).
+_UNSET: Any = object()
+
+
+def _slugify(name: str) -> str:
+    """Normalise a crop name to its YAML file stem (lowercase, underscores).
+
+    Spaces and hyphens collapse to single underscores, so ``"grain maize"``,
+    ``"Grain-Maize"`` and ``"grain_maize"`` all resolve to ``grain_maize``.
+
+    Args:
+        name: User-supplied crop name.
+
+    Returns:
+        The normalised lookup key / file stem.
+    """
+    return "_".join(str(name).strip().lower().replace("-", " ").split())
+
+
+@functools.lru_cache(maxsize=1)
+def available_crops() -> tuple[str, ...]:
+    """Return the built-in crop names loadable via ``crop_name``.
+
+    Each name is the stem of a bundled YAML preset in
+    ``parameters/crop_data/`` (e.g. ``"wheat"``, ``"maize"``, ``"soybean"``)
+    and is also accepted, case- and whitespace-insensitively, by
+    ``CropParameters(crop_name=...)``.
+
+    Returns:
+        A sorted tuple of available crop names.
+    """
+    return tuple(sorted(p.stem for p in _CROP_DATA_DIR.glob("*.yaml")))
+
+
+def _builtin_crop_path(crop_name: str) -> Path:
+    """Resolve a crop name to its bundled preset path.
+
+    Args:
+        crop_name: Crop name (see `available_crops`), case- and
+            whitespace-insensitive.
+
+    Returns:
+        Path to the matching ``<crop>.yaml`` preset.
+
+    Raises:
+        ValueError: If no built-in preset matches ``crop_name``.
+    """
+    path = _CROP_DATA_DIR / f"{_slugify(crop_name)}.yaml"
+    if not path.is_file():
+        raise ValueError(
+            f"Unknown crop {crop_name!r}. Available crops: "
+            f"{', '.join(available_crops())}."
+        )
+    return path
+
+
+def _load_preset_file(path: Path) -> dict[str, Any]:
+    """Load and parse a crop preset YAML file.
+
+    Args:
+        path: Path to a YAML file following the crop-preset schema
+            (``scalars`` and ``tables`` mappings, plus optional metadata).
+
+    Returns:
+        The parsed preset dict.
+
+    Raises:
+        FileNotFoundError: If ``path`` does not exist.
+    """
+    if not path.is_file():
+        raise FileNotFoundError(f"Crop configuration file not found: {path}")
+    yaml = _import_yaml()
+    with open(path) as fh:
+        return yaml.safe_load(fh)
+
+
 @dataclass
 class CropParameters:
     """Species-specific Lintul5 crop parameters.
 
     Scalar fields have shape ``[]`` or ``[B]`` (broadcastable against the
     batch dimension). Table fields have shape ``[N, 2]`` or ``[B, N, 2]``.
-    Default values reproduce the SIMPLACE Lintul5 defaults (wheat-like).
+
+    Parameters are loaded from a YAML preset on construction:
+
+        params = CropParameters()                       # built-in default.yaml
+        params = CropParameters(crop_name="wheat")      # built-in by name
+        params = CropParameters(crop_name="maize")
+        params = CropParameters(config_file="my_crop.yaml")  # custom file
+
+    ``crop_name`` selects a bundled preset from ``parameters/crop_data/`` and
+    is matched case- and whitespace-insensitively (``"grain maize"`` →
+    ``maize``); see `available_crops` for the full list. ``config_file``
+    loads a user-provided YAML using the same schema (``scalars`` and
+    ``tables`` mappings), making it easy to add custom parameterisations.
+    With neither argument, the built-in ``default`` preset is loaded.
+    ``crop_name`` and ``config_file`` are mutually exclusive.
+
+    A preset overwrites every field it defines; any field it omits keeps the
+    class default (e.g. torchcrop-specific extensions not present in the
+    SIMPLACE source). Customise individual values afterwards
+    (``params.rue = ...``) or use `from_crop_name` for dtype control.
     """
 
     # ------------------------------------------------------------------ #
@@ -665,8 +796,75 @@ class CropParameters:
     thermally sensitive window closes."""
 
     # ------------------------------------------------------------------ #
+    # Init-only inputs (not stored as fields)
+    # ------------------------------------------------------------------ #
+
+    crop_name: InitVar[Any] = _UNSET
+    """Optional crop name selecting a bundled preset from
+    ``parameters/crop_data/`` (case- and whitespace-insensitive). When
+    omitted, the ``default`` preset is loaded. Pass ``None`` to skip preset
+    loading entirely (keep the field values as constructed). Mutually
+    exclusive with `config_file`. Not retained as an attribute."""
+
+    config_file: InitVar[str | Path | None] = None
+    """Optional path to a user-provided YAML file (same schema as the
+    bundled presets) to load instead of a built-in crop. Mutually exclusive
+    with `crop_name`. Not retained as an attribute."""
+
+    # ------------------------------------------------------------------ #
     # Helpers
     # ------------------------------------------------------------------ #
+
+    def __post_init__(
+        self, crop_name: Any, config_file: str | Path | None
+    ) -> None:
+        """Load a crop preset into the parameter fields.
+
+        Resolution:
+            * ``config_file`` given → load that YAML file.
+            * ``crop_name`` given (a string) → load the matching bundled
+              preset via `_builtin_crop_path`.
+            * ``crop_name`` omitted and no ``config_file`` → load the
+              built-in `_DEFAULT_CROP` preset.
+            * ``crop_name=None`` (explicit) → skip loading; retain the field
+              values as passed (used internally by `to`).
+
+        Args:
+            crop_name: Crop name, ``None`` (skip), or the `_UNSET` sentinel
+                (load default).
+            config_file: Path to a custom preset YAML, or ``None``.
+
+        Raises:
+            ValueError: If both ``crop_name`` and ``config_file`` are given,
+                or if ``crop_name`` matches no bundled preset.
+            FileNotFoundError: If ``config_file`` does not exist.
+        """
+        if config_file is not None:
+            if crop_name not in (_UNSET, None):
+                raise ValueError(
+                    "Pass either crop_name or config_file, not both."
+                )
+            self._apply_preset(_load_preset_file(Path(config_file)))
+            return
+
+        if crop_name is None:
+            return  # explicit skip — keep field values as constructed
+
+        name = _DEFAULT_CROP if crop_name is _UNSET else crop_name
+        self._apply_preset(_load_preset_file(_builtin_crop_path(name)))
+
+    def _apply_preset(self, preset: dict[str, Any]) -> None:
+        """Overwrite fields from a parsed preset dict.
+
+        Args:
+            preset: Preset mapping with optional ``scalars`` (name → value)
+                and ``tables`` (name → list of ``[x, y]`` rows) sections.
+                Only the fields present are overwritten.
+        """
+        for name, value in (preset.get("scalars") or {}).items():
+            setattr(self, name, _t(float(value)))
+        for name, rows in (preset.get("tables") or {}).items():
+            setattr(self, name, _table([(float(x), float(y)) for x, y in rows]))
 
     def validate(self) -> None:
         """Validate discrete/categorical crop fields.
@@ -713,17 +911,47 @@ class CropParameters:
                 kwargs[f.name] = t.to(dtype=dtype, device=device)
             else:
                 kwargs[f.name] = t
-        return CropParameters(**kwargs)
+        # crop_name=None skips preset loading so the field values built above
+        # are preserved rather than being overwritten by the default preset.
+        return CropParameters(crop_name=None, **kwargs)
+
+    @classmethod
+    def from_crop_name(
+        cls,
+        crop_name: str,
+        dtype: torch.dtype = torch.float32,
+    ) -> "CropParameters":
+        """Build a `CropParameters` for a named crop preset.
+
+        Equivalent to ``CropParameters(crop_name=crop_name).to(dtype=dtype)``
+        but with explicit dtype control.
+
+        Args:
+            crop_name: Crop name (e.g. ``"wheat"``, ``"maize"``), case- and
+                whitespace-insensitive. See `available_crops` for the full
+                list.
+            dtype: Target tensor dtype for all scalar/tabular fields.
+
+        Returns:
+            A `CropParameters` populated from the requested preset.
+
+        Raises:
+            ValueError: If ``crop_name`` matches no bundled preset.
+        """
+        return cls(crop_name=crop_name).to(dtype=dtype)
 
 
 def default_wheat_params(dtype: torch.dtype = torch.float32) -> CropParameters:
     """Return the SIMPLACE Lintul5 wheat-like default parameter set.
 
+    Loads the built-in ``default`` preset (the wheat-like SIMPLACE default),
+    equivalent to ``CropParameters(crop_name="default")``.
+
     Args:
         dtype: Target tensor dtype for all scalar/tabular fields.
 
     Returns:
-        A fresh `CropParameters` with the Lintul5 wheat defaults
+        A fresh `CropParameters` with the Lintul5 default parameters
         cast to ``dtype``.
     """
     return CropParameters().to(dtype=dtype)
