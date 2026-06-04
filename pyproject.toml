@@ -43,6 +43,9 @@ extra = [
 include = ["torchcrop*"]
 exclude = ["docs*"]
 
+[tool.setuptools.package-data]
+"torchcrop.parameters" = ["crop_data/*.yaml"]
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
