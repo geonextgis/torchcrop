@@ -14,7 +14,7 @@ from torchcrop.config import RunConfig
 from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.engine import SimulationEngine
 from torchcrop.model import Lintul5Model, ModelOutput
-from torchcrop.parameters.crop_params import CropParameters
+from torchcrop.parameters.crop_params import CropParameters, available_crops
 from torchcrop.parameters.site_params import SiteParameters
 from torchcrop.parameters.soil_params import SoilParameters
 from torchcrop.states.model_state import DiagnosticState, ModelState
@@ -23,6 +23,7 @@ __all__ = [
     "CropParameters",
     "DiagnosticState",
     "Lintul5Model",
+    "available_crops",
     "ModelOutput",
     "ModelState",
     "RunConfig",
