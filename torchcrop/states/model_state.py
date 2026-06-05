@@ -236,24 +236,31 @@ class ModelState:
         batch_size: int,
         dtype: torch.dtype = torch.float32,
         device: torch.device | str = "cpu",
-        dvsi: float = 0.0,
-        wai: float = 60.0,
-        rootdi: float = 0.10,
-        wa_lower_i: float = 400.0,
-        dslri: float = 3.0,
-        dsosi: float = 0.0,
-        nmini: float = 0.0,
-        pmini: float = 0.0,
-        kmini: float = 0.0,
-        nminti: float = 0.0,
-        pminti: float = 0.0,
-        kminti: float = 0.0,
+        dvsi: float | torch.Tensor = 0.0,
+        wai: float | torch.Tensor = 60.0,
+        rootdi: float | torch.Tensor = 0.10,
+        wa_lower_i: float | torch.Tensor = 400.0,
+        dslri: float | torch.Tensor = 3.0,
+        dsosi: float | torch.Tensor = 0.0,
+        nmini: float | torch.Tensor = 0.0,
+        pmini: float | torch.Tensor = 0.0,
+        kmini: float | torch.Tensor = 0.0,
+        nminti: float | torch.Tensor = 0.0,
+        pminti: float | torch.Tensor = 0.0,
+        kminti: float | torch.Tensor = 0.0,
     ) -> "ModelState":
         """Construct a zeroed initial state for a batch.
 
         All biomass, per-organ nutrient, cumulative-accumulator, and
         thermal-time fields are initialised to zero. The remaining
         scalars are taken from the keyword arguments.
+
+        Each initial-value argument may be a Python scalar (shared across
+        the whole batch) **or** a tensor that broadcasts to
+        ``[batch_size]`` (one value per batch element). The latter lets a
+        per-site / per-year dataloader feed batch-varying soil and crop
+        parameters straight into a single batched run; a ``[B]`` tensor is
+        used element-wise, a ``[]`` / scalar is broadcast.
 
         Args:
             batch_size: Number of parallel simulation instances ``B``.
@@ -277,7 +284,13 @@ class ModelState:
             counters ``dslr``/``dsos``, and the soil mineral pools.
         """
         zeros = torch.zeros(batch_size, dtype=dtype, device=device)
-        full = lambda v: torch.full((batch_size,), float(v), dtype=dtype, device=device)
+        # Broadcast each initial value (scalar or ``[B]`` tensor) to a
+        # contiguous ``[batch_size]`` state field. ``broadcast_to`` accepts
+        # a 0-d / scalar (shared) or a ``[B]`` tensor (per-element); the
+        # ``clone`` gives each field its own storage.
+        full = lambda v: torch.broadcast_to(  # noqa: E731
+            torch.as_tensor(v, dtype=dtype, device=device), (batch_size,)
+        ).clone()
         return cls(
             dvs=full(dvsi),
             tsum=zeros.clone(),
