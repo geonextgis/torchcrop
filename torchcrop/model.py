@@ -132,15 +132,15 @@ class Lintul5Model(nn.Module):
     #:
     #:   * ``crop.idsl``  — phenology mode {0,1,2} (``idsl >= 1`` / ``>= 2``).
     #:   * ``crop.iopt``  — run mode {1,2,3,4} (``iopt <= 2.5`` / ``<= 3.5``).
+    #:   * ``crop.iairdu`` — aquatic-roots flag {0,1} (``iairdu > 0.5``).
     #:   * ``soil.irri``  — irrigation mode {0,1,2} (``isclose`` matching).
-    #:   * ``soil.iairdu`` — aquatic-roots flag {0,1} (``iairdu > 0.5``).
     #:   * ``site.plant_at_sowing`` — start-at-planting flag {0,1}.
     #:   * ``site.idpl`` / ``site.idem`` — planting / emergence day-of-year.
     #:
     #: `learnable_parameter_groups` excludes them and warns the user.
     _NON_DIFFERENTIABLE_FIELDS: dict[str, frozenset[str]] = {
-        "crop": frozenset({"idsl", "iopt"}),
-        "soil": frozenset({"irri", "iairdu"}),
+        "crop": frozenset({"idsl", "iopt", "iairdu"}),
+        "soil": frozenset({"irri"}),
         "site": frozenset({"plant_at_sowing", "idpl", "idem"}),
     }
 
@@ -582,6 +582,8 @@ class Lintul5Model(nn.Module):
             etc=et["etc"],
             doy=doy,
             irrigation=irrigation,
+            depnr=crop_params.depnr,
+            iairdu=crop_params.iairdu,
         )
         # Optional correction of the water-stress factor at source, so the
         # corrected value propagates through every downstream consumer
@@ -965,7 +967,7 @@ class Lintul5Model(nn.Module):
         been marked as learnable by the user).
 
         Discrete/categorical switches listed in
-        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)
+        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``crop.iairdu``)
         are *excluded* even when wrapped as `nn.Parameter`: they gate
         behaviour through hard thresholds, so they are detached from the
         autograd graph and would silently never receive a gradient. A
