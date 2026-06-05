@@ -106,10 +106,6 @@ class SiteParameters:
     `nn.Parameter` to calibrate or run elevated-CO₂ experiments. The
     Lintul5 ET routine uses 370 ppm as its reference."""
 
-    cfet: torch.Tensor = field(default_factory=lambda: _t(1.0))
-    """``cCFET``. Empirical correction factor [-] applied to the Penman
-    transpiration rate (canopy-resistance proxy)."""
-
     fpenmtb: torch.Tensor = field(
         default_factory=lambda: _table(
             [(40.0, 1.05), (360.0, 1.00), (720.0, 0.95), (1000.0, 0.92), (2000.0, 0.92)]
