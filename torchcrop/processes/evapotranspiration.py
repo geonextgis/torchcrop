@@ -98,7 +98,7 @@ class PotentialEvapoTranspiration(nn.Module):
                 pressure used by the psychrometric constant.
             cfet: Crop-specific transpiration correction factor [-],
                 scalar or broadcastable to ``[B]`` (default ``1.0``).
-                Supplied by ``SiteParameters.cfet``.
+                Supplied by ``CropParameters.cfet``.
             fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``
                 (concentration [ppm] → factor). Supplied by
                 ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);
