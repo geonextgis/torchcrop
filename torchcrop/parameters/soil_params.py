@@ -106,21 +106,7 @@ class SoilParameters:
     rooting depth is ``min(cRDMCR, cRDMSO)``."""
 
     # ------------------------------------------------------------------ #
-    # 4. Crop water-uptake response
-    # ------------------------------------------------------------------ #
-
-    depnr: torch.Tensor = field(default_factory=lambda: _t(4.5))
-    """``cDEPNR``. Crop group number [-] for soil-water depletion
-    (Doorenbos & Kassam). Used to compute the critical soil-moisture
-    content above which transpiration is unrestricted."""
-
-    iairdu: torch.Tensor = field(default_factory=lambda: _t(0.0))
-    """``cIAIRDU``. Boolean flag (0/1) indicating whether the crop has
-    air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or
-    not (=0). Stored as float for batch broadcasting."""
-
-    # ------------------------------------------------------------------ #
-    # 5. Irrigation
+    # 4. Irrigation
     # ------------------------------------------------------------------ #
 
     irri: torch.Tensor = field(default_factory=lambda: _t(0.0))
@@ -137,7 +123,7 @@ class SoilParameters:
     sensitivity analysis / calibration."""
 
     # ------------------------------------------------------------------ #
-    # 6. Soil mineral nutrient supply (mineralisation kinetics)
+    # 5. Soil mineral nutrient supply (mineralisation kinetics)
     # ------------------------------------------------------------------ #
     # The full Lintul5 NPK chain integrates two state pools per nutrient
     # (organic ``NMIN`` and inorganic ``NMINT``) updated daily by
