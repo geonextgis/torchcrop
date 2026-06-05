@@ -122,8 +122,6 @@ def test_oxygen_stress_reduces_tranrf_for_non_rice():
     """Saturated, non-rice crop → TRANRF < 1 via RWET."""
     wb = WaterBalance()
     params = SoilParameters()
-    # Ensure non-aquatic
-    params.iairdu = torch.tensor(0.0)
     state = ModelState.initial(batch_size=1, rootdi=0.4)
     # Soak the rooted zone
     wst = 1000.0 * params.wcst * state.rootd
@@ -135,6 +133,7 @@ def test_oxygen_stress_reduces_tranrf_for_non_rice():
         ptran=torch.tensor([3.0]),
         params=params,
         rdm=_rdm(params, state),
+        iairdu=torch.tensor(0.0),  # crop trait — non-aquatic
     )
     assert out["rwet"].item() < 1.0
 

@@ -149,6 +149,65 @@ def test_loaded_param_is_optimizable():
     assert params.rue.grad is not None
 
 
+def test_water_use_params_are_crop_traits():
+    """``depnr`` / ``iairdu`` are now crop fields, loaded per species.
+
+    These were previously hard-coded soil defaults (4.5 / 0); aligning with
+    SIMPLACE they move to ``CropParameters`` and vary by crop — rice has air
+    ducts (``iairdu = 1``) and a lower depletion group than wheat.
+    """
+    wheat = CropParameters(crop_name="wheat")
+    assert torch.isclose(wheat.depnr, torch.tensor(4.5))
+    assert torch.isclose(wheat.iairdu, torch.tensor(0.0))
+
+    rice = CropParameters(crop_name="rice")
+    assert torch.isclose(rice.depnr, torch.tensor(3.5))
+    assert torch.isclose(rice.iairdu, torch.tensor(1.0))
+
+
+def test_iairdu_validation_rejects_off_domain():
+    params = CropParameters(crop_name="wheat")
+    params.iairdu = torch.tensor(0.5)  # neither aquatic nor non-aquatic
+    with pytest.raises(ValueError, match="iairdu"):
+        params.validate()
+
+
+def test_load_from_sectioned_config_file(tmp_path):
+    """A preset using the sectioned layout loads scalars and tables."""
+    cfg = tmp_path / "sectioned.yaml"
+    cfg.write_text(
+        yaml.safe_dump(
+            {
+                "crop_name": "my_crop",
+                "sections": {
+                    "Development": {"scalars": {"tsum1": 1234.0}},
+                    "Water Use": {"scalars": {"depnr": 2.0, "iairdu": 1.0}},
+                    "Assimilation": {"tables": {"ruetb": [[0.0, 2.5], [2.0, 0.5]]}},
+                },
+            }
+        )
+    )
+    params = CropParameters(config_file=str(cfg))
+    assert torch.isclose(params.tsum1, torch.tensor(1234.0))
+    assert torch.isclose(params.depnr, torch.tensor(2.0))
+    assert torch.isclose(params.iairdu, torch.tensor(1.0))
+    assert torch.allclose(params.ruetb, torch.tensor([[0.0, 2.5], [2.0, 0.5]]))
+
+
+def test_bundled_presets_use_sectioned_layout():
+    """The generated wheat preset groups fields under thematic sections."""
+    import torchcrop.parameters.crop_params as cp
+
+    preset = cp._load_preset_file(cp._builtin_crop_path("wheat"))
+    assert "sections" in preset
+    assert "scalars" not in preset  # no legacy flat top-level block
+    sections = preset["sections"]
+    assert {"Development", "Water Use", "Nutrient (N-P-K) Use"} <= set(sections)
+    # Scalars and tables are separated under their own headings.
+    assert "iairdu" in sections["Water Use"]["scalars"]
+    assert "nmxlv" in sections["Nutrient (N-P-K) Use"]["tables"]
+
+
 def test_default_wheat_params_still_works():
     params = default_wheat_params(dtype=torch.float64)
     assert params.tsum1.dtype == torch.float64
