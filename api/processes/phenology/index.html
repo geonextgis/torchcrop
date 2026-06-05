@@ -2273,6 +2273,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">ddlp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+        <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
 
@@ -2285,6 +2286,12 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">                and the vernalisation block (``idsl``, ``vernrt``,</span>
 <span class="sd">                ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
 <span class="sd">                ``minimal_vernalisation_factor``).</span>
+<span class="sd">            sown: Optional sowing-gate mask in ``{0, 1}``, shape ``[B]``.</span>
+<span class="sd">                Multiplies the emergence (``tsump_rate``) and</span>
+<span class="sd">                vernalisation (``vern_rate``) clocks so that nothing</span>
+<span class="sd">                crop-related accumulates before sowing. ``None`` (the</span>
+<span class="sd">                default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">                reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors.</span>
@@ -2312,15 +2319,22 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">              ``tsump &gt;= tsumem``.</span>
 <span class="sd">            * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
+        <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+        <span class="c1"># behaviour where t=0 is the sowing day).</span>
+        <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+
         <span class="c1"># Effective thermal time.</span>
         <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># Thermal sum since sowing — base-temperature accumulation</span>
-        <span class="c1"># capped at TEFFMX.</span>
+        <span class="c1"># capped at TEFFMX. Gated by ``sown`` so the emergence clock</span>
+        <span class="c1"># only starts once the seed is in the ground.</span>
         <span class="n">tbasem</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">tbasem</span>
         <span class="n">teffmx</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">teffmx</span>
         <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
+        <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span> <span class="o">*</span> <span class="n">sown</span>
 
         <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
         <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
@@ -2344,7 +2358,9 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+        <span class="c1"># Gated by ``sown``: a winter-wheat seed does not vernalise</span>
+        <span class="c1"># before it is sown.</span>
+        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">*</span> <span class="n">sown</span>
 
         <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
         <span class="c1"># When VERSAT == VBASE, fall back to VERNF = 1 to avoid a</span>
@@ -2424,7 +2440,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 
 
 <h3 id="torchcrop.processes.phenology.Phenology.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.phenology.Phenology.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2471,6 +2487,17 @@ and the vernalisation block (<code>idsl</code>, <code>vernrt</code>,
 <code>vbase</code>, <code>versat</code>, <code>vernalisation_devstage</code>,
 <code>minimal_vernalisation_factor</code>).</p></td>
         <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>sown</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional sowing-gate mask in <code>{0, 1}</code>, shape <code>[B]</code>.
+Multiplies the emergence (<code>tsump_rate</code>) and
+vernalisation (<code>vern_rate</code>) clocks so that nothing
+crop-related accumulates before sowing. <code>None</code> (the
+default) is treated as "sown everywhere" (all ones),
+reproducing the original always-sown-at-<code>t=0</code> behaviour.</p></td>
+        <td><code>None</code></td>
       </tr>
   </tbody>
 </table>
@@ -2520,6 +2547,7 @@ Rates (integrated by the engine)</code></td>
     <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">ddlp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+    <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
 
@@ -2532,6 +2560,12 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">            and the vernalisation block (``idsl``, ``vernrt``,</span>
 <span class="sd">            ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
 <span class="sd">            ``minimal_vernalisation_factor``).</span>
+<span class="sd">        sown: Optional sowing-gate mask in ``{0, 1}``, shape ``[B]``.</span>
+<span class="sd">            Multiplies the emergence (``tsump_rate``) and</span>
+<span class="sd">            vernalisation (``vern_rate``) clocks so that nothing</span>
+<span class="sd">            crop-related accumulates before sowing. ``None`` (the</span>
+<span class="sd">            default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">            reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors.</span>
@@ -2559,15 +2593,22 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">          ``tsump &gt;= tsumem``.</span>
 <span class="sd">        * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
+    <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+    <span class="c1"># behaviour where t=0 is the sowing day).</span>
+    <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+
     <span class="c1"># Effective thermal time.</span>
     <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="c1"># Thermal sum since sowing — base-temperature accumulation</span>
-    <span class="c1"># capped at TEFFMX.</span>
+    <span class="c1"># capped at TEFFMX. Gated by ``sown`` so the emergence clock</span>
+    <span class="c1"># only starts once the seed is in the ground.</span>
     <span class="n">tbasem</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">tbasem</span>
     <span class="n">teffmx</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">teffmx</span>
     <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
+    <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span> <span class="o">*</span> <span class="n">sown</span>
 
     <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
     <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
@@ -2591,7 +2632,9 @@ Rates (integrated by the engine)</code></td>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+    <span class="c1"># Gated by ``sown``: a winter-wheat seed does not vernalise</span>
+    <span class="c1"># before it is sown.</span>
+    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">*</span> <span class="n">sown</span>
 
     <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
     <span class="c1"># When VERSAT == VBASE, fall back to VERNF = 1 to avoid a</span>

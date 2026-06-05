@@ -3087,6 +3087,15 @@ yield, etc.) are assembled by the engine.</p>
 <li><code>tsum</code>: Thermal time accumulated since emergence [°C d].</li>
 <li><code>tsump</code>: Thermal time accumulated since sowing [°C d].</li>
 <li><code>vern</code>: Vernalisation days accumulated [d].</li>
+<li><code>sown</code>: Sowing latch in <code>{0, 1}</code> [-]. <code>0</code> before the crop is
+        in the ground, <code>1</code> from the sowing day onward. Latches up
+        once <code>doy &gt;= site.idpl</code> and never resets, so it survives the
+        day-of-year wraparound across a calendar-year boundary. Gates
+        the emergence (<code>tsump</code>) and vernalisation (<code>vern</code>) clocks
+        so that a pre-sowing spin-up period evolves only the soil
+        water/mineral balances. With the default <code>idpl = 0</code> the
+        latch is <code>1</code> from the first day (sowing == simulation start),
+        reproducing the original behaviour.</li>
 </ul>
 <h4 id="torchcrop.states.model_state.ModelState--biomass-pools-g-dm-m2">Biomass pools [g DM m⁻²]:<a class="headerlink" href="#torchcrop.states.model_state.ModelState--biomass-pools-g-dm-m2" title="Permanent link">&para;</a></h4>
 <ul>
@@ -3184,6 +3193,15 @@ added by the engine with <code>dt = 1</code> day.</p>
 <span class="sd">    - `tsum`: Thermal time accumulated since emergence [°C d].</span>
 <span class="sd">    - `tsump`: Thermal time accumulated since sowing [°C d].</span>
 <span class="sd">    - `vern`: Vernalisation days accumulated [d].</span>
+<span class="sd">    - `sown`: Sowing latch in ``{0, 1}`` [-]. ``0`` before the crop is</span>
+<span class="sd">            in the ground, ``1`` from the sowing day onward. Latches up</span>
+<span class="sd">            once ``doy &gt;= site.idpl`` and never resets, so it survives the</span>
+<span class="sd">            day-of-year wraparound across a calendar-year boundary. Gates</span>
+<span class="sd">            the emergence (``tsump``) and vernalisation (``vern``) clocks</span>
+<span class="sd">            so that a pre-sowing spin-up period evolves only the soil</span>
+<span class="sd">            water/mineral balances. With the default ``idpl = 0`` the</span>
+<span class="sd">            latch is ``1`` from the first day (sowing == simulation start),</span>
+<span class="sd">            reproducing the original behaviour.</span>
 
 <span class="sd">    ## Biomass pools [g DM m⁻²]:</span>
 <span class="sd">    - `wlv`, `wst`, `wrt`, `wso`: Living dry weight of leaves, stems, roots,</span>
@@ -3321,6 +3339,13 @@ added by the engine with <code>dt = 1</code> day.</p>
     <span class="n">klossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">klosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
+    <span class="c1"># Sowing latch [-] in {0, 1}. Set to 1 from the sowing day onward</span>
+    <span class="c1"># (``doy &gt;= site.idpl``) and never reset; gates the emergence and</span>
+    <span class="c1"># vernalisation thermal clocks. Integrated by the engine through the</span>
+    <span class="c1"># standard ``sown_rate`` mechanism (the rate encodes a one-step</span>
+    <span class="c1"># 0 -&gt; 1 step on the sowing day).</span>
+    <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
     <span class="c1"># Optional bookkeeping — cumulative water and growth accumulators.</span>
     <span class="c1"># Each is integrated by the standard `_rate` mechanism: a daily flux</span>
     <span class="c1"># is routed into ``&lt;field&gt;_rate`` in `_compute_rates_dispatch` and</span>
@@ -3444,6 +3469,7 @@ added by the engine with <code>dt = 1</code> day.</p>
             <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -3529,6 +3555,7 @@ added by the engine with <code>dt = 1</code> day.</p>
     </div>
 
   </div>
+
 
 
 
@@ -3803,6 +3830,7 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

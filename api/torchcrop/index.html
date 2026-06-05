@@ -11242,6 +11242,8 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dvs&quot;</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sown&quot;</span><span class="p">:</span>
+                <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dslr&quot;</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dsos&quot;</span><span class="p">:</span>
@@ -13104,10 +13106,28 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
+        <span class="c1"># 4b. Sowing latch. ``sown`` is 1 from the sowing day</span>
+        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets. Taking</span>
+        <span class="c1">#     ``max(state.sown, doy &gt;= idpl)`` makes the latch robust to</span>
+        <span class="c1">#     the day-of-year wraparound when a run spans a calendar-year</span>
+        <span class="c1">#     boundary (e.g. an autumn-sown winter wheat harvested the</span>
+        <span class="c1">#     following summer): once latched, a doy that cycles back</span>
+        <span class="c1">#     below ``idpl`` in the next year cannot un-sow the crop.</span>
+        <span class="c1">#     With the default ``idpl = 0`` the gate is 1 on every day, so</span>
+        <span class="c1">#     sowing coincides with the simulation start and the legacy</span>
+        <span class="c1">#     behaviour is reproduced exactly. ``idpl`` is a discrete</span>
+        <span class="c1">#     (non-differentiable) calendar switch, so the hard comparison</span>
+        <span class="c1">#     introduces no new gradient path.</span>
+        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
+        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
+        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
+
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
-        <span class="c1">#    is independent of the water / ET branch.</span>
-        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">)</span>
+        <span class="c1">#    is independent of the water / ET branch. ``sown`` gates the</span>
+        <span class="c1">#    emergence and vernalisation clocks (no-op once latched).</span>
+        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="n">sown</span><span class="p">)</span>
 
         <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
         <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
@@ -13283,6 +13303,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vern_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;sown_rate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
             <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]),</span>
@@ -26447,6 +26468,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">ddlp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+        <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
 
@@ -26459,6 +26481,12 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">                and the vernalisation block (``idsl``, ``vernrt``,</span>
 <span class="sd">                ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
 <span class="sd">                ``minimal_vernalisation_factor``).</span>
+<span class="sd">            sown: Optional sowing-gate mask in ``{0, 1}``, shape ``[B]``.</span>
+<span class="sd">                Multiplies the emergence (``tsump_rate``) and</span>
+<span class="sd">                vernalisation (``vern_rate``) clocks so that nothing</span>
+<span class="sd">                crop-related accumulates before sowing. ``None`` (the</span>
+<span class="sd">                default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">                reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors.</span>
@@ -26486,15 +26514,22 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">              ``tsump &gt;= tsumem``.</span>
 <span class="sd">            * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
+        <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+        <span class="c1"># behaviour where t=0 is the sowing day).</span>
+        <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+
         <span class="c1"># Effective thermal time.</span>
         <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># Thermal sum since sowing — base-temperature accumulation</span>
-        <span class="c1"># capped at TEFFMX.</span>
+        <span class="c1"># capped at TEFFMX. Gated by ``sown`` so the emergence clock</span>
+        <span class="c1"># only starts once the seed is in the ground.</span>
         <span class="n">tbasem</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">tbasem</span>
         <span class="n">teffmx</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">teffmx</span>
         <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
+        <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span> <span class="o">*</span> <span class="n">sown</span>
 
         <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
         <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
@@ -26518,7 +26553,9 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+        <span class="c1"># Gated by ``sown``: a winter-wheat seed does not vernalise</span>
+        <span class="c1"># before it is sown.</span>
+        <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">*</span> <span class="n">sown</span>
 
         <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
         <span class="c1"># When VERSAT == VBASE, fall back to VERNF = 1 to avoid a</span>
@@ -26598,7 +26635,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 
 
 <h5 id="torchcrop.processes.phenology.Phenology.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.phenology.Phenology.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -26645,6 +26682,17 @@ and the vernalisation block (<code>idsl</code>, <code>vernrt</code>,
 <code>vbase</code>, <code>versat</code>, <code>vernalisation_devstage</code>,
 <code>minimal_vernalisation_factor</code>).</p></td>
         <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>sown</code></td>
+        <td><code>torch.Tensor | None</code></td>
+        <td><p>Optional sowing-gate mask in <code>{0, 1}</code>, shape <code>[B]</code>.
+Multiplies the emergence (<code>tsump_rate</code>) and
+vernalisation (<code>vern_rate</code>) clocks so that nothing
+crop-related accumulates before sowing. <code>None</code> (the
+default) is treated as "sown everywhere" (all ones),
+reproducing the original always-sown-at-<code>t=0</code> behaviour.</p></td>
+        <td><code>None</code></td>
       </tr>
   </tbody>
 </table>
@@ -26694,6 +26742,7 @@ Rates (integrated by the engine)</code></td>
     <span class="n">davtmp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">ddlp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
+    <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
 
@@ -26706,6 +26755,12 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">            and the vernalisation block (``idsl``, ``vernrt``,</span>
 <span class="sd">            ``vbase``, ``versat``, ``vernalisation_devstage``,</span>
 <span class="sd">            ``minimal_vernalisation_factor``).</span>
+<span class="sd">        sown: Optional sowing-gate mask in ``{0, 1}``, shape ``[B]``.</span>
+<span class="sd">            Multiplies the emergence (``tsump_rate``) and</span>
+<span class="sd">            vernalisation (``vern_rate``) clocks so that nothing</span>
+<span class="sd">            crop-related accumulates before sowing. ``None`` (the</span>
+<span class="sd">            default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">            reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors.</span>
@@ -26733,15 +26788,22 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">          ``tsump &gt;= tsumem``.</span>
 <span class="sd">        * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
+    <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+    <span class="c1"># behaviour where t=0 is the sowing day).</span>
+    <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
+
     <span class="c1"># Effective thermal time.</span>
     <span class="n">dtsu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">dtsmtb</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="c1"># Thermal sum since sowing — base-temperature accumulation</span>
-    <span class="c1"># capped at TEFFMX.</span>
+    <span class="c1"># capped at TEFFMX. Gated by ``sown`` so the emergence clock</span>
+    <span class="c1"># only starts once the seed is in the ground.</span>
     <span class="n">tbasem</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">tbasem</span>
     <span class="n">teffmx</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">teffmx</span>
     <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">davtmp</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span>
+    <span class="n">tsump_rate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tsump_rate</span><span class="p">,</span> <span class="n">teffmx</span> <span class="o">-</span> <span class="n">tbasem</span><span class="p">)</span> <span class="o">*</span> <span class="n">sown</span>
 
     <span class="c1"># IDSL controls which factors modulate pre-anthesis development:</span>
     <span class="c1">#   0 -&gt; temperature only        (photofac = 1, vernfac = 1)</span>
@@ -26765,7 +26827,9 @@ Rates (integrated by the engine)</code></td>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">pre_vern_dvs</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="n">vern_devstage</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
-    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span>
+    <span class="c1"># Gated by ``sown``: a winter-wheat seed does not vernalise</span>
+    <span class="c1"># before it is sown.</span>
+    <span class="n">vern_rate</span> <span class="o">=</span> <span class="n">vernr</span> <span class="o">*</span> <span class="n">pre_vern_dvs</span> <span class="o">*</span> <span class="n">idsl_active</span> <span class="o">*</span> <span class="n">sown</span>
 
     <span class="c1"># VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).</span>
     <span class="c1"># When VERSAT == VBASE, fall back to VERNF = 1 to avoid a</span>
@@ -29999,6 +30063,15 @@ yield, etc.) are assembled by the engine.</p>
 <li><code>tsum</code>: Thermal time accumulated since emergence [°C d].</li>
 <li><code>tsump</code>: Thermal time accumulated since sowing [°C d].</li>
 <li><code>vern</code>: Vernalisation days accumulated [d].</li>
+<li><code>sown</code>: Sowing latch in <code>{0, 1}</code> [-]. <code>0</code> before the crop is
+        in the ground, <code>1</code> from the sowing day onward. Latches up
+        once <code>doy &gt;= site.idpl</code> and never resets, so it survives the
+        day-of-year wraparound across a calendar-year boundary. Gates
+        the emergence (<code>tsump</code>) and vernalisation (<code>vern</code>) clocks
+        so that a pre-sowing spin-up period evolves only the soil
+        water/mineral balances. With the default <code>idpl = 0</code> the
+        latch is <code>1</code> from the first day (sowing == simulation start),
+        reproducing the original behaviour.</li>
 </ul>
 <h6 id="torchcrop.states.model_state.ModelState--biomass-pools-g-dm-m2">Biomass pools [g DM m⁻²]:<a class="headerlink" href="#torchcrop.states.model_state.ModelState--biomass-pools-g-dm-m2" title="Permanent link">&para;</a></h6>
 <ul>
@@ -30096,6 +30169,15 @@ added by the engine with <code>dt = 1</code> day.</p>
 <span class="sd">    - `tsum`: Thermal time accumulated since emergence [°C d].</span>
 <span class="sd">    - `tsump`: Thermal time accumulated since sowing [°C d].</span>
 <span class="sd">    - `vern`: Vernalisation days accumulated [d].</span>
+<span class="sd">    - `sown`: Sowing latch in ``{0, 1}`` [-]. ``0`` before the crop is</span>
+<span class="sd">            in the ground, ``1`` from the sowing day onward. Latches up</span>
+<span class="sd">            once ``doy &gt;= site.idpl`` and never resets, so it survives the</span>
+<span class="sd">            day-of-year wraparound across a calendar-year boundary. Gates</span>
+<span class="sd">            the emergence (``tsump``) and vernalisation (``vern``) clocks</span>
+<span class="sd">            so that a pre-sowing spin-up period evolves only the soil</span>
+<span class="sd">            water/mineral balances. With the default ``idpl = 0`` the</span>
+<span class="sd">            latch is ``1`` from the first day (sowing == simulation start),</span>
+<span class="sd">            reproducing the original behaviour.</span>
 
 <span class="sd">    ## Biomass pools [g DM m⁻²]:</span>
 <span class="sd">    - `wlv`, `wst`, `wrt`, `wso`: Living dry weight of leaves, stems, roots,</span>
@@ -30233,6 +30315,13 @@ added by the engine with <code>dt = 1</code> day.</p>
     <span class="n">klossr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">klosss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
+    <span class="c1"># Sowing latch [-] in {0, 1}. Set to 1 from the sowing day onward</span>
+    <span class="c1"># (``doy &gt;= site.idpl``) and never reset; gates the emergence and</span>
+    <span class="c1"># vernalisation thermal clocks. Integrated by the engine through the</span>
+    <span class="c1"># standard ``sown_rate`` mechanism (the rate encodes a one-step</span>
+    <span class="c1"># 0 -&gt; 1 step on the sowing day).</span>
+    <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
     <span class="c1"># Optional bookkeeping — cumulative water and growth accumulators.</span>
     <span class="c1"># Each is integrated by the standard `_rate` mechanism: a daily flux</span>
     <span class="c1"># is routed into ``&lt;field&gt;_rate`` in `_compute_rates_dispatch` and</span>
@@ -30356,6 +30445,7 @@ added by the engine with <code>dt = 1</code> day.</p>
             <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -30441,6 +30531,7 @@ added by the engine with <code>dt = 1</code> day.</p>
     </div>
 
   </div>
+
 
 
 
@@ -30715,6 +30806,7 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">klossl</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

@@ -2842,10 +2842,28 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
+        <span class="c1"># 4b. Sowing latch. ``sown`` is 1 from the sowing day</span>
+        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets. Taking</span>
+        <span class="c1">#     ``max(state.sown, doy &gt;= idpl)`` makes the latch robust to</span>
+        <span class="c1">#     the day-of-year wraparound when a run spans a calendar-year</span>
+        <span class="c1">#     boundary (e.g. an autumn-sown winter wheat harvested the</span>
+        <span class="c1">#     following summer): once latched, a doy that cycles back</span>
+        <span class="c1">#     below ``idpl`` in the next year cannot un-sow the crop.</span>
+        <span class="c1">#     With the default ``idpl = 0`` the gate is 1 on every day, so</span>
+        <span class="c1">#     sowing coincides with the simulation start and the legacy</span>
+        <span class="c1">#     behaviour is reproduced exactly. ``idpl`` is a discrete</span>
+        <span class="c1">#     (non-differentiable) calendar switch, so the hard comparison</span>
+        <span class="c1">#     introduces no new gradient path.</span>
+        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
+        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
+        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
+
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
-        <span class="c1">#    is independent of the water / ET branch.</span>
-        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">)</span>
+        <span class="c1">#    is independent of the water / ET branch. ``sown`` gates the</span>
+        <span class="c1">#    emergence and vernalisation clocks (no-op once latched).</span>
+        <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="n">sown</span><span class="p">)</span>
 
         <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
         <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
@@ -3021,6 +3039,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vern_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;sown_rate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
             <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]),</span>
