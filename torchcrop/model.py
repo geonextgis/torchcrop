@@ -593,10 +593,28 @@ class Lintul5Model(nn.Module):
         tranrf = self.hybrid.correct("water.tranrf", water["tranrf"], feats)
         feats["tranrf"] = tranrf
 
+        # 4b. Sowing latch. ``sown`` is 1 from the sowing day
+        #     (``doy >= site.idpl``) onward and never resets. Taking
+        #     ``max(state.sown, doy >= idpl)`` makes the latch robust to
+        #     the day-of-year wraparound when a run spans a calendar-year
+        #     boundary (e.g. an autumn-sown winter wheat harvested the
+        #     following summer): once latched, a doy that cycles back
+        #     below ``idpl`` in the next year cannot un-sow the crop.
+        #     With the default ``idpl = 0`` the gate is 1 on every day, so
+        #     sowing coincides with the simulation start and the legacy
+        #     behaviour is reproduced exactly. ``idpl`` is a discrete
+        #     (non-differentiable) calendar switch, so the hard comparison
+        #     introduces no new gradient path.
+        idpl = site_params.idpl
+        idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
+        sown_now = (doy >= idpl_b).to(davtmp.dtype)
+        sown = torch.maximum(state.sown, sown_now)
+
         # 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,
         #    ``davtmp`` and ``ddlp``, so its position in the sequence
-        #    is independent of the water / ET branch.
-        pheno = self.phenology(state, davtmp, ddlp, crop_params)
+        #    is independent of the water / ET branch. ``sown`` gates the
+        #    emergence and vernalisation clocks (no-op once latched).
+        pheno = self.phenology(state, davtmp, ddlp, crop_params, sown=sown)
 
         # 6. Nutrient demand — independent of partitioning; produces the
         #    NPK stress index that multiplies ``GTOTAL`` downstream.
@@ -772,6 +790,7 @@ class Lintul5Model(nn.Module):
             "tsum_rate": pheno["tsum_rate"],
             "tsump_rate": pheno["tsump_rate"],
             "vern_rate": pheno["vern_rate"],
+            "sown_rate": (sown - state.sown) / self.engine.dt,
             "wlv_rate": gate(leaf["wlv_rate"]),
             "wlvd_rate": gate(leaf["wlvd_rate"]),
             "wst_rate": gate(stem["wst_rate"]),
