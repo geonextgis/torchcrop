@@ -105,7 +105,7 @@ sections:
       - [1.5001, 0.02]
       - [2.0, 0.02]
   Water Use:
-    scalars: {depnr: 3.0, iairdu: 0.0}
+    scalars: {depnr: 3.0, iairdu: 0.0, cfet: 1.0}
   Root Growth:
     scalars: {rdi: 0.1, rri: 0.012, rdmcr: 0.5, dvsdr: 1.5, dvsdlt: 1.5}
   Nutrient (N-P-K) Use:
