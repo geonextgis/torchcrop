@@ -236,6 +236,8 @@ class WaterBalance(nn.Module):
         rr: torch.Tensor | None = None,
         irrigation: torch.Tensor | None = None,
         doy: torch.Tensor | None = None,
+        depnr: torch.Tensor | float = 4.5,
+        iairdu: torch.Tensor | float = 0.0,
     ) -> dict[str, torch.Tensor]:
         """Compute one day of water-balance rates and fluxes.
 
@@ -256,6 +258,12 @@ class WaterBalance(nn.Module):
                 overrides the ``params.irri`` mode.
             doy: Day-of-year tensor needed by the ``IRRI = 2`` table
                 look-up; shape ``[B]``.
+            depnr: Crop-group depletion number ``cDEPNR`` [-], a crop
+                trait supplied from `CropParameters.depnr` by
+                `Lintul5Model`; defaults to the Lintul5 value ``4.5``.
+            iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait
+                supplied from `CropParameters.iairdu` by `Lintul5Model`;
+                defaults to ``0`` (non-aquatic).
 
         Returns:
             Dict of ``[B]`` tensors.
@@ -288,6 +296,13 @@ class WaterBalance(nn.Module):
             * ``wbal``   — rooted-zone mass-balance residual [mm]
               (should be ≈ 0).
         """
+        # ``depnr`` / ``iairdu`` are crop traits (see `CropParameters`),
+        # passed in from the crop config by `Lintul5Model`. Coerce to tensors
+        # so a scalar default still flows through the tensor maths below (and
+        # broadcasts over the batch).
+        depnr = torch.as_tensor(depnr, dtype=ptran.dtype, device=ptran.device)
+        iairdu = torch.as_tensor(iairdu, dtype=ptran.dtype, device=ptran.device)
+
         factor = 1000.0  # root [m] · volumetric water-content → water [mm]
         rootd = torch.clamp(state.rootd, min=1e-4)
         rdm_eff = torch.clamp(rdm, min=rootd + 1e-4)
@@ -303,7 +318,7 @@ class WaterBalance(nn.Module):
         # 2. Critical moisture content and drought reduction factor
         # ---------------------------------------------------------------- #
         etc_eff = ptran if etc is None else etc
-        sweaf = _sweaf(etc_eff, params.depnr)
+        sweaf = _sweaf(etc_eff, depnr)
         smcr = (1.0 - sweaf) * (params.wcfc - params.wcwp) + params.wcwp
         rdry = limit(0.0, 1.0, (smact - params.wcwp) / notnul(smcr - params.wcwp))
 
@@ -318,7 +333,7 @@ class WaterBalance(nn.Module):
             torch.zeros_like(state.dsos),
         )
         rwet_nonrice = rwetmx + (1.0 - dsos_new / 4.0) * (1.0 - rwetmx)
-        is_aquatic = (params.iairdu > 0.5).to(rwet_nonrice.dtype)
+        is_aquatic = (iairdu > 0.5).to(rwet_nonrice.dtype)
         rwet = is_aquatic + (1.0 - is_aquatic) * rwet_nonrice
         rwet = limit(0.0, 1.0, rwet)
 
