@@ -853,14 +853,14 @@ class CropParameters:
     # Init-only inputs (not stored as fields)
     # ------------------------------------------------------------------ #
 
-    crop_name: InitVar[Any] = _UNSET
+    crop_name: InitVar = _UNSET
     """Optional crop name selecting a bundled preset from
     ``parameters/crop_data/`` (case- and whitespace-insensitive). When
     omitted, the ``default`` preset is loaded. Pass ``None`` to skip preset
     loading entirely (keep the field values as constructed). Mutually
     exclusive with `config_file`. Not retained as an attribute."""
 
-    config_file: InitVar[str | Path | None] = None
+    config_file: InitVar = None
     """Optional path to a user-provided YAML file (same schema as the
     bundled presets) to load instead of a built-in crop. Mutually exclusive
     with `crop_name`. Not retained as an attribute."""
