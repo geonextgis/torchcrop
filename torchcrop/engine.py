@@ -253,6 +253,8 @@ def euler_update(state: ModelState, rates: dict[str, torch.Tensor], dt: float) -
                 new_val = torch.clamp(new_val, min=0.0)
             if f.name == "dvs":
                 new_val = torch.clamp(new_val, min=0.0, max=2.0)
+            if f.name == "sown":
+                new_val = torch.clamp(new_val, min=0.0, max=1.0)
             if f.name == "dslr":
                 new_val = torch.clamp(new_val, min=1.0)
             if f.name == "dsos":
