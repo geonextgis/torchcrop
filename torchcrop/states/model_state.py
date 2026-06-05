@@ -59,6 +59,15 @@ class ModelState:
     - `tsum`: Thermal time accumulated since emergence [°C d].
     - `tsump`: Thermal time accumulated since sowing [°C d].
     - `vern`: Vernalisation days accumulated [d].
+    - `sown`: Sowing latch in ``{0, 1}`` [-]. ``0`` before the crop is
+            in the ground, ``1`` from the sowing day onward. Latches up
+            once ``doy >= site.idpl`` and never resets, so it survives the
+            day-of-year wraparound across a calendar-year boundary. Gates
+            the emergence (``tsump``) and vernalisation (``vern``) clocks
+            so that a pre-sowing spin-up period evolves only the soil
+            water/mineral balances. With the default ``idpl = 0`` the
+            latch is ``1`` from the first day (sowing == simulation start),
+            reproducing the original behaviour.
 
     ## Biomass pools [g DM m⁻²]:
     - `wlv`, `wst`, `wrt`, `wso`: Living dry weight of leaves, stems, roots,
@@ -196,6 +205,13 @@ class ModelState:
     klossr: torch.Tensor = field(default=None)
     klosss: torch.Tensor = field(default=None)
 
+    # Sowing latch [-] in {0, 1}. Set to 1 from the sowing day onward
+    # (``doy >= site.idpl``) and never reset; gates the emergence and
+    # vernalisation thermal clocks. Integrated by the engine through the
+    # standard ``sown_rate`` mechanism (the rate encodes a one-step
+    # 0 -> 1 step on the sowing day).
+    sown: torch.Tensor = field(default=None)
+
     # Optional bookkeeping — cumulative water and growth accumulators.
     # Each is integrated by the standard `_rate` mechanism: a daily flux
     # is routed into ``<field>_rate`` in `_compute_rates_dispatch` and
@@ -319,6 +335,7 @@ class ModelState:
             klossl=zeros.clone(),
             klossr=zeros.clone(),
             klosss=zeros.clone(),
+            sown=zeros.clone(),
         )
 
     def replace(self, **updates: Any) -> "ModelState":
