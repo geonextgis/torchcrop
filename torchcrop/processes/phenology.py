@@ -92,6 +92,7 @@ class Phenology(nn.Module):
         davtmp: torch.Tensor,
         ddlp: torch.Tensor,
         params: CropParameters,
+        sown: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute phenology rates for one day.
 
@@ -104,6 +105,12 @@ class Phenology(nn.Module):
                 and the vernalisation block (``idsl``, ``vernrt``,
                 ``vbase``, ``versat``, ``vernalisation_devstage``,
                 ``minimal_vernalisation_factor``).
+            sown: Optional sowing-gate mask in ``{0, 1}``, shape ``[B]``.
+                Multiplies the emergence (``tsump_rate``) and
+                vernalisation (``vern_rate``) clocks so that nothing
+                crop-related accumulates before sowing. ``None`` (the
+                default) is treated as "sown everywhere" (all ones),
+                reproducing the original always-sown-at-``t=0`` behaviour.
 
         Returns:
             Dict of ``[B]`` tensors.
@@ -131,15 +138,22 @@ class Phenology(nn.Module):
               ``tsump >= tsumem``.
             * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.
         """
+        # Sowing gate — 1 from the sowing day onward, 0 during any
+        # pre-sowing spin-up. ``None`` means "always sown" (legacy
+        # behaviour where t=0 is the sowing day).
+        if sown is None:
+            sown = torch.ones_like(davtmp)
+
         # Effective thermal time.
         dtsu = torch.clamp(interpolate(params.dtsmtb, davtmp), min=0.0)
 
         # Thermal sum since sowing — base-temperature accumulation
-        # capped at TEFFMX.
+        # capped at TEFFMX. Gated by ``sown`` so the emergence clock
+        # only starts once the seed is in the ground.
         tbasem = params.tbasem
         teffmx = params.teffmx
         tsump_rate = torch.clamp(davtmp - tbasem, min=0.0)
-        tsump_rate = torch.minimum(tsump_rate, teffmx - tbasem)
+        tsump_rate = torch.minimum(tsump_rate, teffmx - tbasem) * sown
 
         # IDSL controls which factors modulate pre-anthesis development:
         #   0 -> temperature only        (photofac = 1, vernfac = 1)
@@ -163,7 +177,9 @@ class Phenology(nn.Module):
         else:
             pre_vern_dvs = (state.dvs < vern_devstage).to(davtmp.dtype)
 
-        vern_rate = vernr * pre_vern_dvs * idsl_active
+        # Gated by ``sown``: a winter-wheat seed does not vernalise
+        # before it is sown.
+        vern_rate = vernr * pre_vern_dvs * idsl_active * sown
 
         # VERNF = LIMIT(MinVF, 1, (VERN - VBASE) / (VERSAT - VBASE)).
         # When VERSAT == VBASE, fall back to VERNF = 1 to avoid a
