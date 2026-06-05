@@ -61,6 +61,51 @@ def test_batch_consistency():
         assert torch.allclose(out_batch.lai[i], out_single.lai[0], atol=1e-5)
 
 
+def test_batch_consistency_per_element_params():
+    """Batch-varying soil/site/crop params match the per-location loop.
+
+    A per-site dataloader supplies ``[B]`` soil/site parameters (one value
+    per batch element). Running all elements together must reproduce, to
+    floating-point tolerance, the result of running each element on its own
+    with the corresponding scalar parameters — i.e. the batched
+    ``initialize`` builds a genuinely per-element initial state rather than
+    broadcasting element 0 across the batch.
+    """
+    from torchcrop.parameters.site_params import SiteParameters
+    from torchcrop.parameters.soil_params import SoilParameters
+
+    b = 3
+    weather = make_constant_weather(batch_size=b, n_days=80, dtype=torch.float64)
+
+    # Per-element parameters: each batch element gets a distinct value so a
+    # broadcast bug (using element 0 for all) would change the answer.
+    wci = torch.tensor([0.20, 0.30, 0.36], dtype=torch.float64)
+    wcwp = torch.tensor([0.10, 0.12, 0.11], dtype=torch.float64)
+    wcfc = torch.tensor([0.36, 0.36, 0.36], dtype=torch.float64)
+    rdmso = torch.tensor([1.10, 1.20, 1.30], dtype=torch.float64)
+    lat = torch.tensor([50.0, 52.0, 54.0], dtype=torch.float64)
+
+    soil = SoilParameters(wci=wci, wcwp=wcwp, wcfc=wcfc, rdmso=rdmso)
+    site = SiteParameters(latitude=lat)
+    model = Lintul5Model(soil_params=soil, site_params=site).double()
+
+    out_batch = model(weather, start_doy=60)
+    assert torch.isfinite(out_batch.yield_).all()
+    # The distinct initial water contents must produce distinct states.
+    assert not torch.allclose(out_batch.yield_[0], out_batch.yield_[1])
+
+    for i in range(b):
+        soil_i = SoilParameters(
+            wci=wci[i], wcwp=wcwp[i], wcfc=wcfc[i], rdmso=rdmso[i]
+        )
+        site_i = SiteParameters(latitude=lat[i])
+        model_i = Lintul5Model(soil_params=soil_i, site_params=site_i).double()
+        out_i = model_i(weather.data[i : i + 1], start_doy=60)
+        assert torch.allclose(out_batch.yield_[i], out_i.yield_[0], atol=1e-8)
+        assert torch.allclose(out_batch.lai[i], out_i.lai[0], atol=1e-8)
+        assert torch.allclose(out_batch.dvs[i], out_i.dvs[0], atol=1e-8)
+
+
 def test_external_fertilizer_changes_soil_nitrogen():
     """An external [B, T, 3] fertiliser driver feeds the inorganic N pool.
 
