@@ -1479,6 +1479,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.parameters.crop_params.CropParameters.cfet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cfet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.parameters.crop_params.CropParameters.config_file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2771,17 +2782,6 @@
     <span class="md-ellipsis">
       
         altitude
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cfet
       
     </span>
   </a>
@@ -6731,6 +6731,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#torchcrop.parameters.crop_params.CropParameters.cfet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cfet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#torchcrop.parameters.crop_params.CropParameters.config_file" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -8023,17 +8034,6 @@
     <span class="md-ellipsis">
       
         altitude
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cfet
       
     </span>
   </a>
@@ -13064,7 +13064,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">frac_int</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
             <span class="n">co2</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">,</span>
             <span class="n">altitude</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">altitude</span><span class="p">,</span>
-            <span class="n">cfet</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">cfet</span><span class="p">,</span>
+            <span class="n">cfet</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">cfet</span><span class="p">,</span>
             <span class="n">fpenmtb</span><span class="o">=</span><span class="n">site_params</span><span class="o">.</span><span class="n">fpenmtb</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -16521,6 +16521,10 @@ SIMPLACE source). Customise individual values afterwards
 <span class="sd">    air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or</span>
 <span class="sd">    not (=0). Stored as float for batch broadcasting.&quot;&quot;&quot;</span>
 
+    <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFET``. Crop-specific empirical correction factor [-] applied to</span>
+<span class="sd">    the Penman transpiration rate (canopy-resistance proxy).&quot;&quot;&quot;</span>
+
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 4. Initial biomass and rooting (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -17105,6 +17109,29 @@ SIMPLACE source). Customise individual values afterwards
 
 
 
+
+
+
+  <div class="doc doc-object doc-attribute">
+
+
+
+<h5 id="torchcrop.parameters.crop_params.CropParameters.cfet" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">cfet</span><span class="p">:</span> <span class="n">Tensor</span></code>
+
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
+  </span>
+
+<a href="#torchcrop.parameters.crop_params.CropParameters.cfet" class="headerlink" title="Permanent link">&para;</a></h5>
+
+    <div class="doc doc-contents ">
+
+      <p><code>cCFET</code>. Crop-specific empirical correction factor [-] applied to
+the Penman transpiration rate (canopy-resistance proxy).</p>
+    </div>
+
+  </div>
 
 
 
@@ -20229,10 +20256,6 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 <span class="sd">    `nn.Parameter` to calibrate or run elevated-CO₂ experiments. The</span>
 <span class="sd">    Lintul5 ET routine uses 370 ppm as its reference.&quot;&quot;&quot;</span>
 
-    <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFET``. Empirical correction factor [-] applied to the Penman</span>
-<span class="sd">    transpiration rate (canopy-resistance proxy).&quot;&quot;&quot;</span>
-
     <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="p">(</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">),</span> <span class="p">(</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">),</span> <span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">),</span> <span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">)]</span>
@@ -20331,29 +20354,6 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
       <p><code>cALTI</code>. Site / weather-station altitude [m a.s.l.]. Used in the
 psychrometric-constant calculation of the Penman ET₀ routine.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h5 id="torchcrop.parameters.site_params.SiteParameters.cfet" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">cfet</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="headerlink" title="Permanent link">&para;</a></h5>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cCFET</code>. Empirical correction factor [-] applied to the Penman
-transpiration rate (canopy-resistance proxy).</p>
     </div>
 
   </div>
@@ -22604,7 +22604,7 @@ made batch-varying or learnable.</p>
 <span class="sd">                pressure used by the psychrometric constant.</span>
 <span class="sd">            cfet: Crop-specific transpiration correction factor [-],</span>
 <span class="sd">                scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
-<span class="sd">                Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">                Supplied by ``CropParameters.cfet``.</span>
 <span class="sd">            fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
 <span class="sd">                (concentration [ppm] → factor). Supplied by</span>
 <span class="sd">                ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>
@@ -22820,7 +22820,7 @@ pressure used by the psychrometric constant.</p></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Crop-specific transpiration correction factor [-],
 scalar or broadcastable to <code>[B]</code> (default <code>1.0</code>).
-Supplied by <code>SiteParameters.cfet</code>.</p></td>
+Supplied by <code>CropParameters.cfet</code>.</p></td>
         <td><code>1.0</code></td>
       </tr>
       <tr>
@@ -22893,7 +22893,7 @@ falls back to the standard C3 table when <code>None</code>.</p></td>
 <span class="sd">            pressure used by the psychrometric constant.</span>
 <span class="sd">        cfet: Crop-specific transpiration correction factor [-],</span>
 <span class="sd">            scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
-<span class="sd">            Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">            Supplied by ``CropParameters.cfet``.</span>
 <span class="sd">        fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
 <span class="sd">            (concentration [ppm] → factor). Supplied by</span>
 <span class="sd">            ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>

@@ -2288,7 +2288,7 @@ made batch-varying or learnable.</p>
 <span class="sd">                pressure used by the psychrometric constant.</span>
 <span class="sd">            cfet: Crop-specific transpiration correction factor [-],</span>
 <span class="sd">                scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
-<span class="sd">                Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">                Supplied by ``CropParameters.cfet``.</span>
 <span class="sd">            fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
 <span class="sd">                (concentration [ppm] → factor). Supplied by</span>
 <span class="sd">                ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>
@@ -2504,7 +2504,7 @@ pressure used by the psychrometric constant.</p></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Crop-specific transpiration correction factor [-],
 scalar or broadcastable to <code>[B]</code> (default <code>1.0</code>).
-Supplied by <code>SiteParameters.cfet</code>.</p></td>
+Supplied by <code>CropParameters.cfet</code>.</p></td>
         <td><code>1.0</code></td>
       </tr>
       <tr>
@@ -2577,7 +2577,7 @@ falls back to the standard C3 table when <code>None</code>.</p></td>
 <span class="sd">            pressure used by the psychrometric constant.</span>
 <span class="sd">        cfet: Crop-specific transpiration correction factor [-],</span>
 <span class="sd">            scalar or broadcastable to ``[B]`` (default ``1.0``).</span>
-<span class="sd">            Supplied by ``SiteParameters.cfet``.</span>
+<span class="sd">            Supplied by ``CropParameters.cfet``.</span>
 <span class="sd">        fpenmtb: Penman ET0 CO₂-correction table ``[N, 2]``</span>
 <span class="sd">            (concentration [ppm] → factor). Supplied by</span>
 <span class="sd">            ``SiteParameters.fpenmtb`` (SIMPLACE ``cFPENMTB``);</span>

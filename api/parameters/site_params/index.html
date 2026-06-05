@@ -957,17 +957,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cfet
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.site_params.SiteParameters.co2" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2176,17 +2165,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cfet
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.site_params.SiteParameters.co2" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2388,10 +2366,6 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 <span class="sd">    `nn.Parameter` to calibrate or run elevated-CO₂ experiments. The</span>
 <span class="sd">    Lintul5 ET routine uses 370 ppm as its reference.&quot;&quot;&quot;</span>
 
-    <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFET``. Empirical correction factor [-] applied to the Penman</span>
-<span class="sd">    transpiration rate (canopy-resistance proxy).&quot;&quot;&quot;</span>
-
     <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="p">(</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">),</span> <span class="p">(</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">),</span> <span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">),</span> <span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">0.92</span><span class="p">)]</span>
@@ -2490,29 +2464,6 @@ correspond to a temperate Western-European site (≈ Wageningen).</p>
 
       <p><code>cALTI</code>. Site / weather-station altitude [m a.s.l.]. Used in the
 psychrometric-constant calculation of the Penman ET₀ routine.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="torchcrop.parameters.site_params.SiteParameters.cfet" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">cfet</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.site_params.SiteParameters.cfet" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cCFET</code>. Empirical correction factor [-] applied to the Penman
-transpiration rate (canopy-resistance proxy).</p>
     </div>
 
   </div>
