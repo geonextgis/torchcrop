@@ -996,28 +996,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.depnr" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        depnr
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.iairdu" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        iairdu
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.irri" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2385,28 +2363,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.depnr" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        depnr
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#torchcrop.parameters.soil_params.SoilParameters.iairdu" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        iairdu
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#torchcrop.parameters.soil_params.SoilParameters.irri" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2833,21 +2789,7 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 <span class="sd">    rooting depth is ``min(cRDMCR, cRDMSO)``.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 4. Crop water-uptake response</span>
-    <span class="c1"># ------------------------------------------------------------------ #</span>
-
-    <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">4.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDEPNR``. Crop group number [-] for soil-water depletion</span>
-<span class="sd">    (Doorenbos &amp; Kassam). Used to compute the critical soil-moisture</span>
-<span class="sd">    content above which transpiration is unrestricted.&quot;&quot;&quot;</span>
-
-    <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIAIRDU``. Boolean flag (0/1) indicating whether the crop has</span>
-<span class="sd">    air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or</span>
-<span class="sd">    not (=0). Stored as float for batch broadcasting.&quot;&quot;&quot;</span>
-
-    <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 5. Irrigation</span>
+    <span class="c1"># 4. Irrigation</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">irri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
@@ -2864,7 +2806,7 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 <span class="sd">    sensitivity analysis / calibration.&quot;&quot;&quot;</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
-    <span class="c1"># 6. Soil mineral nutrient supply (mineralisation kinetics)</span>
+    <span class="c1"># 5. Soil mineral nutrient supply (mineralisation kinetics)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># The full Lintul5 NPK chain integrates two state pools per nutrient</span>
     <span class="c1"># (organic ``NMIN`` and inorganic ``NMINT``) updated daily by</span>
@@ -3017,54 +2959,6 @@ evaporation under drying conditions (Stroosnijder; range 1 – 4).</p>
 
       <p><code>cCRAIRC</code>. Critical soil-air content [m³ m⁻³] for aeration —
 below this air-filled porosity the crop suffers waterlogging stress.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.depnr" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">depnr</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.soil_params.SoilParameters.depnr" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cDEPNR</code>. Crop group number [-] for soil-water depletion
-(Doorenbos &amp; Kassam). Used to compute the critical soil-moisture
-content above which transpiration is unrestricted.</p>
-    </div>
-
-  </div>
-
-
-
-  <div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="torchcrop.parameters.soil_params.SoilParameters.iairdu" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">iairdu</span><span class="p">:</span> <span class="n">Tensor</span></code>
-
-  <span class="doc doc-properties">
-      <small class="doc doc-property doc-property-dataclass-field"><code>dataclass-field</code></small>
-  </span>
-
-<a href="#torchcrop.parameters.soil_params.SoilParameters.iairdu" class="headerlink" title="Permanent link">&para;</a></h3>
-
-    <div class="doc doc-contents ">
-
-      <p><code>cIAIRDU</code>. Boolean flag (0/1) indicating whether the crop has
-air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or
-not (=0). Stored as float for batch broadcasting.</p>
     </div>
 
   </div>

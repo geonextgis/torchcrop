@@ -2312,6 +2312,8 @@ batched and autograd-safe manner.</p>
         <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
+        <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
@@ -2332,6 +2334,12 @@ batched and autograd-safe manner.</p>
 <span class="sd">                overrides the ``params.irri`` mode.</span>
 <span class="sd">            doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">                look-up; shape ``[B]``.</span>
+<span class="sd">            depnr: Crop-group depletion number ``cDEPNR`` [-], a crop</span>
+<span class="sd">                trait supplied from `CropParameters.depnr` by</span>
+<span class="sd">                `Lintul5Model`; defaults to the Lintul5 value ``4.5``.</span>
+<span class="sd">            iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait</span>
+<span class="sd">                supplied from `CropParameters.iairdu` by `Lintul5Model`;</span>
+<span class="sd">                defaults to ``0`` (non-aquatic).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors.</span>
@@ -2364,6 +2372,13 @@ batched and autograd-safe manner.</p>
 <span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
 <span class="sd">              (should be ≈ 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># ``depnr`` / ``iairdu`` are crop traits (see `CropParameters`),</span>
+        <span class="c1"># passed in from the crop config by `Lintul5Model`. Coerce to tensors</span>
+        <span class="c1"># so a scalar default still flows through the tensor maths below (and</span>
+        <span class="c1"># broadcasts over the batch).</span>
+        <span class="n">depnr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">depnr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">iairdu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">iairdu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
         <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
         <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
         <span class="n">rdm_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">rootd</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">)</span>
@@ -2379,7 +2394,7 @@ batched and autograd-safe manner.</p>
         <span class="c1"># 2. Critical moisture content and drought reduction factor</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">etc_eff</span> <span class="o">=</span> <span class="n">ptran</span> <span class="k">if</span> <span class="n">etc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">etc</span>
-        <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">depnr</span><span class="p">)</span>
+        <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">depnr</span><span class="p">)</span>
         <span class="n">smcr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">sweaf</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span>
         <span class="n">rdry</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">smcr</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">))</span>
 
@@ -2394,7 +2409,7 @@ batched and autograd-safe manner.</p>
             <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="n">rwet_nonrice</span> <span class="o">=</span> <span class="n">rwetmx</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">dsos_new</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">rwetmx</span><span class="p">)</span>
-        <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">rwet</span> <span class="o">=</span> <span class="n">is_aquatic</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">is_aquatic</span><span class="p">)</span> <span class="o">*</span> <span class="n">rwet_nonrice</span>
         <span class="n">rwet</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rwet</span><span class="p">)</span>
 
@@ -2538,7 +2553,7 @@ batched and autograd-safe manner.</p>
 
 
 <h3 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2624,6 +2639,22 @@ overrides the <code>params.irri</code> mode.</p></td>
 look-up; shape <code>[B]</code>.</p></td>
         <td><code>None</code></td>
       </tr>
+      <tr>
+        <td><code>depnr</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Crop-group depletion number <code>cDEPNR</code> [-], a crop
+trait supplied from <code>CropParameters.depnr</code> by
+<code>Lintul5Model</code>; defaults to the Lintul5 value <code>4.5</code>.</p></td>
+        <td><code>4.5</code></td>
+      </tr>
+      <tr>
+        <td><code>iairdu</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Root air-ducts flag <code>cIAIRDU</code> (0/1), a crop trait
+supplied from <code>CropParameters.iairdu</code> by <code>Lintul5Model</code>;
+defaults to <code>0</code> (non-aquatic).</p></td>
+        <td><code>0.0</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -2683,6 +2714,8 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
+    <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
@@ -2703,6 +2736,12 @@ look-up; shape <code>[B]</code>.</p></td>
 <span class="sd">            overrides the ``params.irri`` mode.</span>
 <span class="sd">        doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">            look-up; shape ``[B]``.</span>
+<span class="sd">        depnr: Crop-group depletion number ``cDEPNR`` [-], a crop</span>
+<span class="sd">            trait supplied from `CropParameters.depnr` by</span>
+<span class="sd">            `Lintul5Model`; defaults to the Lintul5 value ``4.5``.</span>
+<span class="sd">        iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait</span>
+<span class="sd">            supplied from `CropParameters.iairdu` by `Lintul5Model`;</span>
+<span class="sd">            defaults to ``0`` (non-aquatic).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors.</span>
@@ -2735,6 +2774,13 @@ look-up; shape <code>[B]</code>.</p></td>
 <span class="sd">        * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
 <span class="sd">          (should be ≈ 0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># ``depnr`` / ``iairdu`` are crop traits (see `CropParameters`),</span>
+    <span class="c1"># passed in from the crop config by `Lintul5Model`. Coerce to tensors</span>
+    <span class="c1"># so a scalar default still flows through the tensor maths below (and</span>
+    <span class="c1"># broadcasts over the batch).</span>
+    <span class="n">depnr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">depnr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">iairdu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">iairdu</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
     <span class="n">factor</span> <span class="o">=</span> <span class="mf">1000.0</span>  <span class="c1"># root [m] · volumetric water-content → water [mm]</span>
     <span class="n">rootd</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
     <span class="n">rdm_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">rootd</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">)</span>
@@ -2750,7 +2796,7 @@ look-up; shape <code>[B]</code>.</p></td>
     <span class="c1"># 2. Critical moisture content and drought reduction factor</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">etc_eff</span> <span class="o">=</span> <span class="n">ptran</span> <span class="k">if</span> <span class="n">etc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">etc</span>
-    <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">depnr</span><span class="p">)</span>
+    <span class="n">sweaf</span> <span class="o">=</span> <span class="n">_sweaf</span><span class="p">(</span><span class="n">etc_eff</span><span class="p">,</span> <span class="n">depnr</span><span class="p">)</span>
     <span class="n">smcr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">sweaf</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span>
     <span class="n">rdry</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">smact</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">smcr</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">))</span>
 
@@ -2765,7 +2811,7 @@ look-up; shape <code>[B]</code>.</p></td>
         <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dsos</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">rwet_nonrice</span> <span class="o">=</span> <span class="n">rwetmx</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">dsos_new</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">rwetmx</span><span class="p">)</span>
-    <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">is_aquatic</span> <span class="o">=</span> <span class="p">(</span><span class="n">iairdu</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rwet_nonrice</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">rwet</span> <span class="o">=</span> <span class="n">is_aquatic</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">is_aquatic</span><span class="p">)</span> <span class="o">*</span> <span class="n">rwet_nonrice</span>
     <span class="n">rwet</span> <span class="o">=</span> <span class="n">limit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">rwet</span><span class="p">)</span>
 

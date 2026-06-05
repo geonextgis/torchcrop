@@ -2381,15 +2381,15 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
     <span class="c1">#:</span>
     <span class="c1">#:   * ``crop.idsl``  — phenology mode {0,1,2} (``idsl &gt;= 1`` / ``&gt;= 2``).</span>
     <span class="c1">#:   * ``crop.iopt``  — run mode {1,2,3,4} (``iopt &lt;= 2.5`` / ``&lt;= 3.5``).</span>
+    <span class="c1">#:   * ``crop.iairdu`` — aquatic-roots flag {0,1} (``iairdu &gt; 0.5``).</span>
     <span class="c1">#:   * ``soil.irri``  — irrigation mode {0,1,2} (``isclose`` matching).</span>
-    <span class="c1">#:   * ``soil.iairdu`` — aquatic-roots flag {0,1} (``iairdu &gt; 0.5``).</span>
     <span class="c1">#:   * ``site.plant_at_sowing`` — start-at-planting flag {0,1}.</span>
     <span class="c1">#:   * ``site.idpl`` / ``site.idem`` — planting / emergence day-of-year.</span>
     <span class="c1">#:</span>
     <span class="c1">#: `learnable_parameter_groups` excludes them and warns the user.</span>
     <span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;idsl&quot;</span><span class="p">,</span> <span class="s2">&quot;iopt&quot;</span><span class="p">}),</span>
-        <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;irri&quot;</span><span class="p">,</span> <span class="s2">&quot;iairdu&quot;</span><span class="p">}),</span>
+        <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;idsl&quot;</span><span class="p">,</span> <span class="s2">&quot;iopt&quot;</span><span class="p">,</span> <span class="s2">&quot;iairdu&quot;</span><span class="p">}),</span>
+        <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;irri&quot;</span><span class="p">}),</span>
         <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;plant_at_sowing&quot;</span><span class="p">,</span> <span class="s2">&quot;idpl&quot;</span><span class="p">,</span> <span class="s2">&quot;idem&quot;</span><span class="p">}),</span>
     <span class="p">}</span>
 
@@ -2831,6 +2831,8 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
+            <span class="n">iairdu</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Optional correction of the water-stress factor at source, so the</span>
         <span class="c1"># corrected value propagates through every downstream consumer</span>
@@ -3214,7 +3216,7 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">        been marked as learnable by the user).</span>
 
 <span class="sd">        Discrete/categorical switches listed in</span>
-<span class="sd">        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)</span>
+<span class="sd">        `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``crop.iairdu``)</span>
 <span class="sd">        are *excluded* even when wrapped as `nn.Parameter`: they gate</span>
 <span class="sd">        behaviour through hard thresholds, so they are detached from the</span>
 <span class="sd">        autograd graph and would silently never receive a gradient. A</span>
@@ -3842,7 +3844,7 @@ proceeds.</p></td>
 and returns every field that is an <code>nn.Parameter</code> (i.e. has
 been marked as learnable by the user).</p>
 <p>Discrete/categorical switches listed in
-<code>_NON_DIFFERENTIABLE_FIELDS</code> (e.g. <code>soil.irri</code>, <code>soil.iairdu</code>)
+<code>_NON_DIFFERENTIABLE_FIELDS</code> (e.g. <code>soil.irri</code>, <code>crop.iairdu</code>)
 are <em>excluded</em> even when wrapped as <code>nn.Parameter</code>: they gate
 behaviour through hard thresholds, so they are detached from the
 autograd graph and would silently never receive a gradient. A
@@ -3874,7 +3876,7 @@ autograd graph and would silently never receive a gradient. A
 <span class="sd">    been marked as learnable by the user).</span>
 
 <span class="sd">    Discrete/categorical switches listed in</span>
-<span class="sd">    `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``soil.iairdu``)</span>
+<span class="sd">    `_NON_DIFFERENTIABLE_FIELDS` (e.g. ``soil.irri``, ``crop.iairdu``)</span>
 <span class="sd">    are *excluded* even when wrapped as `nn.Parameter`: they gate</span>
 <span class="sd">    behaviour through hard thresholds, so they are detached from the</span>
 <span class="sd">    autograd graph and would silently never receive a gradient. A</span>
