@@ -17,6 +17,7 @@ from torchcrop.parameters.crop_params import (
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _XML_DIR = _REPO_ROOT / "simplace" / "crop_default"
+_XML_DIR_EXISTS = _XML_DIR.exists()
 
 
 def test_available_crops_uses_clean_names():
@@ -120,6 +121,10 @@ def test_to_preserves_values_without_reloading_default():
     assert moved.tsum1.item() == pytest.approx(tsum1_before)
 
 
+@pytest.mark.skipif(
+    not _XML_DIR_EXISTS,
+    reason="SIMPLACE reference XML files not available (simplace/ is gitignored in CI)",
+)
 def test_preset_matches_source_xml():
     """A loaded preset reproduces the values in its SIMPLACE XML."""
     params = CropParameters(crop_name="maize")
