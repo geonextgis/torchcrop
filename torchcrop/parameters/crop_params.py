@@ -181,6 +181,34 @@ def _builtin_crop_path(crop_name: str) -> Path:
     return path
 
 
+def _iter_preset_groups(
+    preset: dict[str, Any],
+) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    """Collect ``(scalars, tables)`` groups from a preset, any layout.
+
+    Yields the top-level flat ``scalars``/``tables`` (legacy layout) first,
+    followed by the ``scalars``/``tables`` of every entry under a top-level
+    ``sections`` mapping (current sectioned layout). Missing keys resolve to
+    empty dicts, so both layouts — and a mix of the two — are handled
+    uniformly by `CropParameters._apply_preset`.
+
+    Args:
+        preset: Parsed preset mapping.
+
+    Returns:
+        A list of ``(scalars, tables)`` dict pairs to apply in order.
+    """
+    groups: list[tuple[dict[str, Any], dict[str, Any]]] = [
+        (preset.get("scalars") or {}, preset.get("tables") or {})
+    ]
+    for section in (preset.get("sections") or {}).values():
+        if isinstance(section, dict):
+            groups.append(
+                (section.get("scalars") or {}, section.get("tables") or {})
+            )
+    return groups
+
+
 def _load_preset_file(path: Path) -> dict[str, Any]:
     """Load and parse a crop preset YAML file.
 
@@ -218,10 +246,16 @@ class CropParameters:
     ``crop_name`` selects a bundled preset from ``parameters/crop_data/`` and
     is matched case- and whitespace-insensitively (``"grain maize"`` →
     ``maize``); see `available_crops` for the full list. ``config_file``
-    loads a user-provided YAML using the same schema (``scalars`` and
-    ``tables`` mappings), making it easy to add custom parameterisations.
-    With neither argument, the built-in ``default`` preset is loaded.
-    ``crop_name`` and ``config_file`` are mutually exclusive.
+    loads a user-provided YAML, making it easy to add custom
+    parameterisations. With neither argument, the built-in ``default`` preset
+    is loaded. ``crop_name`` and ``config_file`` are mutually exclusive.
+
+    Two preset layouts are accepted (see `_apply_preset`): the **sectioned**
+    layout the bundled presets use — a ``sections`` mapping of thematic
+    groups (``Development``, ``Water Use``, ``Nutrient (N-P-K) Use``,
+    ``Root Growth``, ``Stress Response``, …), each with its own ``scalars``
+    and/or ``tables`` — and the legacy **flat** layout with top-level
+    ``scalars`` and ``tables`` mappings. Both key on field names.
 
     A preset overwrites every field it defines; any field it omits keeps the
     class default (e.g. torchcrop-specific extensions not present in the
@@ -382,6 +416,26 @@ class CropParameters:
     laicr: torch.Tensor = field(default_factory=lambda: _t(4.0))
     """``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves
     suffer self-shading mortality."""
+
+    # ------------------------------------------------------------------ #
+    # 3b. Crop water-use response (from WaterBalance.java)
+    # ------------------------------------------------------------------ #
+    # ``cDEPNR`` and ``cIAIRDU`` are consumed by the water balance but are
+    # *crop* traits in SIMPLACE — they live in the crop data file
+    # (``simplace/crop_default/*.xml``, "Water Use" group) and vary by
+    # species (e.g. rice has ``IAIRDU = 1`` and ``DEPNR = 3.5``), so they
+    # belong here rather than on `SoilParameters`. The water balance reads
+    # them through `Lintul5Model`, which forwards these crop fields.
+
+    depnr: torch.Tensor = field(default_factory=lambda: _t(4.5))
+    """``cDEPNR``. Crop group number [-] for soil-water depletion
+    (Doorenbos & Kassam). Used to compute the critical soil-moisture
+    content above which transpiration is unrestricted."""
+
+    iairdu: torch.Tensor = field(default_factory=lambda: _t(0.0))
+    """``cIAIRDU``. Boolean flag (0/1) indicating whether the crop has
+    air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or
+    not (=0). Stored as float for batch broadcasting."""
 
     # ------------------------------------------------------------------ #
     # 4. Initial biomass and rooting (from Lintul5.java)
@@ -856,15 +910,30 @@ class CropParameters:
     def _apply_preset(self, preset: dict[str, Any]) -> None:
         """Overwrite fields from a parsed preset dict.
 
+        Two preset layouts are supported and may be freely mixed:
+
+        * **Sectioned** (current converter output): a top-level
+          ``sections`` mapping whose values are thematic groups
+          (``Development``, ``Water Use``, ``Nutrient (N-P-K) Use``,
+          ``Root Growth``, ``Stress Response``, …), each carrying its own
+          ``scalars`` and/or ``tables`` sub-mapping.
+        * **Flat** (legacy / hand-written): top-level ``scalars`` and
+          ``tables`` mappings.
+
+        Both forms key on `CropParameters` field names; only the fields
+        present are overwritten. Reading both keeps older presets and
+        user config files loading unchanged.
+
         Args:
-            preset: Preset mapping with optional ``scalars`` (name → value)
-                and ``tables`` (name → list of ``[x, y]`` rows) sections.
-                Only the fields present are overwritten.
+            preset: Parsed preset mapping in either layout.
         """
-        for name, value in (preset.get("scalars") or {}).items():
-            setattr(self, name, _t(float(value)))
-        for name, rows in (preset.get("tables") or {}).items():
-            setattr(self, name, _table([(float(x), float(y)) for x, y in rows]))
+        for scalars, tables in _iter_preset_groups(preset):
+            for name, value in scalars.items():
+                setattr(self, name, _t(float(value)))
+            for name, rows in tables.items():
+                setattr(
+                    self, name, _table([(float(x), float(y)) for x, y in rows])
+                )
 
     def validate(self) -> None:
         """Validate discrete/categorical crop fields.
@@ -876,17 +945,21 @@ class CropParameters:
           + day length / + vernalisation).
         * ``iopt`` ∈ {1, 2, 3, 4} — run mode (optimal / water-limited /
           + N-limited / + NPK-limited).
+        * ``iairdu`` ∈ {0, 1} — root air-ducts flag (``0`` → non-aquatic,
+          ``1`` → aquatic, e.g. rice).
 
-        Both are consumed through hard threshold comparisons
-        (``idsl >= 1``/``>= 2``; ``iopt <= 2.5``/``<= 3.5``), so an
-        off-domain value would silently snap to the nearest mode.
+        All three are consumed through hard threshold comparisons
+        (``idsl >= 1``/``>= 2``; ``iopt <= 2.5``/``<= 3.5``;
+        ``iairdu > 0.5``), so an off-domain value would silently snap to
+        the nearest mode.
 
         Raises:
-            ValueError: If ``idsl`` or ``iopt`` holds an unsupported
-                value.
+            ValueError: If ``idsl``, ``iopt`` or ``iairdu`` holds an
+                unsupported value.
         """
         _check_discrete("crop_params.idsl", self.idsl, (0.0, 1.0, 2.0))
         _check_discrete("crop_params.iopt", self.iopt, (1.0, 2.0, 3.0, 4.0))
+        _check_discrete("crop_params.iairdu", self.iairdu, (0.0, 1.0))
 
     def to(
         self,
