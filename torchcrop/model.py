@@ -553,7 +553,7 @@ class Lintul5Model(nn.Module):
             frac_int=frac_int,
             co2=site_params.co2,
             altitude=site_params.altitude,
-            cfet=site_params.cfet,
+            cfet=crop_params.cfet,
             fpenmtb=site_params.fpenmtb,
         )
 
