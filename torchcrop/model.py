@@ -218,33 +218,45 @@ class Lintul5Model(nn.Module):
             analogues) also start at zero and grow as senescence
             proceeds.
         """
-        dvsi = float(self.crop_params.dvsi.detach().cpu().item())
-        rootdi = float(self.crop_params.rdi.detach().cpu().item())
+        # Read each initial-condition parameter as a detached tensor on the
+        # target dtype/device, keeping its shape (``[]`` shared, or ``[B]``
+        # per batch element). All the arithmetic below is element-wise via
+        # ``torch.minimum``/``maximum``/``clamp`` so that batch-varying
+        # soil/crop parameters (e.g. a per-site dataloader) flow straight
+        # into a single batched initial state; scalar parameters broadcast.
+        # ``ModelState.initial`` broadcasts whatever shape it receives to
+        # ``[batch_size]``. The detach keeps the initial state a constant
+        # w.r.t. the parameters, matching the previous ``.item()`` behaviour.
+        def _p(t: torch.Tensor) -> torch.Tensor:
+            return t.detach().to(dtype=dtype, device=device)
+
+        dvsi = _p(self.crop_params.dvsi)
+        rootdi = _p(self.crop_params.rdi)
         # Root-zone water from the user-specified initial volumetric content
         # ``wci``, clipped to the plant-available range ``[wcwp, wcfc]``
-        wcwp = float(self.soil_params.wcwp.detach().cpu().item())
-        wcfc = float(self.soil_params.wcfc.detach().cpu().item())
-        wci = float(self.soil_params.wci.detach().cpu().item())
-        smact_i = max(wcwp, min(wci, wcfc))
+        wcwp = _p(self.soil_params.wcwp)
+        wcfc = _p(self.soil_params.wcfc)
+        wci = _p(self.soil_params.wci)
+        smact_i = torch.maximum(wcwp, torch.minimum(wci, wcfc))
         wai = 1000.0 * smact_i * rootdi
         # Lower-zone water spans the unrooted profile between ``rootdi``
         # and the soil-/crop-limited maximum rooting depth ``rdm``. The
         # lower-zone initial content is clipped to ``[wcwp, wcfc]``
-        rdmso = float(self.soil_params.rdmso.detach().cpu().item())
-        rdmcr = float(self.crop_params.rdmcr.detach().cpu().item())
-        rdm_val = min(rdmso, rdmcr)
-        wci_lower = float(self.soil_params.wci_lower.detach().cpu().item())
-        smactl_i = max(wcwp, min(wci_lower, wcfc))
-        wa_lower_i = 1000.0 * max(rdm_val - rootdi, 1e-4) * smactl_i
+        rdmso = _p(self.soil_params.rdmso)
+        rdmcr = _p(self.crop_params.rdmcr)
+        rdm_val = torch.minimum(rdmso, rdmcr)
+        wci_lower = _p(self.soil_params.wci_lower)
+        smactl_i = torch.maximum(wcwp, torch.minimum(wci_lower, wcfc))
+        wa_lower_i = 1000.0 * torch.clamp(rdm_val - rootdi, min=1e-4) * smactl_i
         # Soil mineral pools: the organic (mineralisable) pools start at
         # ``nmini``/``pmini``/``kmini`` and the directly available
         # inorganic pools start at ``nminti``/``pminti``/``kminti``.
-        nmini = float(self.soil_params.nmini.detach().cpu().item())
-        pmini = float(self.soil_params.pmini.detach().cpu().item())
-        kmini = float(self.soil_params.kmini.detach().cpu().item())
-        nminti = float(self.soil_params.nminti.detach().cpu().item())
-        pminti = float(self.soil_params.pminti.detach().cpu().item())
-        kminti = float(self.soil_params.kminti.detach().cpu().item())
+        nmini = _p(self.soil_params.nmini)
+        pmini = _p(self.soil_params.pmini)
+        kmini = _p(self.soil_params.kmini)
+        nminti = _p(self.soil_params.nminti)
+        pminti = _p(self.soil_params.pminti)
+        kminti = _p(self.soil_params.kminti)
         state = ModelState.initial(
             batch_size=batch_size,
             dtype=dtype,
