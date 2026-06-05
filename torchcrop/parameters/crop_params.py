@@ -437,6 +437,10 @@ class CropParameters:
     air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or
     not (=0). Stored as float for batch broadcasting."""
 
+    cfet: torch.Tensor = field(default_factory=lambda: _t(1.0))
+    """``cCFET``. Crop-specific empirical correction factor [-] applied to
+    the Penman transpiration rate (canopy-resistance proxy)."""
+
     # ------------------------------------------------------------------ #
     # 4. Initial biomass and rooting (from Lintul5.java)
     # ------------------------------------------------------------------ #
