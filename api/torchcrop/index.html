@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://geonextgis.github.io/torchcrop/api/torchcrop/">
       
       
-        <link rel="prev" href="../../changelog/">
+        <link rel="prev" href="../../examples/water_limited_%28winter_wheat%29/">
       
       
         <link rel="next" href="../config/">
@@ -507,14 +507,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/intro.ipynb" class="md-nav__link">
+      <a href="../../examples/water_limited_%28winter_wheat%29/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    None
+    Water-limited winter wheat
   
 
     
@@ -12731,33 +12731,45 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">            analogues) also start at zero and grow as senescence</span>
 <span class="sd">            proceeds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="c1"># Read each initial-condition parameter as a detached tensor on the</span>
+        <span class="c1"># target dtype/device, keeping its shape (``[]`` shared, or ``[B]``</span>
+        <span class="c1"># per batch element). All the arithmetic below is element-wise via</span>
+        <span class="c1"># ``torch.minimum``/``maximum``/``clamp`` so that batch-varying</span>
+        <span class="c1"># soil/crop parameters (e.g. a per-site dataloader) flow straight</span>
+        <span class="c1"># into a single batched initial state; scalar parameters broadcast.</span>
+        <span class="c1"># ``ModelState.initial`` broadcasts whatever shape it receives to</span>
+        <span class="c1"># ``[batch_size]``. The detach keeps the initial state a constant</span>
+        <span class="c1"># w.r.t. the parameters, matching the previous ``.item()`` behaviour.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_p</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">dvsi</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="p">)</span>
+        <span class="n">rootdi</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdi</span><span class="p">)</span>
         <span class="c1"># Root-zone water from the user-specified initial volumetric content</span>
         <span class="c1"># ``wci``, clipped to the plant-available range ``[wcwp, wcfc]``</span>
-        <span class="n">wcwp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcwp</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">wcfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">wci</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">smact_i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">wci</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
+        <span class="n">wcwp</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span>
+        <span class="n">wcfc</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="p">)</span>
+        <span class="n">wci</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci</span><span class="p">)</span>
+        <span class="n">smact_i</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wci</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
         <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">smact_i</span> <span class="o">*</span> <span class="n">rootdi</span>
         <span class="c1"># Lower-zone water spans the unrooted profile between ``rootdi``</span>
         <span class="c1"># and the soil-/crop-limited maximum rooting depth ``rdm``. The</span>
         <span class="c1"># lower-zone initial content is clipped to ``[wcwp, wcfc]``</span>
-        <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
-        <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">smactl_i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">wci_lower</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
-        <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">smactl_i</span>
+        <span class="n">rdmso</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="p">)</span>
+        <span class="n">rdmcr</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="p">)</span>
+        <span class="n">rdm_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
+        <span class="n">wci_lower</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="p">)</span>
+        <span class="n">smactl_i</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wci_lower</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
+        <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">smactl_i</span>
         <span class="c1"># Soil mineral pools: the organic (mineralisable) pools start at</span>
         <span class="c1"># ``nmini``/``pmini``/``kmini`` and the directly available</span>
         <span class="c1"># inorganic pools start at ``nminti``/``pminti``/``kminti``.</span>
-        <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">nminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">pminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-        <span class="n">kminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="n">nmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="p">)</span>
+        <span class="n">pmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="p">)</span>
+        <span class="n">kmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="p">)</span>
+        <span class="n">nminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="p">)</span>
+        <span class="n">pminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="p">)</span>
+        <span class="n">kminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="p">)</span>
         <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -14051,33 +14063,45 @@ proceeds.</p></td>
 <span class="sd">        analogues) also start at zero and grow as senescence</span>
 <span class="sd">        proceeds.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dvsi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">rootdi</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdi</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="c1"># Read each initial-condition parameter as a detached tensor on the</span>
+    <span class="c1"># target dtype/device, keeping its shape (``[]`` shared, or ``[B]``</span>
+    <span class="c1"># per batch element). All the arithmetic below is element-wise via</span>
+    <span class="c1"># ``torch.minimum``/``maximum``/``clamp`` so that batch-varying</span>
+    <span class="c1"># soil/crop parameters (e.g. a per-site dataloader) flow straight</span>
+    <span class="c1"># into a single batched initial state; scalar parameters broadcast.</span>
+    <span class="c1"># ``ModelState.initial`` broadcasts whatever shape it receives to</span>
+    <span class="c1"># ``[batch_size]``. The detach keeps the initial state a constant</span>
+    <span class="c1"># w.r.t. the parameters, matching the previous ``.item()`` behaviour.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_p</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">dvsi</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span><span class="p">)</span>
+    <span class="n">rootdi</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdi</span><span class="p">)</span>
     <span class="c1"># Root-zone water from the user-specified initial volumetric content</span>
     <span class="c1"># ``wci``, clipped to the plant-available range ``[wcwp, wcfc]``</span>
-    <span class="n">wcwp</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcwp</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">wcfc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">wci</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">smact_i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">wci</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
+    <span class="n">wcwp</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">)</span>
+    <span class="n">wcfc</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wcfc</span><span class="p">)</span>
+    <span class="n">wci</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci</span><span class="p">)</span>
+    <span class="n">smact_i</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wci</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
     <span class="n">wai</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">smact_i</span> <span class="o">*</span> <span class="n">rootdi</span>
     <span class="c1"># Lower-zone water spans the unrooted profile between ``rootdi``</span>
     <span class="c1"># and the soil-/crop-limited maximum rooting depth ``rdm``. The</span>
     <span class="c1"># lower-zone initial content is clipped to ``[wcwp, wcfc]``</span>
-    <span class="n">rdmso</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">rdmcr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">rdm_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
-    <span class="n">wci_lower</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">smactl_i</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">wci_lower</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
-    <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">smactl_i</span>
+    <span class="n">rdmso</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span><span class="p">)</span>
+    <span class="n">rdmcr</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span><span class="p">)</span>
+    <span class="n">rdm_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rdmso</span><span class="p">,</span> <span class="n">rdmcr</span><span class="p">)</span>
+    <span class="n">wci_lower</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">wci_lower</span><span class="p">)</span>
+    <span class="n">smactl_i</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">wcwp</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wci_lower</span><span class="p">,</span> <span class="n">wcfc</span><span class="p">))</span>
+    <span class="n">wa_lower_i</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_val</span> <span class="o">-</span> <span class="n">rootdi</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">smactl_i</span>
     <span class="c1"># Soil mineral pools: the organic (mineralisable) pools start at</span>
     <span class="c1"># ``nmini``/``pmini``/``kmini`` and the directly available</span>
     <span class="c1"># inorganic pools start at ``nminti``/``pminti``/``kminti``.</span>
-    <span class="n">nmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">pmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">kmini</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">nminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">pminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
-    <span class="n">kminti</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="n">nmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nmini</span><span class="p">)</span>
+    <span class="n">pmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pmini</span><span class="p">)</span>
+    <span class="n">kmini</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kmini</span><span class="p">)</span>
+    <span class="n">nminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">nminti</span><span class="p">)</span>
+    <span class="n">pminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">pminti</span><span class="p">)</span>
+    <span class="n">kminti</span> <span class="o">=</span> <span class="n">_p</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="o">.</span><span class="n">kminti</span><span class="p">)</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">ModelState</span><span class="o">.</span><span class="n">initial</span><span class="p">(</span>
         <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
@@ -30346,24 +30370,31 @@ added by the engine with <code>dt = 1</code> day.</p>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-        <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
-        <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
-        <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
-        <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
-        <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-        <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+        <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
+        <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
+        <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
 <span class="sd">        All biomass, per-organ nutrient, cumulative-accumulator, and</span>
 <span class="sd">        thermal-time fields are initialised to zero. The remaining</span>
 <span class="sd">        scalars are taken from the keyword arguments.</span>
+
+<span class="sd">        Each initial-value argument may be a Python scalar (shared across</span>
+<span class="sd">        the whole batch) **or** a tensor that broadcasts to</span>
+<span class="sd">        ``[batch_size]`` (one value per batch element). The latter lets a</span>
+<span class="sd">        per-site / per-year dataloader feed batch-varying soil and crop</span>
+<span class="sd">        parameters straight into a single batched run; a ``[B]`` tensor is</span>
+<span class="sd">        used element-wise, a ``[]`` / scalar is broadcast.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_size: Number of parallel simulation instances ``B``.</span>
@@ -30387,7 +30418,13 @@ added by the engine with <code>dt = 1</code> day.</p>
 <span class="sd">            counters ``dslr``/``dsos``, and the soil mineral pools.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="c1"># Broadcast each initial value (scalar or ``[B]`` tensor) to a</span>
+        <span class="c1"># contiguous ``[batch_size]`` state field. ``broadcast_to`` accepts</span>
+        <span class="c1"># a 0-d / scalar (shared) or a ``[B]`` tensor (per-element); the</span>
+        <span class="c1"># ``clone`` gives each field its own storage.</span>
+        <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span>  <span class="c1"># noqa: E731</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
             <span class="n">dvs</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dvsi</span><span class="p">),</span>
             <span class="n">tsum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
@@ -30599,6 +30636,12 @@ added by the engine with <code>dt = 1</code> day.</p>
 <p>All biomass, per-organ nutrient, cumulative-accumulator, and
 thermal-time fields are initialised to zero. The remaining
 scalars are taken from the keyword arguments.</p>
+<p>Each initial-value argument may be a Python scalar (shared across
+the whole batch) <strong>or</strong> a tensor that broadcasts to
+<code>[batch_size]</code> (one value per batch element). The latter lets a
+per-site / per-year dataloader feed batch-varying soil and crop
+parameters straight into a single batched run; a <code>[B]</code> tensor is
+used element-wise, a <code>[]</code> / scalar is broadcast.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -30631,37 +30674,37 @@ scalars are taken from the keyword arguments.</p>
       </tr>
       <tr>
         <td><code>dvsi</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial development stage.</p></td>
         <td><code>0.0</code></td>
       </tr>
       <tr>
         <td><code>wai</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial soil water in the root zone [mm].</p></td>
         <td><code>60.0</code></td>
       </tr>
       <tr>
         <td><code>rootdi</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial rooting depth [m].</p></td>
         <td><code>0.1</code></td>
       </tr>
       <tr>
         <td><code>wa_lower_i</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial soil water in the lower zone [mm].</p></td>
         <td><code>400.0</code></td>
       </tr>
       <tr>
         <td><code>dslri</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial days since last rain [d].</p></td>
         <td><code>3.0</code></td>
       </tr>
       <tr>
         <td><code>dsosi</code></td>
-        <td><code>float</code></td>
+        <td><code>float | torch.Tensor</code></td>
         <td><p>Initial days of oxygen shortage [d].</p></td>
         <td><code>0.0</code></td>
       </tr>
@@ -30707,24 +30750,31 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
-    <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
-    <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
-    <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
-    <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
-    <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
+    <span class="n">wa_lower_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">400.0</span><span class="p">,</span>
+    <span class="n">dslri</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+    <span class="n">dsosi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">nmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">pmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">kmini</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
 
 <span class="sd">    All biomass, per-organ nutrient, cumulative-accumulator, and</span>
 <span class="sd">    thermal-time fields are initialised to zero. The remaining</span>
 <span class="sd">    scalars are taken from the keyword arguments.</span>
+
+<span class="sd">    Each initial-value argument may be a Python scalar (shared across</span>
+<span class="sd">    the whole batch) **or** a tensor that broadcasts to</span>
+<span class="sd">    ``[batch_size]`` (one value per batch element). The latter lets a</span>
+<span class="sd">    per-site / per-year dataloader feed batch-varying soil and crop</span>
+<span class="sd">    parameters straight into a single batched run; a ``[B]`` tensor is</span>
+<span class="sd">    used element-wise, a ``[]`` / scalar is broadcast.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: Number of parallel simulation instances ``B``.</span>
@@ -30748,7 +30798,13 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
 <span class="sd">        counters ``dslr``/``dsos``, and the soil mineral pools.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,),</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="c1"># Broadcast each initial value (scalar or ``[B]`` tensor) to a</span>
+    <span class="c1"># contiguous ``[batch_size]`` state field. ``broadcast_to`` accepts</span>
+    <span class="c1"># a 0-d / scalar (shared) or a ``[B]`` tensor (per-element); the</span>
+    <span class="c1"># ``clone`` gives each field its own storage.</span>
+    <span class="n">full</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span>  <span class="c1"># noqa: E731</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
         <span class="n">dvs</span><span class="o">=</span><span class="n">full</span><span class="p">(</span><span class="n">dvsi</span><span class="p">),</span>
         <span class="n">tsum</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
