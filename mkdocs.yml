@@ -90,7 +90,10 @@ nav:
     - Changelog: changelog.md
     - Report Issues: https://github.com/geonextgis/torchcrop/issues
     - Examples:
-          - Water-limited winter wheat: "examples/water_limited_(winter_wheat).ipynb"
+          - Potential:
+                - Potential (Winter Wheat): examples/01_potential/potential_(winter_wheat).ipynb
+          - Water-limited:
+                - Water-limited (Winter Wheat): examples/02_water_limited/water_limited_(winter_wheat).ipynb
     - API Reference:
           - Overview: api/torchcrop.md
           - Config: api/config.md
