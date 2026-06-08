@@ -94,6 +94,8 @@ nav:
                 - Potential (Winter Wheat): examples/01_potential/potential_(winter_wheat).ipynb
           - Water-limited:
                 - Water-limited (Winter Wheat): examples/02_water_limited/water_limited_(winter_wheat).ipynb
+          - Water- and nutrient-limited:
+                - Water- and Nutrient-limited (Winter Wheat): examples/03_water_and_nutrient_limited/water_and_nutrient_limited_(winter_wheat).ipynb
     - API Reference:
           - Overview: api/torchcrop.md
           - Config: api/config.md
