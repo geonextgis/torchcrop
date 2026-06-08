@@ -2305,26 +2305,11 @@ stage-based branching.</p></td>
         <td><code>Sequence[ResidualSpec] | None</code></td>
         <td><p>Optional list of <code>ResidualSpec</code> slots enabling
 constraint-aware neural residual corrections on individual
-mechanistic quantities (see <code>torchcrop.nn.hybrid</code>). Each slot
-targets one quantity by name and is projected onto that
-quantity's natural geometry (non-negative rate, <code>[0, 1]</code>
-factor, or simplex of fractions), so corrections preserve sign,
-mass balance and numerical stability. Slots are zero-initialised
-and therefore start as the identity — a model built with specs
-but untrained reproduces the pure mechanistic trajectory.
-<code>None</code> (the default) disables all corrections.</p>
-<p>Supported slot names: <code>"photosynthesis.gtotal"</code>,
-<code>"water.tranrf"</code>, <code>"partitioning.aboveground"</code>,
-<code>"partitioning.fr"</code>, <code>"leaf.rdr"</code>,
-<code>"phenology.dvs_rate"</code>. See <code>torchcrop.nn.hybrid.default_slots</code>
-for the recommended catalogue.</p>
-<p>Enable only the slots whose pathway is constrained by an
-observable in your calibration data; turning on every slot at
-once invites identifiability and compensation problems (several
-residuals, and the mechanistic parameters they shadow, become
-degenerate). Prefer a minimal observable-tied subset, calibrate
-mechanistic parameters before adding residuals, and regularise
-with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></td>
+mechanistic quantities. Slots are zero-initialised, so an
+untrained model reproduces the pure mechanistic trajectory.
+<code>None</code> (the default) disables all corrections. See
+<code>torchcrop.nn.hybrid.default_slots</code> for the recommended
+catalogue and guidance on which slots to enable.</p></td>
         <td><code>None</code></td>
       </tr>
   </tbody>
@@ -2350,28 +2335,11 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">            `StressFactors` combiner.</span>
 <span class="sd">        residual_specs: Optional list of `ResidualSpec` slots enabling</span>
 <span class="sd">            constraint-aware neural residual corrections on individual</span>
-<span class="sd">            mechanistic quantities (see `torchcrop.nn.hybrid`). Each slot</span>
-<span class="sd">            targets one quantity by name and is projected onto that</span>
-<span class="sd">            quantity&#39;s natural geometry (non-negative rate, ``[0, 1]``</span>
-<span class="sd">            factor, or simplex of fractions), so corrections preserve sign,</span>
-<span class="sd">            mass balance and numerical stability. Slots are zero-initialised</span>
-<span class="sd">            and therefore start as the identity — a model built with specs</span>
-<span class="sd">            but untrained reproduces the pure mechanistic trajectory.</span>
-<span class="sd">            ``None`` (the default) disables all corrections.</span>
-
-<span class="sd">            Supported slot names: ``&quot;photosynthesis.gtotal&quot;``,</span>
-<span class="sd">            ``&quot;water.tranrf&quot;``, ``&quot;partitioning.aboveground&quot;``,</span>
-<span class="sd">            ``&quot;partitioning.fr&quot;``, ``&quot;leaf.rdr&quot;``,</span>
-<span class="sd">            ``&quot;phenology.dvs_rate&quot;``. See `torchcrop.nn.hybrid.default_slots`</span>
-<span class="sd">            for the recommended catalogue.</span>
-
-<span class="sd">            Enable only the slots whose pathway is constrained by an</span>
-<span class="sd">            observable in your calibration data; turning on every slot at</span>
-<span class="sd">            once invites identifiability and compensation problems (several</span>
-<span class="sd">            residuals, and the mechanistic parameters they shadow, become</span>
-<span class="sd">            degenerate). Prefer a minimal observable-tied subset, calibrate</span>
-<span class="sd">            mechanistic parameters before adding residuals, and regularise</span>
-<span class="sd">            with ``self.hybrid.penalty()`` to anchor corrections toward zero.</span>
+<span class="sd">            mechanistic quantities. Slots are zero-initialised, so an</span>
+<span class="sd">            untrained model reproduces the pure mechanistic trajectory.</span>
+<span class="sd">            ``None`` (the default) disables all corrections. See</span>
+<span class="sd">            `torchcrop.nn.hybrid.default_slots` for the recommended</span>
+<span class="sd">            catalogue and guidance on which slots to enable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1">#: Discrete/categorical parameter fields, keyed by container name.</span>
@@ -2467,15 +2435,11 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">            analogues) also start at zero and grow as senescence</span>
 <span class="sd">            proceeds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Read each initial-condition parameter as a detached tensor on the</span>
-        <span class="c1"># target dtype/device, keeping its shape (``[]`` shared, or ``[B]``</span>
-        <span class="c1"># per batch element). All the arithmetic below is element-wise via</span>
-        <span class="c1"># ``torch.minimum``/``maximum``/``clamp`` so that batch-varying</span>
-        <span class="c1"># soil/crop parameters (e.g. a per-site dataloader) flow straight</span>
-        <span class="c1"># into a single batched initial state; scalar parameters broadcast.</span>
-        <span class="c1"># ``ModelState.initial`` broadcasts whatever shape it receives to</span>
-        <span class="c1"># ``[batch_size]``. The detach keeps the initial state a constant</span>
-        <span class="c1"># w.r.t. the parameters, matching the previous ``.item()`` behaviour.</span>
+        <span class="c1"># Read each initial-condition parameter as a detached tensor, keeping</span>
+        <span class="c1"># its shape (``[]`` shared or ``[B]`` per element). The arithmetic</span>
+        <span class="c1"># below is element-wise, so batch-varying soil/crop parameters flow</span>
+        <span class="c1"># straight into a single batched initial state and scalars broadcast.</span>
+        <span class="c1"># The detach keeps the initial state constant w.r.t. the parameters.</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_p</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
@@ -2551,24 +2515,18 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
 <span class="sd">                the user is responsible for any</span>
 <span class="sd">                ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">                bypasses the SIMPLACE-parity setup in `initialize`.</span>
-<span class="sd">            irrigation: Optional externally supplied daily irrigation of</span>
-<span class="sd">                shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.</span>
-<span class="sd">                When provided, day ``t``&#39;s value overrides the</span>
-<span class="sd">                ``soil_params.irri`` mode in the water balance, so the</span>
-<span class="sd">                schedule can be a fixed plan or an `nn.Parameter`</span>
-<span class="sd">                optimised through the simulation. ``None`` (the default)</span>
-<span class="sd">                leaves the internal IRRI logic (modes 0/1/2) in control.</span>
-<span class="sd">            fertilizer: Optional externally supplied daily fertiliser of</span>
-<span class="sd">                shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the</span>
-<span class="sd">                weather days, with the last axis ordered ``(N, P, K)``.</span>
-<span class="sd">                When provided, day ``t``&#39;s slice overrides the</span>
-<span class="sd">                ``ferntab``/``ferptab``/``ferktab`` applications in the</span>
-<span class="sd">                soil mineral balance — the scale factors</span>
+<span class="sd">            irrigation: Optional daily irrigation ``[B, T]`` [mm d⁻¹],</span>
+<span class="sd">                aligned with the weather days. Day ``t``&#39;s value overrides</span>
+<span class="sd">                the ``soil_params.irri`` mode in the water balance; it may</span>
+<span class="sd">                be a fixed plan or an `nn.Parameter` optimised through the</span>
+<span class="sd">                simulation. ``None`` (the default) leaves the internal IRRI</span>
+<span class="sd">                logic (modes 0/1/2) in control.</span>
+<span class="sd">            fertilizer: Optional daily fertiliser ``[B, T, 3]``</span>
+<span class="sd">                [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``&#39;s</span>
+<span class="sd">                slice overrides the ``ferntab``/``ferptab``/``ferktab``</span>
+<span class="sd">                applications in the soil mineral balance; scale factors</span>
 <span class="sd">                ``scale_factor_fer*`` and recovery fractions</span>
-<span class="sd">                ``nrf``/``prf``/``krf`` are still applied, so the</span>
-<span class="sd">                soil-chemistry logic is unchanged. Like ``irrigation``,</span>
-<span class="sd">                the schedule can be a fixed plan or an `nn.Parameter`</span>
-<span class="sd">                optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">                ``nrf``/``prf``/``krf`` still apply. ``None`` (the default)</span>
 <span class="sd">                leaves the internal table-driven application in control.</span>
 
 <span class="sd">        Returns:</span>
@@ -2855,17 +2813,12 @@ with <code>self.hybrid.penalty()</code> to anchor corrections toward zero.</p></
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
         <span class="c1"># 4b. Sowing latch. ``sown`` is 1 from the sowing day</span>
-        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets. Taking</span>
-        <span class="c1">#     ``max(state.sown, doy &gt;= idpl)`` makes the latch robust to</span>
-        <span class="c1">#     the day-of-year wraparound when a run spans a calendar-year</span>
-        <span class="c1">#     boundary (e.g. an autumn-sown winter wheat harvested the</span>
-        <span class="c1">#     following summer): once latched, a doy that cycles back</span>
-        <span class="c1">#     below ``idpl`` in the next year cannot un-sow the crop.</span>
-        <span class="c1">#     With the default ``idpl = 0`` the gate is 1 on every day, so</span>
-        <span class="c1">#     sowing coincides with the simulation start and the legacy</span>
-        <span class="c1">#     behaviour is reproduced exactly. ``idpl`` is a discrete</span>
-        <span class="c1">#     (non-differentiable) calendar switch, so the hard comparison</span>
-        <span class="c1">#     introduces no new gradient path.</span>
+        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets; the</span>
+        <span class="c1">#     ``max(state.sown, ...)`` makes it robust to day-of-year</span>
+        <span class="c1">#     wraparound across a calendar-year boundary (autumn-sown winter</span>
+        <span class="c1">#     wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
+        <span class="c1">#     reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
+        <span class="c1">#     discrete switch, so the hard comparison adds no gradient path.</span>
         <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
         <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
         <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -3485,29 +3438,23 @@ bypasses the SIMPLACE-parity setup in <code>initialize</code>.</p></td>
       <tr>
         <td><code>irrigation</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Optional externally supplied daily irrigation of
-shape <code>[B, T]</code> [mm d⁻¹], aligned with the weather days.
-When provided, day <code>t</code>'s value overrides the
-<code>soil_params.irri</code> mode in the water balance, so the
-schedule can be a fixed plan or an <code>nn.Parameter</code>
-optimised through the simulation. <code>None</code> (the default)
-leaves the internal IRRI logic (modes 0/1/2) in control.</p></td>
+        <td><p>Optional daily irrigation <code>[B, T]</code> [mm d⁻¹],
+aligned with the weather days. Day <code>t</code>'s value overrides
+the <code>soil_params.irri</code> mode in the water balance; it may
+be a fixed plan or an <code>nn.Parameter</code> optimised through the
+simulation. <code>None</code> (the default) leaves the internal IRRI
+logic (modes 0/1/2) in control.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>fertilizer</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Optional externally supplied daily fertiliser of
-shape <code>[B, T, 3]</code> [g X m⁻² d⁻¹], aligned with the
-weather days, with the last axis ordered <code>(N, P, K)</code>.
-When provided, day <code>t</code>'s slice overrides the
-<code>ferntab</code>/<code>ferptab</code>/<code>ferktab</code> applications in the
-soil mineral balance — the scale factors
+        <td><p>Optional daily fertiliser <code>[B, T, 3]</code>
+[g X m⁻² d⁻¹], last axis ordered <code>(N, P, K)</code>. Day <code>t</code>'s
+slice overrides the <code>ferntab</code>/<code>ferptab</code>/<code>ferktab</code>
+applications in the soil mineral balance; scale factors
 <code>scale_factor_fer*</code> and recovery fractions
-<code>nrf</code>/<code>prf</code>/<code>krf</code> are still applied, so the
-soil-chemistry logic is unchanged. Like <code>irrigation</code>,
-the schedule can be a fixed plan or an <code>nn.Parameter</code>
-optimised through the simulation. <code>None</code> (the default)
+<code>nrf</code>/<code>prf</code>/<code>krf</code> still apply. <code>None</code> (the default)
 leaves the internal table-driven application in control.</p></td>
         <td><code>None</code></td>
       </tr>
@@ -3566,24 +3513,18 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">            the user is responsible for any</span>
 <span class="sd">            ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">            bypasses the SIMPLACE-parity setup in `initialize`.</span>
-<span class="sd">        irrigation: Optional externally supplied daily irrigation of</span>
-<span class="sd">            shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.</span>
-<span class="sd">            When provided, day ``t``&#39;s value overrides the</span>
-<span class="sd">            ``soil_params.irri`` mode in the water balance, so the</span>
-<span class="sd">            schedule can be a fixed plan or an `nn.Parameter`</span>
-<span class="sd">            optimised through the simulation. ``None`` (the default)</span>
-<span class="sd">            leaves the internal IRRI logic (modes 0/1/2) in control.</span>
-<span class="sd">        fertilizer: Optional externally supplied daily fertiliser of</span>
-<span class="sd">            shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the</span>
-<span class="sd">            weather days, with the last axis ordered ``(N, P, K)``.</span>
-<span class="sd">            When provided, day ``t``&#39;s slice overrides the</span>
-<span class="sd">            ``ferntab``/``ferptab``/``ferktab`` applications in the</span>
-<span class="sd">            soil mineral balance — the scale factors</span>
+<span class="sd">        irrigation: Optional daily irrigation ``[B, T]`` [mm d⁻¹],</span>
+<span class="sd">            aligned with the weather days. Day ``t``&#39;s value overrides</span>
+<span class="sd">            the ``soil_params.irri`` mode in the water balance; it may</span>
+<span class="sd">            be a fixed plan or an `nn.Parameter` optimised through the</span>
+<span class="sd">            simulation. ``None`` (the default) leaves the internal IRRI</span>
+<span class="sd">            logic (modes 0/1/2) in control.</span>
+<span class="sd">        fertilizer: Optional daily fertiliser ``[B, T, 3]``</span>
+<span class="sd">            [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``&#39;s</span>
+<span class="sd">            slice overrides the ``ferntab``/``ferptab``/``ferktab``</span>
+<span class="sd">            applications in the soil mineral balance; scale factors</span>
 <span class="sd">            ``scale_factor_fer*`` and recovery fractions</span>
-<span class="sd">            ``nrf``/``prf``/``krf`` are still applied, so the</span>
-<span class="sd">            soil-chemistry logic is unchanged. Like ``irrigation``,</span>
-<span class="sd">            the schedule can be a fixed plan or an `nn.Parameter`</span>
-<span class="sd">            optimised through the simulation. ``None`` (the default)</span>
+<span class="sd">            ``nrf``/``prf``/``krf`` still apply. ``None`` (the default)</span>
 <span class="sd">            leaves the internal table-driven application in control.</span>
 
 <span class="sd">    Returns:</span>
@@ -3799,15 +3740,11 @@ proceeds.</p></td>
 <span class="sd">        analogues) also start at zero and grow as senescence</span>
 <span class="sd">        proceeds.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Read each initial-condition parameter as a detached tensor on the</span>
-    <span class="c1"># target dtype/device, keeping its shape (``[]`` shared, or ``[B]``</span>
-    <span class="c1"># per batch element). All the arithmetic below is element-wise via</span>
-    <span class="c1"># ``torch.minimum``/``maximum``/``clamp`` so that batch-varying</span>
-    <span class="c1"># soil/crop parameters (e.g. a per-site dataloader) flow straight</span>
-    <span class="c1"># into a single batched initial state; scalar parameters broadcast.</span>
-    <span class="c1"># ``ModelState.initial`` broadcasts whatever shape it receives to</span>
-    <span class="c1"># ``[batch_size]``. The detach keeps the initial state a constant</span>
-    <span class="c1"># w.r.t. the parameters, matching the previous ``.item()`` behaviour.</span>
+    <span class="c1"># Read each initial-condition parameter as a detached tensor, keeping</span>
+    <span class="c1"># its shape (``[]`` shared or ``[B]`` per element). The arithmetic</span>
+    <span class="c1"># below is element-wise, so batch-varying soil/crop parameters flow</span>
+    <span class="c1"># straight into a single batched initial state and scalars broadcast.</span>
+    <span class="c1"># The detach keeps the initial state constant w.r.t. the parameters.</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_p</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 

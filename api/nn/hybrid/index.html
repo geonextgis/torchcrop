@@ -2362,11 +2362,8 @@ pure mechanistic model with zero overhead.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Enable only the slots whose pathway is constrained by an observable
-in your calibration data. Enabling every slot at once invites
-identifiability and compensation problems (e.g. the <code>gtotal</code>
-residual is degenerate with a learnable RUE). See <code>default_slots</code>
-for the recommended catalogue and the guidance on staged calibration
-and <code>penalty</code>-based regularization.</p>
+in your calibration data. See <code>default_slots</code> for the recommended
+catalogue and the guidance on slot choice and regularization.</p>
 </div>
 
 <p><strong>Parameters:</strong></p>
@@ -2401,11 +2398,8 @@ disables all corrections.</p></td>
 
 <span class="sd">    Note:</span>
 <span class="sd">        Enable only the slots whose pathway is constrained by an observable</span>
-<span class="sd">        in your calibration data. Enabling every slot at once invites</span>
-<span class="sd">        identifiability and compensation problems (e.g. the ``gtotal``</span>
-<span class="sd">        residual is degenerate with a learnable RUE). See `default_slots`</span>
-<span class="sd">        for the recommended catalogue and the guidance on staged calibration</span>
-<span class="sd">        and `penalty`-based regularization.</span>
+<span class="sd">        in your calibration data. See `default_slots` for the recommended</span>
+<span class="sd">        catalogue and the guidance on slot choice and regularization.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        specs: Iterable of `ResidualSpec` slots to enable. ``None`` or empty</span>

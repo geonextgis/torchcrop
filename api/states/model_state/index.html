@@ -3164,13 +3164,10 @@ yield, etc.) are assembled by the engine.</p>
         pre-partitioning [g DM m⁻²].</li>
 </ul>
 <h4 id="torchcrop.states.model_state.ModelState--note">Note:<a class="headerlink" href="#torchcrop.states.model_state.ModelState--note" title="Permanent link">&para;</a></h4>
-<p>Updates are functional — <code>replace</code> returns a <em>new</em> <code>ModelState</code>
-rather than mutating in place — so the autograd graph is
-preserved across the explicit-Euler step
-<code>s_{t+1} = s_t + r_t · dt</code>. All cumulative accumulators are
-integrated by the same <code>_rate</code> mechanism as <code>tran_cum</code> /
-<code>evap_cum</code>: a daily flux routed into <code>&lt;field&gt;_rate</code> and
-added by the engine with <code>dt = 1</code> day.</p>
+<p>Updates are functional (<code>replace</code> returns a new instance), preserving
+the autograd graph across the Euler step <code>s_{t+1} = s_t + r_t · dt</code>.
+Cumulative accumulators use the same <code>&lt;field&gt;_rate</code> mechanism as any
+other field.</p>
 
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
@@ -3262,13 +3259,10 @@ added by the engine with <code>dt = 1</code> day.</p>
 <span class="sd">            pre-partitioning [g DM m⁻²].</span>
 
 <span class="sd">    ## Note:</span>
-<span class="sd">    Updates are functional — `replace` returns a *new* ``ModelState``</span>
-<span class="sd">    rather than mutating in place — so the autograd graph is</span>
-<span class="sd">    preserved across the explicit-Euler step</span>
-<span class="sd">    ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are</span>
-<span class="sd">    integrated by the same ``_rate`` mechanism as ``tran_cum`` /</span>
-<span class="sd">    ``evap_cum``: a daily flux routed into ``&lt;field&gt;_rate`` and</span>
-<span class="sd">    added by the engine with ``dt = 1`` day.</span>
+<span class="sd">    Updates are functional (`replace` returns a new instance), preserving</span>
+<span class="sd">    the autograd graph across the Euler step ``s_{t+1} = s_t + r_t · dt``.</span>
+<span class="sd">    Cumulative accumulators use the same ``&lt;field&gt;_rate`` mechanism as any</span>
+<span class="sd">    other field.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Phenology</span>
