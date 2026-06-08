@@ -1,0 +1,19 @@
+location,NUTS_ID,NUTS_NAME,STATE_NAME,LATITUDE,ALTITUDE,IDPL,CO2
+0,DE40F,Prignitz,Brandenburg,53.2199,68,270,370
+1,DE40I,Uckermark,Brandenburg,53.0662,68,270,370
+2,DE40A,Oberhavel,Brandenburg,53.0128,68,270,370
+3,DE405,Barnim,Brandenburg,52.8835,68,270,370
+4,DE40D,Ostprignitz-Ruppin,Brandenburg,52.8281,68,270,370
+5,DE409,Märkisch-Oderland,Brandenburg,52.6341,68,270,370
+6,DE408,Havelland,Brandenburg,52.6096,68,270,370
+7,DE40E,Potsdam-Mittelmark,Brandenburg,52.459,68,270,370
+8,DE404,"Potsdam, Kreisfreie Stadt",Brandenburg,52.4004,68,270,370
+9,DE406,Dahme-Spreewald,Brandenburg,52.3997,68,270,370
+10,DE40C,Oder-Spree,Brandenburg,52.3604,68,270,370
+11,DE403,"Frankfurt (Oder), Kreisfreie Stadt",Brandenburg,52.35,68,270,370
+12,DE401,"Brandenburg an der Havel, Kreisfreie Stadt",Brandenburg,52.3527,68,270,370
+13,DE40H,Teltow-Fläming,Brandenburg,52.3108,68,270,370
+14,DE40G,Spree-Neiße,Brandenburg,51.9728,68,270,370
+15,DE402,"Cottbus, Kreisfreie Stadt",Brandenburg,51.7842,68,270,370
+16,DE40B,Oberspreewald-Lausitz,Brandenburg,51.725,68,270,370
+17,DE407,Elbe-Elster,Brandenburg,51.6323,68,270,370
