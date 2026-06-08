@@ -156,11 +156,8 @@ class HybridManager(nn.Module):
 
     Note:
         Enable only the slots whose pathway is constrained by an observable
-        in your calibration data. Enabling every slot at once invites
-        identifiability and compensation problems (e.g. the ``gtotal``
-        residual is degenerate with a learnable RUE). See `default_slots`
-        for the recommended catalogue and the guidance on staged calibration
-        and `penalty`-based regularization.
+        in your calibration data. See `default_slots` for the recommended
+        catalogue and the guidance on slot choice and regularization.
 
     Args:
         specs: Iterable of `ResidualSpec` slots to enable. ``None`` or empty

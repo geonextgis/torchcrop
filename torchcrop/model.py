@@ -101,28 +101,11 @@ class Lintul5Model(nn.Module):
             `StressFactors` combiner.
         residual_specs: Optional list of `ResidualSpec` slots enabling
             constraint-aware neural residual corrections on individual
-            mechanistic quantities (see `torchcrop.nn.hybrid`). Each slot
-            targets one quantity by name and is projected onto that
-            quantity's natural geometry (non-negative rate, ``[0, 1]``
-            factor, or simplex of fractions), so corrections preserve sign,
-            mass balance and numerical stability. Slots are zero-initialised
-            and therefore start as the identity — a model built with specs
-            but untrained reproduces the pure mechanistic trajectory.
-            ``None`` (the default) disables all corrections.
-
-            Supported slot names: ``"photosynthesis.gtotal"``,
-            ``"water.tranrf"``, ``"partitioning.aboveground"``,
-            ``"partitioning.fr"``, ``"leaf.rdr"``,
-            ``"phenology.dvs_rate"``. See `torchcrop.nn.hybrid.default_slots`
-            for the recommended catalogue.
-
-            Enable only the slots whose pathway is constrained by an
-            observable in your calibration data; turning on every slot at
-            once invites identifiability and compensation problems (several
-            residuals, and the mechanistic parameters they shadow, become
-            degenerate). Prefer a minimal observable-tied subset, calibrate
-            mechanistic parameters before adding residuals, and regularise
-            with ``self.hybrid.penalty()`` to anchor corrections toward zero.
+            mechanistic quantities. Slots are zero-initialised, so an
+            untrained model reproduces the pure mechanistic trajectory.
+            ``None`` (the default) disables all corrections. See
+            `torchcrop.nn.hybrid.default_slots` for the recommended
+            catalogue and guidance on which slots to enable.
     """
 
     #: Discrete/categorical parameter fields, keyed by container name.
@@ -218,15 +201,11 @@ class Lintul5Model(nn.Module):
             analogues) also start at zero and grow as senescence
             proceeds.
         """
-        # Read each initial-condition parameter as a detached tensor on the
-        # target dtype/device, keeping its shape (``[]`` shared, or ``[B]``
-        # per batch element). All the arithmetic below is element-wise via
-        # ``torch.minimum``/``maximum``/``clamp`` so that batch-varying
-        # soil/crop parameters (e.g. a per-site dataloader) flow straight
-        # into a single batched initial state; scalar parameters broadcast.
-        # ``ModelState.initial`` broadcasts whatever shape it receives to
-        # ``[batch_size]``. The detach keeps the initial state a constant
-        # w.r.t. the parameters, matching the previous ``.item()`` behaviour.
+        # Read each initial-condition parameter as a detached tensor, keeping
+        # its shape (``[]`` shared or ``[B]`` per element). The arithmetic
+        # below is element-wise, so batch-varying soil/crop parameters flow
+        # straight into a single batched initial state and scalars broadcast.
+        # The detach keeps the initial state constant w.r.t. the parameters.
         def _p(t: torch.Tensor) -> torch.Tensor:
             return t.detach().to(dtype=dtype, device=device)
 
@@ -302,24 +281,18 @@ class Lintul5Model(nn.Module):
                 the user is responsible for any
                 ``wci``/``wci_lower``/``rdm`` clipping — this path
                 bypasses the SIMPLACE-parity setup in `initialize`.
-            irrigation: Optional externally supplied daily irrigation of
-                shape ``[B, T]`` [mm d⁻¹], aligned with the weather days.
-                When provided, day ``t``'s value overrides the
-                ``soil_params.irri`` mode in the water balance, so the
-                schedule can be a fixed plan or an `nn.Parameter`
-                optimised through the simulation. ``None`` (the default)
-                leaves the internal IRRI logic (modes 0/1/2) in control.
-            fertilizer: Optional externally supplied daily fertiliser of
-                shape ``[B, T, 3]`` [g X m⁻² d⁻¹], aligned with the
-                weather days, with the last axis ordered ``(N, P, K)``.
-                When provided, day ``t``'s slice overrides the
-                ``ferntab``/``ferptab``/``ferktab`` applications in the
-                soil mineral balance — the scale factors
+            irrigation: Optional daily irrigation ``[B, T]`` [mm d⁻¹],
+                aligned with the weather days. Day ``t``'s value overrides
+                the ``soil_params.irri`` mode in the water balance; it may
+                be a fixed plan or an `nn.Parameter` optimised through the
+                simulation. ``None`` (the default) leaves the internal IRRI
+                logic (modes 0/1/2) in control.
+            fertilizer: Optional daily fertiliser ``[B, T, 3]``
+                [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``'s
+                slice overrides the ``ferntab``/``ferptab``/``ferktab``
+                applications in the soil mineral balance; scale factors
                 ``scale_factor_fer*`` and recovery fractions
-                ``nrf``/``prf``/``krf`` are still applied, so the
-                soil-chemistry logic is unchanged. Like ``irrigation``,
-                the schedule can be a fixed plan or an `nn.Parameter`
-                optimised through the simulation. ``None`` (the default)
+                ``nrf``/``prf``/``krf`` still apply. ``None`` (the default)
                 leaves the internal table-driven application in control.
 
         Returns:
@@ -606,17 +579,12 @@ class Lintul5Model(nn.Module):
         feats["tranrf"] = tranrf
 
         # 4b. Sowing latch. ``sown`` is 1 from the sowing day
-        #     (``doy >= site.idpl``) onward and never resets. Taking
-        #     ``max(state.sown, doy >= idpl)`` makes the latch robust to
-        #     the day-of-year wraparound when a run spans a calendar-year
-        #     boundary (e.g. an autumn-sown winter wheat harvested the
-        #     following summer): once latched, a doy that cycles back
-        #     below ``idpl`` in the next year cannot un-sow the crop.
-        #     With the default ``idpl = 0`` the gate is 1 on every day, so
-        #     sowing coincides with the simulation start and the legacy
-        #     behaviour is reproduced exactly. ``idpl`` is a discrete
-        #     (non-differentiable) calendar switch, so the hard comparison
-        #     introduces no new gradient path.
+        #     (``doy >= site.idpl``) onward and never resets; the
+        #     ``max(state.sown, ...)`` makes it robust to day-of-year
+        #     wraparound across a calendar-year boundary (autumn-sown winter
+        #     wheat). With the default ``idpl = 0`` the gate is 1 every day,
+        #     reproducing the legacy "sown at t=0" behaviour. ``idpl`` is a
+        #     discrete switch, so the hard comparison adds no gradient path.
         idpl = site_params.idpl
         idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
         sown_now = (doy >= idpl_b).to(davtmp.dtype)

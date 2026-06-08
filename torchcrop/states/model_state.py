@@ -128,13 +128,10 @@ class ModelState:
             pre-partitioning [g DM m⁻²].
 
     ## Note:
-    Updates are functional — `replace` returns a *new* ``ModelState``
-    rather than mutating in place — so the autograd graph is
-    preserved across the explicit-Euler step
-    ``s_{t+1} = s_t + r_t · dt``. All cumulative accumulators are
-    integrated by the same ``_rate`` mechanism as ``tran_cum`` /
-    ``evap_cum``: a daily flux routed into ``<field>_rate`` and
-    added by the engine with ``dt = 1`` day.
+    Updates are functional (`replace` returns a new instance), preserving
+    the autograd graph across the Euler step ``s_{t+1} = s_t + r_t · dt``.
+    Cumulative accumulators use the same ``<field>_rate`` mechanism as any
+    other field.
     """
 
     # Phenology
