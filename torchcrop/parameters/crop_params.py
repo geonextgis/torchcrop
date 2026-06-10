@@ -260,7 +260,8 @@ class CropParameters:
     A preset overwrites every field it defines; any field it omits keeps the
     class default (e.g. torchcrop-specific extensions not present in the
     SIMPLACE source). Customise individual values afterwards
-    (``params.rue = ...``) or use `from_crop_name` for dtype control.
+    (``params.scale_factor_rue = ...``) or use `from_crop_name` for dtype
+    control.
     """
 
     # ------------------------------------------------------------------ #
@@ -349,11 +350,6 @@ class CropParameters:
     ``T_day = TMAX − f·(TMAX − TMIN)`` used to derive a *daytime* mean
     temperature from min/max. ``f = 0.25`` → daytime mean (default);
     ``f = 0.5`` → 24-h mean."""
-
-    rue: torch.Tensor = field(default_factory=lambda: _t(3.0))
-    """``cRUETableRUE`` (scalar surrogate). Reference radiation use
-    efficiency [g DM · MJ⁻¹ PAR] used when `ruetb` is omitted.
-    Lintul5 wheat default is 3.0 g · MJ⁻¹."""
 
     ruetb: torch.Tensor = field(
         default_factory=lambda: _table(
