@@ -3024,6 +3024,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
             <span class="n">rri</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rri</span><span class="p">,</span>
+            <span class="n">rr_lag</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
             <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
@@ -3240,6 +3241,10 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">],</span>
+            <span class="c1"># Latch the same-day root-front velocity into ``rr_prev`` so the</span>
+            <span class="c1"># *next* day&#39;s water balance draws subsoil water with SIMPLACE&#39;s</span>
+            <span class="c1"># one-step lag (``rr_prev_{t+1} = rr_t``).</span>
+            <span class="s2">&quot;rr_prev_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>

@@ -3579,6 +3579,13 @@ other field.</p>
     <span class="n">parint_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative intercepted PAR [MJ m-2]</span>
     <span class="n">gtotal_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative gross assimilate [g DM m-2]</span>
 
+    <span class="c1"># Root-front velocity carried from the *previous* day [m d⁻¹]. SIMPLACE&#39;s</span>
+    <span class="c1"># water balance consumes the prior step&#39;s ``RR`` (component order</span>
+    <span class="c1"># ``WaterBalance`` → ``Biomass``), so ``WDR`` uses this lagged value while</span>
+    <span class="c1"># rooting depth integrates the same-day ``RR``. Latched each step via</span>
+    <span class="c1"># ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).</span>
+    <span class="n">rr_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] m d-1 — lagged root-front velocity</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">initial</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -3698,6 +3705,7 @@ other field.</p>
             <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -3783,6 +3791,7 @@ other field.</p>
     </div>
 
   </div>
+
 
 
 
@@ -4078,6 +4087,7 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">klossr</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

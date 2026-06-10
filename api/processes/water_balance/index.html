@@ -2411,11 +2411,15 @@ space of the receiving layer.</p>
 drought factor <code>RDRY</code> and (for non-rice crops) an oxygen factor
 <code>RWET</code> that ramps with <code>DSOS</code> — days of oxygen shortage,
 persistent across days and clipped to <code>[0, 4]</code>.</p>
-<p><strong>Root-front velocity.</strong> It is used when <code>rr</code> is not supplied externally.
-<code>RRI</code> is the maximum daily rooting-depth increase, root growth is switched off under severe
-drought (<code>TRANRF &lt; 0.01</code>) and capped by the headroom to the
-soil-/crop-limited maximum depth <code>D_\text{rdm}</code>, and the whole term
-is gated by crop emergence.</p>
+<p><strong>Root-front velocity.</strong> Derived from <code>RRI</code>, the maximum daily
+rooting-depth increase: root growth is switched off under severe
+drought (<code>TRANRF &lt; 0.01</code>), capped by the headroom to the
+soil-/crop-limited maximum depth <code>D_\text{rdm}</code>, and gated by crop
+emergence. Rooting depth integrates this <em>same-day</em> velocity, while
+the <code>WDR</code>/<code>WDRA</code> transfer uses the <em>previous</em> day's velocity
+(<code>rr_lag</code>) — SIMPLACE runs <code>WaterBalance</code> before <code>Biomass</code> and
+feeds it <code>Biomass.rRR</code>, so the transfer consumes the prior step's
+<code>RR</code>.</p>
 <p><strong>Soil evaporation.</strong> Stroosnijder model: when infiltration
 ≥ 5 mm d⁻¹, evaporation is reset to the potential rate and <code>DSLR</code>
 to <code>1</code>; otherwise <code>DSLR</code> increments and evaporation follows the
@@ -2542,7 +2546,7 @@ batched and autograd-safe manner.</p>
         <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rr_lag</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2563,12 +2567,16 @@ batched and autograd-safe manner.</p>
 <span class="sd">                ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
 <span class="sd">            etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
 <span class="sd">                ``[B]``; falls back to ``ptran`` when ``None``.</span>
-<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``. When given</span>
-<span class="sd">                it is used directly. When ``None`` the module derives it</span>
-<span class="sd">                from ``rri``/``emerg``; if ``rri`` is also ``None`` it falls back to ``0``</span>
-<span class="sd">                (no root-front water transfer).</span>
+<span class="sd">            rr_lag: Root-front velocity from the *previous* day [m d⁻¹],</span>
+<span class="sd">                shape ``[B]``. Used for the ``WDR``/``WDRA`` subsoil-water</span>
+<span class="sd">                transfer instead of the same-day ``rr``. When ``None`` the</span>
+<span class="sd">                transfer falls back to the same-day ``rr`` (no lag),</span>
+<span class="sd">                preserving standalone-call behaviour.</span>
 <span class="sd">            rri: Maximum daily rooting-depth increase ``cRRI`` [m d⁻¹],</span>
-<span class="sd">                a crop trait supplied from `CropParameters.rri`.</span>
+<span class="sd">                a crop trait supplied from `CropParameters.rri`. The</span>
+<span class="sd">                same-day ``rr`` (returned and used for rooting-depth</span>
+<span class="sd">                growth) is derived from it; when ``None`` it falls back to</span>
+<span class="sd">                ``0`` (no root-front water transfer).</span>
 <span class="sd">            emerg: Crop-emergence gate in ``{0, 1}`` (or a float mask),</span>
 <span class="sd">                broadcastable to ``[B]``.</span>
 <span class="sd">            irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
@@ -2603,6 +2611,7 @@ batched and autograd-safe manner.</p>
 <span class="sd">              [mm d⁻¹].</span>
 <span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
 <span class="sd">              rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">            * ``rr``     — same-day root-front velocity [m d⁻¹].</span>
 <span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
 <span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
 <span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents</span>
@@ -2704,31 +2713,25 @@ batched and autograd-safe manner.</p>
         <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
         <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
-        <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="c1"># 6b. Root-front velocity (m d⁻¹)</span>
-        <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="c1"># Daily root-depth increment, feeding ``WDR`` below so the rooted</span>
-        <span class="c1"># zone draws water up from the wetter lower zone instead of being</span>
-        <span class="c1"># diluted as it deepens. Computed after ``tranrf`` (independent of</span>
-        <span class="c1"># ``rr``) and returned as ``rootd_rate`` so depth and ``WDR`` share</span>
-        <span class="c1"># one increment.</span>
-        <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># 6b. Same-day root-front velocity — drives rooting-depth growth.</span>
+        <span class="k">if</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">rri_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">rri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="n">emerg_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">emerg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                 <span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="n">rr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+            <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
 
-        <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
-        <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
-        <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">smactl</span>
-        <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
+        <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+        <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
+        <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
+        <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="c1"># ---------------------------------------------------------------- #</span>
+
         <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
@@ -2752,17 +2755,13 @@ batched and autograd-safe manner.</p>
         <span class="p">)</span>
         <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
-        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 9. Rate variables</span>
-        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
         <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
         <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
         <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
 
-        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 10. Mass-balance residual for diagnostics</span>
-        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -2812,7 +2811,7 @@ batched and autograd-safe manner.</p>
 
 
 <h3 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -2878,19 +2877,23 @@ batched and autograd-safe manner.</p>
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>rr</code></td>
+        <td><code>rr_lag</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>. When given
-it is used directly. When <code>None</code> the module derives it
-from <code>rri</code>/<code>emerg</code>; if <code>rri</code> is also <code>None</code> it falls back to <code>0</code>
-(no root-front water transfer).</p></td>
+        <td><p>Root-front velocity from the <em>previous</em> day [m d⁻¹],
+shape <code>[B]</code>. Used for the <code>WDR</code>/<code>WDRA</code> subsoil-water
+transfer instead of the same-day <code>rr</code>. When <code>None</code> the
+transfer falls back to the same-day <code>rr</code> (no lag),
+preserving standalone-call behaviour.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
         <td><code>rri</code></td>
         <td><code>torch.Tensor | float | None</code></td>
         <td><p>Maximum daily rooting-depth increase <code>cRRI</code> [m d⁻¹],
-a crop trait supplied from <code>CropParameters.rri</code>.</p></td>
+a crop trait supplied from <code>CropParameters.rri</code>. The
+same-day <code>rr</code> (returned and used for rooting-depth
+growth) is derived from it; when <code>None</code> it falls back to
+<code>0</code> (no root-front water transfer).</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
@@ -2962,6 +2965,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
   [mm d⁻¹].</li>
 <li><code>wdr</code> / <code>wdra</code> — root-front water transfer to the
   rooted zone (total / available) [mm d⁻¹].</li>
+<li><code>rr</code>     — same-day root-front velocity [m d⁻¹].</li>
 <li><code>rirr</code>   — effective irrigation [mm d⁻¹].</li>
 <li><code>tranrf</code> — water-stress factor in <code>[0, 1]</code>.</li>
 <li><code>smact</code> / <code>smactl</code> — soil-moisture contents
@@ -2986,7 +2990,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rr_lag</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3007,12 +3011,16 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">            ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
 <span class="sd">        etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
 <span class="sd">            ``[B]``; falls back to ``ptran`` when ``None``.</span>
-<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``. When given</span>
-<span class="sd">            it is used directly. When ``None`` the module derives it</span>
-<span class="sd">            from ``rri``/``emerg``; if ``rri`` is also ``None`` it falls back to ``0``</span>
-<span class="sd">            (no root-front water transfer).</span>
+<span class="sd">        rr_lag: Root-front velocity from the *previous* day [m d⁻¹],</span>
+<span class="sd">            shape ``[B]``. Used for the ``WDR``/``WDRA`` subsoil-water</span>
+<span class="sd">            transfer instead of the same-day ``rr``. When ``None`` the</span>
+<span class="sd">            transfer falls back to the same-day ``rr`` (no lag),</span>
+<span class="sd">            preserving standalone-call behaviour.</span>
 <span class="sd">        rri: Maximum daily rooting-depth increase ``cRRI`` [m d⁻¹],</span>
-<span class="sd">            a crop trait supplied from `CropParameters.rri`.</span>
+<span class="sd">            a crop trait supplied from `CropParameters.rri`. The</span>
+<span class="sd">            same-day ``rr`` (returned and used for rooting-depth</span>
+<span class="sd">            growth) is derived from it; when ``None`` it falls back to</span>
+<span class="sd">            ``0`` (no root-front water transfer).</span>
 <span class="sd">        emerg: Crop-emergence gate in ``{0, 1}`` (or a float mask),</span>
 <span class="sd">            broadcastable to ``[B]``.</span>
 <span class="sd">        irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
@@ -3047,6 +3055,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">          [mm d⁻¹].</span>
 <span class="sd">        * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
 <span class="sd">          rooted zone (total / available) [mm d⁻¹].</span>
+<span class="sd">        * ``rr``     — same-day root-front velocity [m d⁻¹].</span>
 <span class="sd">        * ``rirr``   — effective irrigation [mm d⁻¹].</span>
 <span class="sd">        * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
 <span class="sd">        * ``smact`` / ``smactl`` — soil-moisture contents</span>
@@ -3148,31 +3157,25 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">wad_mm</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcad</span> <span class="o">*</span> <span class="n">rootd</span>
     <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
-    <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="c1"># 6b. Root-front velocity (m d⁻¹)</span>
-    <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="c1"># Daily root-depth increment, feeding ``WDR`` below so the rooted</span>
-    <span class="c1"># zone draws water up from the wetter lower zone instead of being</span>
-    <span class="c1"># diluted as it deepens. Computed after ``tranrf`` (independent of</span>
-    <span class="c1"># ``rr``) and returned as ``rootd_rate`` so depth and ``WDR`` share</span>
-    <span class="c1"># one increment.</span>
-    <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># 6b. Same-day root-front velocity — drives rooting-depth growth.</span>
+    <span class="k">if</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">rri_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">rri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">emerg_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">emerg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">rr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+        <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
 
-    <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
-    <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
-    <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">smactl</span>
-    <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_eff</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
+    <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+    <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
+    <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
+    <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-    <span class="c1"># ---------------------------------------------------------------- #</span>
+
     <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
@@ -3196,17 +3199,13 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="p">)</span>
     <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
-    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 9. Rate variables</span>
-    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
     <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
     <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
     <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
 
-    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 10. Mass-balance residual for diagnostics</span>
-    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
