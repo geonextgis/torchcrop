@@ -142,7 +142,6 @@ def test_root_front_transfers_water_from_lower_zone():
     wb = WaterBalance()
     params = SoilParameters()
     state = ModelState.initial(batch_size=1, rootdi=0.3, wa_lower_i=200.0)
-    rr = torch.tensor([0.01])  # 1 cm d⁻¹ root growth
     out = wb(
         state,
         rain=torch.zeros(1),
@@ -150,7 +149,7 @@ def test_root_front_transfers_water_from_lower_zone():
         ptran=torch.tensor([1.0]),
         params=params,
         rdm=_rdm(params, state),
-        rr=rr,
+        rr_lag=torch.tensor([0.01]),  # prior-day root front (drives WDR)
     )
     # WDR should be positive (water moves from lower → rooted zone)
     assert out["wdr"].item() > 0

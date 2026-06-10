@@ -227,6 +227,13 @@ class ModelState:
     parint_cum: torch.Tensor = field(default=None)  # cumulative intercepted PAR [MJ m-2]
     gtotal_cum: torch.Tensor = field(default=None)  # cumulative gross assimilate [g DM m-2]
 
+    # Root-front velocity carried from the *previous* day [m d⁻¹]. SIMPLACE's
+    # water balance consumes the prior step's ``RR`` (component order
+    # ``WaterBalance`` → ``Biomass``), so ``WDR`` uses this lagged value while
+    # rooting depth integrates the same-day ``RR``. Latched each step via
+    # ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).
+    rr_prev: torch.Tensor = field(default=None)  # [B] m d-1 — lagged root-front velocity
+
     @classmethod
     def initial(
         cls,
@@ -346,6 +353,7 @@ class ModelState:
             klossr=zeros.clone(),
             klosss=zeros.clone(),
             sown=zeros.clone(),
+            rr_prev=zeros.clone(),
         )
 
     def replace(self, **updates: Any) -> "ModelState":

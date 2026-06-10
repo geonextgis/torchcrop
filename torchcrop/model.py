@@ -569,6 +569,7 @@ class Lintul5Model(nn.Module):
             rdm=rdm,
             etc=et["etc"],
             rri=crop_params.rri,
+            rr_lag=state.rr_prev,
             emerg=emerg,
             doy=doy,
             irrigation=irrigation,
@@ -785,6 +786,10 @@ class Lintul5Model(nn.Module):
             "wso_rate": gate(part["g_so"]),
             "lai_rate": gate(leaf["lai_rate"]),
             "rootd_rate": water["rr"],
+            # Latch the same-day root-front velocity into ``rr_prev`` so the
+            # *next* day's water balance draws subsoil water with SIMPLACE's
+            # one-step lag (``rr_prev_{t+1} = rr_t``).
+            "rr_prev_rate": water["rr"] - state.rr_prev,
             "wa_rate": water["wa_rate"],
             "wa_lower_rate": water["wa_lower_rate"],
             "dslr_rate": water["dslr_rate"],
