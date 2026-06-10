@@ -552,6 +552,15 @@ class Lintul5Model(nn.Module):
         ptran_eff = co2_trans["ptran"]
         co2_factor = co2_trans["co2_factor"]
 
+        # 3c. Pre-development transpiration gate. SIMPLACE holds PT at its
+        #     ~1e-4 floor until development starts (DevStage > 0), so the
+        #     canopy doesn't transpire on the emergence day (the only day with
+        #     lai > 0 and dvs == 0).
+        developing = state.dvs > 0.0
+        ptran_eff = torch.where(
+            developing, ptran_eff, torch.full_like(ptran_eff, 1e-4)
+        )
+
         # 4. Two-zone water balance with a percolation cascade.
         rdm = torch.minimum(
             soil_params.rdmso + torch.zeros_like(state.rootd),
@@ -785,10 +794,12 @@ class Lintul5Model(nn.Module):
             "wrtd_rate": gate(root["wrtd_rate"]),
             "wso_rate": gate(part["g_so"]),
             "lai_rate": gate(leaf["lai_rate"]),
-            "rootd_rate": water["rr"],
-            # Latch the same-day root-front velocity into ``rr_prev`` so the
-            # *next* day's water balance draws subsoil water with SIMPLACE's
-            # one-step lag (``rr_prev_{t+1} = rr_t``).
+            # Rooting depth integrates the *lagged* velocity ``rr_prev``,
+            # the same one the WDR transfer uses, so the zone deepens in
+            # lock-step with the subsoil water it captures.
+            "rootd_rate": state.rr_prev,
+            # Latch the same-day velocity into ``rr_prev`` for the next day's
+            # water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).
             "rr_prev_rate": water["rr"] - state.rr_prev,
             "wa_rate": water["wa_rate"],
             "wa_lower_rate": water["wa_lower_rate"],
