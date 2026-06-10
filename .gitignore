@@ -112,4 +112,5 @@ graphify-out/
 scripts/
 docs/examples/others/
 docs/examples/data/brandenburg/simplace/
+docs/examples/PyTorch_Test/
 CLAUDE.md
