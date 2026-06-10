@@ -26,6 +26,12 @@ drought factor ``RDRY`` and (for non-rice crops) an oxygen factor
 ``RWET`` that ramps with ``DSOS`` — days of oxygen shortage,
 persistent across days and clipped to ``[0, 4]``.
 
+**Root-front velocity.** It is used when ``rr`` is not supplied externally.
+``RRI`` is the maximum daily rooting-depth increase, root growth is switched off under severe
+drought (``TRANRF < 0.01``) and capped by the headroom to the
+soil-/crop-limited maximum depth ``D_\\text{rdm}``, and the whole term
+is gated by crop emergence.
+
 **Soil evaporation.** Stroosnijder model: when infiltration
 ≥ 5 mm d⁻¹, evaporation is reset to the potential rate and ``DSLR``
 to ``1``; otherwise ``DSLR`` increments and evaporation follows the
@@ -71,6 +77,15 @@ R_\\text{wet,max} = \\mathrm{clip}\\!\\left(
 \\quad
 R_\\text{wet} = R_\\text{wet,max} + \\left(1 - \\tfrac{\\text{DSOS}}{4}
 \\right)(1 - R_\\text{wet,max}).
+$$
+
+Root-front velocity:
+
+$$
+r_r = \\min\\!\\left(\\text{RRI}\\cdot
+\\mathbb{1}_{\\text{TRANRF}\\ge 0.01},\\
+(D_\\text{rdm} - D_\\text{root})_+\\right)\\cdot
+\\mathbb{1}_\\text{emerged}.
 $$
 
 Root-front water transfer (total / above wilting point):
@@ -234,6 +249,8 @@ class WaterBalance(nn.Module):
         rdm: torch.Tensor,
         etc: torch.Tensor | None = None,
         rr: torch.Tensor | None = None,
+        rri: torch.Tensor | float | None = None,
+        emerg: torch.Tensor | float = 1.0,
         irrigation: torch.Tensor | None = None,
         doy: torch.Tensor | None = None,
         depnr: torch.Tensor | float = 4.5,
@@ -252,8 +269,14 @@ class WaterBalance(nn.Module):
                 ``min(rdmso, rdmcr)`` [m], shape ``[B]``.
             etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape
                 ``[B]``; falls back to ``ptran`` when ``None``.
-            rr: Root-front velocity [m d⁻¹], shape ``[B]``;
-                ``None`` → ``0`` (no root-front water transfer).
+            rr: Root-front velocity [m d⁻¹], shape ``[B]``. When given
+                it is used directly. When ``None`` the module derives it
+                from ``rri``/``emerg``; if ``rri`` is also ``None`` it falls back to ``0``
+                (no root-front water transfer).
+            rri: Maximum daily rooting-depth increase ``cRRI`` [m d⁻¹],
+                a crop trait supplied from `CropParameters.rri`.
+            emerg: Crop-emergence gate in ``{0, 1}`` (or a float mask),
+                broadcastable to ``[B]``.
             irrigation: Externally supplied irrigation [mm d⁻¹] that
                 overrides the ``params.irri`` mode.
             doy: Day-of-year tensor needed by the ``IRRI = 2`` table
@@ -388,6 +411,23 @@ class WaterBalance(nn.Module):
         evap = torch.minimum(evap, torch.clamp(state.wa - wad_mm, min=0.0))
 
         # ---------------------------------------------------------------- #
+        # 6b. Root-front velocity (m d⁻¹)
+        # ---------------------------------------------------------------- #
+        # Daily root-depth increment, feeding ``WDR`` below so the rooted
+        # zone draws water up from the wetter lower zone instead of being
+        # diluted as it deepens. Computed after ``tranrf`` (independent of
+        # ``rr``) and returned as ``rootd_rate`` so depth and ``WDR`` share
+        # one increment.
+        if rr is None and rri is not None:
+            rri_t = torch.as_tensor(rri, dtype=ptran.dtype, device=ptran.device)
+            emerg_t = torch.as_tensor(emerg, dtype=ptran.dtype, device=ptran.device)
+            insw_water = torch.where(
+                tranrf - 0.01 < 0.0, torch.zeros_like(tranrf), torch.ones_like(tranrf)
+            )
+            headroom = torch.clamp(rdm_eff - rootd, min=0.0)
+            rr = torch.minimum(rri_t * insw_water, headroom) * emerg_t
+
+        # ---------------------------------------------------------------- #
         # 7. Root-front water transfer (WDR / WDRA)
         # ---------------------------------------------------------------- #
         rr_eff = rr if rr is not None else torch.zeros_like(rain)
@@ -447,6 +487,7 @@ class WaterBalance(nn.Module):
             "perc3": perc3,
             "wdr": wdr,
             "wdra": wdra,
+            "rr": rr_eff,
             "rirr": rirr,
             # stress factors / diagnostics
             "tranrf": tranrf,
