@@ -430,14 +430,16 @@ class WaterBalance(nn.Module):
             rr_eff = torch.minimum(rri_t * insw_water, headroom) * emerg_t
         else:
             rr_eff = torch.zeros_like(rain)
-
+            
+        # ---------------------------------------------------------------- #
         # 7. Root-front water transfer — uses the lagged velocity (prior
         # step's RR) when supplied, else the same-day rr_eff.
+        # ---------------------------------------------------------------- #
         rr_wdr = rr_lag if rr_lag is not None else rr_eff
         wdr = factor * rr_wdr * smactl
         wdra = factor * rr_wdr * torch.clamp(smactl - params.wcwp, min=0.0)
 
-
+        # ---------------------------------------------------------------- #
         # 8. Percolation cascade PERC1 → PERC2 → PERC3
         # ---------------------------------------------------------------- #
         cap = torch.clamp(params.wcfc - smact, min=0.0) * factor * rootd
@@ -461,13 +463,17 @@ class WaterBalance(nn.Module):
         )
         perc3 = torch.where(capl <= perc2, perc3_candidate, torch.zeros_like(perc2))
 
+        # ---------------------------------------------------------------- #
         # 9. Rate variables
+        # ---------------------------------------------------------------- #
         wa_rate = perc1 - perc2 + wdr
         wa_lower_rate = perc2 - perc3 - wdr
         dslr_rate = dslr_new - state.dslr
         dsos_rate = dsos_new - state.dsos
 
+        # ---------------------------------------------------------------- #
         # 10. Mass-balance residual for diagnostics
+        # ---------------------------------------------------------------- #
         wbal = rain + rirr - runoff - evap - tran - perc3 - (wa_rate + wa_lower_rate)
 
         return {
