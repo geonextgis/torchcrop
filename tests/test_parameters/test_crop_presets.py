@@ -149,9 +149,9 @@ def test_loaded_preset_is_valid():
 
 def test_loaded_param_is_optimizable():
     params = CropParameters.from_crop_name("wheat", dtype=torch.float64)
-    params.rue = torch.nn.Parameter(params.rue.clone())
-    (params.rue * 2).backward()
-    assert params.rue.grad is not None
+    params.scale_factor_rue = torch.nn.Parameter(params.scale_factor_rue.clone())
+    (params.scale_factor_rue * 2).backward()
+    assert params.scale_factor_rue.grad is not None
 
 
 def test_water_use_params_are_crop_traits():
