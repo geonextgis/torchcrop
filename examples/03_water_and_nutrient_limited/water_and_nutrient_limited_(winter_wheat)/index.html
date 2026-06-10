@@ -3296,7 +3296,7 @@ print(f"Using device: {device}")</div>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -3333,7 +3333,7 @@ print(f"Using device: {device}")</div>
     <span class="c1"># CSV weather columns, in the exact order torchcrop expects them.</span>
     <span class="n">WEATHER_COLS</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">"Date"</span><span class="p">,</span>          <span class="c1"># -&gt; doy</span>
-        <span class="s2">"TempMean"</span><span class="p">,</span>      <span class="c1"># -&gt; davtmp</span>
+        <span class="s2">"TempMean"</span><span class="p">,</span>      <span class="c1"># -&gt; davtmp (recomputed as (TempMin+TempMax)/2 below)</span>
         <span class="s2">"TempMin"</span><span class="p">,</span>       <span class="c1"># -&gt; tmin</span>
         <span class="s2">"TempMax"</span><span class="p">,</span>       <span class="c1"># -&gt; tmax</span>
         <span class="s2">"Radiation"</span><span class="p">,</span>     <span class="c1"># -&gt; irrad</span>
@@ -3392,6 +3392,9 @@ print(f"Using device: {device}")</div>
             <span class="bp">self</span><span class="o">.</span><span class="n">weather_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">.csv"</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s2">"Date"</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">WEATHER_COLS</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># SIMPLACE drives phenology with TMPA = (TMIN+TMAX)/2 (Phenology.java:513),</span>
+        <span class="c1"># not the measured TempMean; match it to reproduce the reference.</span>
+        <span class="n">df</span><span class="p">[</span><span class="s2">"TempMean"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"TempMin"</span><span class="p">]</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s2">"TempMax"</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
         <span class="n">df</span><span class="p">[</span><span class="s2">"Radiation"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Radiation"</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1000.0</span>   <span class="c1"># kJ -&gt; MJ m-2 d-1</span>
         <span class="n">df</span><span class="p">[</span><span class="s2">"Date"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"Date"</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">dayofyear</span>          <span class="c1"># date -&gt; day-of-year</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># [T, 8]</span>
@@ -3467,7 +3470,7 @@ print(f"Using device: {device}")</div>
     # CSV weather columns, in the exact order torchcrop expects them.
     WEATHER_COLS = [
         "Date",          # -&gt; doy
-        "TempMean",      # -&gt; davtmp
+        "TempMean",      # -&gt; davtmp (recomputed as (TempMin+TempMax)/2 below)
         "TempMin",       # -&gt; tmin
         "TempMax",       # -&gt; tmax
         "Radiation",     # -&gt; irrad
@@ -3526,6 +3529,9 @@ print(f"Using device: {device}")</div>
             self.weather_dir / f"{location}.csv", parse_dates=["Date"]
         )
         df = df[self.WEATHER_COLS].copy()
+        # SIMPLACE drives phenology with TMPA = (TMIN+TMAX)/2 (Phenology.java:513),
+        # not the measured TempMean; match it to reproduce the reference.
+        df["TempMean"] = (df["TempMin"] + df["TempMax"]) / 2.0
         df["Radiation"] = df["Radiation"] / 1000.0   # kJ -&gt; MJ m-2 d-1
         df["Date"] = df["Date"].dt.dayofyear          # date -&gt; day-of-year
         return torch.as_tensor(df.values, dtype=self.dtype)  # [T, 8]
@@ -4615,7 +4621,7 @@ plot_trajectories(
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2026 22:46:24 UTC"><span class="timeago" datetime="2026-06-08T22:46:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2026 22:46:24 UTC">2026-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 10, 2026 07:33:07 UTC"><span class="timeago" datetime="2026-06-10T07:33:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 10, 2026 07:33:07 UTC">2026-06-10</span>
   </span>
 
     

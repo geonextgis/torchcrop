@@ -13276,6 +13276,9 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
             <span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
         <span class="p">)</span>
+        <span class="c1"># Emergence mask (TSUM-based), shared by the water balance&#39;s</span>
+        <span class="c1"># root-front advance and by root/nutrient dynamics below.</span>
+        <span class="n">emerg</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">water_balance</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
@@ -13284,6 +13287,8 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
+            <span class="n">rri</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rri</span><span class="p">,</span>
+            <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
             <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
@@ -13498,7 +13503,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;rootd_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
@@ -28953,6 +28958,11 @@ space of the receiving layer.</p>
 drought factor <code>RDRY</code> and (for non-rice crops) an oxygen factor
 <code>RWET</code> that ramps with <code>DSOS</code> — days of oxygen shortage,
 persistent across days and clipped to <code>[0, 4]</code>.</p>
+<p><strong>Root-front velocity.</strong> It is used when <code>rr</code> is not supplied externally.
+<code>RRI</code> is the maximum daily rooting-depth increase, root growth is switched off under severe
+drought (<code>TRANRF &lt; 0.01</code>) and capped by the headroom to the
+soil-/crop-limited maximum depth <code>D_\text{rdm}</code>, and the whole term
+is gated by crop emergence.</p>
 <p><strong>Soil evaporation.</strong> Stroosnijder model: when infiltration
 ≥ 5 mm d⁻¹, evaporation is reset to the potential rate and <code>DSLR</code>
 to <code>1</code>; otherwise <code>DSLR</code> increments and evaporation follows the
@@ -28990,6 +29000,13 @@ R_\text{wet,max} = \mathrm{clip}\!\left(
 \quad
 R_\text{wet} = R_\text{wet,max} + \left(1 - \tfrac{\text{DSOS}}{4}
 \right)(1 - R_\text{wet,max}).
+\]</div>
+<p>Root-front velocity:</p>
+<div class="arithmatex">\[
+r_r = \min\!\left(\text{RRI}\cdot
+\mathbb{1}_{\text{TRANRF}\ge 0.01},\
+(D_\text{rdm} - D_\text{root})_+\right)\cdot
+\mathbb{1}_\text{emerged}.
 \]</div>
 <p>Root-front water transfer (total / above wilting point):</p>
 <div class="arithmatex">\[
@@ -29073,6 +29090,8 @@ batched and autograd-safe manner.</p>
         <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
@@ -29091,8 +29110,14 @@ batched and autograd-safe manner.</p>
 <span class="sd">                ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
 <span class="sd">            etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
 <span class="sd">                ``[B]``; falls back to ``ptran`` when ``None``.</span>
-<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``;</span>
-<span class="sd">                ``None`` → ``0`` (no root-front water transfer).</span>
+<span class="sd">            rr: Root-front velocity [m d⁻¹], shape ``[B]``. When given</span>
+<span class="sd">                it is used directly. When ``None`` the module derives it</span>
+<span class="sd">                from ``rri``/``emerg``; if ``rri`` is also ``None`` it falls back to ``0``</span>
+<span class="sd">                (no root-front water transfer).</span>
+<span class="sd">            rri: Maximum daily rooting-depth increase ``cRRI`` [m d⁻¹],</span>
+<span class="sd">                a crop trait supplied from `CropParameters.rri`.</span>
+<span class="sd">            emerg: Crop-emergence gate in ``{0, 1}`` (or a float mask),</span>
+<span class="sd">                broadcastable to ``[B]``.</span>
 <span class="sd">            irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
 <span class="sd">                overrides the ``params.irri`` mode.</span>
 <span class="sd">            doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
@@ -29227,6 +29252,23 @@ batched and autograd-safe manner.</p>
         <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
         <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># 6b. Root-front velocity (m d⁻¹)</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
+        <span class="c1"># Daily root-depth increment, feeding ``WDR`` below so the rooted</span>
+        <span class="c1"># zone draws water up from the wetter lower zone instead of being</span>
+        <span class="c1"># diluted as it deepens. Computed after ``tranrf`` (independent of</span>
+        <span class="c1"># ``rr``) and returned as ``rootd_rate`` so depth and ``WDR`` share</span>
+        <span class="c1"># one increment.</span>
+        <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rri_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">rri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">emerg_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">emerg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">rr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
@@ -29286,6 +29328,7 @@ batched and autograd-safe manner.</p>
             <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
             <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
             <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+            <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
             <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
             <span class="c1"># stress factors / diagnostics</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
@@ -29316,7 +29359,7 @@ batched and autograd-safe manner.</p>
 
 
 <h5 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -29384,9 +29427,25 @@ batched and autograd-safe manner.</p>
       <tr>
         <td><code>rr</code></td>
         <td><code>torch.Tensor | None</code></td>
-        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>;
-<code>None</code> → <code>0</code> (no root-front water transfer).</p></td>
+        <td><p>Root-front velocity [m d⁻¹], shape <code>[B]</code>. When given
+it is used directly. When <code>None</code> the module derives it
+from <code>rri</code>/<code>emerg</code>; if <code>rri</code> is also <code>None</code> it falls back to <code>0</code>
+(no root-front water transfer).</p></td>
         <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>rri</code></td>
+        <td><code>torch.Tensor | float | None</code></td>
+        <td><p>Maximum daily rooting-depth increase <code>cRRI</code> [m d⁻¹],
+a crop trait supplied from <code>CropParameters.rri</code>.</p></td>
+        <td><code>None</code></td>
+      </tr>
+      <tr>
+        <td><code>emerg</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Crop-emergence gate in <code>{0, 1}</code> (or a float mask),
+broadcastable to <code>[B]</code>.</p></td>
+        <td><code>1.0</code></td>
       </tr>
       <tr>
         <td><code>irrigation</code></td>
@@ -29475,6 +29534,8 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">rdm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">etc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
@@ -29493,8 +29554,14 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">            ``min(rdmso, rdmcr)`` [m], shape ``[B]``.</span>
 <span class="sd">        etc: CO₂-corrected reference canopy ET [mm d⁻¹], shape</span>
 <span class="sd">            ``[B]``; falls back to ``ptran`` when ``None``.</span>
-<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``;</span>
-<span class="sd">            ``None`` → ``0`` (no root-front water transfer).</span>
+<span class="sd">        rr: Root-front velocity [m d⁻¹], shape ``[B]``. When given</span>
+<span class="sd">            it is used directly. When ``None`` the module derives it</span>
+<span class="sd">            from ``rri``/``emerg``; if ``rri`` is also ``None`` it falls back to ``0``</span>
+<span class="sd">            (no root-front water transfer).</span>
+<span class="sd">        rri: Maximum daily rooting-depth increase ``cRRI`` [m d⁻¹],</span>
+<span class="sd">            a crop trait supplied from `CropParameters.rri`.</span>
+<span class="sd">        emerg: Crop-emergence gate in ``{0, 1}`` (or a float mask),</span>
+<span class="sd">            broadcastable to ``[B]``.</span>
 <span class="sd">        irrigation: Externally supplied irrigation [mm d⁻¹] that</span>
 <span class="sd">            overrides the ``params.irri`` mode.</span>
 <span class="sd">        doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
@@ -29629,6 +29696,23 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">evap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">evap</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wad_mm</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">))</span>
 
     <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># 6b. Root-front velocity (m d⁻¹)</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
+    <span class="c1"># Daily root-depth increment, feeding ``WDR`` below so the rooted</span>
+    <span class="c1"># zone draws water up from the wetter lower zone instead of being</span>
+    <span class="c1"># diluted as it deepens. Computed after ``tranrf`` (independent of</span>
+    <span class="c1"># ``rr``) and returned as ``rootd_rate`` so depth and ``WDR`` share</span>
+    <span class="c1"># one increment.</span>
+    <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rri_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">rri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">emerg_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">emerg</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">insw_water</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">tranrf</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tranrf</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">headroom</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdm_eff</span> <span class="o">-</span> <span class="n">rootd</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">rr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">rri_t</span> <span class="o">*</span> <span class="n">insw_water</span><span class="p">,</span> <span class="n">headroom</span><span class="p">)</span> <span class="o">*</span> <span class="n">emerg_t</span>
+
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 7. Root-front water transfer (WDR / WDRA)</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">rr</span> <span class="k">if</span> <span class="n">rr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
@@ -29688,6 +29772,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
         <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
         <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
         <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+        <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
         <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
         <span class="c1"># stress factors / diagnostics</span>
         <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>

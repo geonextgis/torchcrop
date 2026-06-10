@@ -3012,6 +3012,9 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
             <span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
         <span class="p">)</span>
+        <span class="c1"># Emergence mask (TSUM-based), shared by the water balance&#39;s</span>
+        <span class="c1"># root-front advance and by root/nutrient dynamics below.</span>
+        <span class="n">emerg</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">water_balance</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
@@ -3020,6 +3023,8 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
             <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
+            <span class="n">rri</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rri</span><span class="p">,</span>
+            <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
             <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
@@ -3234,7 +3239,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;rootd_rate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
