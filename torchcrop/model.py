@@ -995,7 +995,8 @@ class Lintul5Model(nn.Module):
 
         Returns:
             Dict keyed by ``"<container>.<field>"`` (for example,
-            ``"crop.rue"``) mapping to the corresponding `nn.Parameter`.
+            ``"crop.scale_factor_rue"``) mapping to the corresponding
+            `nn.Parameter`.
         """
         out: dict[str, Any] = {}
         for name, params in (
