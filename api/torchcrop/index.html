@@ -29277,13 +29277,15 @@ batched and autograd-safe manner.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
 
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
         <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
         <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
         <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
@@ -29307,13 +29309,17 @@ batched and autograd-safe manner.</p>
         <span class="p">)</span>
         <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 9. Rate variables</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
         <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
         <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
         <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
 
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 10. Mass-balance residual for diagnostics</span>
+        <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
@@ -29721,13 +29727,15 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">rr_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rain</span><span class="p">)</span>
 
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
     <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
     <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
     <span class="n">wdra</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">smactl</span> <span class="o">-</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 
-
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
@@ -29751,13 +29759,17 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="p">)</span>
     <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 9. Rate variables</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">wa_rate</span> <span class="o">=</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">perc2</span> <span class="o">+</span> <span class="n">wdr</span>
     <span class="n">wa_lower_rate</span> <span class="o">=</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="n">wdr</span>
     <span class="n">dslr_rate</span> <span class="o">=</span> <span class="n">dslr_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dslr</span>
     <span class="n">dsos_rate</span> <span class="o">=</span> <span class="n">dsos_new</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dsos</span>
 
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 10. Mass-balance residual for diagnostics</span>
+    <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">wbal</span> <span class="o">=</span> <span class="n">rain</span> <span class="o">+</span> <span class="n">rirr</span> <span class="o">-</span> <span class="n">runoff</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span> <span class="o">-</span> <span class="n">perc3</span> <span class="o">-</span> <span class="p">(</span><span class="n">wa_rate</span> <span class="o">+</span> <span class="n">wa_lower_rate</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
