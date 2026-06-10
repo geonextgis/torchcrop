@@ -557,6 +557,9 @@ class Lintul5Model(nn.Module):
             soil_params.rdmso + torch.zeros_like(state.rootd),
             crop_params.rdmcr + torch.zeros_like(state.rootd),
         )
+        # Emergence mask (TSUM-based), shared by the water balance's
+        # root-front advance and by root/nutrient dynamics below.
+        emerg = (state.tsump >= crop_params.tsumem).to(davtmp.dtype)
         water = self.water_balance(
             state=state,
             rain=rain,
@@ -565,6 +568,8 @@ class Lintul5Model(nn.Module):
             params=soil_params,
             rdm=rdm,
             etc=et["etc"],
+            rri=crop_params.rri,
+            emerg=emerg,
             doy=doy,
             irrigation=irrigation,
             depnr=crop_params.depnr,
@@ -779,7 +784,7 @@ class Lintul5Model(nn.Module):
             "wrtd_rate": gate(root["wrtd_rate"]),
             "wso_rate": gate(part["g_so"]),
             "lai_rate": gate(leaf["lai_rate"]),
-            "rootd_rate": root["rootd_rate"],
+            "rootd_rate": water["rr"],
             "wa_rate": water["wa_rate"],
             "wa_lower_rate": water["wa_lower_rate"],
             "dslr_rate": water["dslr_rate"],
