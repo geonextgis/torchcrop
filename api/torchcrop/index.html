@@ -13271,6 +13271,15 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">]</span>
         <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;co2_factor&quot;</span><span class="p">]</span>
 
+        <span class="c1"># 3c. Pre-development transpiration gate. SIMPLACE holds PT at its</span>
+        <span class="c1">#     ~1e-4 floor until development starts (DevStage &gt; 0), so the</span>
+        <span class="c1">#     canopy doesn&#39;t transpire on the emergence day (the only day with</span>
+        <span class="c1">#     lai &gt; 0 and dvs == 0).</span>
+        <span class="n">developing</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+        <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">developing</span><span class="p">,</span> <span class="n">ptran_eff</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">ptran_eff</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="c1"># 4. Two-zone water balance with a percolation cascade.</span>
         <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
@@ -13504,10 +13513,12 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
             <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">],</span>
-            <span class="c1"># Latch the same-day root-front velocity into ``rr_prev`` so the</span>
-            <span class="c1"># *next* day&#39;s water balance draws subsoil water with SIMPLACE&#39;s</span>
-            <span class="c1"># one-step lag (``rr_prev_{t+1} = rr_t``).</span>
+            <span class="c1"># Rooting depth integrates the *lagged* velocity ``rr_prev``,</span>
+            <span class="c1"># the same one the WDR transfer uses, so the zone deepens in</span>
+            <span class="c1"># lock-step with the subsoil water it captures.</span>
+            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
+            <span class="c1"># Latch the same-day velocity into ``rr_prev`` for the next day&#39;s</span>
+            <span class="c1"># water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).</span>
             <span class="s2">&quot;rr_prev_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
