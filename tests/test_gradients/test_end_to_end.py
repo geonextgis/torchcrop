@@ -75,13 +75,21 @@ def test_batch_consistency_per_element_params():
     from torchcrop.parameters.soil_params import SoilParameters
 
     b = 3
-    weather = make_constant_weather(batch_size=b, n_days=80, dtype=torch.float64)
+    # Water-limited weather (rain < ET): the soils are drawn below field
+    # capacity, so their distinct water-holding properties drive distinct
+    # trajectories. Under wet weather every soil equilibrates to field
+    # capacity and the per-element differences correctly wash out, which
+    # would make the broadcast-bug guard below vacuous.
+    weather = make_constant_weather(
+        batch_size=b, n_days=150, rain=1.0, dtype=torch.float64
+    )
 
     # Per-element parameters: each batch element gets a distinct value so a
     # broadcast bug (using element 0 for all) would change the answer.
-    wci = torch.tensor([0.20, 0.30, 0.36], dtype=torch.float64)
-    wcwp = torch.tensor([0.10, 0.12, 0.11], dtype=torch.float64)
-    wcfc = torch.tensor([0.36, 0.36, 0.36], dtype=torch.float64)
+    # Distinct field capacities give distinct available water (wcfc − wcwp).
+    wcfc = torch.tensor([0.15, 0.25, 0.35], dtype=torch.float64)
+    wci = wcfc.clone()
+    wcwp = torch.tensor([0.06, 0.10, 0.14], dtype=torch.float64)
     rdmso = torch.tensor([1.10, 1.20, 1.30], dtype=torch.float64)
     lat = torch.tensor([50.0, 52.0, 54.0], dtype=torch.float64)
 
@@ -91,7 +99,7 @@ def test_batch_consistency_per_element_params():
 
     out_batch = model(weather, start_doy=60)
     assert torch.isfinite(out_batch.yield_).all()
-    # The distinct initial water contents must produce distinct states.
+    # The distinct water-holding capacities must produce distinct states.
     assert not torch.allclose(out_batch.yield_[0], out_batch.yield_[1])
 
     for i in range(b):
