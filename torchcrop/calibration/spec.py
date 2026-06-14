@@ -1,12 +1,12 @@
 """Declarative descriptions of a calibration problem.
 
 A calibration problem is a *data* description — a list of
-:class:`ParameterSpec` (which parameters are free, their bounds and type) plus
-a list of :class:`ConstraintGroup` (ordering / cross-parameter relations).
+`ParameterSpec` (which parameters are free, their bounds and type) plus
+a list of `ConstraintGroup` (ordering / cross-parameter relations).
 These frozen dataclasses are deliberately behaviour-free, mirroring
-:class:`torchcrop.nn.hybrid.ResidualSpec`; all the machinery that turns them
+`torchcrop.nn.hybrid.ResidualSpec`; all the machinery that turns them
 into optimizable latents lives in
-:class:`~torchcrop.calibration.manager.CalibrationManager`.
+`torchcrop.calibration.manager.CalibrationManager`.
 
 Target addressing (the ``name`` field) reuses the dotted
 ``"<container>.<field>"`` scheme already used by
@@ -38,12 +38,12 @@ class ParameterSpec:
             ``"<container>.<field>"``; table entries add ``"@<dvs>"`` (match by
             abscissa) or ``"[<i>]"`` (match by row index).
         bounds: ``(lo, hi)`` feasible range. Required for ``affine_sigmoid``
-            and for any member of an ordered :class:`ConstraintGroup`.
+            and for any member of an ordered `ConstraintGroup`.
         kind: ``"continuous"`` (default), ``"integer"`` (rounded via a
             straight-through estimator), or ``"categorical"`` (excluded from
             the gradient path; driven by a gradient-free outer loop).
         transform: Registered transform name (see
-            :func:`torchcrop.calibration.transforms.available_transforms`).
+            `torchcrop.calibration.transforms.available_transforms`).
             Defaults to ``"affine_sigmoid"`` when ``bounds`` are given,
             otherwise ``"identity"``.
         init: Initial physical value. Defaults to the parameter's current
