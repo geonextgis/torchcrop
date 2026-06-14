@@ -1,0 +1,3 @@
+# manager
+
+::: torchcrop.calibration.manager
