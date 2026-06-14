@@ -11253,58 +11253,6 @@
     <div class="doc doc-contents ">
 
       <p>Constraint-aware parameter calibration for torchcrop.</p>
-<p>A declarative, transform-based framework for calibrating Lintul5 parameters
-under bounds, type (continuous / integer / categorical) and ordering
-(ascending / descending / free) constraints — including the <em>ordinates</em> of
-DVS-indexed interpolation tables — while keeping the whole pipeline
-differentiable and optimizer-agnostic.</p>
-<p>Typical use::</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span></pre></div></td><td class="code"><div><pre><span></span><code>from torchcrop.calibration import (
-    CalibrationManager, ParameterSpec, ConstraintGroup,
-)
-
-cal = CalibrationManager(
-    model,
-    specs=[
-        ParameterSpec(&quot;crop.tsum1&quot;, bounds=(1000, 2000)),
-        ParameterSpec(&quot;crop.fltb@0.5&quot;, bounds=(0.30, 0.70)),
-        ParameterSpec(&quot;crop.fltb@0.646&quot;, bounds=(0.10, 0.50)),
-    ],
-    groups=[
-        ConstraintGroup((&quot;crop.fltb@0.5&quot;, &quot;crop.fltb@0.646&quot;),
-                        order=&quot;descending&quot;),
-    ],
-)
-opt = torch.optim.Adam(cal.parameters(), lr=1e-2)
-for _ in range(n_epochs):
-    opt.zero_grad()
-    cal.materialize()           # latents -&gt; constrained params/tables
-    loss = loss_fn(model(weather).yield_, observed)
-    loss.backward()
-    opt.step()
-</code></pre></div></td></tr></table></div>
 
 
 
@@ -12934,12 +12882,12 @@ intact.</p>
 
       <p>Declarative descriptions of a calibration problem.</p>
 <p>A calibration problem is a <em>data</em> description — a list of
-:class:<code>ParameterSpec</code> (which parameters are free, their bounds and type) plus
-a list of :class:<code>ConstraintGroup</code> (ordering / cross-parameter relations).
+<code>ParameterSpec</code> (which parameters are free, their bounds and type) plus
+a list of <code>ConstraintGroup</code> (ordering / cross-parameter relations).
 These frozen dataclasses are deliberately behaviour-free, mirroring
-:class:<code>torchcrop.nn.hybrid.ResidualSpec</code>; all the machinery that turns them
+<code>torchcrop.nn.hybrid.ResidualSpec</code>; all the machinery that turns them
 into optimizable latents lives in
-:class:<code>~torchcrop.calibration.manager.CalibrationManager</code>.</p>
+<code>torchcrop.calibration.manager.CalibrationManager</code>.</p>
 <p>Target addressing (the <code>name</code> field) reuses the dotted
 <code>"&lt;container&gt;.&lt;field&gt;"</code> scheme already used by
 <code>Lintul5Model.learnable_parameter_groups</code> and extends it to table entries:</p>
@@ -13111,7 +13059,7 @@ abscissa) or <code>"[&lt;i&gt;]"</code> (match by row index).</p></td>
         <td><code>bounds</code></td>
         <td><code>tuple[float, float] | None</code></td>
         <td><p><code>(lo, hi)</code> feasible range. Required for <code>affine_sigmoid</code>
-and for any member of an ordered :class:<code>ConstraintGroup</code>.</p></td>
+and for any member of an ordered <code>ConstraintGroup</code>.</p></td>
       </tr>
       <tr>
         <td><code>kind</code></td>
@@ -13124,7 +13072,7 @@ the gradient path; driven by a gradient-free outer loop).</p></td>
         <td><code>transform</code></td>
         <td><code>str | None</code></td>
         <td><p>Registered transform name (see
-:func:<code>torchcrop.calibration.transforms.available_transforms</code>).
+<code>torchcrop.calibration.transforms.available_transforms</code>).
 Defaults to <code>"affine_sigmoid"</code> when <code>bounds</code> are given,
 otherwise <code>"identity"</code>.</p></td>
       </tr>
@@ -13152,12 +13100,12 @@ value in its container.</p></td>
 <span class="sd">            ``&quot;&lt;container&gt;.&lt;field&gt;&quot;``; table entries add ``&quot;@&lt;dvs&gt;&quot;`` (match by</span>
 <span class="sd">            abscissa) or ``&quot;[&lt;i&gt;]&quot;`` (match by row index).</span>
 <span class="sd">        bounds: ``(lo, hi)`` feasible range. Required for ``affine_sigmoid``</span>
-<span class="sd">            and for any member of an ordered :class:`ConstraintGroup`.</span>
+<span class="sd">            and for any member of an ordered `ConstraintGroup`.</span>
 <span class="sd">        kind: ``&quot;continuous&quot;`` (default), ``&quot;integer&quot;`` (rounded via a</span>
 <span class="sd">            straight-through estimator), or ``&quot;categorical&quot;`` (excluded from</span>
 <span class="sd">            the gradient path; driven by a gradient-free outer loop).</span>
 <span class="sd">        transform: Registered transform name (see</span>
-<span class="sd">            :func:`torchcrop.calibration.transforms.available_transforms`).</span>
+<span class="sd">            `torchcrop.calibration.transforms.available_transforms`).</span>
 <span class="sd">            Defaults to ``&quot;affine_sigmoid&quot;`` when ``bounds`` are given,</span>
 <span class="sd">            otherwise ``&quot;identity&quot;``.</span>
 <span class="sd">        init: Initial physical value. Defaults to the parameter&#39;s current</span>
