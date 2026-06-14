@@ -10,6 +10,11 @@ __author__ = """Krishnagopal Halder"""
 __email__ = "geonextgis@gmail.com"
 __version__ = "1.0.0"
 
+from torchcrop.calibration import (
+    CalibrationManager,
+    ConstraintGroup,
+    ParameterSpec,
+)
 from torchcrop.config import RunConfig
 from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.engine import SimulationEngine
@@ -20,9 +25,12 @@ from torchcrop.parameters.soil_params import SoilParameters
 from torchcrop.states.model_state import DiagnosticState, ModelState
 
 __all__ = [
+    "CalibrationManager",
+    "ConstraintGroup",
     "CropParameters",
     "DiagnosticState",
     "Lintul5Model",
+    "ParameterSpec",
     "available_crops",
     "ModelOutput",
     "ModelState",
