@@ -95,12 +95,23 @@ nav:
           - Water-limited:
                 - Water-limited (Winter Wheat): examples/02_water_limited/water_limited_(winter_wheat).ipynb
           - Water- and nutrient-limited:
-                - Water- and Nutrient-limited (Winter Wheat): examples/03_water_and_nutrient_limited/water_and_nutrient_limited_(winter_wheat).ipynb
+                - Water- and N-limited (Winter Wheat): examples/03_water_and_nutrient_limited/water_and_n_limited_(winter_wheat).ipynb
+                - Water- and NPK-limited (Winter Wheat): examples/03_water_and_nutrient_limited/water_and_npk_limited_(winter_wheat).ipynb
+          - Calibration:
+                - Constraint-Aware Calibration (Winter Wheat): examples/04_calibration/calibration_(winter_wheat).ipynb
+          - Daily time-step:
+                - Runtime Parameter & State Changes (Winter Wheat): examples/06_daily_timestep/daily_timestep_(winter_wheat).ipynb
     - API Reference:
           - Overview: api/torchcrop.md
           - Config: api/config.md
           - Engine: api/engine.md
           - Model: api/model.md
+          - Calibration:
+                - manager: api/calibration/manager.md
+                - spec: api/calibration/spec.md
+                - transforms: api/calibration/transforms.md
+                - paths: api/calibration/paths.md
+                - config: api/calibration/config.md
           - Drivers:
                 - weather: api/drivers/weather.md
           - Parameters:
