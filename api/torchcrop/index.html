@@ -11285,7 +11285,6 @@
 <p>The schema keys on the same dotted <code>"&lt;container&gt;.&lt;field&gt;"</code> target paths used
 throughout the calibration package, so a calibration setup can live next to a
 crop preset as data:</p>
-<p>.. code-block:: yaml</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
@@ -11293,17 +11292,17 @@ crop preset as data:</p>
 <span class="normal">5</span>
 <span class="normal">6</span>
 <span class="normal">7</span>
-<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>parameters:
-  crop.tsum1:       {bounds: [1000, 2000]}
-  crop.tbasem:      {bounds: [-2, 5], kind: continuous}
-  crop.fltb@0.5:    {bounds: [0.30, 0.70]}
-  crop.fltb@0.646:  {bounds: [0.10, 0.50]}
-constraints:
-  - members: [crop.fltb@0.5, crop.fltb@0.646]
-    order: descending
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">crop.tsum1</span><span class="p">:</span><span class="w">       </span><span class="p p-Indicator">{</span><span class="nt">bounds</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1000</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2000</span><span class="p p-Indicator">]}</span>
+<span class="w">  </span><span class="nt">crop.tbasem</span><span class="p">:</span><span class="w">      </span><span class="p p-Indicator">{</span><span class="nt">bounds</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">5</span><span class="p p-Indicator">],</span><span class="nt"> kind</span><span class="p">:</span><span class="w"> </span><span class="nv">continuous</span><span class="p p-Indicator">}</span>
+<span class="w">  </span><span class="nt">crop.fltb@0.5</span><span class="p">:</span><span class="w">    </span><span class="p p-Indicator">{</span><span class="nt">bounds</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.30</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.70</span><span class="p p-Indicator">]}</span>
+<span class="w">  </span><span class="nt">crop.fltb@0.646</span><span class="p">:</span><span class="w">  </span><span class="p p-Indicator">{</span><span class="nt">bounds</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.10</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">0.50</span><span class="p p-Indicator">]}</span>
+<span class="nt">constraints</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">members</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">crop.fltb@0.5</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">crop.fltb@0.646</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">descending</span>
 </code></pre></div></td></tr></table></div>
 <p>The loader returns <code>(specs, groups)</code> ready to pass to
-:class:<code>~torchcrop.calibration.manager.CalibrationManager</code>.</p>
+<code>~torchcrop.calibration.manager.CalibrationManager</code>.</p>
 
 
 
@@ -11359,9 +11358,9 @@ constraints:
   </thead>
   <tbody>
     <tr>
-      <td><code>``(specs, groups)`` ready for
-</code></td>
-      <td></td>
+      <td><code>tuple[list[ParameterSpec], list[ConstraintGroup]]</code></td>
+      <td><p><code>(specs, groups)</code> ready for
+<code>~torchcrop.calibration.manager.CalibrationManager</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -11377,7 +11376,7 @@ constraints:
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ``(specs, groups)`` ready for</span>
-<span class="sd">        :class:`~torchcrop.calibration.manager.CalibrationManager`.</span>
+<span class="sd">        `~torchcrop.calibration.manager.CalibrationManager`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">specs_from_config</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
@@ -13241,12 +13240,8 @@ feasible region of the physical parameter on every forward pass. Because the
 map is applied inside the autograd graph, gradients flow cleanly back to <code>z</code>
 and <strong>every iterate is feasible by construction</strong> — there is no need for
 penalties or post-step projection.</p>
-<p>This mirrors the constraint-aware projection idiom already used for neural
-residuals in :mod:<code>torchcrop.nn.hybrid</code> (<code>exp</code> for non-negative drivers,
-<code>logit</code>/<code>sigmoid</code> for unit-interval factors), applied here to <em>parameters</em>
-rather than residual corrections.</p>
 <p>Transforms are looked up through a small registry so new ones can be added
-without touching :class:<code>~torchcrop.calibration.manager.CalibrationManager</code>
+without touching <code>~torchcrop.calibration.manager.CalibrationManager</code>
 (open/closed principle).</p>
 
 
@@ -13503,7 +13498,7 @@ both, some only the lower bound, some ignore them).</p></td>
       <tr>
         <td><code>name</code></td>
         <td><code>str</code></td>
-        <td><p>Key used in :class:<code>~torchcrop.calibration.spec.ParameterSpec</code>.</p></td>
+        <td><p>Key used in <code>torchcrop.calibration.spec.ParameterSpec</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -13534,7 +13529,7 @@ both, some only the lower bound, some ignore them).</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a transform builder under ``name``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: Key used in :class:`~torchcrop.calibration.spec.ParameterSpec`.</span>
+<span class="sd">        name: Key used in `torchcrop.calibration.spec.ParameterSpec`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A decorator registering the wrapped ``builder(bounds) -&gt; Bijector``.</span>

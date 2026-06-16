@@ -2783,12 +2783,8 @@ feasible region of the physical parameter on every forward pass. Because the
 map is applied inside the autograd graph, gradients flow cleanly back to <code>z</code>
 and <strong>every iterate is feasible by construction</strong> — there is no need for
 penalties or post-step projection.</p>
-<p>This mirrors the constraint-aware projection idiom already used for neural
-residuals in :mod:<code>torchcrop.nn.hybrid</code> (<code>exp</code> for non-negative drivers,
-<code>logit</code>/<code>sigmoid</code> for unit-interval factors), applied here to <em>parameters</em>
-rather than residual corrections.</p>
 <p>Transforms are looked up through a small registry so new ones can be added
-without touching :class:<code>~torchcrop.calibration.manager.CalibrationManager</code>
+without touching <code>~torchcrop.calibration.manager.CalibrationManager</code>
 (open/closed principle).</p>
 
 
@@ -3045,7 +3041,7 @@ both, some only the lower bound, some ignore them).</p></td>
       <tr>
         <td><code>name</code></td>
         <td><code>str</code></td>
-        <td><p>Key used in :class:<code>~torchcrop.calibration.spec.ParameterSpec</code>.</p></td>
+        <td><p>Key used in <code>torchcrop.calibration.spec.ParameterSpec</code>.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -3076,7 +3072,7 @@ both, some only the lower bound, some ignore them).</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a transform builder under ``name``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: Key used in :class:`~torchcrop.calibration.spec.ParameterSpec`.</span>
+<span class="sd">        name: Key used in `torchcrop.calibration.spec.ParameterSpec`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A decorator registering the wrapped ``builder(bounds) -&gt; Bijector``.</span>
