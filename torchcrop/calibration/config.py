@@ -4,19 +4,19 @@ The schema keys on the same dotted ``"<container>.<field>"`` target paths used
 throughout the calibration package, so a calibration setup can live next to a
 crop preset as data:
 
-.. code-block:: yaml
-
-    parameters:
-      crop.tsum1:       {bounds: [1000, 2000]}
-      crop.tbasem:      {bounds: [-2, 5], kind: continuous}
-      crop.fltb@0.5:    {bounds: [0.30, 0.70]}
-      crop.fltb@0.646:  {bounds: [0.10, 0.50]}
-    constraints:
-      - members: [crop.fltb@0.5, crop.fltb@0.646]
-        order: descending
+```yaml
+parameters:
+  crop.tsum1:       {bounds: [1000, 2000]}
+  crop.tbasem:      {bounds: [-2, 5], kind: continuous}
+  crop.fltb@0.5:    {bounds: [0.30, 0.70]}
+  crop.fltb@0.646:  {bounds: [0.10, 0.50]}
+constraints:
+  - members: [crop.fltb@0.5, crop.fltb@0.646]
+    order: descending
+```
 
 The loader returns ``(specs, groups)`` ready to pass to
-:class:`~torchcrop.calibration.manager.CalibrationManager`.
+`~torchcrop.calibration.manager.CalibrationManager`.
 """
 
 from __future__ import annotations
@@ -97,7 +97,7 @@ def load_calibration_config(
 
     Returns:
         ``(specs, groups)`` ready for
-        :class:`~torchcrop.calibration.manager.CalibrationManager`.
+        `~torchcrop.calibration.manager.CalibrationManager`.
     """
     if isinstance(source, dict):
         return specs_from_config(source)
