@@ -7,13 +7,8 @@ map is applied inside the autograd graph, gradients flow cleanly back to ``z``
 and **every iterate is feasible by construction** — there is no need for
 penalties or post-step projection.
 
-This mirrors the constraint-aware projection idiom already used for neural
-residuals in :mod:`torchcrop.nn.hybrid` (``exp`` for non-negative drivers,
-``logit``/``sigmoid`` for unit-interval factors), applied here to *parameters*
-rather than residual corrections.
-
 Transforms are looked up through a small registry so new ones can be added
-without touching :class:`~torchcrop.calibration.manager.CalibrationManager`
+without touching `~torchcrop.calibration.manager.CalibrationManager`
 (open/closed principle).
 """
 
@@ -54,7 +49,7 @@ def register_transform(
     """Register a transform builder under ``name``.
 
     Args:
-        name: Key used in :class:`~torchcrop.calibration.spec.ParameterSpec`.
+        name: Key used in `torchcrop.calibration.spec.ParameterSpec`.
 
     Returns:
         A decorator registering the wrapped ``builder(bounds) -> Bijector``.
