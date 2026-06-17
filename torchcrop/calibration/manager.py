@@ -1,16 +1,16 @@
-"""Constraint-aware parameter calibration for :class:`Lintul5Model`.
+"""Constraint-aware parameter calibration for `Lintul5Model`.
 
-:class:`CalibrationManager` is the runtime counterpart of the declarative
-:mod:`~torchcrop.calibration.spec` description, structurally parallel to
-:class:`torchcrop.nn.hybrid.HybridManager`:
+`CalibrationManager` is the runtime counterpart of the declarative
+`torchcrop.calibration.spec` description, structurally parallel to
+`torchcrop.nn.hybrid.HybridManager`:
 
-* it owns the **unconstrained latent** ``nn.Parameter`` set (what the optimizer
-  sees via :meth:`parameters`);
-* :meth:`materialize` maps the latents through their bijections — and through
+* it owns the **unconstrained latent** `nn.Parameter` set (what the optimizer
+  sees via `parameters`);
+* `materialize` maps the latents through their bijections — and through
   the joint reconstruction of ordered groups — into the *physical* crop / soil
-  / site parameter tensors (rebuilding ``[N, 2]`` tables as needed) **before
+  / site parameter tensors (rebuilding `[N, 2]` tables as needed) **before
   each forward pass**;
-* :meth:`flatten` / :meth:`set_flat` expose the latent vector so the same
+* `flatten` / `set_flat` expose the latent vector so the same
   problem definition can be driven by a gradient-free optimizer (CMA-ES,
   scipy, …) instead of autograd.
 
@@ -56,7 +56,7 @@ class CalibrationManager(nn.Module):
     """Owns latent variables and writes constrained parameters into a model.
 
     Args:
-        model: The :class:`~torchcrop.model.Lintul5Model` (or any object
+        model: The `Lintul5Model` (or any object
             exposing ``crop_params`` / ``soil_params`` / ``site_params``) whose
             parameters are being calibrated.
         specs: The free parameters and their bounds / types.
@@ -303,7 +303,7 @@ class CalibrationManager(nn.Module):
         """Overwrite the latent vector from a flat 1-D tensor.
 
         Args:
-            flat: 1-D tensor matching :meth:`flatten`'s length and order.
+            flat: 1-D tensor matching `flatten`'s length and order.
 
         Raises:
             ValueError: If ``flat`` has the wrong length.
