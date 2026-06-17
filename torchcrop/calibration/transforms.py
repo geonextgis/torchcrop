@@ -73,7 +73,7 @@ def build_transform(name: str, bounds: tuple[float, float] | None) -> Bijector:
             both, some only the lower bound, some ignore them).
 
     Returns:
-        The configured :class:`Bijector`.
+        The configured `Bijector`.
 
     Raises:
         KeyError: If ``name`` is not registered.
