@@ -9,9 +9,9 @@ supported:
   to a single ordinate (column 1) of an ``[N, 2]`` interpolation table; the
   abscissa (column 0) is held fixed.
 
-The resolver returns a :class:`Target` describing the container object, the
+The resolver returns a `Target` describing the container object, the
 field name, and — for tables — the row index. The
-:class:`~torchcrop.calibration.manager.CalibrationManager` uses these to read
+`CalibrationManager` uses these to read
 initial values and write materialized values each step.
 """
 
@@ -61,7 +61,7 @@ def parse_path(
         containers: Mapping of container name → dataclass instance.
 
     Returns:
-        The resolved :class:`Target`.
+        The resolved `Target`.
 
     Raises:
         ValueError: If the path is malformed, the container/field is unknown,
@@ -155,7 +155,7 @@ def rebuild_table(
 
     The abscissa column and the frozen ordinates are taken (detached) from
     ``table``; the rows in ``updates`` are replaced by the supplied value
-    tensors. The result is assembled with :func:`torch.stack` (no in-place
+    tensors. The result is assembled with `torch.stack` (no in-place
     writes), so gradients flow from the loss back through the updated
     ordinates while keeping the interpolation table's sorted-abscissa contract
     intact.
