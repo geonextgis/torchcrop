@@ -2854,18 +2854,18 @@
 <a id="torchcrop.calibration.manager"></a>
     <div class="doc doc-contents first">
 
-      <p>Constraint-aware parameter calibration for :class:<code>Lintul5Model</code>.</p>
-<p>:class:<code>CalibrationManager</code> is the runtime counterpart of the declarative
-:mod:<code>~torchcrop.calibration.spec</code> description, structurally parallel to
-:class:<code>torchcrop.nn.hybrid.HybridManager</code>:</p>
+      <p>Constraint-aware parameter calibration for <code>Lintul5Model</code>.</p>
+<p><code>CalibrationManager</code> is the runtime counterpart of the declarative
+<code>torchcrop.calibration.spec</code> description, structurally parallel to
+<code>torchcrop.nn.hybrid.HybridManager</code>:</p>
 <ul>
 <li>it owns the <strong>unconstrained latent</strong> <code>nn.Parameter</code> set (what the optimizer
-  sees via :meth:<code>parameters</code>);</li>
-<li>:meth:<code>materialize</code> maps the latents through their bijections — and through
+  sees via <code>parameters</code>);</li>
+<li><code>materialize</code> maps the latents through their bijections — and through
   the joint reconstruction of ordered groups — into the <em>physical</em> crop / soil
   / site parameter tensors (rebuilding <code>[N, 2]</code> tables as needed) <strong>before
   each forward pass</strong>;</li>
-<li>:meth:<code>flatten</code> / :meth:<code>set_flat</code> expose the latent vector so the same
+<li><code>flatten</code> / <code>set_flat</code> expose the latent vector so the same
   problem definition can be driven by a gradient-free optimizer (CMA-ES,
   scipy, …) instead of autograd.</li>
 </ul>
@@ -2914,7 +2914,7 @@ CalibrationManager            (<span title="torch.nn.modules.module.Module">Modu
       <tr>
         <td><code>model</code></td>
         <td><code>Any</code></td>
-        <td><p>The :class:<code>~torchcrop.model.Lintul5Model</code> (or any object
+        <td><p>The <code>Lintul5Model</code> (or any object
 exposing <code>crop_params</code> / <code>soil_params</code> / <code>site_params</code>) whose
 parameters are being calibrated.</p></td>
         <td><em>required</em></td>
@@ -2957,7 +2957,7 @@ incompatible with a requested ordering.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Owns latent variables and writes constrained parameters into a model.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model: The :class:`~torchcrop.model.Lintul5Model` (or any object</span>
+<span class="sd">        model: The `Lintul5Model` (or any object</span>
 <span class="sd">            exposing ``crop_params`` / ``soil_params`` / ``site_params``) whose</span>
 <span class="sd">            parameters are being calibrated.</span>
 <span class="sd">        specs: The free parameters and their bounds / types.</span>
@@ -3204,7 +3204,7 @@ incompatible with a requested ordering.</p></td>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            flat: 1-D tensor matching :meth:`flatten`&#39;s length and order.</span>
+<span class="sd">            flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``flat`` has the wrong length.</span>
@@ -3605,7 +3605,7 @@ allowed category.</p></td>
       <tr>
         <td><code>flat</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>1-D tensor matching :meth:<code>flatten</code>'s length and order.</p></td>
+        <td><p>1-D tensor matching <code>flatten</code>'s length and order.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -3632,7 +3632,7 @@ allowed category.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        flat: 1-D tensor matching :meth:`flatten`&#39;s length and order.</span>
+<span class="sd">        flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``flat`` has the wrong length.</span>

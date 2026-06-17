@@ -11528,18 +11528,18 @@ crop preset as data:</p>
 
     <div class="doc doc-contents ">
 
-      <p>Constraint-aware parameter calibration for :class:<code>Lintul5Model</code>.</p>
-<p>:class:<code>CalibrationManager</code> is the runtime counterpart of the declarative
-:mod:<code>~torchcrop.calibration.spec</code> description, structurally parallel to
-:class:<code>torchcrop.nn.hybrid.HybridManager</code>:</p>
+      <p>Constraint-aware parameter calibration for <code>Lintul5Model</code>.</p>
+<p><code>CalibrationManager</code> is the runtime counterpart of the declarative
+<code>torchcrop.calibration.spec</code> description, structurally parallel to
+<code>torchcrop.nn.hybrid.HybridManager</code>:</p>
 <ul>
 <li>it owns the <strong>unconstrained latent</strong> <code>nn.Parameter</code> set (what the optimizer
-  sees via :meth:<code>parameters</code>);</li>
-<li>:meth:<code>materialize</code> maps the latents through their bijections — and through
+  sees via <code>parameters</code>);</li>
+<li><code>materialize</code> maps the latents through their bijections — and through
   the joint reconstruction of ordered groups — into the <em>physical</em> crop / soil
   / site parameter tensors (rebuilding <code>[N, 2]</code> tables as needed) <strong>before
   each forward pass</strong>;</li>
-<li>:meth:<code>flatten</code> / :meth:<code>set_flat</code> expose the latent vector so the same
+<li><code>flatten</code> / <code>set_flat</code> expose the latent vector so the same
   problem definition can be driven by a gradient-free optimizer (CMA-ES,
   scipy, …) instead of autograd.</li>
 </ul>
@@ -11588,7 +11588,7 @@ CalibrationManager            (<span title="torch.nn.modules.module.Module">Modu
       <tr>
         <td><code>model</code></td>
         <td><code>Any</code></td>
-        <td><p>The :class:<code>~torchcrop.model.Lintul5Model</code> (or any object
+        <td><p>The <code>Lintul5Model</code> (or any object
 exposing <code>crop_params</code> / <code>soil_params</code> / <code>site_params</code>) whose
 parameters are being calibrated.</p></td>
         <td><em>required</em></td>
@@ -11631,7 +11631,7 @@ incompatible with a requested ordering.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Owns latent variables and writes constrained parameters into a model.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        model: The :class:`~torchcrop.model.Lintul5Model` (or any object</span>
+<span class="sd">        model: The `Lintul5Model` (or any object</span>
 <span class="sd">            exposing ``crop_params`` / ``soil_params`` / ``site_params``) whose</span>
 <span class="sd">            parameters are being calibrated.</span>
 <span class="sd">        specs: The free parameters and their bounds / types.</span>
@@ -11878,7 +11878,7 @@ incompatible with a requested ordering.</p></td>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            flat: 1-D tensor matching :meth:`flatten`&#39;s length and order.</span>
+<span class="sd">            flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``flat`` has the wrong length.</span>
@@ -12279,7 +12279,7 @@ allowed category.</p></td>
       <tr>
         <td><code>flat</code></td>
         <td><code>torch.Tensor</code></td>
-        <td><p>1-D tensor matching :meth:<code>flatten</code>'s length and order.</p></td>
+        <td><p>1-D tensor matching <code>flatten</code>'s length and order.</p></td>
         <td><em>required</em></td>
       </tr>
   </tbody>
@@ -12306,7 +12306,7 @@ allowed category.</p></td>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        flat: 1-D tensor matching :meth:`flatten`&#39;s length and order.</span>
+<span class="sd">        flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``flat`` has the wrong length.</span>
@@ -12371,9 +12371,9 @@ supported:</p>
   to a single ordinate (column 1) of an <code>[N, 2]</code> interpolation table; the
   abscissa (column 0) is held fixed.</li>
 </ul>
-<p>The resolver returns a :class:<code>Target</code> describing the container object, the
+<p>The resolver returns a <code>Target</code> describing the container object, the
 field name, and — for tables — the row index. The
-:class:<code>~torchcrop.calibration.manager.CalibrationManager</code> uses these to read
+<code>CalibrationManager</code> uses these to read
 initial values and write materialized values each step.</p>
 
 
@@ -12589,8 +12589,8 @@ Target        </code>
   </thead>
   <tbody>
     <tr>
-      <td><code>The resolved </code></td>
-      <td></td>
+      <td><code>Target</code></td>
+      <td><p>The resolved <code>Target</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -12622,7 +12622,7 @@ or a table abscissa cannot be matched unambiguously.</p></td>
 <span class="sd">        containers: Mapping of container name → dataclass instance.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The resolved :class:`Target`.</span>
+<span class="sd">        The resolved `Target`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the path is malformed, the container/field is unknown,</span>
@@ -12745,7 +12745,7 @@ or a table abscissa cannot be matched unambiguously.</p></td>
       <p>Return a fresh <code>[N, 2]</code> table with selected ordinates replaced.</p>
 <p>The abscissa column and the frozen ordinates are taken (detached) from
 <code>table</code>; the rows in <code>updates</code> are replaced by the supplied value
-tensors. The result is assembled with :func:<code>torch.stack</code> (no in-place
+tensors. The result is assembled with <code>torch.stack</code> (no in-place
 writes), so gradients flow from the loss back through the updated
 ordinates while keeping the interpolation table's sorted-abscissa contract
 intact.</p>
@@ -12799,7 +12799,7 @@ intact.</p>
 
 <span class="sd">    The abscissa column and the frozen ordinates are taken (detached) from</span>
 <span class="sd">    ``table``; the rows in ``updates`` are replaced by the supplied value</span>
-<span class="sd">    tensors. The result is assembled with :func:`torch.stack` (no in-place</span>
+<span class="sd">    tensors. The result is assembled with `torch.stack` (no in-place</span>
 <span class="sd">    writes), so gradients flow from the loss back through the updated</span>
 <span class="sd">    ordinates while keeping the interpolation table&#39;s sorted-abscissa contract</span>
 <span class="sd">    intact.</span>
@@ -13421,8 +13421,8 @@ both, some only the lower bound, some ignore them).</p></td>
   </thead>
   <tbody>
     <tr>
-      <td><code>The configured </code></td>
-      <td></td>
+      <td><code>Bijector</code></td>
+      <td><p>The configured <code>Bijector</code>.</p></td>
     </tr>
   </tbody>
 </table>
@@ -13452,7 +13452,7 @@ both, some only the lower bound, some ignore them).</p></td>
 <span class="sd">            both, some only the lower bound, some ignore them).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The configured :class:`Bijector`.</span>
+<span class="sd">        The configured `Bijector`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        KeyError: If ``name`` is not registered.</span>
