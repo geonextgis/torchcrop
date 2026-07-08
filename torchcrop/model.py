@@ -82,6 +82,60 @@ class ModelOutput:
     adjusted_yield: torch.Tensor
 
 
+class _NoLeafHeatStress(nn.Module):
+    """No-op stand-in for `HeatStressOnLeafSenescence`.
+
+    Returns a leaf-senescence multiplier of ``1`` for every day and batch
+    element, i.e. heat never accelerates leaf death. Selected by
+    ``Lintul5Model(..., leaf_heat_stress=False)``. Matches the real module's
+    ``forward(tmax, dvs, params) -> [B]`` signature so it is a drop-in.
+    """
+
+    def forward(
+        self,
+        tmax: torch.Tensor,
+        dvs: torch.Tensor,
+        params: CropParameters,
+    ) -> torch.Tensor:
+        return torch.ones_like(tmax)
+
+
+class _NoGrainHeatStress(nn.Module):
+    """No-op stand-in for `HeatStressOnGrain`.
+
+    Applies no grain-yield penalty (``heat_stress_factor = 0``) while
+    preserving the SIMPLACE ``pPeriodEnded`` gating of ``adjusted_yield`` —
+    so ``adjusted_yield`` still equals ``0`` until the DVS trajectory exits
+    the anthesis window and ``yield_`` thereafter. Selected by
+    ``Lintul5Model(..., grain_heat_stress=False)``. Matches the real module's
+    ``forward(tmin, tmax, dvs, params, yield_=None) -> dict`` signature.
+    """
+
+    def forward(
+        self,
+        tmin: torch.Tensor,
+        tmax: torch.Tensor,
+        dvs: torch.Tensor,
+        params: CropParameters,
+        yield_: torch.Tensor | None = None,
+    ) -> dict[str, torch.Tensor]:
+        b = tmax.shape[0]
+        zeros_b = torch.zeros(b, dtype=tmax.dtype, device=tmax.device)
+        period_ended = (dvs.max(dim=1).values > params.grain_heat_end_devstage).to(
+            tmax.dtype
+        )
+        out: dict[str, torch.Tensor] = {
+            "heat_stress_factor": zeros_b,
+            "daily_factor": torch.zeros_like(tmax),
+            "window_mask": torch.zeros_like(tmax),
+            "window_days": zeros_b,
+            "period_ended": period_ended,
+        }
+        if yield_ is not None:
+            out["adjusted_yield"] = period_ended * yield_
+        return out
+
+
 class Lintul5Model(nn.Module):
     """Differentiable reimplementation of the Lintul5 crop growth model.
 
@@ -97,6 +151,13 @@ class Lintul5Model(nn.Module):
         site_params: Site parameter container (e.g. latitude, altitude).
         smooth: If ``True``, use smooth (sigmoid-blend) replacements for
             stage-based branching.
+        leaf_heat_stress: If ``True`` (default), heat accelerates leaf
+            senescence via `HeatStressOnLeafSenescence`. If ``False``, that
+            effect is switched off.
+        grain_heat_stress: If ``True`` (default), an around-anthesis
+            heat penalty is applied to ``adjusted_yield`` via
+            `HeatStressOnGrain`. If ``False``, no penalty is applied
+            (``heat_stress_factor = 0``).
         stress_module: Optional replacement for the default
             `StressFactors` combiner.
         residual_specs: Optional list of `ResidualSpec` slots enabling
@@ -133,6 +194,8 @@ class Lintul5Model(nn.Module):
         soil_params: SoilParameters | None = None,
         site_params: SiteParameters | None = None,
         smooth: bool = False,
+        leaf_heat_stress: bool = True,
+        grain_heat_stress: bool = True,
         stress_module: nn.Module | None = None,
         residual_specs: Sequence[ResidualSpec] | None = None,
     ) -> None:
@@ -151,12 +214,18 @@ class Lintul5Model(nn.Module):
         self.photosynthesis = Photosynthesis()
         self.partitioning = Partitioning()
         self.leaf_dynamics = LeafDynamics()
-        self.leaf_heat_stress = HeatStressOnLeafSenescence(smooth=smooth)
+        self.leaf_heat_stress = (
+            HeatStressOnLeafSenescence(smooth=smooth)
+            if leaf_heat_stress
+            else _NoLeafHeatStress()
+        )
         self.root_dynamics = RootDynamics()
         self.stem_dynamics = StemDynamics()
         self.nutrient_demand = NutrientDemand()
         self.soil_nutrients = SoilNutrients()
-        self.heat_stress_grain = HeatStressOnGrain()
+        self.heat_stress_grain = (
+            HeatStressOnGrain() if grain_heat_stress else _NoGrainHeatStress()
+        )
         self.stress = stress_module or StressFactors()
 
         self.hybrid = HybridManager(residual_specs)
@@ -194,9 +263,10 @@ class Lintul5Model(nn.Module):
             (``nmin``/``pmin``/``kmin``) and inorganic
             (``nmint``/``pmint``/``kmint``) mineral pools seeded from
             soil parameters. Biomass pools, per-organ NPK pools and LAI
-            start at zero; their initial values are injected as a
-            one-shot rate on the emergence day inside
-            `_compute_rates_dispatch`. The dead-tissue NPK loss
+            start at zero; their seed-reserve initial values are injected
+            as a one-shot rate on the **sowing** day inside
+            `_compute_rates_dispatch`, then held dormant until emergence.
+            The dead-tissue NPK loss
             accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K
             analogues) also start at zero and grow as senescence
             proceeds.
@@ -253,12 +323,12 @@ class Lintul5Model(nn.Module):
             pminti=pminti,
             kminti=kminti,
         )
-        # The sowing → emergence interval is simulated explicitly via
-        # the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so
-        # all biomass pools remain zero until emergence. The initial
-        # seed-reserve allocation is then injected as a one-shot rate
-        # on the day ``tsump`` first crosses ``tsumem``; see the
-        # emergence bootstrap block in `_compute_rates_dispatch`.
+        # Biomass pools start at zero here and receive the seed-reserve
+        # allocation as a one-shot rate on the sowing-latch transition
+        # (``doy == idpl``); the sowing → emergence interval then holds them
+        # dormant via the EMERG (``tsump >= tsumem``) gates on light
+        # interception, leaf growth/senescence and nutrient uptake. See the
+        # sowing-day bootstrap block in `_compute_rates_dispatch`.
         return state
 
     def forward(
@@ -524,6 +594,10 @@ class Lintul5Model(nn.Module):
         atmtr = irrad_out["atmtr"]
         frac_int = irrad_out["frac_intercepted"]
 
+        # Light interception is physiologically active only once the crop has emerged.
+        emerged_gate = (state.tsump >= crop_params.tsumem).to(frac_int.dtype)
+        frac_int = frac_int * emerged_gate
+
         # 3. Evapotranspiration — Penman formulation. CO₂ is a
         #    site/scenario property: ``SiteParameters.co2`` is the
         #    single source of truth feeding the ET0, RUE and
@@ -614,8 +688,11 @@ class Lintul5Model(nn.Module):
         # 6. Nutrient demand — independent of partitioning; produces the
         #    NPK stress index that multiplies ``GTOTAL`` downstream.
         #    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹
-        #    here because the growth formula expects MJ.
-        parint_mj = irrad_out["parint"] * 1e-6
+        #    here because the growth formula expects MJ. The same EMERG
+        #    gate applied to ``frac_int`` above is applied so a dormant
+        #    (pre-emergence) seedling intercepts no PAR and hence does
+        #    not grow.
+        parint_mj = irrad_out["parint"] * 1e-6 * emerged_gate
         nut = self.nutrient_demand(
             state=state,
             crop_params=crop_params,
@@ -865,17 +942,15 @@ class Lintul5Model(nn.Module):
             "gtotal": gtotal,
         }
 
-        # ---- Emergence-day bootstrap.
-        # Fires once per batch element on the step where ``tsump``
-        # first crosses ``tsumem``. The seed-reserve mass ``tdwi`` is
-        # partitioned at ``DVSI`` to give ``WRTI``/``WLVGI``/``WSTI``/
-        # ``WSOI`` and ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``,
-        # which are injected as one-shot rate deltas so that emergence
-        # instantly mobilises seed reserves into a juvenile-canopy
-        # state. The one-day LAI jump is intrinsic to the Lintul5
-        # abstraction; for a gradient sowing-to-canopy ramp, lower
-        # ``crop_params.tdwi`` (smaller seed reserve) or raise
-        # ``crop_params.rgrl`` (faster juvenile expansion).
+        # ---- Sowing-day seed-reserve bootstrap.
+        # The seed-reserve mass ``tdwi`` is partitioned at ``DVSI`` into
+        # ``WRTI``/``WLVGI``/``WSTI``/``WSOI`` and
+        # ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``, injected once as a
+        # one-shot rate delta on the sowing-latch transition. These pools then
+        # stay constant until emergence: ``PARINT`` is EMERG-gated
+        # (``gtotal == 0``) and leaf growth/senescence and nutrient uptake are
+        # likewise EMERG-gated, so the seedling neither grows nor senesces; at
+        # emergence the juvenile LAI branch expands from the ``LAII`` base.
         dvsi = crop_params.dvsi
         tdwi = crop_params.tdwi
         x = dvsi.reshape(1) if dvsi.dim() == 0 else dvsi
@@ -908,24 +983,26 @@ class Lintul5Model(nn.Module):
         aksti = crop_params.lskr * kmaxlv_i * wsti
         akrti = crop_params.lrkr * kmaxlv_i * wrti
 
-        tsump_next = state.tsump + rates["tsump_rate"] * self.engine.dt
-        emerg_now = (
-            (state.tsump < crop_params.tsumem) & (tsump_next >= crop_params.tsumem)
-        ).to(davtmp.dtype)
-        rates["wlv_rate"] = rates["wlv_rate"] + emerg_now * wlvgi / self.engine.dt
-        rates["wst_rate"] = rates["wst_rate"] + emerg_now * wsti / self.engine.dt
-        rates["wrt_rate"] = rates["wrt_rate"] + emerg_now * wrti / self.engine.dt
-        rates["wso_rate"] = rates["wso_rate"] + emerg_now * wsoi / self.engine.dt
-        rates["lai_rate"] = rates["lai_rate"] + emerg_now * laii_dyn / self.engine.dt
-        rates["anlv_rate"] = rates["anlv_rate"] + emerg_now * anlvi / self.engine.dt
-        rates["anst_rate"] = rates["anst_rate"] + emerg_now * ansti / self.engine.dt
-        rates["anrt_rate"] = rates["anrt_rate"] + emerg_now * anrti / self.engine.dt
-        rates["aplv_rate"] = rates["aplv_rate"] + emerg_now * aplvi / self.engine.dt
-        rates["apst_rate"] = rates["apst_rate"] + emerg_now * apsti / self.engine.dt
-        rates["aprt_rate"] = rates["aprt_rate"] + emerg_now * aprti / self.engine.dt
-        rates["aklv_rate"] = rates["aklv_rate"] + emerg_now * aklvi / self.engine.dt
-        rates["akst_rate"] = rates["akst_rate"] + emerg_now * aksti / self.engine.dt
-        rates["akrt_rate"] = rates["akrt_rate"] + emerg_now * akrti / self.engine.dt
+        # One-shot trigger on the sowing-latch transition (``sown`` flips
+        # 0 → 1 on ``doy == idpl``). ``sown = max(state.sown, sown_now)`` so
+        # ``sown - state.sown`` is exactly 1 on that single day and 0 on every
+        # other, for both the autumn-sown (``idpl > start_doy``) and the
+        # legacy always-sown (``idpl <= start_doy``) configurations.
+        just_sown = (sown - state.sown).clamp(min=0.0)
+        rates["wlv_rate"] = rates["wlv_rate"] + just_sown * wlvgi / self.engine.dt
+        rates["wst_rate"] = rates["wst_rate"] + just_sown * wsti / self.engine.dt
+        rates["wrt_rate"] = rates["wrt_rate"] + just_sown * wrti / self.engine.dt
+        rates["wso_rate"] = rates["wso_rate"] + just_sown * wsoi / self.engine.dt
+        rates["lai_rate"] = rates["lai_rate"] + just_sown * laii_dyn / self.engine.dt
+        rates["anlv_rate"] = rates["anlv_rate"] + just_sown * anlvi / self.engine.dt
+        rates["anst_rate"] = rates["anst_rate"] + just_sown * ansti / self.engine.dt
+        rates["anrt_rate"] = rates["anrt_rate"] + just_sown * anrti / self.engine.dt
+        rates["aplv_rate"] = rates["aplv_rate"] + just_sown * aplvi / self.engine.dt
+        rates["apst_rate"] = rates["apst_rate"] + just_sown * apsti / self.engine.dt
+        rates["aprt_rate"] = rates["aprt_rate"] + just_sown * aprti / self.engine.dt
+        rates["aklv_rate"] = rates["aklv_rate"] + just_sown * aklvi / self.engine.dt
+        rates["akst_rate"] = rates["akst_rate"] + just_sown * aksti / self.engine.dt
+        rates["akrt_rate"] = rates["akrt_rate"] + just_sown * akrti / self.engine.dt
 
         # Per-day `DiagnosticState` snapshot — built from the same
         # intermediate tensors used to assemble ``rates``. It is
