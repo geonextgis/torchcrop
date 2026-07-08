@@ -2904,6 +2904,23 @@ stage-based branching.</p></td>
         <td><code>False</code></td>
       </tr>
       <tr>
+        <td><code>leaf_heat_stress</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code> (default), heat accelerates leaf
+senescence via <code>HeatStressOnLeafSenescence</code>. If <code>False</code>, that
+effect is switched off.</p></td>
+        <td><code>True</code></td>
+      </tr>
+      <tr>
+        <td><code>grain_heat_stress</code></td>
+        <td><code>bool</code></td>
+        <td><p>If <code>True</code> (default), an around-anthesis
+heat penalty is applied to <code>adjusted_yield</code> via
+<code>HeatStressOnGrain</code>. If <code>False</code>, no penalty is applied
+(<code>heat_stress_factor = 0</code>).</p></td>
+        <td><code>True</code></td>
+      </tr>
+      <tr>
         <td><code>stress_module</code></td>
         <td><code>nn.Module | None</code></td>
         <td><p>Optional replacement for the default
@@ -2941,6 +2958,13 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">        site_params: Site parameter container (e.g. latitude, altitude).</span>
 <span class="sd">        smooth: If ``True``, use smooth (sigmoid-blend) replacements for</span>
 <span class="sd">            stage-based branching.</span>
+<span class="sd">        leaf_heat_stress: If ``True`` (default), heat accelerates leaf</span>
+<span class="sd">            senescence via `HeatStressOnLeafSenescence`. If ``False``, that</span>
+<span class="sd">            effect is switched off.</span>
+<span class="sd">        grain_heat_stress: If ``True`` (default), an around-anthesis</span>
+<span class="sd">            heat penalty is applied to ``adjusted_yield`` via</span>
+<span class="sd">            `HeatStressOnGrain`. If ``False``, no penalty is applied</span>
+<span class="sd">            (``heat_stress_factor = 0``).</span>
 <span class="sd">        stress_module: Optional replacement for the default</span>
 <span class="sd">            `StressFactors` combiner.</span>
 <span class="sd">        residual_specs: Optional list of `ResidualSpec` slots enabling</span>
@@ -2977,6 +3001,8 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">site_params</span><span class="p">:</span> <span class="n">SiteParameters</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">leaf_heat_stress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">grain_heat_stress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">stress_module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">residual_specs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ResidualSpec</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2995,12 +3021,18 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="bp">self</span><span class="o">.</span><span class="n">photosynthesis</span> <span class="o">=</span> <span class="n">Photosynthesis</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">partitioning</span> <span class="o">=</span> <span class="n">Partitioning</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leaf_dynamics</span> <span class="o">=</span> <span class="n">LeafDynamics</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">leaf_heat_stress</span> <span class="o">=</span> <span class="n">HeatStressOnLeafSenescence</span><span class="p">(</span><span class="n">smooth</span><span class="o">=</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leaf_heat_stress</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">HeatStressOnLeafSenescence</span><span class="p">(</span><span class="n">smooth</span><span class="o">=</span><span class="n">smooth</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">leaf_heat_stress</span>
+            <span class="k">else</span> <span class="n">_NoLeafHeatStress</span><span class="p">()</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_dynamics</span> <span class="o">=</span> <span class="n">RootDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stem_dynamics</span> <span class="o">=</span> <span class="n">StemDynamics</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span> <span class="o">=</span> <span class="n">NutrientDemand</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">soil_nutrients</span> <span class="o">=</span> <span class="n">SoilNutrients</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span> <span class="o">=</span> <span class="n">HeatStressOnGrain</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">HeatStressOnGrain</span><span class="p">()</span> <span class="k">if</span> <span class="n">grain_heat_stress</span> <span class="k">else</span> <span class="n">_NoGrainHeatStress</span><span class="p">()</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stress</span> <span class="o">=</span> <span class="n">stress_module</span> <span class="ow">or</span> <span class="n">StressFactors</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span> <span class="o">=</span> <span class="n">HybridManager</span><span class="p">(</span><span class="n">residual_specs</span><span class="p">)</span>
@@ -3038,9 +3070,10 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">            (``nmin``/``pmin``/``kmin``) and inorganic</span>
 <span class="sd">            (``nmint``/``pmint``/``kmint``) mineral pools seeded from</span>
 <span class="sd">            soil parameters. Biomass pools, per-organ NPK pools and LAI</span>
-<span class="sd">            start at zero; their initial values are injected as a</span>
-<span class="sd">            one-shot rate on the emergence day inside</span>
-<span class="sd">            `_compute_rates_dispatch`. The dead-tissue NPK loss</span>
+<span class="sd">            start at zero; their seed-reserve initial values are injected</span>
+<span class="sd">            as a one-shot rate on the **sowing** day inside</span>
+<span class="sd">            `_compute_rates_dispatch`, then held dormant until emergence.</span>
+<span class="sd">            The dead-tissue NPK loss</span>
 <span class="sd">            accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
 <span class="sd">            analogues) also start at zero and grow as senescence</span>
 <span class="sd">            proceeds.</span>
@@ -3097,12 +3130,12 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
             <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># The sowing → emergence interval is simulated explicitly via</span>
-        <span class="c1"># the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so</span>
-        <span class="c1"># all biomass pools remain zero until emergence. The initial</span>
-        <span class="c1"># seed-reserve allocation is then injected as a one-shot rate</span>
-        <span class="c1"># on the day ``tsump`` first crosses ``tsumem``; see the</span>
-        <span class="c1"># emergence bootstrap block in `_compute_rates_dispatch`.</span>
+        <span class="c1"># Biomass pools start at zero here and receive the seed-reserve</span>
+        <span class="c1"># allocation as a one-shot rate on the sowing-latch transition</span>
+        <span class="c1"># (``doy == idpl``); the sowing → emergence interval then holds them</span>
+        <span class="c1"># dormant via the EMERG (``tsump &gt;= tsumem``) gates on light</span>
+        <span class="c1"># interception, leaf growth/senescence and nutrient uptake. See the</span>
+        <span class="c1"># sowing-day bootstrap block in `_compute_rates_dispatch`.</span>
         <span class="k">return</span> <span class="n">state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
@@ -3368,6 +3401,10 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">atmtr</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;atmtr&quot;</span><span class="p">]</span>
         <span class="n">frac_int</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;frac_intercepted&quot;</span><span class="p">]</span>
 
+        <span class="c1"># Light interception is physiologically active only once the crop has emerged.</span>
+        <span class="n">emerged_gate</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">frac_int</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">frac_int</span> <span class="o">=</span> <span class="n">frac_int</span> <span class="o">*</span> <span class="n">emerged_gate</span>
+
         <span class="c1"># 3. Evapotranspiration — Penman formulation. CO₂ is a</span>
         <span class="c1">#    site/scenario property: ``SiteParameters.co2`` is the</span>
         <span class="c1">#    single source of truth feeding the ET0, RUE and</span>
@@ -3458,8 +3495,11 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
         <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
         <span class="c1">#    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹</span>
-        <span class="c1">#    here because the growth formula expects MJ.</span>
-        <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span>
+        <span class="c1">#    here because the growth formula expects MJ. The same EMERG</span>
+        <span class="c1">#    gate applied to ``frac_int`` above is applied so a dormant</span>
+        <span class="c1">#    (pre-emergence) seedling intercepts no PAR and hence does</span>
+        <span class="c1">#    not grow.</span>
+        <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">emerged_gate</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
@@ -3709,17 +3749,15 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="c1"># ---- Emergence-day bootstrap.</span>
-        <span class="c1"># Fires once per batch element on the step where ``tsump``</span>
-        <span class="c1"># first crosses ``tsumem``. The seed-reserve mass ``tdwi`` is</span>
-        <span class="c1"># partitioned at ``DVSI`` to give ``WRTI``/``WLVGI``/``WSTI``/</span>
-        <span class="c1"># ``WSOI`` and ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``,</span>
-        <span class="c1"># which are injected as one-shot rate deltas so that emergence</span>
-        <span class="c1"># instantly mobilises seed reserves into a juvenile-canopy</span>
-        <span class="c1"># state. The one-day LAI jump is intrinsic to the Lintul5</span>
-        <span class="c1"># abstraction; for a gradient sowing-to-canopy ramp, lower</span>
-        <span class="c1"># ``crop_params.tdwi`` (smaller seed reserve) or raise</span>
-        <span class="c1"># ``crop_params.rgrl`` (faster juvenile expansion).</span>
+        <span class="c1"># ---- Sowing-day seed-reserve bootstrap.</span>
+        <span class="c1"># The seed-reserve mass ``tdwi`` is partitioned at ``DVSI`` into</span>
+        <span class="c1"># ``WRTI``/``WLVGI``/``WSTI``/``WSOI`` and</span>
+        <span class="c1"># ``LAII = WLVGI · scale_factor_sla · SLATB(DVSI)``, injected once as a</span>
+        <span class="c1"># one-shot rate delta on the sowing-latch transition. These pools then</span>
+        <span class="c1"># stay constant until emergence: ``PARINT`` is EMERG-gated</span>
+        <span class="c1"># (``gtotal == 0``) and leaf growth/senescence and nutrient uptake are</span>
+        <span class="c1"># likewise EMERG-gated, so the seedling neither grows nor senesces; at</span>
+        <span class="c1"># emergence the juvenile LAI branch expands from the ``LAII`` base.</span>
         <span class="n">dvsi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">dvsi</span>
         <span class="n">tdwi</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tdwi</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">dvsi</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dvsi</span>
@@ -3752,24 +3790,26 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">aksti</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">lskr</span> <span class="o">*</span> <span class="n">kmaxlv_i</span> <span class="o">*</span> <span class="n">wsti</span>
         <span class="n">akrti</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">lrkr</span> <span class="o">*</span> <span class="n">kmaxlv_i</span> <span class="o">*</span> <span class="n">wrti</span>
 
-        <span class="n">tsump_next</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">+</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">emerg_now</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&lt;</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">tsump_next</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wlvgi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">anlvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">ansti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">anrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">aplvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">apsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">aprti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">aklvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">aksti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">emerg_now</span> <span class="o">*</span> <span class="n">akrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="c1"># One-shot trigger on the sowing-latch transition (``sown`` flips</span>
+        <span class="c1"># 0 → 1 on ``doy == idpl``). ``sown = max(state.sown, sown_now)`` so</span>
+        <span class="c1"># ``sown - state.sown`` is exactly 1 on that single day and 0 on every</span>
+        <span class="c1"># other, for both the autumn-sown (``idpl &gt; start_doy``) and the</span>
+        <span class="c1"># legacy always-sown (``idpl &lt;= start_doy``) configurations.</span>
+        <span class="n">just_sown</span> <span class="o">=</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wlvgi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anlvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">ansti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aplvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">apsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aprti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aklvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aksti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">akrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
 
         <span class="c1"># Per-day `DiagnosticState` snapshot — built from the same</span>
         <span class="c1"># intermediate tensors used to assemble ``rates``. It is</span>
@@ -4331,9 +4371,10 @@ rooting depth <code>rootdi</code>, root- and lower-zone water from
 (<code>nmin</code>/<code>pmin</code>/<code>kmin</code>) and inorganic
 (<code>nmint</code>/<code>pmint</code>/<code>kmint</code>) mineral pools seeded from
 soil parameters. Biomass pools, per-organ NPK pools and LAI
-start at zero; their initial values are injected as a
-one-shot rate on the emergence day inside
-<code>_compute_rates_dispatch</code>. The dead-tissue NPK loss
+start at zero; their seed-reserve initial values are injected
+as a one-shot rate on the <strong>sowing</strong> day inside
+<code>_compute_rates_dispatch</code>, then held dormant until emergence.
+The dead-tissue NPK loss
 accumulators (<code>nlossl</code>/<code>nlossr</code>/<code>nlosss</code> and the P, K
 analogues) also start at zero and grow as senescence
 proceeds.</p></td>
@@ -4365,9 +4406,10 @@ proceeds.</p></td>
 <span class="sd">        (``nmin``/``pmin``/``kmin``) and inorganic</span>
 <span class="sd">        (``nmint``/``pmint``/``kmint``) mineral pools seeded from</span>
 <span class="sd">        soil parameters. Biomass pools, per-organ NPK pools and LAI</span>
-<span class="sd">        start at zero; their initial values are injected as a</span>
-<span class="sd">        one-shot rate on the emergence day inside</span>
-<span class="sd">        `_compute_rates_dispatch`. The dead-tissue NPK loss</span>
+<span class="sd">        start at zero; their seed-reserve initial values are injected</span>
+<span class="sd">        as a one-shot rate on the **sowing** day inside</span>
+<span class="sd">        `_compute_rates_dispatch`, then held dormant until emergence.</span>
+<span class="sd">        The dead-tissue NPK loss</span>
 <span class="sd">        accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
 <span class="sd">        analogues) also start at zero and grow as senescence</span>
 <span class="sd">        proceeds.</span>
@@ -4424,12 +4466,12 @@ proceeds.</p></td>
         <span class="n">pminti</span><span class="o">=</span><span class="n">pminti</span><span class="p">,</span>
         <span class="n">kminti</span><span class="o">=</span><span class="n">kminti</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="c1"># The sowing → emergence interval is simulated explicitly via</span>
-    <span class="c1"># the ``tsump``/``tsumem`` thermal-sum logic in Phenology, so</span>
-    <span class="c1"># all biomass pools remain zero until emergence. The initial</span>
-    <span class="c1"># seed-reserve allocation is then injected as a one-shot rate</span>
-    <span class="c1"># on the day ``tsump`` first crosses ``tsumem``; see the</span>
-    <span class="c1"># emergence bootstrap block in `_compute_rates_dispatch`.</span>
+    <span class="c1"># Biomass pools start at zero here and receive the seed-reserve</span>
+    <span class="c1"># allocation as a one-shot rate on the sowing-latch transition</span>
+    <span class="c1"># (``doy == idpl``); the sowing → emergence interval then holds them</span>
+    <span class="c1"># dormant via the EMERG (``tsump &gt;= tsumem``) gates on light</span>
+    <span class="c1"># interception, leaf growth/senescence and nutrient uptake. See the</span>
+    <span class="c1"># sowing-day bootstrap block in `_compute_rates_dispatch`.</span>
     <span class="k">return</span> <span class="n">state</span>
 </code></pre></div>
         </details>
