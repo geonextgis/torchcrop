@@ -20,6 +20,59 @@ def test_forward_runs_and_shapes_match():
     assert torch.isfinite(out.yield_).all()
 
 
+def test_heat_stress_constructor_toggles():
+    # Constant hot weather (Tmax = 36 > leaf Tc = 34) over a long run so the
+    # crop passes DVS = 1 into the heat-sensitive regime and both heat modules
+    # are actually exercised.
+    weather = make_constant_weather(
+        batch_size=1, n_days=200, davtmp=18.0, tmin=12.0, tmax=36.0,
+        dtype=torch.float64,
+    )
+
+    def run(**kwargs):
+        return Lintul5Model(**kwargs).double()(weather, start_doy=1)
+
+    on = run()  # defaults: both heat effects ON
+    assert float(on.dvs.max()) > 1.3  # crop reaches the heat-sensitive stages
+
+    # Explicit True must reproduce the default exactly (backward compatible).
+    both_true = run(leaf_heat_stress=True, grain_heat_stress=True)
+    assert torch.equal(both_true.yield_, on.yield_)
+    assert torch.equal(both_true.adjusted_yield, on.adjusted_yield)
+
+    # Leaf heat OFF -> no senescence acceleration -> strictly higher raw yield
+    # under a heat wave (and the default actually had a penalty to remove).
+    leaf_off = run(leaf_heat_stress=False)
+    assert float(leaf_off.yield_[0]) > float(on.yield_[0])
+
+    # Grain heat OFF -> no yield penalty: HSF == 0 and adjusted_yield == raw
+    # yield_ (once the anthesis window has closed), while raw yield_ is left
+    # untouched (grain heat only ever affected adjusted_yield).
+    grain_off = run(grain_heat_stress=False)
+    assert float(on.heat_stress_factor[0]) > 0.0  # default did apply a penalty
+    assert torch.allclose(
+        grain_off.heat_stress_factor, torch.zeros_like(grain_off.heat_stress_factor)
+    )
+    assert torch.equal(grain_off.yield_, on.yield_)
+    assert torch.allclose(grain_off.adjusted_yield, grain_off.yield_)
+
+
+def test_heat_stress_toggles_off_preserve_gradients():
+    # The no-op heat modules must not sever the autograd graph.
+    weather = make_constant_weather(
+        batch_size=1, n_days=150, davtmp=18.0, tmin=12.0, tmax=36.0,
+        dtype=torch.float64,
+    )
+    crop_params = CropParameters().to(dtype=torch.float64)
+    crop_params.ruetb = nn.Parameter(crop_params.ruetb.clone().detach())
+    model = Lintul5Model(
+        crop_params=crop_params, leaf_heat_stress=False, grain_heat_stress=False
+    ).double()
+    model(weather, start_doy=1).biomass.sum().backward()
+    assert crop_params.ruetb.grad is not None
+    assert crop_params.ruetb.grad.abs().sum().item() > 0.0
+
+
 def test_gradient_wrt_rue():
     weather = make_constant_weather(batch_size=1, n_days=80, dtype=torch.float64)
     crop_params = CropParameters().to(dtype=torch.float64)

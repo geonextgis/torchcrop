@@ -52,6 +52,38 @@ def test_crop_dormant_until_sowing_day():
     assert float(out.dvs[0, -1]) > 0.0
 
 
+def test_seedling_placed_at_sowing_and_dormant_until_emergence():
+    # SIMPLACE ``Lintul5.initValues()`` places the seed reserve on the sowing
+    # day and holds it dormant (EMERG-gated growth) until ``tsump`` reaches
+    # ``tsumem``. torchcrop injects the same seed reserve on the sowing-latch
+    # transition, so the crop pools become non-zero right after sowing and
+    # then stay *exactly* constant through the sowing → emergence window.
+    out, sown, tsump, _ = _run(idpl=270)
+    tsumem = float(CropParameters().tsumem)
+
+    lai = out.lai[0]  # [T+1], state index t == doy t (start_doy=1)
+    dvs = out.dvs[0]
+
+    # The seed reserve appears one Euler step after the latch (forward-Euler
+    # realises the sowing-day injection on the next state), and is a positive
+    # juvenile canopy — not zero.
+    appear = int((lai > 0).float().argmax())
+    assert 270 <= appear <= 271
+    assert float(lai[appear]) > 0.0
+
+    # Dormant hold: from first appearance up to and including the emergence
+    # day (the first state with tsump >= tsumem), leaf area and development
+    # stage do not change — growth is realised on the following Euler step.
+    emerg = int((tsump >= tsumem).float().argmax())
+    assert emerg > appear  # a genuine multi-day dormant window exists
+    lai_window = lai[appear : emerg + 1]
+    assert torch.allclose(lai_window, lai_window[0], atol=1e-12)
+    assert torch.all(dvs[appear : emerg + 1] == 0.0)
+
+    # Growth resumes on the step after emergence.
+    assert float(lai[emerg + 1]) > float(lai[appear])
+
+
 def test_sowing_latch_survives_year_wraparound():
     # The run spans two years; once sown on doy 270 the latch must remain
     # 1 even when doy cycles back below 270 in the second year.
