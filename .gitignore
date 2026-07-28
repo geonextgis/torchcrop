@@ -110,6 +110,7 @@ simplace/
 torchcrop_test/
 graphify-out/
 scripts/
+figures/
 docs/examples/others/
 docs/examples/data/brandenburg/simplace/
 docs/examples/PyTorch_Test/
