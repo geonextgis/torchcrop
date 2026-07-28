@@ -635,6 +635,23 @@ class Lintul5Model(nn.Module):
             developing, ptran_eff, torch.full_like(ptran_eff, 1e-4)
         )
 
+        # 3b. Sowing latch. ``sown`` is 1 from the sowing day
+        #    (``doy >= site.idpl``) onward and never resets; the
+        #    ``max(state.sown, ...)`` makes it robust to day-of-year
+        #    wraparound across a calendar-year boundary (autumn-sown winter
+        #    wheat). With the default ``idpl = 0`` the gate is 1 every day,
+        #    reproducing the legacy "sown at t=0" behaviour. ``idpl`` is a
+        #    discrete switch, so the hard comparison adds no gradient path.
+        idpl = site_params.idpl
+        idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
+        sown_now = (doy >= idpl_b).to(davtmp.dtype)
+        sown = torch.maximum(state.sown, sown_now)
+
+        # A crop stands in the field between sowing and maturity. Demand-driven
+        # irrigation serves that crop, so it is switched off outside this
+        # window — a bare field is not watered to keep it at field capacity.
+        crop_present = sown * (state.dvs < 2.0).to(davtmp.dtype)
+
         # 4. Two-zone water balance with a percolation cascade.
         rdm = torch.minimum(
             soil_params.rdmso + torch.zeros_like(state.rootd),
@@ -656,6 +673,7 @@ class Lintul5Model(nn.Module):
             emerg=emerg,
             doy=doy,
             irrigation=irrigation,
+            crop_present=crop_present,
             depnr=crop_params.depnr,
             iairdu=crop_params.iairdu,
         )
@@ -667,26 +685,16 @@ class Lintul5Model(nn.Module):
         tranrf = self.hybrid.correct("water.tranrf", water["tranrf"], feats)
         feats["tranrf"] = tranrf
 
-        # 4b. Sowing latch. ``sown`` is 1 from the sowing day
-        #     (``doy >= site.idpl``) onward and never resets; the
-        #     ``max(state.sown, ...)`` makes it robust to day-of-year
-        #     wraparound across a calendar-year boundary (autumn-sown winter
-        #     wheat). With the default ``idpl = 0`` the gate is 1 every day,
-        #     reproducing the legacy "sown at t=0" behaviour. ``idpl`` is a
-        #     discrete switch, so the hard comparison adds no gradient path.
-        idpl = site_params.idpl
-        idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
-        sown_now = (doy >= idpl_b).to(davtmp.dtype)
-        sown = torch.maximum(state.sown, sown_now)
-
         # 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,
         #    ``davtmp`` and ``ddlp``, so its position in the sequence
         #    is independent of the water / ET branch. ``sown`` gates the
         #    emergence and vernalisation clocks (no-op once latched).
         pheno = self.phenology(state, davtmp, ddlp, crop_params, sown=sown)
 
-        # 6. Nutrient demand — independent of partitioning; produces the
-        #    NPK stress index that multiplies ``GTOTAL`` downstream.
+        # 6. Nutrient demand — independent of partitioning; drives the
+        #    day's uptake, translocation and per-organ NPK rates, and
+        #    measures the NPK stress index carried into *tomorrow's*
+        #    growth (see the lag note below).
         #    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹
         #    here because the growth formula expects MJ. The same EMERG
         #    gate applied to ``frac_int`` above is applied so a dormant
@@ -699,7 +707,20 @@ class Lintul5Model(nn.Module):
             soil_params=soil_params,
             tranrf=tranrf,
         )
-        nstress = nut["nstress"]
+        # Carbon and nutrient acquisition are coupled sequentially, not
+        # simultaneously. The nutrition indices measure how far the standing
+        # canopy's N/P/K concentration has fallen below the optimum, so they
+        # can only be evaluated once the canopy for the day exists. Growth,
+        # however, must be computed *before* that canopy is known. The model
+        # therefore drives the day's carbon side with the indices measured at
+        # the close of the previous day (``state.npki_prev`` /
+        # ``state.nni_prev``) and uses the freshly computed ``nut[...]``
+        # values only for the nutrient and soil bookkeeping, which legitimately
+        # sees the same-day state. The same one-step convention
+        # applies to the root front (``state.rr_prev``).
+        nstress_now = nut["nstress"]
+        nstress = state.npki_prev
+        nni_lag = state.nni_prev
         feats["nstress"] = nstress
 
         # 7. Soil mineral-pool balance. Runs after NutrientDemand
@@ -725,8 +746,8 @@ class Lintul5Model(nn.Module):
         # SIMPLACE ``GROWTH`` law of the minimum, where the more
         # limiting of water (``TRANRF``) and nutrient (``NPKREF``)
         # stress governs growth. ``NPKREF`` is the RUE reduction factor
-        # derived from the NPK index ``nstress`` (= ``NPKI``) via the
-        # ``NLUE`` coefficient:
+        # derived from the NPK index ``nstress`` (= the previous day's
+        # ``NPKI``) via the ``NLUE`` coefficient:
         #
         #     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)
         #
@@ -761,7 +782,7 @@ class Lintul5Model(nn.Module):
             gtotal=gtotal,
             params=crop_params,
             tranrf=tranrf,
-            nni=nut["nni"],
+            nni=nni_lag,
         )
 
         # Optional correction of the biomass partitioning. The above-ground
@@ -878,10 +899,19 @@ class Lintul5Model(nn.Module):
             # Latch the same-day velocity into ``rr_prev`` for the next day's
             # water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).
             "rr_prev_rate": water["rr"] - state.rr_prev,
+            # Latch today's nutrition indices so tomorrow's carbon side can
+            # read the canopy status measured at the close of today
+            # (``npki_prev_{t+1} = npki_t``). Expressed as a rate so the
+            # Euler update performs the assignment.
+            "nni_prev_rate": nut["nni"] - state.nni_prev,
+            "npki_prev_rate": nstress_now - state.npki_prev,
             "wa_rate": water["wa_rate"],
             "wa_lower_rate": water["wa_lower_rate"],
             "dslr_rate": water["dslr_rate"],
             "dsos_rate": water["dsos_rate"],
+            # Carry the part of today's scheduled irrigation that exceeded
+            # the delivery limit into tomorrow's application.
+            "dirro_rate": water["dirro_next"] - state.dirro,
             "anlv_rate": gate(nut["n_lv_rate"] - rnldlv),
             "anst_rate": gate(nut["n_st_rate"] - rnldst),
             "anrt_rate": gate(nut["n_rt_rate"] - rnldrt),
@@ -938,7 +968,7 @@ class Lintul5Model(nn.Module):
             "gtotal_cum_rate": gtotal,
             # Scalar diagnostics — not integrated by the engine.
             "tranrf": tranrf,
-            "nstress": nstress,
+            "nstress": nstress_now,
             "gtotal": gtotal,
         }
 
@@ -1015,7 +1045,7 @@ class Lintul5Model(nn.Module):
             tranrf=tranrf,
             rdry=water["rdry"],
             rwet=water["rwet"],
-            nstress=nstress,
+            nstress=nstress_now,
             nni=nut["nni"],
             pni=nut["pni"],
             kni=nut["kni"],
