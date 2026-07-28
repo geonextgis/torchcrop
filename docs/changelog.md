@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.1.1 - 2026-07-28
 
 **Bug Fixes**:
 
@@ -19,6 +19,29 @@
     produces potential growth. Runs that set `irri = 1` for potential mode
     are unaffected. Against the SIMPLACE reference this cuts the root-zone
     soil-moisture error in potential mode from 4.21 % to 0.20 % nMAE.
+
+**New Features**:
+
+-   `docs/examples/07_simplace_comparison/` — a reproducible validation
+    harness (`run_comparison.py`) that runs all four production modes over
+    the 18-location Brandenburg dataset and plots torchcrop against the
+    SIMPLACE Lintul5 reference on a development-stage axis, for 12 shared
+    variables (LAI, biomass pools, soil moisture, `TRANRF`, and the N pools
+    and nutrition indices). Writes per-mode ensemble and per-location
+    figures, a cross-mode agreement summary, and an `error_summary.csv` of
+    bias / MAE / RMSE / normalised MAE.
+
+**Improvements**:
+
+-   `WaterBalance.forward` accepts an `iopt` argument (default `2`, the
+    water-limited behaviour, so existing standalone calls are unchanged),
+    documented alongside the new potential-production equations in the
+    module docstring.
+-   Regression tests for the potential-production branch: unreduced
+    transpiration on a soil at wilting point, backward-compatible default,
+    and per-batch-element mode selection.
+-   `docs/index.md` brought in line with the README feature list (production
+    modes, crop presets, calibration and hybrid APIs, external management).
 
 ## v1.1.0 - 2026-07-28
 
