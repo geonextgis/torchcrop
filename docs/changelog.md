@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+**Bug Fixes**:
+
+-   `WaterBalance` now implements the SIMPLACE `IOPT == 1` branch: under
+    potential production the crop transpires at the unreduced potential rate,
+    so `TRANRF` is identically `1` and the root zone can be drawn below
+    wilting point, while the soil profile still dries down normally.
+    Previously the drought/oxygen reduction was applied in every mode, so
+    potential production had to be faked with `soil_params.irri = 1` (which
+    also pinned the soil at field capacity). `Lintul5Model` passes
+    `crop_params.iopt` through, and the branch is a batched `torch.where`,
+    so it stays differentiable.
+
+    **Behaviour change:** `iopt = 1` combined with a rain-fed soil
+    (`irri = 0`) previously produced water-limited growth; it now correctly
+    produces potential growth. Runs that set `irri = 1` for potential mode
+    are unaffected. Against the SIMPLACE reference this cuts the root-zone
+    soil-moisture error in potential mode from 4.21 % to 0.20 % nMAE.
+
 ## v1.1.0 - 2026-07-28
 
 **New Features**:
