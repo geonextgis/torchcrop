@@ -73,7 +73,12 @@ class LeafDynamics(nn.Module):
                 ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).
             tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.
             nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,
-                shape ``[B]``.
+                shape ``[B]``. Scales ``SLA``, damps the juvenile LAI
+                expansion and drives the ``RDRNS`` senescence term.
+                `Lintul5Model` supplies the index measured at the close
+                of the previous day (`ModelState.npki_prev`), so a
+                canopy that has just emerged is driven by the
+                pre-emergence value ``0``.
             params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,
                 ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,
                 ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,
