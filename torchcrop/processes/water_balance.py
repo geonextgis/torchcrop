@@ -24,7 +24,12 @@ space of the receiving layer.
 **Stress factors.** Transpiration is reduced multiplicatively by a
 drought factor ``RDRY`` and (for non-rice crops) an oxygen factor
 ``RWET`` that ramps with ``DSOS`` — days of oxygen shortage,
-persistent across days and clipped to ``[0, 4]``.
+persistent across days and clipped to ``[0, 4]``. Under **potential
+production** (``iopt = 1``) none of this applies: the crop transpires
+at the full potential rate, unconstrained by the available water, so
+``TRANRF`` is identically ``1`` and the root zone may be drawn below
+wilting point. The soil water balance itself still runs normally, so
+the profile dries down exactly as in a rain-fed run.
 
 **Root-front velocity.** Derived from ``RRI``, the maximum daily
 rooting-depth increase: root growth is switched off under severe
@@ -88,6 +93,21 @@ f_\\text{eaw} = \\mathrm{clip}\\!\\left(\\frac{1}{A + B\\,\\text{ETC}_
 \\qquad
 \\theta_\\text{crit} = (1 - f_\\text{eaw})(\\theta_\\text{fc} -
 \\theta_\\text{wp}) + \\theta_\\text{wp}.
+$$
+
+Actual transpiration and the water-stress factor, where the potential
+branch (``IOPT = 1``) bypasses both reduction factors and the
+available-water ceiling:
+
+$$
+T_a =
+\\begin{cases}
+T_p & \\text{if IOPT} = 1 \\\\
+\\max\\!\\left(0,\\ \\min\\!\\left(W_\\text{avt},\\
+R_\\text{dry} R_\\text{wet} T_p\\right)\\right) & \\text{otherwise}
+\\end{cases}
+\\qquad
+\\text{TRANRF} = \\frac{T_a}{T_p}.
 $$
 
 Drought and oxygen reduction factors:
@@ -312,6 +332,7 @@ class WaterBalance(nn.Module):
         crop_present: torch.Tensor | float = 1.0,
         depnr: torch.Tensor | float = 4.5,
         iairdu: torch.Tensor | float = 0.0,
+        iopt: torch.Tensor | float = 2.0,
     ) -> dict[str, torch.Tensor]:
         """Compute one day of water-balance rates and fluxes.
 
@@ -353,6 +374,13 @@ class WaterBalance(nn.Module):
             iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait
                 supplied from `CropParameters.iairdu` by `Lintul5Model`;
                 defaults to ``0`` (non-aquatic).
+            iopt: Production-mode switch ``cIOPT`` ∈ ``{1, 2, 3, 4}``,
+                supplied from `CropParameters.iopt` by `Lintul5Model`.
+                Only ``1`` (potential production) is special-cased here:
+                transpiration then runs at the unreduced potential rate
+                and ``TRANRF`` is identically ``1``. Defaults to ``2``
+                (water-limited), i.e. the reducing behaviour, so
+                standalone calls are unaffected.
 
         Returns:
             Dict of ``[B]`` tensors.
@@ -436,7 +464,16 @@ class WaterBalance(nn.Module):
         # ---------------------------------------------------------------- #
         wwp = factor * params.wcwp * rootd
         wavt = torch.clamp(state.wa - wwp, min=0.0)
-        tran = torch.clamp(torch.minimum(wavt, rdry * rwet * ptran), min=0.0)
+        tran_limited = torch.clamp(
+            torch.minimum(wavt, rdry * rwet * ptran), min=0.0
+        )
+        # Potential production (IOPT = 1) transpires at the *unreduced*
+        # potential rate — neither the drought/oxygen factors nor the
+        # available-water ceiling apply, so the root zone may be drawn
+        # below wilting point and TRANRF is identically 1
+        iopt_t = torch.as_tensor(iopt, dtype=ptran.dtype, device=ptran.device)
+        is_potential = torch.isclose(iopt_t, torch.ones_like(iopt_t))
+        tran = torch.where(is_potential, ptran, tran_limited)
         tranrf = tran / notnul(ptran)
 
         # ---------------------------------------------------------------- #
