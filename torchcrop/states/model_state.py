@@ -233,6 +233,23 @@ class ModelState:
     # rooting depth integrates the same-day ``RR``. Latched each step via
     # ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).
     rr_prev: torch.Tensor = field(default=None)  # [B] m d-1 — lagged root-front velocity
+    
+    # Previous-day nutrition indices [-]. Biomass-side processes use the nutrient
+    # status measured at the end of the previous day, while same-day values are
+    # used for nutrient and soil bookkeeping. The lagged indices drive NPKREF, SLA,
+    # juvenile LAI, RDRNS, and root/shoot partitioning. They start at 1 (no stress)
+    # and are latched each step via ``nni_prev_rate`` / ``npki_prev_rate``.
+    nni_prev: torch.Tensor = field(default=None)  # [B] - lagged NNI
+    npki_prev: torch.Tensor = field(default=None)  # [B] - lagged NPKI
+
+    # Scheduled irrigation not yet delivered [mm]. The irrigation system
+    # applies at most 10 mm d⁻¹, so a larger scheduled application is spread
+    # over consecutive days rather than truncated: whatever does not fit on
+    # the day is held here and added to the next day's application. Only the
+    # table-driven mode (``soil.irri = 2``) can build up a surplus; automatic
+    # irrigation is capped at 10 mm by construction and externally supplied
+    # irrigation bypasses the limit entirely.
+    dirro: torch.Tensor = field(default=None)  # [B] mm — undelivered irrigation
 
     @classmethod
     def initial(
@@ -354,6 +371,9 @@ class ModelState:
             klosss=zeros.clone(),
             sown=zeros.clone(),
             rr_prev=zeros.clone(),
+            nni_prev=torch.ones_like(zeros),
+            npki_prev=torch.ones_like(zeros),
+            dirro=zeros.clone(),
         )
 
     def replace(self, **updates: Any) -> "ModelState":
