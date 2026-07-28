@@ -27,13 +27,27 @@ responses, parameter networks) and calibrated end-to-end with standard
 ## Features
 
 - **Differentiable Lintul5** — daily forward-Euler simulation of phenology,
-  radiation interception, photosynthesis, partitioning, leaf and root
-  dynamics, water balance and NPK uptake, all as `torch.nn.Module`s.
+  radiation interception, photosynthesis, partitioning, leaf/stem/root
+  dynamics, water balance, and NPK demand, uptake, and soil availability,
+  all as `torch.nn.Module`s. Supports potential (`IOPT=1`), water-limited
+  (`IOPT=2`), and water-and-NPK-limited (`IOPT=3`/`4`) production modes,
+  with optional automatic irrigation.
 - **Batch-first** — every state, parameter and driver carries a leading
   batch dimension `[B, ...]` so that many sites, years, or parameter sets
   can be simulated in parallel on GPU.
-- **Hybrid modeling hooks** — drop-in `NeuralResidual`, `LearnedStressFactor`
-  and `ParameterNet` modules that plug into the mechanistic pipeline.
+- **23 bundled crop presets** — `torchcrop.available_crops()` lists species
+  (wheat, maize, rice, soybean, potato, sugar beet, …); load one via
+  `CropParameters(crop_name="wheat")`.
+- **Gradient-based calibration** — `torchcrop.calibration` provides a
+  constraint-aware (bounds, dtype, table-ordinate, ordering), transform-based
+  `CalibrationManager` for fitting crop parameters to observations.
+- **Hybrid modeling hooks** — a `HybridManager` wiring layer accepts
+  declarative `ResidualSpec`s (see `default_slots()`) to inject
+  `NeuralResidual` corrections at named points in the pipeline, plus
+  drop-in `LearnedStressFactor` and `ParameterNet` modules.
+- **External irrigation/fertiliser** — pass explicit `irrigation: [B, T]`
+  and `fertilizer: [B, T, 3]` schedules to `model(...)`, overriding the
+  internal table-driven application on a per-day basis.
 - **Smooth options** — stage-based branching (`DVS < 1`, maturity, etc.) can
   be switched between hard `torch.where` and sigmoid blends for second-order
   smoothness.
@@ -64,39 +78,56 @@ print(output.dvs.shape)     # [B, T+1] development stage trajectory
 
 ### Gradient-based parameter calibration
 
+`torchcrop.calibration` turns bounded crop/soil/site parameters into
+optimizable latents, keeping them inside their physical range by
+construction:
+
 ```python
-import torch.nn as nn
-from torchcrop import Lintul5Model, CropParameters
+import torch
+from torchcrop import CalibrationManager, Lintul5Model, ParameterSpec
 
-crop = CropParameters().to(dtype=torch.float64)
-crop.rue = nn.Parameter(torch.tensor(3.0, dtype=torch.float64))
-
-model = Lintul5Model(crop_params=crop).double()
-optimizer = torch.optim.Adam([crop.rue], lr=1e-2)
+model = Lintul5Model(crop_params=torchcrop.CropParameters().to(dtype=torch.float64)).double()
+manager = CalibrationManager(
+    model, specs=[ParameterSpec(name="crop.scale_factor_rue", bounds=(0.5, 1.5))]
+)
+optimizer = torch.optim.Adam(manager.parameters(), lr=1e-2)
 
 for _ in range(50):
     optimizer.zero_grad()
+    manager.materialize()  # write the current latents into model.crop_params
     out = model(weather.to(torch.float64), start_doy=60)
     loss = ((out.yield_ - observed_yield) ** 2).mean()
     loss.backward()
     optimizer.step()
 ```
 
+See `docs/examples/04_calibration/` for a full worked example.
+
 ### Hybrid modeling
 
-Inject a neural residual on top of the mechanistic photosynthesis output:
+Inject a neural residual on top of a named point in the mechanistic pipeline
+via a declarative `ResidualSpec`:
 
 ```python
-from torchcrop.nn import NeuralResidual
+from torchcrop.nn import ResidualSpec
 
-residual = NeuralResidual(input_dim=8, output_dim=1, hidden_dim=32, scale=0.1)
-hybrid = torchcrop.Lintul5Model(
-    residual_modules={"photosynthesis": residual},
+model = torchcrop.Lintul5Model(
+    residual_specs=[
+        ResidualSpec(
+            "photosynthesis.gtotal",
+            "rate_factor",
+            context=("lai", "dvs", "davtmp", "tranrf", "nstress"),
+            scale=0.15,
+        ),
+    ],
 )
 ```
 
-All parameters — mechanistic and neural — are surfaced by
-`hybrid.parameters()` and can be optimized jointly.
+`torchcrop.nn.default_slots()` returns the recommended catalogue of
+observable-tied slots (photosynthesis, water stress, partitioning, leaf
+senescence); pass a hand-picked subset rather than the whole list unless
+every pathway is observable. All parameters — mechanistic and neural — are
+surfaced by `model.parameters()` and can be optimized jointly.
 
 ## Package layout
 
@@ -106,16 +137,34 @@ torchcrop/
 ├── engine.py                  # SimulationEngine time-stepping loop
 ├── config.py                  # RunConfig
 ├── parameters/                # CropParameters / SoilParameters / SiteParameters
+│                              # + 23 bundled crop presets (crop_data/*.yaml)
 ├── drivers/weather.py         # WeatherDriver [B, T, C]
-├── states/model_state.py      # ModelState tensor container
+├── states/model_state.py      # ModelState / DiagnosticState tensor containers
 ├── processes/                 # Biophysical processes (astro, phenology,
-│                              # irradiation, evapotranspiration, water_balance,
+│                              # irradiation, evapotranspiration,
+│                              # co2_transpiration, water_balance,
 │                              # photosynthesis, partitioning, leaf_dynamics,
-│                              # root_dynamics, nutrient_demand, stress)
+│                              # stem_dynamics, root_dynamics, nutrient_demand,
+│                              # soil_nutrients, heat_stress, stress)
 ├── functions/                 # Differentiable primitives (AFGEN, FST, smoothing)
-├── nn/                        # NeuralResidual, LearnedStressFactor, ParameterNet
+├── nn/                        # NeuralResidual, LearnedStressFactor, ParameterNet,
+│                              # HybridManager / ResidualSpec wiring layer
+├── calibration/                # CalibrationManager, ParameterSpec,
+│                              # ConstraintGroup, transforms
 └── utils/                     # I/O, visualisation, validation helpers
 ```
+
+## Examples
+
+Worked notebooks under `docs/examples/` (rendered into the docs site):
+
+- `01_potential/` — potential production (winter wheat)
+- `02_water_limited/` — water-limited production (winter wheat)
+- `03_water_and_nutrient_limited/` — water + N and water + NPK limited production
+- `04_calibration/` — gradient-based parameter calibration
+- `05_hybrid/` — hybrid ML residual corrections (reserved, notebook in progress)
+- `06_daily_timestep/` — low-level, day-by-day API usage
+- `others/data_prep.ipynb` — preparing the Brandenburg example dataset
 
 ## Development
 
