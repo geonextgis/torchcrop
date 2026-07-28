@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -16887,6 +16887,23 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">developing</span><span class="p">,</span> <span class="n">ptran_eff</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">ptran_eff</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span>
         <span class="p">)</span>
 
+        <span class="c1"># 3b. Sowing latch. ``sown`` is 1 from the sowing day</span>
+        <span class="c1">#    (``doy &gt;= site.idpl``) onward and never resets; the</span>
+        <span class="c1">#    ``max(state.sown, ...)`` makes it robust to day-of-year</span>
+        <span class="c1">#    wraparound across a calendar-year boundary (autumn-sown winter</span>
+        <span class="c1">#    wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
+        <span class="c1">#    reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
+        <span class="c1">#    discrete switch, so the hard comparison adds no gradient path.</span>
+        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
+        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
+        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
+
+        <span class="c1"># A crop stands in the field between sowing and maturity. Demand-driven</span>
+        <span class="c1"># irrigation serves that crop, so it is switched off outside this</span>
+        <span class="c1"># window — a bare field is not watered to keep it at field capacity.</span>
+        <span class="n">crop_present</span> <span class="o">=</span> <span class="n">sown</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
         <span class="c1"># 4. Two-zone water balance with a percolation cascade.</span>
         <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
@@ -16908,6 +16925,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
             <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
             <span class="n">iairdu</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span>
         <span class="p">)</span>
@@ -16919,26 +16937,16 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
-        <span class="c1"># 4b. Sowing latch. ``sown`` is 1 from the sowing day</span>
-        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets; the</span>
-        <span class="c1">#     ``max(state.sown, ...)`` makes it robust to day-of-year</span>
-        <span class="c1">#     wraparound across a calendar-year boundary (autumn-sown winter</span>
-        <span class="c1">#     wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
-        <span class="c1">#     reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
-        <span class="c1">#     discrete switch, so the hard comparison adds no gradient path.</span>
-        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
-        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
-        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
-
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
         <span class="c1">#    is independent of the water / ET branch. ``sown`` gates the</span>
         <span class="c1">#    emergence and vernalisation clocks (no-op once latched).</span>
         <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="n">sown</span><span class="p">)</span>
 
-        <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
-        <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
+        <span class="c1"># 6. Nutrient demand — independent of partitioning; drives the</span>
+        <span class="c1">#    day&#39;s uptake, translocation and per-organ NPK rates, and</span>
+        <span class="c1">#    measures the NPK stress index carried into *tomorrow&#39;s*</span>
+        <span class="c1">#    growth (see the lag note below).</span>
         <span class="c1">#    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹</span>
         <span class="c1">#    here because the growth formula expects MJ. The same EMERG</span>
         <span class="c1">#    gate applied to ``frac_int`` above is applied so a dormant</span>
@@ -16951,7 +16959,20 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="c1"># Carbon and nutrient acquisition are coupled sequentially, not</span>
+        <span class="c1"># simultaneously. The nutrition indices measure how far the standing</span>
+        <span class="c1"># canopy&#39;s N/P/K concentration has fallen below the optimum, so they</span>
+        <span class="c1"># can only be evaluated once the canopy for the day exists. Growth,</span>
+        <span class="c1"># however, must be computed *before* that canopy is known. The model</span>
+        <span class="c1"># therefore drives the day&#39;s carbon side with the indices measured at</span>
+        <span class="c1"># the close of the previous day (``state.npki_prev`` /</span>
+        <span class="c1"># ``state.nni_prev``) and uses the freshly computed ``nut[...]``</span>
+        <span class="c1"># values only for the nutrient and soil bookkeeping, which legitimately</span>
+        <span class="c1"># sees the same-day state. The same one-step convention</span>
+        <span class="c1"># applies to the root front (``state.rr_prev``).</span>
+        <span class="n">nstress_now</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="n">nstress</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span>
+        <span class="n">nni_lag</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nstress</span>
 
         <span class="c1"># 7. Soil mineral-pool balance. Runs after NutrientDemand</span>
@@ -16977,8 +16998,8 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># SIMPLACE ``GROWTH`` law of the minimum, where the more</span>
         <span class="c1"># limiting of water (``TRANRF``) and nutrient (``NPKREF``)</span>
         <span class="c1"># stress governs growth. ``NPKREF`` is the RUE reduction factor</span>
-        <span class="c1"># derived from the NPK index ``nstress`` (= ``NPKI``) via the</span>
-        <span class="c1"># ``NLUE`` coefficient:</span>
+        <span class="c1"># derived from the NPK index ``nstress`` (= the previous day&#39;s</span>
+        <span class="c1"># ``NPKI``) via the ``NLUE`` coefficient:</span>
         <span class="c1">#</span>
         <span class="c1">#     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)</span>
         <span class="c1">#</span>
@@ -17013,7 +17034,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nni_lag</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Optional correction of the biomass partitioning. The above-ground</span>
@@ -17130,10 +17151,19 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="c1"># Latch the same-day velocity into ``rr_prev`` for the next day&#39;s</span>
             <span class="c1"># water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).</span>
             <span class="s2">&quot;rr_prev_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
+            <span class="c1"># Latch today&#39;s nutrition indices so tomorrow&#39;s carbon side can</span>
+            <span class="c1"># read the canopy status measured at the close of today</span>
+            <span class="c1"># (``npki_prev_{t+1} = npki_t``). Expressed as a rate so the</span>
+            <span class="c1"># Euler update performs the assignment.</span>
+            <span class="s2">&quot;nni_prev_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span><span class="p">,</span>
+            <span class="s2">&quot;npki_prev_rate&quot;</span><span class="p">:</span> <span class="n">nstress_now</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span><span class="p">,</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
+            <span class="c1"># Carry the part of today&#39;s scheduled irrigation that exceeded</span>
+            <span class="c1"># the delivery limit into tomorrow&#39;s application.</span>
+            <span class="s2">&quot;dirro_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dirro_next&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dirro</span><span class="p">,</span>
             <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
             <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
             <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
@@ -17190,7 +17220,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;gtotal_cum_rate&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
             <span class="c1"># Scalar diagnostics — not integrated by the engine.</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress</span><span class="p">,</span>
+            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress_now</span><span class="p">,</span>
             <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
 
@@ -17267,7 +17297,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">rdry</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rdry&quot;</span><span class="p">],</span>
             <span class="n">rwet</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rwet&quot;</span><span class="p">],</span>
-            <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+            <span class="n">nstress</span><span class="o">=</span><span class="n">nstress_now</span><span class="p">,</span>
             <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
             <span class="n">pni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;pni&quot;</span><span class="p">],</span>
             <span class="n">kni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kni&quot;</span><span class="p">],</span>
@@ -28106,7 +28136,12 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">            nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,</span>
-<span class="sd">                shape ``[B]``.</span>
+<span class="sd">                shape ``[B]``. Scales ``SLA``, damps the juvenile LAI</span>
+<span class="sd">                expansion and drives the ``RDRNS`` senescence term.</span>
+<span class="sd">                `Lintul5Model` supplies the index measured at the close</span>
+<span class="sd">                of the previous day (`ModelState.npki_prev`), so a</span>
+<span class="sd">                canopy that has just emerged is driven by the</span>
+<span class="sd">                pre-emergence value ``0``.</span>
 <span class="sd">            params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,</span>
 <span class="sd">                ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,</span>
 <span class="sd">                ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,</span>
@@ -28315,7 +28350,12 @@ juvenile-phase thermal time
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>NPK nutrient index <code>NPKI</code> in <code>[0, 1]</code>,
-shape <code>[B]</code>.</p></td>
+shape <code>[B]</code>. Scales <code>SLA</code>, damps the juvenile LAI
+expansion and drives the <code>RDRNS</code> senescence term.
+<code>Lintul5Model</code> supplies the index measured at the close
+of the previous day (<code>ModelState.npki_prev</code>), so a
+canopy that has just emerged is driven by the
+pre-emergence value <code>0</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -28428,7 +28468,12 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">        nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,</span>
-<span class="sd">            shape ``[B]``.</span>
+<span class="sd">            shape ``[B]``. Scales ``SLA``, damps the juvenile LAI</span>
+<span class="sd">            expansion and drives the ``RDRNS`` senescence term.</span>
+<span class="sd">            `Lintul5Model` supplies the index measured at the close</span>
+<span class="sd">            of the previous day (`ModelState.npki_prev`), so a</span>
+<span class="sd">            canopy that has just emerged is driven by the</span>
+<span class="sd">            pre-emergence value ``0``.</span>
 <span class="sd">        params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,</span>
 <span class="sd">            ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,</span>
 <span class="sd">            ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,</span>
@@ -28669,7 +28714,9 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <li><em>Concentration-based stress</em> (<code>NNINDX</code>): the historical
    nutrition indices <code>NNI</code>/<code>PNI</code>/<code>KNI</code> derived from
    <code>(NFGMR - NRMR) / (NOPTMR - NRMR)</code>, combined into
-   <code>NPKI = min(NNI, PNI, KNI)</code>.</li>
+   <code>NPKI = min(NNI, PNI, KNI)</code>. They are defined only for a
+   standing canopy and are <code>0</code> before emergence; under
+   <code>IOPT &lt;= 2</code> they are pinned to <code>1</code> on every day.</li>
 <li><em>Per-organ partitioning</em> (<code>RNUSUB</code>) of soil + fixation uptake by
    demand-share, and <em>translocation</em> (<code>NTRANS</code>) of storage-organ
    supply by translocatable-pool share.</li>
@@ -28698,7 +28745,9 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">    4. *Concentration-based stress* (``NNINDX``): the historical</span>
 <span class="sd">       nutrition indices ``NNI``/``PNI``/``KNI`` derived from</span>
 <span class="sd">       ``(NFGMR - NRMR) / (NOPTMR - NRMR)``, combined into</span>
-<span class="sd">       ``NPKI = min(NNI, PNI, KNI)``.</span>
+<span class="sd">       ``NPKI = min(NNI, PNI, KNI)``. They are defined only for a</span>
+<span class="sd">       standing canopy and are ``0`` before emergence; under</span>
+<span class="sd">       ``IOPT &lt;= 2`` they are pinned to ``1`` on every day.</span>
 <span class="sd">    5. *Per-organ partitioning* (``RNUSUB``) of soil + fixation uptake by</span>
 <span class="sd">       demand-share, and *translocation* (``NTRANS``) of storage-organ</span>
 <span class="sd">       supply by translocatable-pool share.</span>
@@ -28771,8 +28820,10 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">            Diagnostics:</span>
 
 <span class="sd">            * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the</span>
-<span class="sd">                combined nutrition index in ``[1e-3, 1]`` that</span>
-<span class="sd">                multiplies ``gtotal`` in `Photosynthesis`.</span>
+<span class="sd">                combined nutrition index in ``[1e-3, 1]`` (``0`` before</span>
+<span class="sd">                emergence) that drives the ``NPKREF`` reduction of</span>
+<span class="sd">                ``gtotal``. `Lintul5Model` consumes it one day later</span>
+<span class="sd">                than it is produced; see `ModelState.npki_prev`.</span>
 <span class="sd">            * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.</span>
 <span class="sd">            * ``n_uptake``, ``p_uptake``, ``k_uptake``</span>
 <span class="sd">                [g X m⁻² d⁻¹] — Whole-plant uptake totals</span>
@@ -28967,20 +29018,28 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-        <span class="c1"># IOPT overrides.</span>
+        <span class="c1"># Before emergence, no standing canopy exists, so the nutrition indices are</span>
+        <span class="c1"># undefined and remain at their zero initialisation, matching NNINDX. This is</span>
+        <span class="c1"># load-bearing because the biomass side consumes the index with a one-day lag:</span>
+        <span class="c1"># the first emerged day therefore uses zero, producing no assimilation and one</span>
+        <span class="c1"># RDRNS leaf-death adjustment before juvenile growth begins.</span>
+        <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">nni</span><span class="p">)</span>
+        <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+        <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+
+        <span class="c1"># IOPT overrides. These sit *after* the emergence gate (``NNINDX``</span>
+        <span class="c1"># applies them last), so under potential / water-limited production</span>
+        <span class="c1"># the indices are pinned to 1 on every day — emerged or not — and</span>
+        <span class="c1"># nutrition can never reduce growth.</span>
         <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
         <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
         <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
         <span class="n">is_iopt3</span> <span class="o">=</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&gt;</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_iopt3</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
-
-        <span class="c1"># Pre-emergence: no stress.</span>
-        <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
-        <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
         <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
         <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
@@ -29219,8 +29278,10 @@ Rate variables (consumed by the engine to update the matching
 <p>Diagnostics:</p>
 <ul>
 <li><code>nstress</code> [-] — <code>NPKI = min(NNI, PNI, KNI)</code>, the
-    combined nutrition index in <code>[1e-3, 1]</code> that
-    multiplies <code>gtotal</code> in <code>Photosynthesis</code>.</li>
+    combined nutrition index in <code>[1e-3, 1]</code> (<code>0</code> before
+    emergence) that drives the <code>NPKREF</code> reduction of
+    <code>gtotal</code>. <code>Lintul5Model</code> consumes it one day later
+    than it is produced; see <code>ModelState.npki_prev</code>.</li>
 <li><code>nni</code>, <code>pni</code>, <code>kni</code> [-] — Per-nutrient indices.</li>
 <li><code>n_uptake</code>, <code>p_uptake</code>, <code>k_uptake</code>
     [g X m⁻² d⁻¹] — Whole-plant uptake totals
@@ -29309,8 +29370,10 @@ Rate variables (consumed by the engine to update the matching
 <span class="sd">        Diagnostics:</span>
 
 <span class="sd">        * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the</span>
-<span class="sd">            combined nutrition index in ``[1e-3, 1]`` that</span>
-<span class="sd">            multiplies ``gtotal`` in `Photosynthesis`.</span>
+<span class="sd">            combined nutrition index in ``[1e-3, 1]`` (``0`` before</span>
+<span class="sd">            emergence) that drives the ``NPKREF`` reduction of</span>
+<span class="sd">            ``gtotal``. `Lintul5Model` consumes it one day later</span>
+<span class="sd">            than it is produced; see `ModelState.npki_prev`.</span>
 <span class="sd">        * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.</span>
 <span class="sd">        * ``n_uptake``, ``p_uptake``, ``k_uptake``</span>
 <span class="sd">            [g X m⁻² d⁻¹] — Whole-plant uptake totals</span>
@@ -29505,20 +29568,28 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-    <span class="c1"># IOPT overrides.</span>
+    <span class="c1"># Before emergence, no standing canopy exists, so the nutrition indices are</span>
+    <span class="c1"># undefined and remain at their zero initialisation, matching NNINDX. This is</span>
+    <span class="c1"># load-bearing because the biomass side consumes the index with a one-day lag:</span>
+    <span class="c1"># the first emerged day therefore uses zero, producing no assimilation and one</span>
+    <span class="c1"># RDRNS leaf-death adjustment before juvenile growth begins.</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">nni</span><span class="p">)</span>
+    <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+    <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+
+    <span class="c1"># IOPT overrides. These sit *after* the emergence gate (``NNINDX``</span>
+    <span class="c1"># applies them last), so under potential / water-limited production</span>
+    <span class="c1"># the indices are pinned to 1 on every day — emerged or not — and</span>
+    <span class="c1"># nutrition can never reduce growth.</span>
     <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
     <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
     <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
     <span class="n">is_iopt3</span> <span class="o">=</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&gt;</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_iopt3</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
-
-    <span class="c1"># Pre-emergence: no stress.</span>
-    <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
-    <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
     <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
     <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
@@ -30133,16 +30204,38 @@ and development stage (DVS).</p>
 <div class="arithmatex">\[
 \text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})
 \]</div>
-<p>Development rate (vegetative, generative):</p>
+<p>Daylength- and vernalisation-modified thermal time, which drives
+development up to anthesis:</p>
+<div class="arithmatex">\[
+\text{DTSUML} = \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC}
+\]</div>
+<p>Development rate (vegetative, generative). The vegetative phase spans
+<span class="arithmatex">\(\text{TSUM1}\)</span> degree-days and the generative phase <span class="arithmatex">\(\text{TSUM2}\)</span>, so
+the two phases convert thermal time into DVS at different rates. On the
+day the crop passes anthesis, only the fraction of <span class="arithmatex">\(\text{DTSUML}\)</span> that
+still fits inside <span class="arithmatex">\(\text{TSUM1}\)</span> may be charged at the vegetative rate;
+the surplus <span class="arithmatex">\(\text{OVERLAP}\)</span> belongs to the generative phase and is
+charged at <span class="arithmatex">\(1/\text{TSUM2}\)</span>. Splitting the day this way conserves
+thermal time across the phase boundary — without it a whole day's worth
+of degree-days would be converted at the wrong rate and the crop would
+carry a permanent DVS offset into grain filling.</p>
+<div class="arithmatex">\[
+\text{OVERLAP} = \max\!\left(0,\;
+    \text{DTSUML} - (1 - \text{DVS}) \cdot \text{TSUM1}\right)
+\]</div>
 <div class="arithmatex">\[
 \text{DVR} =
 \begin{cases}
-    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} /
-        \text{TSUM1}, &amp; 0 \le \text{DVS} &lt; 1 \\
-    \text{DTSU} / \text{TSUM2},
+    \dfrac{\text{DTSUML} - \text{OVERLAP}}{\text{TSUM1}} +
+        \dfrac{\text{OVERLAP}}{\text{TSUM2}},
+        &amp; 0 \le \text{DVS} &lt; 1 \\[2ex]
+    \dfrac{\text{DTSU}}{\text{TSUM2}},
         &amp; 1 \le \text{DVS} &lt; 2
 \end{cases}
 \]</div>
+<p><span class="arithmatex">\(\text{OVERLAP}\)</span> is zero on every day except the one that crosses
+anthesis, so the vegetative branch reduces to
+<span class="arithmatex">\(\text{DTSUML}/\text{TSUM1}\)</span> for the rest of the phase.</p>
 <p>Photoperiod factor (active when <code>IDSL &gt;= 1</code>):</p>
 <div class="arithmatex">\[
 \text{PHOTFAC} =
@@ -30373,7 +30466,15 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">tsum_rate</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">emerged_f</span>
 
         <span class="c1"># DVS rate — piecewise on DVS.</span>
-        <span class="n">dvr_veg</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span>
+        <span class="c1"># Split thermal time on the anthesis-crossing day between the vegetative and</span>
+        <span class="c1"># generative phases. The overlap is zero on all other days and can be derived from DVS.</span>
+        <span class="n">dtsuml</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">dtsuml</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="n">dvr_veg</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtsuml</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span> <span class="o">+</span> <span class="n">overlap</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">tsum2</span>
+        <span class="p">)</span>
         <span class="n">dvr_gen</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum2</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
@@ -30647,7 +30748,15 @@ Rates (integrated by the engine)</code></td>
     <span class="n">tsum_rate</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">emerged_f</span>
 
     <span class="c1"># DVS rate — piecewise on DVS.</span>
-    <span class="n">dvr_veg</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span>
+    <span class="c1"># Split thermal time on the anthesis-crossing day between the vegetative and</span>
+    <span class="c1"># generative phases. The overlap is zero on all other days and can be derived from DVS.</span>
+    <span class="n">dtsuml</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span>
+    <span class="n">overlap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">dtsuml</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="p">)</span>
+    <span class="n">dvr_veg</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtsuml</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span> <span class="o">+</span> <span class="n">overlap</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">tsum2</span>
+    <span class="p">)</span>
     <span class="n">dvr_gen</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum2</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
@@ -32578,7 +32687,26 @@ to <code>1</code>; otherwise <code>DSLR</code> increments and evaporation follow
 <p><strong>Irrigation.</strong> Three modes selected by <code>params.irri</code>: <code>0</code> = none;
 <code>1</code> = automatic refill when <code>SMACT</code> falls below <code>SMCR + 0.02</code>
 and rain <code>&lt; 10</code> mm; <code>2</code> = table look-up of <code>irrtab</code> scaled by
-<code>scale_factor_irr</code>.</p>
+<code>scale_factor_irr</code>. Mode 1 is demand-driven and therefore only runs
+while a crop stands in the field (the <code>crop_present</code> gate): its dose
+closes a deficit defined from the rooting depth, which is meaningless
+on a bare seedbed or a harvested field. Mode 2 is an explicit
+management schedule and is applied whenever the table says so, since
+pre-sowing applications are a real practice. Delivery is limited to
+<code>10 mm d⁻¹</code>; a larger
+scheduled application is spread over consecutive days rather than
+truncated, with the undelivered depth held in <code>ModelState.dirro</code>:</p>
+<div class="arithmatex">\[
+\text{DIRR}_1 = \text{IRRTAB}(\text{DOY}) \cdot
+    f_\text{irr} + \text{DIRRO}_{t-1}
+\]</div>
+<div class="arithmatex">\[
+\text{DIRR} = \min(10, \text{DIRR}_1), \qquad
+\text{DIRRO}_t = \text{DIRR}_1 - \text{DIRR}
+\]</div>
+<p>Externally supplied irrigation (the <code>irrigation</code> argument of
+<code>WaterBalance.forward</code>) bypasses both the mode logic and the delivery
+limit — it is applied exactly as given.</p>
 <h5 id="torchcrop.processes.water_balance--equations">Equations<a class="headerlink" href="#torchcrop.processes.water_balance--equations" title="Permanent link">&para;</a></h5>
 <p>Volumetric soil-moisture contents [m³ m⁻³]:</p>
 <div class="arithmatex">\[
@@ -32624,7 +32752,10 @@ r_r = \min\!\left(\text{RRI}\cdot
 \theta_\text{wp})_+.
 \]</div>
 <p>Percolation cascade (subscript <code>0</code> = saturation-capacity headroom;
-unlabelled = field-capacity headroom):</p>
+unlabelled = field-capacity headroom). The headroom terms are signed:
+a zone holding more than field capacity has <span class="arithmatex">\(\text{CAP} &lt; 0\)</span>, which
+makes <code>PERC2</code> exceed <code>PERC1</code> and drains the stored excess downward
+until the zone relaxes to field capacity:</p>
 <div class="arithmatex">\[
 \begin{aligned}
 \text{PERC} &amp;= (1 - \text{RUNFR})\cdot \text{RAIN} + \text{RIRR},\\
@@ -32633,10 +32764,10 @@ unlabelled = field-capacity headroom):</p>
 \text{RUNOFF} &amp;= \text{RUNFR}\cdot \text{RAIN} + (\text{PERC1P}
 - \text{PERC1})_+,\\
 \text{PERC2} &amp;= \mathbb{1}_{\text{CAP}\le \text{PERC1}}\cdot
-\min(\text{KSUB} + \text{CAP}_{\ell,0},\ (\text{PERC1} -
-\text{CAP})_+),\\
+\min(\text{KSUB} + \text{CAP}_{\ell,0},\ \text{PERC1} -
+\text{CAP}),\\
 \text{PERC3} &amp;= \mathbb{1}_{\text{CAP}_\ell\le \text{PERC2}}\cdot
-\min(\text{KSUB},\ (\text{PERC2} - \text{CAP}_\ell)_+).
+\min(\text{KSUB},\ \text{PERC2} - \text{CAP}_\ell).
 \end{aligned}
 \]</div>
 <p>State rates (forward Euler, <code>dt = 1</code> d):</p>
@@ -32702,6 +32833,7 @@ batched and autograd-safe manner.</p>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">crop_present</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
         <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
@@ -32734,6 +32866,11 @@ batched and autograd-safe manner.</p>
 <span class="sd">                overrides the ``params.irri`` mode.</span>
 <span class="sd">            doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">                look-up; shape ``[B]``.</span>
+<span class="sd">            crop_present: Gate in ``{0, 1}`` marking the days a crop stands</span>
+<span class="sd">                in the field (sown and not yet mature), broadcastable to</span>
+<span class="sd">                ``[B]``. Automatic irrigation (``IRRI = 1``) is suppressed</span>
+<span class="sd">                outside that window. Defaults to ``1``, i.e. irrigate on</span>
+<span class="sd">                every day, which is what a standalone call wants.</span>
 <span class="sd">            depnr: Crop-group depletion number ``cDEPNR`` [-], a crop</span>
 <span class="sd">                trait supplied from `CropParameters.depnr` by</span>
 <span class="sd">                `Lintul5Model`; defaults to the Lintul5 value ``4.5``.</span>
@@ -32763,7 +32900,11 @@ batched and autograd-safe manner.</p>
 <span class="sd">            * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
 <span class="sd">              rooted zone (total / available) [mm d⁻¹].</span>
 <span class="sd">            * ``rr``     — same-day root-front velocity [m d⁻¹].</span>
-<span class="sd">            * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">            * ``rirr``   — effective irrigation actually delivered</span>
+<span class="sd">              [mm d⁻¹], i.e. after the ``10 mm d⁻¹`` limit.</span>
+<span class="sd">            * ``dirro_next`` — irrigation depth held over to the next day</span>
+<span class="sd">              because it exceeded that limit [mm]; latched into</span>
+<span class="sd">              `ModelState.dirro` by `Lintul5Model`.</span>
 <span class="sd">            * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
 <span class="sd">            * ``smact`` / ``smactl`` — soil-moisture contents</span>
 <span class="sd">              [m³ m⁻³].</span>
@@ -32825,7 +32966,7 @@ batched and autograd-safe manner.</p>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 5. Irrigation demand</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="n">rirr</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
+        <span class="n">rirr</span><span class="p">,</span> <span class="n">dirro_next</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
             <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
             <span class="n">smact</span><span class="o">=</span><span class="n">smact</span><span class="p">,</span>
             <span class="n">smcr</span><span class="o">=</span><span class="n">smcr</span><span class="p">,</span>
@@ -32834,6 +32975,8 @@ batched and autograd-safe manner.</p>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;dirro&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># ---------------------------------------------------------------- #</span>
@@ -32887,24 +33030,31 @@ batched and autograd-safe manner.</p>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
-        <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
-        <span class="n">cap0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
-        <span class="n">capl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
-        <span class="n">capl0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+        <span class="c1"># Storage headroom of each zone, up to field capacity (``CAP``,</span>
+        <span class="c1"># ``CAPL``) and up to saturation (``CAP0``, ``CAPL0``). These are</span>
+        <span class="c1"># *signed*: a zone that already holds more than field capacity has</span>
+        <span class="c1"># negative headroom, and that is what drives it back down. With</span>
+        <span class="c1"># ``CAP &lt; 0`` the root-zone balance becomes</span>
+        <span class="c1"># ``DWOT = PERC1 - PERC2 + WDR = CAP + WDR``, i.e. the stored</span>
+        <span class="c1"># excess is released to the lower zone (subject to the</span>
+        <span class="c1"># ``KSUB + CAPL0`` conductivity limit) until the zone relaxes to</span>
+        <span class="c1"># field capacity. Clamping the headroom at zero would strand that</span>
+        <span class="c1"># excess in the root zone indefinitely.</span>
+        <span class="n">cap</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">cap0</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+        <span class="n">capl</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+        <span class="n">capl0</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
 
         <span class="n">perc1p</span> <span class="o">=</span> <span class="n">perc</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span>
         <span class="n">perc1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">cap0</span><span class="p">,</span> <span class="n">perc1p</span><span class="p">)</span>
         <span class="n">extra_runoff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1p</span> <span class="o">-</span> <span class="n">perc1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="n">runoff</span> <span class="o">=</span> <span class="n">runofp</span> <span class="o">+</span> <span class="n">extra_runoff</span>
 
-        <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">)</span>
         <span class="n">perc2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">perc1</span><span class="p">,</span> <span class="n">perc2_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc1</span><span class="p">))</span>
 
         <span class="n">perc3_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
-            <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span>
         <span class="p">)</span>
         <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
@@ -32939,6 +33089,7 @@ batched and autograd-safe manner.</p>
             <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
             <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
             <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+            <span class="s2">&quot;dirro_next&quot;</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
             <span class="c1"># stress factors / diagnostics</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
             <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
@@ -32968,7 +33119,7 @@ batched and autograd-safe manner.</p>
 
 
 <h5 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crop_present</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -33075,6 +33226,16 @@ look-up; shape <code>[B]</code>.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
+        <td><code>crop_present</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Gate in <code>{0, 1}</code> marking the days a crop stands
+in the field (sown and not yet mature), broadcastable to
+<code>[B]</code>. Automatic irrigation (<code>IRRI = 1</code>) is suppressed
+outside that window. Defaults to <code>1</code>, i.e. irrigate on
+every day, which is what a standalone call wants.</p></td>
+        <td><code>1.0</code></td>
+      </tr>
+      <tr>
         <td><code>depnr</code></td>
         <td><code>torch.Tensor | float</code></td>
         <td><p>Crop-group depletion number <code>cDEPNR</code> [-], a crop
@@ -33123,7 +33284,11 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <li><code>wdr</code> / <code>wdra</code> — root-front water transfer to the
   rooted zone (total / available) [mm d⁻¹].</li>
 <li><code>rr</code>     — same-day root-front velocity [m d⁻¹].</li>
-<li><code>rirr</code>   — effective irrigation [mm d⁻¹].</li>
+<li><code>rirr</code>   — effective irrigation actually delivered
+  [mm d⁻¹], i.e. after the <code>10 mm d⁻¹</code> limit.</li>
+<li><code>dirro_next</code> — irrigation depth held over to the next day
+  because it exceeded that limit [mm]; latched into
+  <code>ModelState.dirro</code> by <code>Lintul5Model</code>.</li>
 <li><code>tranrf</code> — water-stress factor in <code>[0, 1]</code>.</li>
 <li><code>smact</code> / <code>smactl</code> — soil-moisture contents
   [m³ m⁻³].</li>
@@ -33152,6 +33317,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">doy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">crop_present</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
     <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
@@ -33184,6 +33350,11 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">            overrides the ``params.irri`` mode.</span>
 <span class="sd">        doy: Day-of-year tensor needed by the ``IRRI = 2`` table</span>
 <span class="sd">            look-up; shape ``[B]``.</span>
+<span class="sd">        crop_present: Gate in ``{0, 1}`` marking the days a crop stands</span>
+<span class="sd">            in the field (sown and not yet mature), broadcastable to</span>
+<span class="sd">            ``[B]``. Automatic irrigation (``IRRI = 1``) is suppressed</span>
+<span class="sd">            outside that window. Defaults to ``1``, i.e. irrigate on</span>
+<span class="sd">            every day, which is what a standalone call wants.</span>
 <span class="sd">        depnr: Crop-group depletion number ``cDEPNR`` [-], a crop</span>
 <span class="sd">            trait supplied from `CropParameters.depnr` by</span>
 <span class="sd">            `Lintul5Model`; defaults to the Lintul5 value ``4.5``.</span>
@@ -33213,7 +33384,11 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">        * ``wdr`` / ``wdra`` — root-front water transfer to the</span>
 <span class="sd">          rooted zone (total / available) [mm d⁻¹].</span>
 <span class="sd">        * ``rr``     — same-day root-front velocity [m d⁻¹].</span>
-<span class="sd">        * ``rirr``   — effective irrigation [mm d⁻¹].</span>
+<span class="sd">        * ``rirr``   — effective irrigation actually delivered</span>
+<span class="sd">          [mm d⁻¹], i.e. after the ``10 mm d⁻¹`` limit.</span>
+<span class="sd">        * ``dirro_next`` — irrigation depth held over to the next day</span>
+<span class="sd">          because it exceeded that limit [mm]; latched into</span>
+<span class="sd">          `ModelState.dirro` by `Lintul5Model`.</span>
 <span class="sd">        * ``tranrf`` — water-stress factor in ``[0, 1]``.</span>
 <span class="sd">        * ``smact`` / ``smactl`` — soil-moisture contents</span>
 <span class="sd">          [m³ m⁻³].</span>
@@ -33275,7 +33450,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 5. Irrigation demand</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="n">rirr</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
+    <span class="n">rirr</span><span class="p">,</span> <span class="n">dirro_next</span> <span class="o">=</span> <span class="n">_irrigation_demand</span><span class="p">(</span>
         <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
         <span class="n">smact</span><span class="o">=</span><span class="n">smact</span><span class="p">,</span>
         <span class="n">smcr</span><span class="o">=</span><span class="n">smcr</span><span class="p">,</span>
@@ -33284,6 +33459,8 @@ defaults to <code>0</code> (non-aquatic).</p></td>
         <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
         <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
         <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+        <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;dirro&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># ---------------------------------------------------------------- #</span>
@@ -33337,24 +33514,31 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 8. Percolation cascade PERC1 → PERC2 → PERC3</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
-    <span class="n">cap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
-    <span class="n">cap0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
-    <span class="n">capl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
-    <span class="n">capl0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+    <span class="c1"># Storage headroom of each zone, up to field capacity (``CAP``,</span>
+    <span class="c1"># ``CAPL``) and up to saturation (``CAP0``, ``CAPL0``). These are</span>
+    <span class="c1"># *signed*: a zone that already holds more than field capacity has</span>
+    <span class="c1"># negative headroom, and that is what drives it back down. With</span>
+    <span class="c1"># ``CAP &lt; 0`` the root-zone balance becomes</span>
+    <span class="c1"># ``DWOT = PERC1 - PERC2 + WDR = CAP + WDR``, i.e. the stored</span>
+    <span class="c1"># excess is released to the lower zone (subject to the</span>
+    <span class="c1"># ``KSUB + CAPL0`` conductivity limit) until the zone relaxes to</span>
+    <span class="c1"># field capacity. Clamping the headroom at zero would strand that</span>
+    <span class="c1"># excess in the root zone indefinitely.</span>
+    <span class="n">cap</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">cap0</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smact</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rootd</span>
+    <span class="n">capl</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcfc</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
+    <span class="n">capl0</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">wcst</span> <span class="o">-</span> <span class="n">smactl</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rd_lower</span>
 
     <span class="n">perc1p</span> <span class="o">=</span> <span class="n">perc</span> <span class="o">-</span> <span class="n">evap</span> <span class="o">-</span> <span class="n">tran</span>
     <span class="n">perc1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">cap0</span><span class="p">,</span> <span class="n">perc1p</span><span class="p">)</span>
     <span class="n">extra_runoff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1p</span> <span class="o">-</span> <span class="n">perc1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">runoff</span> <span class="o">=</span> <span class="n">runofp</span> <span class="o">+</span> <span class="n">extra_runoff</span>
 
-    <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
-        <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">perc2_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">capl0</span><span class="p">,</span> <span class="n">perc1</span> <span class="o">-</span> <span class="n">cap</span><span class="p">)</span>
     <span class="n">perc2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cap</span> <span class="o">&lt;=</span> <span class="n">perc1</span><span class="p">,</span> <span class="n">perc2_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc1</span><span class="p">))</span>
 
     <span class="n">perc3_candidate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
-        <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">ksub</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">),</span> <span class="n">perc2</span> <span class="o">-</span> <span class="n">capl</span>
     <span class="p">)</span>
     <span class="n">perc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">capl</span> <span class="o">&lt;=</span> <span class="n">perc2</span><span class="p">,</span> <span class="n">perc3_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">perc2</span><span class="p">))</span>
 
@@ -33389,6 +33573,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
         <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
         <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
         <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+        <span class="s2">&quot;dirro_next&quot;</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
         <span class="c1"># stress factors / diagnostics</span>
         <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
         <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
@@ -34217,6 +34402,23 @@ other field.</p>
     <span class="c1"># ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).</span>
     <span class="n">rr_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] m d-1 — lagged root-front velocity</span>
 
+    <span class="c1"># Previous-day nutrition indices [-]. Biomass-side processes use the nutrient</span>
+    <span class="c1"># status measured at the end of the previous day, while same-day values are</span>
+    <span class="c1"># used for nutrient and soil bookkeeping. The lagged indices drive NPKREF, SLA,</span>
+    <span class="c1"># juvenile LAI, RDRNS, and root/shoot partitioning. They start at 1 (no stress)</span>
+    <span class="c1"># and are latched each step via ``nni_prev_rate`` / ``npki_prev_rate``.</span>
+    <span class="n">nni_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] - lagged NNI</span>
+    <span class="n">npki_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] - lagged NPKI</span>
+
+    <span class="c1"># Scheduled irrigation not yet delivered [mm]. The irrigation system</span>
+    <span class="c1"># applies at most 10 mm d⁻¹, so a larger scheduled application is spread</span>
+    <span class="c1"># over consecutive days rather than truncated: whatever does not fit on</span>
+    <span class="c1"># the day is held here and added to the next day&#39;s application. Only the</span>
+    <span class="c1"># table-driven mode (``soil.irri = 2``) can build up a surplus; automatic</span>
+    <span class="c1"># irrigation is capped at 10 mm by construction and externally supplied</span>
+    <span class="c1"># irrigation bypasses the limit entirely.</span>
+    <span class="n">dirro</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] mm — undelivered irrigation</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">initial</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -34337,6 +34539,9 @@ other field.</p>
             <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nni_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+            <span class="n">npki_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+            <span class="n">dirro</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -34402,6 +34607,7 @@ other field.</p>
 
 
 
+
   <div class="doc doc-object doc-attribute">
 
 
@@ -34422,6 +34628,8 @@ other field.</p>
     </div>
 
   </div>
+
+
 
 
 
@@ -34719,6 +34927,9 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nni_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+        <span class="n">npki_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+        <span class="n">dirro</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>
@@ -35787,7 +35998,7 @@ Ignored for 1-D input. Defaults to <code>"batch i"</code>.</p></td>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

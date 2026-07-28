@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2862,7 +2862,12 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">            nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,</span>
-<span class="sd">                shape ``[B]``.</span>
+<span class="sd">                shape ``[B]``. Scales ``SLA``, damps the juvenile LAI</span>
+<span class="sd">                expansion and drives the ``RDRNS`` senescence term.</span>
+<span class="sd">                `Lintul5Model` supplies the index measured at the close</span>
+<span class="sd">                of the previous day (`ModelState.npki_prev`), so a</span>
+<span class="sd">                canopy that has just emerged is driven by the</span>
+<span class="sd">                pre-emergence value ``0``.</span>
 <span class="sd">            params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,</span>
 <span class="sd">                ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,</span>
 <span class="sd">                ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,</span>
@@ -3071,7 +3076,12 @@ juvenile-phase thermal time
         <td><code>nstress</code></td>
         <td><code>torch.Tensor</code></td>
         <td><p>NPK nutrient index <code>NPKI</code> in <code>[0, 1]</code>,
-shape <code>[B]</code>.</p></td>
+shape <code>[B]</code>. Scales <code>SLA</code>, damps the juvenile LAI
+expansion and drives the <code>RDRNS</code> senescence term.
+<code>Lintul5Model</code> supplies the index measured at the close
+of the previous day (<code>ModelState.npki_prev</code>), so a
+canopy that has just emerged is driven by the
+pre-emergence value <code>0</code>.</p></td>
         <td><em>required</em></td>
       </tr>
       <tr>
@@ -3184,7 +3194,12 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            ``DTEFF = max(0, davtmp − tbase)`` (Lintul5.java:1436).</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]``, shape ``[B]``.</span>
 <span class="sd">        nstress: NPK nutrient index ``NPKI`` in ``[0, 1]``,</span>
-<span class="sd">            shape ``[B]``.</span>
+<span class="sd">            shape ``[B]``. Scales ``SLA``, damps the juvenile LAI</span>
+<span class="sd">            expansion and drives the ``RDRNS`` senescence term.</span>
+<span class="sd">            `Lintul5Model` supplies the index measured at the close</span>
+<span class="sd">            of the previous day (`ModelState.npki_prev`), so a</span>
+<span class="sd">            canopy that has just emerged is driven by the</span>
+<span class="sd">            pre-emergence value ``0``.</span>
 <span class="sd">        params: Crop parameters; uses ``laicr``, ``rgrl``, ``tbase``,</span>
 <span class="sd">            ``slatb``, ``scale_factor_sla``, ``nsla``, ``nlai``,</span>
 <span class="sd">            ``laii``, ``rdrshm``, ``rdrl``, ``rdrns``, ``rdrltb``,</span>
@@ -3442,7 +3457,7 @@ Rate variables (consumed by the engine for state update)</code></td>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../js/timeago.min.js"></script>
       

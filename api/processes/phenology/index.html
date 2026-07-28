@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2763,16 +2763,38 @@ and development stage (DVS).</p>
 <div class="arithmatex">\[
 \text{DTSU} = \text{AFGEN}(\text{DTSMTB}, T_\text{avg})
 \]</div>
-<p>Development rate (vegetative, generative):</p>
+<p>Daylength- and vernalisation-modified thermal time, which drives
+development up to anthesis:</p>
+<div class="arithmatex">\[
+\text{DTSUML} = \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC}
+\]</div>
+<p>Development rate (vegetative, generative). The vegetative phase spans
+<span class="arithmatex">\(\text{TSUM1}\)</span> degree-days and the generative phase <span class="arithmatex">\(\text{TSUM2}\)</span>, so
+the two phases convert thermal time into DVS at different rates. On the
+day the crop passes anthesis, only the fraction of <span class="arithmatex">\(\text{DTSUML}\)</span> that
+still fits inside <span class="arithmatex">\(\text{TSUM1}\)</span> may be charged at the vegetative rate;
+the surplus <span class="arithmatex">\(\text{OVERLAP}\)</span> belongs to the generative phase and is
+charged at <span class="arithmatex">\(1/\text{TSUM2}\)</span>. Splitting the day this way conserves
+thermal time across the phase boundary — without it a whole day's worth
+of degree-days would be converted at the wrong rate and the crop would
+carry a permanent DVS offset into grain filling.</p>
+<div class="arithmatex">\[
+\text{OVERLAP} = \max\!\left(0,\;
+    \text{DTSUML} - (1 - \text{DVS}) \cdot \text{TSUM1}\right)
+\]</div>
 <div class="arithmatex">\[
 \text{DVR} =
 \begin{cases}
-    \text{DTSU} \cdot \text{PHOTFAC} \cdot \text{VERNFAC} /
-        \text{TSUM1}, &amp; 0 \le \text{DVS} &lt; 1 \\
-    \text{DTSU} / \text{TSUM2},
+    \dfrac{\text{DTSUML} - \text{OVERLAP}}{\text{TSUM1}} +
+        \dfrac{\text{OVERLAP}}{\text{TSUM2}},
+        &amp; 0 \le \text{DVS} &lt; 1 \\[2ex]
+    \dfrac{\text{DTSU}}{\text{TSUM2}},
         &amp; 1 \le \text{DVS} &lt; 2
 \end{cases}
 \]</div>
+<p><span class="arithmatex">\(\text{OVERLAP}\)</span> is zero on every day except the one that crosses
+anthesis, so the vegetative branch reduces to
+<span class="arithmatex">\(\text{DTSUML}/\text{TSUM1}\)</span> for the rest of the phase.</p>
 <p>Photoperiod factor (active when <code>IDSL &gt;= 1</code>):</p>
 <div class="arithmatex">\[
 \text{PHOTFAC} =
@@ -3003,7 +3025,15 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">tsum_rate</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">emerged_f</span>
 
         <span class="c1"># DVS rate — piecewise on DVS.</span>
-        <span class="n">dvr_veg</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span>
+        <span class="c1"># Split thermal time on the anthesis-crossing day between the vegetative and</span>
+        <span class="c1"># generative phases. The overlap is zero on all other days and can be derived from DVS.</span>
+        <span class="n">dtsuml</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">dtsuml</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="n">dvr_veg</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtsuml</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span> <span class="o">+</span> <span class="n">overlap</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span>
+            <span class="n">params</span><span class="o">.</span><span class="n">tsum2</span>
+        <span class="p">)</span>
         <span class="n">dvr_gen</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum2</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
@@ -3277,7 +3307,15 @@ Rates (integrated by the engine)</code></td>
     <span class="n">tsum_rate</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">emerged_f</span>
 
     <span class="c1"># DVS rate — piecewise on DVS.</span>
-    <span class="n">dvr_veg</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span>
+    <span class="c1"># Split thermal time on the anthesis-crossing day between the vegetative and</span>
+    <span class="c1"># generative phases. The overlap is zero on all other days and can be derived from DVS.</span>
+    <span class="n">dtsuml</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">*</span> <span class="n">photofac</span> <span class="o">*</span> <span class="n">vernfac</span>
+    <span class="n">overlap</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">dtsuml</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">)</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="p">)</span>
+    <span class="n">dvr_veg</span> <span class="o">=</span> <span class="p">(</span><span class="n">dtsuml</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum1</span><span class="p">)</span> <span class="o">+</span> <span class="n">overlap</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span>
+        <span class="n">params</span><span class="o">.</span><span class="n">tsum2</span>
+    <span class="p">)</span>
     <span class="n">dvr_gen</span> <span class="o">=</span> <span class="n">dtsu</span> <span class="o">/</span> <span class="n">_safe</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">tsum2</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">:</span>
@@ -3425,7 +3463,7 @@ Rates (integrated by the engine)</code></td>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../js/timeago.min.js"></script>
       

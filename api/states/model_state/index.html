@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -3975,6 +3975,23 @@ other field.</p>
     <span class="c1"># ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).</span>
     <span class="n">rr_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] m d-1 — lagged root-front velocity</span>
 
+    <span class="c1"># Previous-day nutrition indices [-]. Biomass-side processes use the nutrient</span>
+    <span class="c1"># status measured at the end of the previous day, while same-day values are</span>
+    <span class="c1"># used for nutrient and soil bookkeeping. The lagged indices drive NPKREF, SLA,</span>
+    <span class="c1"># juvenile LAI, RDRNS, and root/shoot partitioning. They start at 1 (no stress)</span>
+    <span class="c1"># and are latched each step via ``nni_prev_rate`` / ``npki_prev_rate``.</span>
+    <span class="n">nni_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] - lagged NNI</span>
+    <span class="n">npki_prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] - lagged NPKI</span>
+
+    <span class="c1"># Scheduled irrigation not yet delivered [mm]. The irrigation system</span>
+    <span class="c1"># applies at most 10 mm d⁻¹, so a larger scheduled application is spread</span>
+    <span class="c1"># over consecutive days rather than truncated: whatever does not fit on</span>
+    <span class="c1"># the day is held here and added to the next day&#39;s application. Only the</span>
+    <span class="c1"># table-driven mode (``soil.irri = 2``) can build up a surplus; automatic</span>
+    <span class="c1"># irrigation is capped at 10 mm by construction and externally supplied</span>
+    <span class="c1"># irrigation bypasses the limit entirely.</span>
+    <span class="n">dirro</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># [B] mm — undelivered irrigation</span>
+
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">initial</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
@@ -4095,6 +4112,9 @@ other field.</p>
             <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
             <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">nni_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+            <span class="n">npki_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+            <span class="n">dirro</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
@@ -4160,6 +4180,7 @@ other field.</p>
 
 
 
+
   <div class="doc doc-object doc-attribute">
 
 
@@ -4180,6 +4201,8 @@ other field.</p>
     </div>
 
   </div>
+
+
 
 
 
@@ -4477,6 +4500,9 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
         <span class="n">klosss</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">sown</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="n">rr_prev</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+        <span class="n">nni_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+        <span class="n">npki_prev</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">zeros</span><span class="p">),</span>
+        <span class="n">dirro</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>
@@ -4723,7 +4749,7 @@ laid out in field-definition order.</p></td>
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../js/timeago.min.js"></script>
       

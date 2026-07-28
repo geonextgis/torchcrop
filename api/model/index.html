@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -3442,6 +3442,23 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">developing</span><span class="p">,</span> <span class="n">ptran_eff</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">ptran_eff</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">)</span>
         <span class="p">)</span>
 
+        <span class="c1"># 3b. Sowing latch. ``sown`` is 1 from the sowing day</span>
+        <span class="c1">#    (``doy &gt;= site.idpl``) onward and never resets; the</span>
+        <span class="c1">#    ``max(state.sown, ...)`` makes it robust to day-of-year</span>
+        <span class="c1">#    wraparound across a calendar-year boundary (autumn-sown winter</span>
+        <span class="c1">#    wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
+        <span class="c1">#    reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
+        <span class="c1">#    discrete switch, so the hard comparison adds no gradient path.</span>
+        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
+        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
+        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
+
+        <span class="c1"># A crop stands in the field between sowing and maturity. Demand-driven</span>
+        <span class="c1"># irrigation serves that crop, so it is switched off outside this</span>
+        <span class="c1"># window — a bare field is not watered to keep it at field capacity.</span>
+        <span class="n">crop_present</span> <span class="o">=</span> <span class="n">sown</span> <span class="o">*</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
         <span class="c1"># 4. Two-zone water balance with a percolation cascade.</span>
         <span class="n">rdm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
@@ -3463,6 +3480,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">irrigation</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
+            <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
             <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
             <span class="n">iairdu</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span>
         <span class="p">)</span>
@@ -3474,26 +3492,16 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
-        <span class="c1"># 4b. Sowing latch. ``sown`` is 1 from the sowing day</span>
-        <span class="c1">#     (``doy &gt;= site.idpl``) onward and never resets; the</span>
-        <span class="c1">#     ``max(state.sown, ...)`` makes it robust to day-of-year</span>
-        <span class="c1">#     wraparound across a calendar-year boundary (autumn-sown winter</span>
-        <span class="c1">#     wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
-        <span class="c1">#     reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
-        <span class="c1">#     discrete switch, so the hard comparison adds no gradient path.</span>
-        <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
-        <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
-        <span class="n">sown_now</span> <span class="o">=</span> <span class="p">(</span><span class="n">doy</span> <span class="o">&gt;=</span> <span class="n">idpl_b</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
-        <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">,</span> <span class="n">sown_now</span><span class="p">)</span>
-
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
         <span class="c1">#    is independent of the water / ET branch. ``sown`` gates the</span>
         <span class="c1">#    emergence and vernalisation clocks (no-op once latched).</span>
         <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="n">sown</span><span class="p">)</span>
 
-        <span class="c1"># 6. Nutrient demand — independent of partitioning; produces the</span>
-        <span class="c1">#    NPK stress index that multiplies ``GTOTAL`` downstream.</span>
+        <span class="c1"># 6. Nutrient demand — independent of partitioning; drives the</span>
+        <span class="c1">#    day&#39;s uptake, translocation and per-organ NPK rates, and</span>
+        <span class="c1">#    measures the NPK stress index carried into *tomorrow&#39;s*</span>
+        <span class="c1">#    growth (see the lag note below).</span>
         <span class="c1">#    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹</span>
         <span class="c1">#    here because the growth formula expects MJ. The same EMERG</span>
         <span class="c1">#    gate applied to ``frac_int`` above is applied so a dormant</span>
@@ -3506,7 +3514,20 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">nstress</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="c1"># Carbon and nutrient acquisition are coupled sequentially, not</span>
+        <span class="c1"># simultaneously. The nutrition indices measure how far the standing</span>
+        <span class="c1"># canopy&#39;s N/P/K concentration has fallen below the optimum, so they</span>
+        <span class="c1"># can only be evaluated once the canopy for the day exists. Growth,</span>
+        <span class="c1"># however, must be computed *before* that canopy is known. The model</span>
+        <span class="c1"># therefore drives the day&#39;s carbon side with the indices measured at</span>
+        <span class="c1"># the close of the previous day (``state.npki_prev`` /</span>
+        <span class="c1"># ``state.nni_prev``) and uses the freshly computed ``nut[...]``</span>
+        <span class="c1"># values only for the nutrient and soil bookkeeping, which legitimately</span>
+        <span class="c1"># sees the same-day state. The same one-step convention</span>
+        <span class="c1"># applies to the root front (``state.rr_prev``).</span>
+        <span class="n">nstress_now</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="n">nstress</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span>
+        <span class="n">nni_lag</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span>
         <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nstress</span>
 
         <span class="c1"># 7. Soil mineral-pool balance. Runs after NutrientDemand</span>
@@ -3532,8 +3553,8 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># SIMPLACE ``GROWTH`` law of the minimum, where the more</span>
         <span class="c1"># limiting of water (``TRANRF``) and nutrient (``NPKREF``)</span>
         <span class="c1"># stress governs growth. ``NPKREF`` is the RUE reduction factor</span>
-        <span class="c1"># derived from the NPK index ``nstress`` (= ``NPKI``) via the</span>
-        <span class="c1"># ``NLUE`` coefficient:</span>
+        <span class="c1"># derived from the NPK index ``nstress`` (= the previous day&#39;s</span>
+        <span class="c1"># ``NPKI``) via the ``NLUE`` coefficient:</span>
         <span class="c1">#</span>
         <span class="c1">#     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)</span>
         <span class="c1">#</span>
@@ -3568,7 +3589,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nni_lag</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Optional correction of the biomass partitioning. The above-ground</span>
@@ -3685,10 +3706,19 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="c1"># Latch the same-day velocity into ``rr_prev`` for the next day&#39;s</span>
             <span class="c1"># water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).</span>
             <span class="s2">&quot;rr_prev_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
+            <span class="c1"># Latch today&#39;s nutrition indices so tomorrow&#39;s carbon side can</span>
+            <span class="c1"># read the canopy status measured at the close of today</span>
+            <span class="c1"># (``npki_prev_{t+1} = npki_t``). Expressed as a rate so the</span>
+            <span class="c1"># Euler update performs the assignment.</span>
+            <span class="s2">&quot;nni_prev_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span><span class="p">,</span>
+            <span class="s2">&quot;npki_prev_rate&quot;</span><span class="p">:</span> <span class="n">nstress_now</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span><span class="p">,</span>
             <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
             <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
+            <span class="c1"># Carry the part of today&#39;s scheduled irrigation that exceeded</span>
+            <span class="c1"># the delivery limit into tomorrow&#39;s application.</span>
+            <span class="s2">&quot;dirro_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dirro_next&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dirro</span><span class="p">,</span>
             <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
             <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
             <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
@@ -3745,7 +3775,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="s2">&quot;gtotal_cum_rate&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
             <span class="c1"># Scalar diagnostics — not integrated by the engine.</span>
             <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress</span><span class="p">,</span>
+            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress_now</span><span class="p">,</span>
             <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
 
@@ -3822,7 +3852,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">rdry</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rdry&quot;</span><span class="p">],</span>
             <span class="n">rwet</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rwet&quot;</span><span class="p">],</span>
-            <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
+            <span class="n">nstress</span><span class="o">=</span><span class="n">nstress_now</span><span class="p">,</span>
             <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
             <span class="n">pni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;pni&quot;</span><span class="p">],</span>
             <span class="n">kni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kni&quot;</span><span class="p">],</span>
@@ -4938,7 +4968,7 @@ SIMPLACE <code>pPeriodEnded</code> gating.</p></td>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

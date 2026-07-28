@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../../assets/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2784,7 +2784,9 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <li><em>Concentration-based stress</em> (<code>NNINDX</code>): the historical
    nutrition indices <code>NNI</code>/<code>PNI</code>/<code>KNI</code> derived from
    <code>(NFGMR - NRMR) / (NOPTMR - NRMR)</code>, combined into
-   <code>NPKI = min(NNI, PNI, KNI)</code>.</li>
+   <code>NPKI = min(NNI, PNI, KNI)</code>. They are defined only for a
+   standing canopy and are <code>0</code> before emergence; under
+   <code>IOPT &lt;= 2</code> they are pinned to <code>1</code> on every day.</li>
 <li><em>Per-organ partitioning</em> (<code>RNUSUB</code>) of soil + fixation uptake by
    demand-share, and <em>translocation</em> (<code>NTRANS</code>) of storage-organ
    supply by translocatable-pool share.</li>
@@ -2813,7 +2815,9 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">    4. *Concentration-based stress* (``NNINDX``): the historical</span>
 <span class="sd">       nutrition indices ``NNI``/``PNI``/``KNI`` derived from</span>
 <span class="sd">       ``(NFGMR - NRMR) / (NOPTMR - NRMR)``, combined into</span>
-<span class="sd">       ``NPKI = min(NNI, PNI, KNI)``.</span>
+<span class="sd">       ``NPKI = min(NNI, PNI, KNI)``. They are defined only for a</span>
+<span class="sd">       standing canopy and are ``0`` before emergence; under</span>
+<span class="sd">       ``IOPT &lt;= 2`` they are pinned to ``1`` on every day.</span>
 <span class="sd">    5. *Per-organ partitioning* (``RNUSUB``) of soil + fixation uptake by</span>
 <span class="sd">       demand-share, and *translocation* (``NTRANS``) of storage-organ</span>
 <span class="sd">       supply by translocatable-pool share.</span>
@@ -2886,8 +2890,10 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">            Diagnostics:</span>
 
 <span class="sd">            * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the</span>
-<span class="sd">                combined nutrition index in ``[1e-3, 1]`` that</span>
-<span class="sd">                multiplies ``gtotal`` in `Photosynthesis`.</span>
+<span class="sd">                combined nutrition index in ``[1e-3, 1]`` (``0`` before</span>
+<span class="sd">                emergence) that drives the ``NPKREF`` reduction of</span>
+<span class="sd">                ``gtotal``. `Lintul5Model` consumes it one day later</span>
+<span class="sd">                than it is produced; see `ModelState.npki_prev`.</span>
 <span class="sd">            * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.</span>
 <span class="sd">            * ``n_uptake``, ``p_uptake``, ``k_uptake``</span>
 <span class="sd">                [g X m⁻² d⁻¹] — Whole-plant uptake totals</span>
@@ -3082,20 +3088,28 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-        <span class="c1"># IOPT overrides.</span>
+        <span class="c1"># Before emergence, no standing canopy exists, so the nutrition indices are</span>
+        <span class="c1"># undefined and remain at their zero initialisation, matching NNINDX. This is</span>
+        <span class="c1"># load-bearing because the biomass side consumes the index with a one-day lag:</span>
+        <span class="c1"># the first emerged day therefore uses zero, producing no assimilation and one</span>
+        <span class="c1"># RDRNS leaf-death adjustment before juvenile growth begins.</span>
+        <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">nni</span><span class="p">)</span>
+        <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+        <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+        <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+
+        <span class="c1"># IOPT overrides. These sit *after* the emergence gate (``NNINDX``</span>
+        <span class="c1"># applies them last), so under potential / water-limited production</span>
+        <span class="c1"># the indices are pinned to 1 on every day — emerged or not — and</span>
+        <span class="c1"># nutrition can never reduce growth.</span>
         <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
         <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
         <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
         <span class="n">is_iopt3</span> <span class="o">=</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&gt;</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">)</span>
         <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_iopt3</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
-
-        <span class="c1"># Pre-emergence: no stress.</span>
-        <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
-        <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-        <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
         <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
         <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
@@ -3334,8 +3348,10 @@ Rate variables (consumed by the engine to update the matching
 <p>Diagnostics:</p>
 <ul>
 <li><code>nstress</code> [-] — <code>NPKI = min(NNI, PNI, KNI)</code>, the
-    combined nutrition index in <code>[1e-3, 1]</code> that
-    multiplies <code>gtotal</code> in <code>Photosynthesis</code>.</li>
+    combined nutrition index in <code>[1e-3, 1]</code> (<code>0</code> before
+    emergence) that drives the <code>NPKREF</code> reduction of
+    <code>gtotal</code>. <code>Lintul5Model</code> consumes it one day later
+    than it is produced; see <code>ModelState.npki_prev</code>.</li>
 <li><code>nni</code>, <code>pni</code>, <code>kni</code> [-] — Per-nutrient indices.</li>
 <li><code>n_uptake</code>, <code>p_uptake</code>, <code>k_uptake</code>
     [g X m⁻² d⁻¹] — Whole-plant uptake totals
@@ -3424,8 +3440,10 @@ Rate variables (consumed by the engine to update the matching
 <span class="sd">        Diagnostics:</span>
 
 <span class="sd">        * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the</span>
-<span class="sd">            combined nutrition index in ``[1e-3, 1]`` that</span>
-<span class="sd">            multiplies ``gtotal`` in `Photosynthesis`.</span>
+<span class="sd">            combined nutrition index in ``[1e-3, 1]`` (``0`` before</span>
+<span class="sd">            emergence) that drives the ``NPKREF`` reduction of</span>
+<span class="sd">            ``gtotal``. `Lintul5Model` consumes it one day later</span>
+<span class="sd">            than it is produced; see `ModelState.npki_prev`.</span>
 <span class="sd">        * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.</span>
 <span class="sd">        * ``n_uptake``, ``p_uptake``, ``k_uptake``</span>
 <span class="sd">            [g X m⁻² d⁻¹] — Whole-plant uptake totals</span>
@@ -3620,20 +3638,28 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">kni</span> <span class="o">=</span> <span class="n">_idx</span><span class="p">(</span><span class="n">kfgmr</span><span class="p">,</span> <span class="n">krmr</span><span class="p">,</span> <span class="n">koptmr</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nni</span><span class="p">,</span> <span class="n">pni</span><span class="p">),</span> <span class="n">kni</span><span class="p">)</span>
 
-    <span class="c1"># IOPT overrides.</span>
+    <span class="c1"># Before emergence, no standing canopy exists, so the nutrition indices are</span>
+    <span class="c1"># undefined and remain at their zero initialisation, matching NNINDX. This is</span>
+    <span class="c1"># load-bearing because the biomass side consumes the index with a one-day lag:</span>
+    <span class="c1"># the first emerged day therefore uses zero, producing no assimilation and one</span>
+    <span class="c1"># RDRNS leaf-death adjustment before juvenile growth begins.</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">nni</span><span class="p">)</span>
+    <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+    <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+    <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">zeros</span><span class="p">)</span>
+
+    <span class="c1"># IOPT overrides. These sit *after* the emergence gate (``NNINDX``</span>
+    <span class="c1"># applies them last), so under potential / water-limited production</span>
+    <span class="c1"># the indices are pinned to 1 on every day — emerged or not — and</span>
+    <span class="c1"># nutrition can never reduce growth.</span>
     <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">nni</span><span class="p">)</span>
     <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">pni</span><span class="p">)</span>
     <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">kni</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">ones</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
     <span class="n">is_iopt3</span> <span class="o">=</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&gt;</span> <span class="mf">2.5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">iopt</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">)</span>
     <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_iopt3</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">npki</span><span class="p">)</span>
-
-    <span class="c1"># Pre-emergence: no stress.</span>
-    <span class="n">emerg_mask</span> <span class="o">=</span> <span class="n">emerg</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
-    <span class="n">nni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">nni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">pni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">pni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">kni</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">kni</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
-    <span class="n">npki</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">emerg_mask</span><span class="p">,</span> <span class="n">npki</span><span class="p">,</span> <span class="n">ones</span><span class="p">)</span>
 
     <span class="c1"># ------------- Per-organ uptake split (RNUSUB) -----------------</span>
     <span class="c1"># Soil + biological N uptake is distributed across leaves,</span>
@@ -3857,7 +3883,7 @@ Rate variables (consumed by the engine to update the matching
       <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../../js/timeago.min.js"></script>
       
