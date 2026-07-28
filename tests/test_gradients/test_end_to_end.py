@@ -124,6 +124,7 @@ def test_batch_consistency_per_element_params():
     ``initialize`` builds a genuinely per-element initial state rather than
     broadcasting element 0 across the batch.
     """
+    from torchcrop.parameters.crop_params import CropParameters
     from torchcrop.parameters.site_params import SiteParameters
     from torchcrop.parameters.soil_params import SoilParameters
 
@@ -136,6 +137,13 @@ def test_batch_consistency_per_element_params():
     weather = make_constant_weather(
         batch_size=b, n_days=150, rain=1.0, dtype=torch.float64
     )
+    # Water-limited mode (IOPT = 2) is what makes the soil properties bite.
+    # Under potential production (the `CropParameters` default IOPT = 1) the
+    # crop transpires at the unreduced potential rate, so soil water cannot
+    # limit growth and every element would yield the same — vacuously
+    # passing the per-element loop below.
+    crop = CropParameters()
+    crop.iopt = torch.tensor(2.0, dtype=torch.float64)
 
     # Per-element parameters: each batch element gets a distinct value so a
     # broadcast bug (using element 0 for all) would change the answer.
@@ -148,7 +156,9 @@ def test_batch_consistency_per_element_params():
 
     soil = SoilParameters(wci=wci, wcwp=wcwp, wcfc=wcfc, rdmso=rdmso)
     site = SiteParameters(latitude=lat)
-    model = Lintul5Model(soil_params=soil, site_params=site).double()
+    model = Lintul5Model(
+        crop_params=crop, soil_params=soil, site_params=site
+    ).double()
 
     out_batch = model(weather, start_doy=60)
     assert torch.isfinite(out_batch.yield_).all()
@@ -160,7 +170,9 @@ def test_batch_consistency_per_element_params():
             wci=wci[i], wcwp=wcwp[i], wcfc=wcfc[i], rdmso=rdmso[i]
         )
         site_i = SiteParameters(latitude=lat[i])
-        model_i = Lintul5Model(soil_params=soil_i, site_params=site_i).double()
+        model_i = Lintul5Model(
+            crop_params=crop, soil_params=soil_i, site_params=site_i
+        ).double()
         out_i = model_i(weather.data[i : i + 1], start_doy=60)
         assert torch.allclose(out_batch.yield_[i], out_i.yield_[0], atol=1e-8)
         assert torch.allclose(out_batch.lai[i], out_i.lai[0], atol=1e-8)
