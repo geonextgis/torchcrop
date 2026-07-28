@@ -44,7 +44,29 @@ to ``1``; otherwise ``DSLR`` increments and evaporation follows the
 **Irrigation.** Three modes selected by ``params.irri``: ``0`` = none;
 ``1`` = automatic refill when ``SMACT`` falls below ``SMCR + 0.02``
 and rain ``< 10`` mm; ``2`` = table look-up of ``irrtab`` scaled by
-``scale_factor_irr``.
+``scale_factor_irr``. Mode 1 is demand-driven and therefore only runs
+while a crop stands in the field (the ``crop_present`` gate): its dose
+closes a deficit defined from the rooting depth, which is meaningless
+on a bare seedbed or a harvested field. Mode 2 is an explicit
+management schedule and is applied whenever the table says so, since
+pre-sowing applications are a real practice. Delivery is limited to
+``10 mm d⁻¹``; a larger
+scheduled application is spread over consecutive days rather than
+truncated, with the undelivered depth held in ``ModelState.dirro``:
+
+$$
+\\text{DIRR}_1 = \\text{IRRTAB}(\\text{DOY}) \\cdot
+    f_\\text{irr} + \\text{DIRRO}_{t-1}
+$$
+
+$$
+\\text{DIRR} = \\min(10, \\text{DIRR}_1), \\qquad
+\\text{DIRRO}_t = \\text{DIRR}_1 - \\text{DIRR}
+$$
+
+Externally supplied irrigation (the ``irrigation`` argument of
+`WaterBalance.forward`) bypasses both the mode logic and the delivery
+limit — it is applied exactly as given.
 
 Equations
 ---------
@@ -102,7 +124,10 @@ $$
 $$
 
 Percolation cascade (subscript ``0`` = saturation-capacity headroom;
-unlabelled = field-capacity headroom):
+unlabelled = field-capacity headroom). The headroom terms are signed:
+a zone holding more than field capacity has $\\text{CAP} < 0$, which
+makes ``PERC2`` exceed ``PERC1`` and drains the stored excess downward
+until the zone relaxes to field capacity:
 
 $$
 \\begin{aligned}
@@ -112,10 +137,10 @@ $$
 \\text{RUNOFF} &= \\text{RUNFR}\\cdot \\text{RAIN} + (\\text{PERC1P}
 - \\text{PERC1})_+,\\\\
 \\text{PERC2} &= \\mathbb{1}_{\\text{CAP}\\le \\text{PERC1}}\\cdot
-\\min(\\text{KSUB} + \\text{CAP}_{\\ell,0},\\ (\\text{PERC1} -
-\\text{CAP})_+),\\\\
+\\min(\\text{KSUB} + \\text{CAP}_{\\ell,0},\\ \\text{PERC1} -
+\\text{CAP}),\\\\
 \\text{PERC3} &= \\mathbb{1}_{\\text{CAP}_\\ell\\le \\text{PERC2}}\\cdot
-\\min(\\text{KSUB},\\ (\\text{PERC2} - \\text{CAP}_\\ell)_+).
+\\min(\\text{KSUB},\\ \\text{PERC2} - \\text{CAP}_\\ell).
 \\end{aligned}
 $$
 
@@ -179,8 +204,16 @@ def _irrigation_demand(
     rain: torch.Tensor,
     doy: torch.Tensor | None,
     external: torch.Tensor | None,
-) -> torch.Tensor:
-    """Daily effective irrigation [mm d⁻¹].
+    dirro: torch.Tensor | None = None,
+    crop_present: torch.Tensor | float = 1.0,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Daily effective irrigation [mm d⁻¹] and the surplus carried over.
+
+    The irrigation system can only deliver ``10 mm d⁻¹``. A scheduled
+    application larger than that is not lost: the excess is held over
+    (``DIRRO``) and added to the following day's application, so a 20 mm
+    entry is delivered as 10 mm on two consecutive days and the full
+    planned depth still reaches the soil.
 
     Args:
         params: Soil parameters (uses ``irri``, ``irrtab``,
@@ -193,40 +226,59 @@ def _irrigation_demand(
         doy: Day-of-year, required for ``IRRI = 2`` table look-up; may be
             ``None`` (the table branch then resolves to zero).
         external: Externally supplied irrigation override [mm d⁻¹]; when
-            provided it short-circuits the ``IRRI`` logic.
+            provided it short-circuits the ``IRRI`` logic and is applied
+            as given, without the delivery cap or carry-over.
+        dirro: Surplus held over from the previous day [mm], shape
+            ``[B]``. ``None`` is treated as zero.
+        crop_present: Gate in ``{0, 1}`` marking the days a crop stands in
+            the field, broadcastable to ``[B]``. Suppresses the automatic
+            mode outside that window; defaults to ``1`` (always irrigate).
 
     Returns:
-        Daily irrigation amount [mm d⁻¹], shape ``[B]``.
+        Tuple ``(dirr, dirro_next)`` of ``[B]`` tensors: the depth applied
+        today [mm d⁻¹] and the surplus to carry into tomorrow [mm].
     """
     if external is not None:
-        return external
+        return external, torch.zeros_like(external)
 
     irri = params.irri
     wavfc = 1000.0 * rootd * (params.wcfc - params.wcwp)
+    zero = torch.zeros_like(wavfc)
+    held_over = zero if dirro is None else dirro
     # --- Mode 1: automatic refill ---
+    # Demand-driven: it exists to keep a growing crop out of water stress,
+    # so it only runs while a crop stands in the field. A bare seedbed or a
+    # harvested field is not watered to keep it near field capacity, and
+    # ``WAVFC`` — the deficit the dose aims to close — is defined from the
+    # rooting depth, which has no meaning without a crop. The dose never
+    # exceeds the 10 mm delivery limit by construction, so nothing is ever
+    # held over.
     auto_condition = (smact <= (smcr + 0.02)) & (rain < 10.0)
     auto_dose = limit(0.0, 10.0, 0.7 * (wavfc - wavt))
-    dirr_auto = torch.where(auto_condition, auto_dose, torch.zeros_like(auto_dose))
+    dirr_auto = (
+        torch.where(auto_condition, auto_dose, torch.zeros_like(auto_dose))
+        * crop_present
+    )
     # --- Mode 2: table look-up scaled by scale_factor_irr ---
+    # Today's scheduled depth plus yesterday's surplus, capped at the
+    # 10 mm delivery limit; whatever does not fit rolls forward.
     if params.irrtab is not None and doy is not None:
         table_value = interpolate(params.irrtab, doy.to(wavfc.dtype))
-        dirr_table = torch.clamp(
-            params.scale_factor_irr * table_value, min=0.0, max=10.0
-        )
+        scheduled = torch.clamp(params.scale_factor_irr * table_value, min=0.0)
     else:
-        dirr_table = torch.zeros_like(wavfc)
+        scheduled = zero
+    dirr1 = scheduled + held_over
+    dirr_table = torch.clamp(dirr1, max=10.0)
+    dirro_table = dirr1 - dirr_table
 
-    zero = torch.zeros_like(wavfc)
-    # Select by IRRI value in a differentiable manner
-    return torch.where(
-        torch.isclose(irri, torch.ones_like(irri)),
-        dirr_auto,
-        torch.where(
-            torch.isclose(irri, torch.full_like(irri, 2.0)),
-            dirr_table,
-            zero,
-        ),
-    )
+    # Select by IRRI value in a differentiable manner. Modes 0 and 1 carry
+    # nothing forward, so any surplus left by an earlier mode-2 schedule is
+    # dropped when the mode changes.
+    is_auto = torch.isclose(irri, torch.ones_like(irri))
+    is_table = torch.isclose(irri, torch.full_like(irri, 2.0))
+    dirr = torch.where(is_auto, dirr_auto, torch.where(is_table, dirr_table, zero))
+    dirro_next = torch.where(is_table, dirro_table, zero)
+    return dirr, dirro_next
 
 
 # ---------------------------------------------------------------------------- #
@@ -257,6 +309,7 @@ class WaterBalance(nn.Module):
         emerg: torch.Tensor | float = 1.0,
         irrigation: torch.Tensor | None = None,
         doy: torch.Tensor | None = None,
+        crop_present: torch.Tensor | float = 1.0,
         depnr: torch.Tensor | float = 4.5,
         iairdu: torch.Tensor | float = 0.0,
     ) -> dict[str, torch.Tensor]:
@@ -289,6 +342,11 @@ class WaterBalance(nn.Module):
                 overrides the ``params.irri`` mode.
             doy: Day-of-year tensor needed by the ``IRRI = 2`` table
                 look-up; shape ``[B]``.
+            crop_present: Gate in ``{0, 1}`` marking the days a crop stands
+                in the field (sown and not yet mature), broadcastable to
+                ``[B]``. Automatic irrigation (``IRRI = 1``) is suppressed
+                outside that window. Defaults to ``1``, i.e. irrigate on
+                every day, which is what a standalone call wants.
             depnr: Crop-group depletion number ``cDEPNR`` [-], a crop
                 trait supplied from `CropParameters.depnr` by
                 `Lintul5Model`; defaults to the Lintul5 value ``4.5``.
@@ -318,7 +376,11 @@ class WaterBalance(nn.Module):
             * ``wdr`` / ``wdra`` — root-front water transfer to the
               rooted zone (total / available) [mm d⁻¹].
             * ``rr``     — same-day root-front velocity [m d⁻¹].
-            * ``rirr``   — effective irrigation [mm d⁻¹].
+            * ``rirr``   — effective irrigation actually delivered
+              [mm d⁻¹], i.e. after the ``10 mm d⁻¹`` limit.
+            * ``dirro_next`` — irrigation depth held over to the next day
+              because it exceeded that limit [mm]; latched into
+              `ModelState.dirro` by `Lintul5Model`.
             * ``tranrf`` — water-stress factor in ``[0, 1]``.
             * ``smact`` / ``smactl`` — soil-moisture contents
               [m³ m⁻³].
@@ -380,7 +442,7 @@ class WaterBalance(nn.Module):
         # ---------------------------------------------------------------- #
         # 5. Irrigation demand
         # ---------------------------------------------------------------- #
-        rirr = _irrigation_demand(
+        rirr, dirro_next = _irrigation_demand(
             params=params,
             smact=smact,
             smcr=smcr,
@@ -389,8 +451,10 @@ class WaterBalance(nn.Module):
             rain=rain,
             doy=doy,
             external=irrigation,
+            dirro=getattr(state, "dirro", None),
+            crop_present=crop_present,
         )
-        
+
         # ---------------------------------------------------------------- #
         # 6. Stroosnijder soil evaporation with DSLR accumulator
         # ---------------------------------------------------------------- #
@@ -442,24 +506,31 @@ class WaterBalance(nn.Module):
         # ---------------------------------------------------------------- #
         # 8. Percolation cascade PERC1 → PERC2 → PERC3
         # ---------------------------------------------------------------- #
-        cap = torch.clamp(params.wcfc - smact, min=0.0) * factor * rootd
-        cap0 = torch.clamp(params.wcst - smact, min=0.0) * factor * rootd
-        capl = torch.clamp(params.wcfc - smactl, min=0.0) * factor * rd_lower
-        capl0 = torch.clamp(params.wcst - smactl, min=0.0) * factor * rd_lower
+        # Storage headroom of each zone, up to field capacity (``CAP``,
+        # ``CAPL``) and up to saturation (``CAP0``, ``CAPL0``). These are
+        # *signed*: a zone that already holds more than field capacity has
+        # negative headroom, and that is what drives it back down. With
+        # ``CAP < 0`` the root-zone balance becomes
+        # ``DWOT = PERC1 - PERC2 + WDR = CAP + WDR``, i.e. the stored
+        # excess is released to the lower zone (subject to the
+        # ``KSUB + CAPL0`` conductivity limit) until the zone relaxes to
+        # field capacity. Clamping the headroom at zero would strand that
+        # excess in the root zone indefinitely.
+        cap = (params.wcfc - smact) * factor * rootd
+        cap0 = (params.wcst - smact) * factor * rootd
+        capl = (params.wcfc - smactl) * factor * rd_lower
+        capl0 = (params.wcst - smactl) * factor * rd_lower
 
         perc1p = perc - evap - tran
         perc1 = torch.minimum(params.ksub + cap0, perc1p)
         extra_runoff = torch.clamp(perc1p - perc1, min=0.0)
         runoff = runofp + extra_runoff
 
-        perc2_candidate = torch.minimum(
-            params.ksub + capl0, torch.clamp(perc1 - cap, min=0.0)
-        )
+        perc2_candidate = torch.minimum(params.ksub + capl0, perc1 - cap)
         perc2 = torch.where(cap <= perc1, perc2_candidate, torch.zeros_like(perc1))
 
         perc3_candidate = torch.minimum(
-            params.ksub + torch.zeros_like(perc2),
-            torch.clamp(perc2 - capl, min=0.0),
+            params.ksub + torch.zeros_like(perc2), perc2 - capl
         )
         perc3 = torch.where(capl <= perc2, perc3_candidate, torch.zeros_like(perc2))
 
@@ -494,6 +565,7 @@ class WaterBalance(nn.Module):
             "wdra": wdra,
             "rr": rr_eff,
             "rirr": rirr,
+            "dirro_next": dirro_next,
             # stress factors / diagnostics
             "tranrf": tranrf,
             "smact": smact,
