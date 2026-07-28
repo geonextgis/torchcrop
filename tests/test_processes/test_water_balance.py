@@ -321,3 +321,77 @@ def test_table_irrigation_is_not_gated_by_crop_presence():
         crop_present=torch.zeros(1),  # pre-sowing seedbed irrigation
     )
     assert out["rirr"].item() == pytest.approx(8.0)
+
+
+def test_potential_mode_transpires_at_the_unreduced_rate():
+    """``iopt = 1`` bypasses RDRY/RWET and the available-water ceiling.
+
+    SIMPLACE ``WaterBalance.java`` special-cases potential production with
+    ``ActualTranspiration = PotentialTranspiration``, so the crop transpires
+    at the full potential rate and ``TRANRF`` is identically ``1`` even on a
+    soil dried to wilting point — where the water-limited branch would give
+    ``TRANRF`` close to ``0``.
+    """
+    wb = WaterBalance()
+    params = SoilParameters()
+    state = ModelState.initial(batch_size=1, rootdi=0.4)
+    # Dry the rooted zone down to wilting point: no available water at all.
+    state = state.replace(wa=1000.0 * params.wcwp * state.rootd)
+    ptran = torch.tensor([4.0])
+    kwargs = dict(
+        state=state,
+        rain=torch.zeros(1),
+        pevap=torch.zeros(1),
+        ptran=ptran,
+        params=params,
+        rdm=_rdm(params, state),
+    )
+
+    limited = wb(**kwargs, iopt=torch.tensor(2.0))
+    assert limited["tran"].item() < 1e-6
+    assert limited["tranrf"].item() < 1e-6
+
+    potential = wb(**kwargs, iopt=torch.tensor(1.0))
+    assert torch.allclose(potential["tran"], ptran)
+    assert torch.allclose(potential["tranrf"], torch.ones(1))
+    # The soil balance itself still runs: the extra uptake is drawn from the
+    # root zone, which is what lets a potential-mode profile dry down.
+    assert potential["wa_rate"].item() < limited["wa_rate"].item()
+
+
+def test_potential_mode_defaults_to_water_limited_behaviour():
+    """Omitting ``iopt`` keeps the reducing branch (backward compatible)."""
+    wb = WaterBalance()
+    params = SoilParameters()
+    state = ModelState.initial(batch_size=1, rootdi=0.4)
+    state = state.replace(wa=1000.0 * params.wcwp * state.rootd)
+    kwargs = dict(
+        state=state,
+        rain=torch.zeros(1),
+        pevap=torch.zeros(1),
+        ptran=torch.tensor([4.0]),
+        params=params,
+        rdm=_rdm(params, state),
+    )
+    default = wb(**kwargs)["tran"]
+    explicit = wb(**kwargs, iopt=torch.tensor(2.0))["tran"]
+    assert torch.equal(default, explicit)
+
+
+def test_potential_mode_is_selected_per_batch_element():
+    """``iopt`` is honoured elementwise, not collapsed to a single branch."""
+    wb = WaterBalance()
+    params = SoilParameters()
+    state = ModelState.initial(batch_size=2, rootdi=0.4)
+    state = state.replace(wa=1000.0 * params.wcwp * state.rootd)
+    ptran = torch.tensor([4.0, 4.0])
+    out = wb(
+        state=state,
+        rain=torch.zeros(2),
+        pevap=torch.zeros(2),
+        ptran=ptran,
+        params=params,
+        rdm=_rdm(params, state),
+        iopt=torch.tensor([1.0, 2.0]),
+    )
+    assert torch.allclose(out["tranrf"], torch.tensor([1.0, 0.0]), atol=1e-6)
