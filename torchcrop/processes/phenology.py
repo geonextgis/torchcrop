@@ -9,17 +9,43 @@ $$
 \\text{DTSU} = \\text{AFGEN}(\\text{DTSMTB}, T_\\text{avg})
 $$
 
-Development rate (vegetative, generative):
+Daylength- and vernalisation-modified thermal time, which drives
+development up to anthesis:
+
+$$
+\\text{DTSUML} = \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC}
+$$
+
+Development rate (vegetative, generative). The vegetative phase spans
+$\\text{TSUM1}$ degree-days and the generative phase $\\text{TSUM2}$, so
+the two phases convert thermal time into DVS at different rates. On the
+day the crop passes anthesis, only the fraction of $\\text{DTSUML}$ that
+still fits inside $\\text{TSUM1}$ may be charged at the vegetative rate;
+the surplus $\\text{OVERLAP}$ belongs to the generative phase and is
+charged at $1/\\text{TSUM2}$. Splitting the day this way conserves
+thermal time across the phase boundary — without it a whole day's worth
+of degree-days would be converted at the wrong rate and the crop would
+carry a permanent DVS offset into grain filling.
+
+$$
+\\text{OVERLAP} = \\max\\!\\left(0,\\;
+    \\text{DTSUML} - (1 - \\text{DVS}) \\cdot \\text{TSUM1}\\right)
+$$
 
 $$
 \\text{DVR} =
 \\begin{cases}
-    \\text{DTSU} \\cdot \\text{PHOTFAC} \\cdot \\text{VERNFAC} /
-        \\text{TSUM1}, & 0 \\le \\text{DVS} < 1 \\\\
-    \\text{DTSU} / \\text{TSUM2},
+    \\dfrac{\\text{DTSUML} - \\text{OVERLAP}}{\\text{TSUM1}} +
+        \\dfrac{\\text{OVERLAP}}{\\text{TSUM2}},
+        & 0 \\le \\text{DVS} < 1 \\\\[2ex]
+    \\dfrac{\\text{DTSU}}{\\text{TSUM2}},
         & 1 \\le \\text{DVS} < 2
 \\end{cases}
 $$
+
+$\\text{OVERLAP}$ is zero on every day except the one that crosses
+anthesis, so the vegetative branch reduces to
+$\\text{DTSUML}/\\text{TSUM1}$ for the rest of the phase.
 
 Photoperiod factor (active when ``IDSL >= 1``):
 
@@ -212,7 +238,15 @@ class Phenology(nn.Module):
         tsum_rate = dtsu * emerged_f
 
         # DVS rate — piecewise on DVS.
-        dvr_veg = dtsu * photofac * vernfac / _safe(params.tsum1)
+        # Split thermal time on the anthesis-crossing day between the vegetative and
+        # generative phases. The overlap is zero on all other days and can be derived from DVS.
+        dtsuml = dtsu * photofac * vernfac
+        overlap = torch.clamp(
+            dtsuml - (1.0 - state.dvs) * params.tsum1, min=0.0
+        )
+        dvr_veg = (dtsuml - overlap) / _safe(params.tsum1) + overlap / _safe(
+            params.tsum2
+        )
         dvr_gen = dtsu / _safe(params.tsum2)
 
         if self.smooth:
