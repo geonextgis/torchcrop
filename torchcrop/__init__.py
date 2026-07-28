@@ -8,7 +8,7 @@ References:
 
 __author__ = """Krishnagopal Halder"""
 __email__ = "geonextgis@gmail.com"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from torchcrop.calibration import (
     CalibrationManager,
