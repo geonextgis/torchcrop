@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import torch
 
 from torchcrop.parameters.soil_params import SoilParameters
@@ -61,9 +62,13 @@ def test_rain_increases_water():
         params=params,
         rdm=_rdm(params, state),
     )
-    # Net change across both zones should be positive (net gain from rain)
-    total = out["wa_rate"] + out["wa_lower_rate"]
-    assert total.item() > 0
+    # Rain infiltrates into the rooted zone, which starts well below field
+    # capacity, so its storage must rise.
+    assert out["wa_rate"].item() > 0
+    # The two zones combined need not gain: the default lower zone starts
+    # above field capacity and drains at KSUB regardless of the rain, so
+    # only the per-zone rate carries the intended meaning here.
+    assert out["runoff"].item() == pytest.approx(0.0, abs=1e-6)
 
 
 def test_mass_balance_residual_near_zero():
@@ -196,3 +201,123 @@ def test_runoff_captures_saturation_excess():
     )
     # Runoff must exceed the preliminary runfr * rain share
     assert out["runoff"].item() > 0.1 * 100.0
+
+
+def test_table_irrigation_holds_over_excess_above_delivery_limit():
+    """A 20 mm scheduled application is delivered as 10 mm on two days.
+
+    The system applies at most 10 mm d⁻¹; the remainder must be carried in
+    ``ModelState.dirro`` and applied the next day rather than discarded.
+    """
+    wb = WaterBalance()
+    params = SoilParameters()
+    params.irri = torch.tensor(2.0)
+    # 20 mm scheduled on DOY 100, bracketed by zeros so the piecewise-linear
+    # look-up returns a single-day spike.
+    params.irrtab = torch.tensor(
+        [[0.0, 0.0], [99.0, 0.0], [100.0, 20.0], [101.0, 0.0], [365.0, 0.0]]
+    )
+    state = ModelState.initial(batch_size=1, rootdi=0.5)
+    kwargs = dict(
+        rain=torch.zeros(1),
+        pevap=torch.zeros(1),
+        ptran=torch.tensor([1.0]),
+        params=params,
+        rdm=_rdm(params, state),
+    )
+
+    day100 = wb(state, doy=torch.tensor([100.0]), **kwargs)
+    assert day100["rirr"].item() == pytest.approx(10.0)
+    assert day100["dirro_next"].item() == pytest.approx(10.0)
+
+    # Carry the surplus forward; the schedule itself is empty on DOY 101.
+    state = state.replace(dirro=day100["dirro_next"])
+    day101 = wb(state, doy=torch.tensor([101.0]), **kwargs)
+    assert day101["rirr"].item() == pytest.approx(10.0)
+    assert day101["dirro_next"].item() == pytest.approx(0.0)
+
+    # Full scheduled depth reached the soil.
+    assert day100["rirr"].item() + day101["rirr"].item() == pytest.approx(20.0)
+
+
+def test_root_zone_above_field_capacity_drains_to_lower_zone():
+    """Water stored above field capacity is released, not stranded.
+
+    The storage headroom ``CAP`` is signed: when the rooted zone holds more
+    than field capacity it is negative and the excess percolates down until
+    the zone relaxes to field capacity.
+    """
+    wb = WaterBalance()
+    params = SoilParameters()
+    state = ModelState.initial(batch_size=1, rootdi=0.5, wa_lower_i=100.0)
+    # Rooted zone midway between field capacity and saturation.
+    wfc = 1000.0 * params.wcfc * state.rootd
+    wst = 1000.0 * params.wcst * state.rootd
+    state = state.replace(wa=0.5 * (wfc + wst))
+    out = wb(
+        state,
+        rain=torch.zeros(1),
+        pevap=torch.zeros(1),
+        ptran=torch.zeros(1),
+        params=params,
+        rdm=_rdm(params, state),
+    )
+    # Nothing enters or leaves the profile today, so the whole excess above
+    # field capacity moves down (it is well inside the KSUB + CAPL0 limit)
+    # and the rooted zone lands exactly on field capacity.
+    excess = float(state.wa - wfc)
+    assert out["perc2"].item() == pytest.approx(excess, abs=1e-3)
+    assert out["wa_rate"].item() == pytest.approx(-excess, abs=1e-3)
+    assert (state.wa + out["wa_rate"]).item() == pytest.approx(float(wfc), abs=1e-3)
+    assert out["wbal"].item() == pytest.approx(0.0, abs=1e-4)
+
+
+def test_automatic_irrigation_only_runs_while_a_crop_is_present():
+    """Demand-driven irrigation serves a crop, so a bare field gets none.
+
+    The soil is dry enough to trigger in every case; only the presence of
+    a crop decides whether water is applied.
+    """
+    wb = WaterBalance()
+    params = SoilParameters()
+    params.irri = torch.tensor(1.0)
+    state = ModelState.initial(batch_size=1, rootdi=0.5)
+    wwp = 1000.0 * params.wcwp * state.rootd
+    state = state.replace(wa=wwp + 1.0)
+    kwargs = dict(
+        rain=torch.zeros(1),
+        pevap=torch.tensor([1.0]),
+        ptran=torch.tensor([2.0]),
+        params=params,
+        rdm=_rdm(params, state),
+    )
+
+    # Before sowing and after maturity — no crop, no irrigation.
+    assert wb(state, crop_present=torch.zeros(1), **kwargs)["rirr"].item() == 0.0
+    # Between sowing and maturity — irrigation runs.
+    assert wb(state, crop_present=torch.ones(1), **kwargs)["rirr"].item() > 0.0
+    # A standalone call that says nothing about the crop keeps irrigating,
+    # so the module stays usable on its own.
+    assert wb(state, **kwargs)["rirr"].item() > 0.0
+
+
+def test_table_irrigation_is_not_gated_by_crop_presence():
+    """A scheduled application is management, not a response to the crop."""
+    wb = WaterBalance()
+    params = SoilParameters()
+    params.irri = torch.tensor(2.0)
+    params.irrtab = torch.tensor(
+        [[0.0, 0.0], [99.0, 0.0], [100.0, 8.0], [101.0, 0.0], [365.0, 0.0]]
+    )
+    state = ModelState.initial(batch_size=1, rootdi=0.5)
+    out = wb(
+        state,
+        rain=torch.zeros(1),
+        pevap=torch.zeros(1),
+        ptran=torch.tensor([1.0]),
+        params=params,
+        rdm=_rdm(params, state),
+        doy=torch.tensor([100.0]),
+        crop_present=torch.zeros(1),  # pre-sowing seedbed irrigation
+    )
+    assert out["rirr"].item() == pytest.approx(8.0)
