@@ -54,7 +54,9 @@ class NutrientDemand(nn.Module):
     4. *Concentration-based stress* (``NNINDX``): the historical
        nutrition indices ``NNI``/``PNI``/``KNI`` derived from
        ``(NFGMR - NRMR) / (NOPTMR - NRMR)``, combined into
-       ``NPKI = min(NNI, PNI, KNI)``.
+       ``NPKI = min(NNI, PNI, KNI)``. They are defined only for a
+       standing canopy and are ``0`` before emergence; under
+       ``IOPT <= 2`` they are pinned to ``1`` on every day.
     5. *Per-organ partitioning* (``RNUSUB``) of soil + fixation uptake by
        demand-share, and *translocation* (``NTRANS``) of storage-organ
        supply by translocatable-pool share.
@@ -127,8 +129,10 @@ class NutrientDemand(nn.Module):
             Diagnostics:
 
             * ``nstress`` [-] — ``NPKI = min(NNI, PNI, KNI)``, the
-                combined nutrition index in ``[1e-3, 1]`` that
-                multiplies ``gtotal`` in `Photosynthesis`.
+                combined nutrition index in ``[1e-3, 1]`` (``0`` before
+                emergence) that drives the ``NPKREF`` reduction of
+                ``gtotal``. `Lintul5Model` consumes it one day later
+                than it is produced; see `ModelState.npki_prev`.
             * ``nni``, ``pni``, ``kni`` [-] — Per-nutrient indices.
             * ``n_uptake``, ``p_uptake``, ``k_uptake``
                 [g X m⁻² d⁻¹] — Whole-plant uptake totals
@@ -323,20 +327,28 @@ class NutrientDemand(nn.Module):
         kni = _idx(kfgmr, krmr, koptmr)
         npki = torch.minimum(torch.minimum(nni, pni), kni)
 
-        # IOPT overrides.
+        # Before emergence, no standing canopy exists, so the nutrition indices are
+        # undefined and remain at their zero initialisation, matching NNINDX. This is
+        # load-bearing because the biomass side consumes the index with a one-day lag:
+        # the first emerged day therefore uses zero, producing no assimilation and one
+        # RDRNS leaf-death adjustment before juvenile growth begins.
+        zeros = torch.zeros_like(nni)
+        emerg_mask = emerg > 0.5
+        nni = torch.where(emerg_mask, nni, zeros)
+        pni = torch.where(emerg_mask, pni, zeros)
+        kni = torch.where(emerg_mask, kni, zeros)
+        npki = torch.where(emerg_mask, npki, zeros)
+
+        # IOPT overrides. These sit *after* the emergence gate (``NNINDX``
+        # applies them last), so under potential / water-limited production
+        # the indices are pinned to 1 on every day — emerged or not — and
+        # nutrition can never reduce growth.
         nni = torch.where(iopt <= 2.5, ones, nni)
         pni = torch.where(iopt <= 3.5, ones, pni)
         kni = torch.where(iopt <= 3.5, ones, kni)
         npki = torch.where(iopt <= 2.5, ones, npki)
         is_iopt3 = (iopt > 2.5) & (iopt <= 3.5)
         npki = torch.where(is_iopt3, nni, npki)
-
-        # Pre-emergence: no stress.
-        emerg_mask = emerg > 0.5
-        nni = torch.where(emerg_mask, nni, ones)
-        pni = torch.where(emerg_mask, pni, ones)
-        kni = torch.where(emerg_mask, kni, ones)
-        npki = torch.where(emerg_mask, npki, ones)
 
         # ------------- Per-organ uptake split (RNUSUB) -----------------
         # Soil + biological N uptake is distributed across leaves,
