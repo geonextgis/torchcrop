@@ -676,6 +676,7 @@ class Lintul5Model(nn.Module):
             crop_present=crop_present,
             depnr=crop_params.depnr,
             iairdu=crop_params.iairdu,
+            iopt=crop_params.iopt,
         )
         # Optional correction of the water-stress factor at source, so the
         # corrected value propagates through every downstream consumer
