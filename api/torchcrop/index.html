@@ -16928,6 +16928,7 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
             <span class="n">depnr</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">depnr</span><span class="p">,</span>
             <span class="n">iairdu</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span>
+            <span class="n">iopt</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Optional correction of the water-stress factor at source, so the</span>
         <span class="c1"># corrected value propagates through every downstream consumer</span>
@@ -32670,7 +32671,12 @@ space of the receiving layer.</p>
 <p><strong>Stress factors.</strong> Transpiration is reduced multiplicatively by a
 drought factor <code>RDRY</code> and (for non-rice crops) an oxygen factor
 <code>RWET</code> that ramps with <code>DSOS</code> — days of oxygen shortage,
-persistent across days and clipped to <code>[0, 4]</code>.</p>
+persistent across days and clipped to <code>[0, 4]</code>. Under <strong>potential
+production</strong> (<code>iopt = 1</code>) none of this applies: the crop transpires
+at the full potential rate, unconstrained by the available water, so
+<code>TRANRF</code> is identically <code>1</code> and the root zone may be drawn below
+wilting point. The soil water balance itself still runs normally, so
+the profile dries down exactly as in a rain-fed run.</p>
 <p><strong>Root-front velocity.</strong> Derived from <code>RRI</code>, the maximum daily
 rooting-depth increase: root growth is switched off under severe
 drought (<code>TRANRF &lt; 0.01</code>), capped by the headroom to the
@@ -32723,6 +32729,19 @@ f_\text{eaw} = \mathrm{clip}\!\left(\frac{1}{A + B\,\text{ETC}_
 \qquad
 \theta_\text{crit} = (1 - f_\text{eaw})(\theta_\text{fc} -
 \theta_\text{wp}) + \theta_\text{wp}.
+\]</div>
+<p>Actual transpiration and the water-stress factor, where the potential
+branch (<code>IOPT = 1</code>) bypasses both reduction factors and the
+available-water ceiling:</p>
+<div class="arithmatex">\[
+T_a =
+\begin{cases}
+T_p &amp; \text{if IOPT} = 1 \\
+\max\!\left(0,\ \min\!\left(W_\text{avt},\
+R_\text{dry} R_\text{wet} T_p\right)\right) &amp; \text{otherwise}
+\end{cases}
+\qquad
+\text{TRANRF} = \frac{T_a}{T_p}.
 \]</div>
 <p>Drought and oxygen reduction factors:</p>
 <div class="arithmatex">\[
@@ -32836,6 +32855,7 @@ batched and autograd-safe manner.</p>
         <span class="n">crop_present</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
         <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">iopt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
@@ -32877,6 +32897,13 @@ batched and autograd-safe manner.</p>
 <span class="sd">            iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait</span>
 <span class="sd">                supplied from `CropParameters.iairdu` by `Lintul5Model`;</span>
 <span class="sd">                defaults to ``0`` (non-aquatic).</span>
+<span class="sd">            iopt: Production-mode switch ``cIOPT`` ∈ ``{1, 2, 3, 4}``,</span>
+<span class="sd">                supplied from `CropParameters.iopt` by `Lintul5Model`.</span>
+<span class="sd">                Only ``1`` (potential production) is special-cased here:</span>
+<span class="sd">                transpiration then runs at the unreduced potential rate</span>
+<span class="sd">                and ``TRANRF`` is identically ``1``. Defaults to ``2``</span>
+<span class="sd">                (water-limited), i.e. the reducing behaviour, so</span>
+<span class="sd">                standalone calls are unaffected.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict of ``[B]`` tensors.</span>
@@ -32960,7 +32987,16 @@ batched and autograd-safe manner.</p>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">wwp</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">rootd</span>
         <span class="n">wavt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">tran_limited</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+        <span class="p">)</span>
+        <span class="c1"># Potential production (IOPT = 1) transpires at the *unreduced*</span>
+        <span class="c1"># potential rate — neither the drought/oxygen factors nor the</span>
+        <span class="c1"># available-water ceiling apply, so the root zone may be drawn</span>
+        <span class="c1"># below wilting point and TRANRF is identically 1</span>
+        <span class="n">iopt_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">iopt</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">is_potential</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">iopt_t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">iopt_t</span><span class="p">))</span>
+        <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_potential</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">tran_limited</span><span class="p">)</span>
         <span class="n">tranrf</span> <span class="o">=</span> <span class="n">tran</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">ptran</span><span class="p">)</span>
 
         <span class="c1"># ---------------------------------------------------------------- #</span>
@@ -33119,7 +33155,7 @@ batched and autograd-safe manner.</p>
 
 
 <h5 id="torchcrop.processes.water_balance.WaterBalance.forward" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crop_present</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">rain</span><span class="p">,</span> <span class="n">pevap</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rdm</span><span class="p">,</span> <span class="n">etc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rr_lag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">emerg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">irrigation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crop_present</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">depnr</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">iairdu</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">iopt</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.processes.water_balance.WaterBalance.forward" class="headerlink" title="Permanent link">&para;</a></h5>
@@ -33251,6 +33287,18 @@ supplied from <code>CropParameters.iairdu</code> by <code>Lintul5Model</code>;
 defaults to <code>0</code> (non-aquatic).</p></td>
         <td><code>0.0</code></td>
       </tr>
+      <tr>
+        <td><code>iopt</code></td>
+        <td><code>torch.Tensor | float</code></td>
+        <td><p>Production-mode switch <code>cIOPT</code> ∈ <code>{1, 2, 3, 4}</code>,
+supplied from <code>CropParameters.iopt</code> by <code>Lintul5Model</code>.
+Only <code>1</code> (potential production) is special-cased here:
+transpiration then runs at the unreduced potential rate
+and <code>TRANRF</code> is identically <code>1</code>. Defaults to <code>2</code>
+(water-limited), i.e. the reducing behaviour, so
+standalone calls are unaffected.</p></td>
+        <td><code>2.0</code></td>
+      </tr>
   </tbody>
 </table>
 <p><strong>Returns:</strong></p>
@@ -33320,6 +33368,7 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="n">crop_present</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">4.5</span><span class="p">,</span>
     <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">iopt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
 
@@ -33361,6 +33410,13 @@ defaults to <code>0</code> (non-aquatic).</p></td>
 <span class="sd">        iairdu: Root air-ducts flag ``cIAIRDU`` (0/1), a crop trait</span>
 <span class="sd">            supplied from `CropParameters.iairdu` by `Lintul5Model`;</span>
 <span class="sd">            defaults to ``0`` (non-aquatic).</span>
+<span class="sd">        iopt: Production-mode switch ``cIOPT`` ∈ ``{1, 2, 3, 4}``,</span>
+<span class="sd">            supplied from `CropParameters.iopt` by `Lintul5Model`.</span>
+<span class="sd">            Only ``1`` (potential production) is special-cased here:</span>
+<span class="sd">            transpiration then runs at the unreduced potential rate</span>
+<span class="sd">            and ``TRANRF`` is identically ``1``. Defaults to ``2``</span>
+<span class="sd">            (water-limited), i.e. the reducing behaviour, so</span>
+<span class="sd">            standalone calls are unaffected.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict of ``[B]`` tensors.</span>
@@ -33444,7 +33500,16 @@ defaults to <code>0</code> (non-aquatic).</p></td>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">wwp</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">params</span><span class="o">.</span><span class="n">wcwp</span> <span class="o">*</span> <span class="n">rootd</span>
     <span class="n">wavt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">wa</span> <span class="o">-</span> <span class="n">wwp</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-    <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">tran_limited</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">wavt</span><span class="p">,</span> <span class="n">rdry</span> <span class="o">*</span> <span class="n">rwet</span> <span class="o">*</span> <span class="n">ptran</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span>
+    <span class="p">)</span>
+    <span class="c1"># Potential production (IOPT = 1) transpires at the *unreduced*</span>
+    <span class="c1"># potential rate — neither the drought/oxygen factors nor the</span>
+    <span class="c1"># available-water ceiling apply, so the root zone may be drawn</span>
+    <span class="c1"># below wilting point and TRANRF is identically 1</span>
+    <span class="n">iopt_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">iopt</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ptran</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">is_potential</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">iopt_t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">iopt_t</span><span class="p">))</span>
+    <span class="n">tran</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_potential</span><span class="p">,</span> <span class="n">ptran</span><span class="p">,</span> <span class="n">tran_limited</span><span class="p">)</span>
     <span class="n">tranrf</span> <span class="o">=</span> <span class="n">tran</span> <span class="o">/</span> <span class="n">notnul</span><span class="p">(</span><span class="n">ptran</span><span class="p">)</span>
 
     <span class="c1"># ---------------------------------------------------------------- #</span>
