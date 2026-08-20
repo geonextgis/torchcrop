@@ -99,6 +99,7 @@ nav:
                 - Water- and NPK-limited (Winter Wheat): examples/03_water_and_nutrient_limited/water_and_npk_limited_(winter_wheat).ipynb
           - Calibration:
                 - Constraint-Aware Calibration (Winter Wheat): examples/04_calibration/calibration_(winter_wheat).ipynb
+                - Phenology Calibration (Winter Wheat): examples/04_calibration/phenology_calibration_(winter_wheat).ipynb
           - Daily time-step:
                 - Runtime Parameter & State Changes (Winter Wheat): examples/06_daily_timestep/daily_timestep_(winter_wheat).ipynb
     - API Reference:
