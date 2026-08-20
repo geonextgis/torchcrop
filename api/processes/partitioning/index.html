@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2838,12 +2866,12 @@ split to obtain per-organ growth rates.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/partitioning.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Partitioning</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allocate daily gross biomass production to organ-specific pools.</span>
+<span class="w">    </span><span class="sd">"""Allocate daily gross biomass production to organ-specific pools.</span>
 
 <span class="sd">    The DVS-indexed baseline fractions are first modified for water or N</span>
 <span class="sd">    stress, then multiplied through by ``gtotal`` and the root/shoot</span>
 <span class="sd">    split to obtain per-organ growth rates.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_subpar</span><span class="p">(</span>
@@ -2855,7 +2883,7 @@ split to obtain per-organ growth rates.</p>
         <span class="n">fstt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">fsot</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the ``SUBPAR`` stress modification to partitioning.</span>
+<span class="w">        </span><span class="sd">"""Apply the ``SUBPAR`` stress modification to partitioning.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            npart: N-stress partitioning coefficient ``cNPART``, shape</span>
@@ -2876,7 +2904,7 @@ split to obtain per-organ growth rates.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple ``(fr, fl, fs, fo)`` of stress-modified fractions, each</span>
 <span class="sd">            of shape ``[B]``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Water-stress branch (TRANRF &lt; NNI): roots get a larger share.</span>
         <span class="n">frtmod_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">tranrf</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
         <span class="n">fr_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">frtwet</span> <span class="o">*</span> <span class="n">frtmod_w</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
@@ -2906,7 +2934,7 @@ split to obtain per-organ growth rates.</p>
         <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">nni</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split gross daily biomass production across organs.</span>
+<span class="w">        </span><span class="sd">"""Split gross daily biomass production across organs.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current state (uses ``state.dvs`` for table lookups).</span>
@@ -2948,7 +2976,7 @@ split to obtain per-organ growth rates.</p>
 <span class="sd">                modification.</span>
 <span class="sd">            * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
 <span class="sd">                leaves, stems, storage organs after stress modification.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
         <span class="n">frtwet</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">frtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
         <span class="n">flvt</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">fltb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -2979,14 +3007,14 @@ split to obtain per-organ growth rates.</p>
         <span class="n">g_so</span> <span class="o">=</span> <span class="n">fo</span> <span class="o">*</span> <span class="n">agrt</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;g_root&quot;</span><span class="p">:</span> <span class="n">g_root</span><span class="p">,</span>
-            <span class="s2">&quot;g_lv&quot;</span><span class="p">:</span> <span class="n">g_lv</span><span class="p">,</span>
-            <span class="s2">&quot;g_st&quot;</span><span class="p">:</span> <span class="n">g_st</span><span class="p">,</span>
-            <span class="s2">&quot;g_so&quot;</span><span class="p">:</span> <span class="n">g_so</span><span class="p">,</span>
-            <span class="s2">&quot;fr&quot;</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
-            <span class="s2">&quot;fl&quot;</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
-            <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
-            <span class="s2">&quot;fo&quot;</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
+            <span class="s2">"g_root"</span><span class="p">:</span> <span class="n">g_root</span><span class="p">,</span>
+            <span class="s2">"g_lv"</span><span class="p">:</span> <span class="n">g_lv</span><span class="p">,</span>
+            <span class="s2">"g_st"</span><span class="p">:</span> <span class="n">g_st</span><span class="p">,</span>
+            <span class="s2">"g_so"</span><span class="p">:</span> <span class="n">g_so</span><span class="p">,</span>
+            <span class="s2">"fr"</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
+            <span class="s2">"fl"</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
+            <span class="s2">"fs"</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
+            <span class="s2">"fo"</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3116,7 +3144,7 @@ and nutrient demand)</code></td>
     <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">nni</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split gross daily biomass production across organs.</span>
+<span class="w">    </span><span class="sd">"""Split gross daily biomass production across organs.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current state (uses ``state.dvs`` for table lookups).</span>
@@ -3158,7 +3186,7 @@ and nutrient demand)</code></td>
 <span class="sd">            modification.</span>
 <span class="sd">        * ``fl``, ``fs``, ``fo`` [-] — Above-ground fractions to</span>
 <span class="sd">            leaves, stems, storage organs after stress modification.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
     <span class="n">frtwet</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">frtb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
     <span class="n">flvt</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">fltb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
@@ -3189,14 +3217,14 @@ and nutrient demand)</code></td>
     <span class="n">g_so</span> <span class="o">=</span> <span class="n">fo</span> <span class="o">*</span> <span class="n">agrt</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;g_root&quot;</span><span class="p">:</span> <span class="n">g_root</span><span class="p">,</span>
-        <span class="s2">&quot;g_lv&quot;</span><span class="p">:</span> <span class="n">g_lv</span><span class="p">,</span>
-        <span class="s2">&quot;g_st&quot;</span><span class="p">:</span> <span class="n">g_st</span><span class="p">,</span>
-        <span class="s2">&quot;g_so&quot;</span><span class="p">:</span> <span class="n">g_so</span><span class="p">,</span>
-        <span class="s2">&quot;fr&quot;</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
-        <span class="s2">&quot;fl&quot;</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
-        <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
-        <span class="s2">&quot;fo&quot;</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
+        <span class="s2">"g_root"</span><span class="p">:</span> <span class="n">g_root</span><span class="p">,</span>
+        <span class="s2">"g_lv"</span><span class="p">:</span> <span class="n">g_lv</span><span class="p">,</span>
+        <span class="s2">"g_st"</span><span class="p">:</span> <span class="n">g_st</span><span class="p">,</span>
+        <span class="s2">"g_so"</span><span class="p">:</span> <span class="n">g_so</span><span class="p">,</span>
+        <span class="s2">"fr"</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
+        <span class="s2">"fl"</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
+        <span class="s2">"fs"</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
+        <span class="s2">"fo"</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

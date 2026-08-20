@@ -927,6 +927,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2760,8 +2788,8 @@ residual specs but untrained reproduces the pure mechanistic trajectory.</p>
 <span class="c1"># Option A: hand-pick the slots tied to your observables (recommended).</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">residual_specs</span><span class="o">=</span><span class="p">[</span>
     <span class="n">ResidualSpec</span><span class="p">(</span>
-        <span class="s2">&quot;photosynthesis.gtotal&quot;</span><span class="p">,</span> <span class="s2">&quot;rate_factor&quot;</span><span class="p">,</span>
-        <span class="n">context</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lai&quot;</span><span class="p">,</span> <span class="s2">&quot;dvs&quot;</span><span class="p">,</span> <span class="s2">&quot;davtmp&quot;</span><span class="p">,</span> <span class="s2">&quot;tranrf&quot;</span><span class="p">,</span> <span class="s2">&quot;nstress&quot;</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+        <span class="s2">"photosynthesis.gtotal"</span><span class="p">,</span> <span class="s2">"rate_factor"</span><span class="p">,</span>
+        <span class="n">context</span><span class="o">=</span><span class="p">(</span><span class="s2">"lai"</span><span class="p">,</span> <span class="s2">"dvs"</span><span class="p">,</span> <span class="s2">"davtmp"</span><span class="p">,</span> <span class="s2">"tranrf"</span><span class="p">,</span> <span class="s2">"nstress"</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
     <span class="p">),</span>
 <span class="p">])</span>
 

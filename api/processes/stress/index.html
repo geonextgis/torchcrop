@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2761,14 +2789,14 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/stress.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StressFactors</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine water and nutrient stress into a single growth reducer.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Combine water and nutrient stress into a single growth reducer."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine water and nutrient stress into a single growth reducer.</span>
+<span class="w">        </span><span class="sd">"""Combine water and nutrient stress into a single growth reducer.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tranrf: Water-stress factor in ``[0, 1]`` from</span>
@@ -2785,7 +2813,7 @@ StressFactors            (<span title="torch.nn.modules.module.Module">Module</s
 <span class="sd">            scales the gross growth rate ``gtotal`` and therefore</span>
 <span class="sd">            propagates into every per-organ rate</span>
 <span class="sd">            (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -2872,7 +2900,7 @@ propagates into every per-organ rate
     <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">nstress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine water and nutrient stress into a single growth reducer.</span>
+<span class="w">    </span><span class="sd">"""Combine water and nutrient stress into a single growth reducer.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tranrf: Water-stress factor in ``[0, 1]`` from</span>
@@ -2889,7 +2917,7 @@ propagates into every per-organ rate
 <span class="sd">        scales the gross growth rate ``gtotal`` and therefore</span>
 <span class="sd">        propagates into every per-organ rate</span>
 <span class="sd">        (``g_lv``/``g_st``/``g_root``/``g_so``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">nstress</span><span class="p">)</span>
 </code></pre></div>
         </details>

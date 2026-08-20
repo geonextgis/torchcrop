@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2798,7 +2826,7 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/stem_dynamics.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StemDynamics</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stem biomass net rate and dead-stem accumulation rate.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Stem biomass net rate and dead-stem accumulation rate."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2807,7 +2835,7 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute stem biomass rates for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute stem biomass rates for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current state; uses ``state.dvs``, ``state.wst`` and</span>
@@ -2840,7 +2868,7 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
 <span class="sd">            * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
 <span class="sd">                stem death rate after the scale factor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
         <span class="n">wst</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wst</span>
         <span class="n">dtype</span> <span class="o">=</span> <span class="n">wst</span><span class="o">.</span><span class="n">dtype</span>
@@ -2861,10 +2889,10 @@ StemDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">wst_rate</span> <span class="o">=</span> <span class="n">g_st</span> <span class="o">-</span> <span class="n">drst</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">wst_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wstd_rate&quot;</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
-            <span class="s2">&quot;drst&quot;</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
-            <span class="s2">&quot;rdrst&quot;</span><span class="p">:</span> <span class="n">rdrst</span><span class="p">,</span>
+            <span class="s2">"wst_rate"</span><span class="p">:</span> <span class="n">wst_rate</span><span class="p">,</span>
+            <span class="s2">"wstd_rate"</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
+            <span class="s2">"drst"</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
+            <span class="s2">"rdrst"</span><span class="p">:</span> <span class="n">rdrst</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -2979,7 +3007,7 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute stem biomass rates for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute stem biomass rates for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current state; uses ``state.dvs``, ``state.wst`` and</span>
@@ -3012,7 +3040,7 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            ``DRST = WST · RDRST · 𝟙[DVS ≥ DVSDR]``.</span>
 <span class="sd">        * ``rdrst`` [d⁻¹] — Effective DVS-indexed relative</span>
 <span class="sd">            stem death rate after the scale factor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
     <span class="n">wst</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wst</span>
     <span class="n">dtype</span> <span class="o">=</span> <span class="n">wst</span><span class="o">.</span><span class="n">dtype</span>
@@ -3033,10 +3061,10 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">wst_rate</span> <span class="o">=</span> <span class="n">g_st</span> <span class="o">-</span> <span class="n">drst</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">wst_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wstd_rate&quot;</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
-        <span class="s2">&quot;drst&quot;</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
-        <span class="s2">&quot;rdrst&quot;</span><span class="p">:</span> <span class="n">rdrst</span><span class="p">,</span>
+        <span class="s2">"wst_rate"</span><span class="p">:</span> <span class="n">wst_rate</span><span class="p">,</span>
+        <span class="s2">"wstd_rate"</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
+        <span class="s2">"drst"</span><span class="p">:</span> <span class="n">drst</span><span class="p">,</span>
+        <span class="s2">"rdrst"</span><span class="p">:</span> <span class="n">rdrst</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

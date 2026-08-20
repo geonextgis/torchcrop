@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2775,7 +2803,7 @@ simulation pipeline without breaking autograd or batching.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/soil_nutrients.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SoilNutrients</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily soil mineral-pool balance for the NPK chain.</span>
+<span class="w">    </span><span class="sd">"""Daily soil mineral-pool balance for the NPK chain.</span>
 
 <span class="sd">    Computes — entirely from current-day soil/crop inputs — the rate</span>
 <span class="sd">    variables that advance the six state pools (``nmin``, ``pmin``,</span>
@@ -2785,7 +2813,7 @@ simulation pipeline without breaking autograd or batching.</p>
 <span class="sd">    All operations are vectorised over the batch dimension ``[B]`` so</span>
 <span class="sd">    the module composes with the rest of the differentiable</span>
 <span class="sd">    simulation pipeline without breaking autograd or batching.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2800,7 +2828,7 @@ simulation pipeline without breaking autograd or batching.</p>
         <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
         <span class="n">external</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute mineralisation + fertiliser + pool-balance rates.</span>
+<span class="w">        </span><span class="sd">"""Compute mineralisation + fertiliser + pool-balance rates.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`. Reads the mineralisable</span>
@@ -2843,7 +2871,7 @@ simulation pipeline without breaking autograd or batching.</p>
 <span class="sd">                the current ``NMIN`` to prevent over-depletion.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of ``[B]`` tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` for the</span>
+<span class="sd">            Dict of ``[B]`` tensors keyed by ``"&lt;field&gt;_rate"`` for the</span>
 <span class="sd">            six soil pools, plus diagnostics:</span>
 
 <span class="sd">            * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
@@ -2858,7 +2886,7 @@ simulation pipeline without breaking autograd or batching.</p>
 <span class="sd">            * ``mineralisation_n``, ``mineralisation_p``,</span>
 <span class="sd">                ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
 <span class="sd">                mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
         <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
 
@@ -2922,18 +2950,18 @@ simulation pipeline without breaking autograd or batching.</p>
         <span class="n">rkmint</span> <span class="o">=</span> <span class="n">fertks</span> <span class="o">-</span> <span class="n">kuptr</span> <span class="o">-</span> <span class="n">rkmins</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;nmin_rate&quot;</span><span class="p">:</span> <span class="n">rnmins</span><span class="p">,</span>
-            <span class="s2">&quot;pmin_rate&quot;</span><span class="p">:</span> <span class="n">rpmins</span><span class="p">,</span>
-            <span class="s2">&quot;kmin_rate&quot;</span><span class="p">:</span> <span class="n">rkmins</span><span class="p">,</span>
-            <span class="s2">&quot;nmint_rate&quot;</span><span class="p">:</span> <span class="n">rnmint</span><span class="p">,</span>
-            <span class="s2">&quot;pmint_rate&quot;</span><span class="p">:</span> <span class="n">rpmint</span><span class="p">,</span>
-            <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">rkmint</span><span class="p">,</span>
-            <span class="s2">&quot;fertns&quot;</span><span class="p">:</span> <span class="n">fertns</span><span class="p">,</span>
-            <span class="s2">&quot;fertps&quot;</span><span class="p">:</span> <span class="n">fertps</span><span class="p">,</span>
-            <span class="s2">&quot;fertks&quot;</span><span class="p">:</span> <span class="n">fertks</span><span class="p">,</span>
-            <span class="s2">&quot;mineralisation_n&quot;</span><span class="p">:</span> <span class="n">mineralisation_n</span><span class="p">,</span>
-            <span class="s2">&quot;mineralisation_p&quot;</span><span class="p">:</span> <span class="n">mineralisation_p</span><span class="p">,</span>
-            <span class="s2">&quot;mineralisation_k&quot;</span><span class="p">:</span> <span class="n">mineralisation_k</span><span class="p">,</span>
+            <span class="s2">"nmin_rate"</span><span class="p">:</span> <span class="n">rnmins</span><span class="p">,</span>
+            <span class="s2">"pmin_rate"</span><span class="p">:</span> <span class="n">rpmins</span><span class="p">,</span>
+            <span class="s2">"kmin_rate"</span><span class="p">:</span> <span class="n">rkmins</span><span class="p">,</span>
+            <span class="s2">"nmint_rate"</span><span class="p">:</span> <span class="n">rnmint</span><span class="p">,</span>
+            <span class="s2">"pmint_rate"</span><span class="p">:</span> <span class="n">rpmint</span><span class="p">,</span>
+            <span class="s2">"kmint_rate"</span><span class="p">:</span> <span class="n">rkmint</span><span class="p">,</span>
+            <span class="s2">"fertns"</span><span class="p">:</span> <span class="n">fertns</span><span class="p">,</span>
+            <span class="s2">"fertps"</span><span class="p">:</span> <span class="n">fertps</span><span class="p">,</span>
+            <span class="s2">"fertks"</span><span class="p">:</span> <span class="n">fertks</span><span class="p">,</span>
+            <span class="s2">"mineralisation_n"</span><span class="p">:</span> <span class="n">mineralisation_n</span><span class="p">,</span>
+            <span class="s2">"mineralisation_p"</span><span class="p">:</span> <span class="n">mineralisation_p</span><span class="p">,</span>
+            <span class="s2">"mineralisation_k"</span><span class="p">:</span> <span class="n">mineralisation_k</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3109,7 +3137,7 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">soil_params</span><span class="p">:</span> <span class="n">SoilParameters</span><span class="p">,</span>
     <span class="n">external</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute mineralisation + fertiliser + pool-balance rates.</span>
+<span class="w">    </span><span class="sd">"""Compute mineralisation + fertiliser + pool-balance rates.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`. Reads the mineralisable</span>
@@ -3152,7 +3180,7 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">            the current ``NMIN`` to prevent over-depletion.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of ``[B]`` tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` for the</span>
+<span class="sd">        Dict of ``[B]`` tensors keyed by ``"&lt;field&gt;_rate"`` for the</span>
 <span class="sd">        six soil pools, plus diagnostics:</span>
 
 <span class="sd">        * ``nmin_rate``, ``pmin_rate``, ``kmin_rate``</span>
@@ -3167,7 +3195,7 @@ six soil pools, plus diagnostics</code></td>
 <span class="sd">        * ``mineralisation_n``, ``mineralisation_p``,</span>
 <span class="sd">            ``mineralisation_k`` [g X m⁻² d⁻¹] — Positive</span>
 <span class="sd">            mineralisation flux into ``NMINT`` (= ``−RNMINS``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
     <span class="n">sp</span> <span class="o">=</span> <span class="n">soil_params</span>
 
@@ -3231,18 +3259,18 @@ six soil pools, plus diagnostics</code></td>
     <span class="n">rkmint</span> <span class="o">=</span> <span class="n">fertks</span> <span class="o">-</span> <span class="n">kuptr</span> <span class="o">-</span> <span class="n">rkmins</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;nmin_rate&quot;</span><span class="p">:</span> <span class="n">rnmins</span><span class="p">,</span>
-        <span class="s2">&quot;pmin_rate&quot;</span><span class="p">:</span> <span class="n">rpmins</span><span class="p">,</span>
-        <span class="s2">&quot;kmin_rate&quot;</span><span class="p">:</span> <span class="n">rkmins</span><span class="p">,</span>
-        <span class="s2">&quot;nmint_rate&quot;</span><span class="p">:</span> <span class="n">rnmint</span><span class="p">,</span>
-        <span class="s2">&quot;pmint_rate&quot;</span><span class="p">:</span> <span class="n">rpmint</span><span class="p">,</span>
-        <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">rkmint</span><span class="p">,</span>
-        <span class="s2">&quot;fertns&quot;</span><span class="p">:</span> <span class="n">fertns</span><span class="p">,</span>
-        <span class="s2">&quot;fertps&quot;</span><span class="p">:</span> <span class="n">fertps</span><span class="p">,</span>
-        <span class="s2">&quot;fertks&quot;</span><span class="p">:</span> <span class="n">fertks</span><span class="p">,</span>
-        <span class="s2">&quot;mineralisation_n&quot;</span><span class="p">:</span> <span class="n">mineralisation_n</span><span class="p">,</span>
-        <span class="s2">&quot;mineralisation_p&quot;</span><span class="p">:</span> <span class="n">mineralisation_p</span><span class="p">,</span>
-        <span class="s2">&quot;mineralisation_k&quot;</span><span class="p">:</span> <span class="n">mineralisation_k</span><span class="p">,</span>
+        <span class="s2">"nmin_rate"</span><span class="p">:</span> <span class="n">rnmins</span><span class="p">,</span>
+        <span class="s2">"pmin_rate"</span><span class="p">:</span> <span class="n">rpmins</span><span class="p">,</span>
+        <span class="s2">"kmin_rate"</span><span class="p">:</span> <span class="n">rkmins</span><span class="p">,</span>
+        <span class="s2">"nmint_rate"</span><span class="p">:</span> <span class="n">rnmint</span><span class="p">,</span>
+        <span class="s2">"pmint_rate"</span><span class="p">:</span> <span class="n">rpmint</span><span class="p">,</span>
+        <span class="s2">"kmint_rate"</span><span class="p">:</span> <span class="n">rkmint</span><span class="p">,</span>
+        <span class="s2">"fertns"</span><span class="p">:</span> <span class="n">fertns</span><span class="p">,</span>
+        <span class="s2">"fertps"</span><span class="p">:</span> <span class="n">fertps</span><span class="p">,</span>
+        <span class="s2">"fertks"</span><span class="p">:</span> <span class="n">fertks</span><span class="p">,</span>
+        <span class="s2">"mineralisation_n"</span><span class="p">:</span> <span class="n">mineralisation_n</span><span class="p">,</span>
+        <span class="s2">"mineralisation_p"</span><span class="p">:</span> <span class="n">mineralisation_p</span><span class="p">,</span>
+        <span class="s2">"mineralisation_k"</span><span class="p">:</span> <span class="n">mineralisation_k</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

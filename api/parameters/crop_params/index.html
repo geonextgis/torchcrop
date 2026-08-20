@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5264,9 +5292,9 @@ batch dimension). Table fields have shape <code>[N, 2]</code> or <code>[B, N, 2]
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>params = CropParameters()                       # built-in default.yaml
-params = CropParameters(crop_name=&quot;wheat&quot;)      # built-in by name
-params = CropParameters(crop_name=&quot;maize&quot;)
-params = CropParameters(config_file=&quot;my_crop.yaml&quot;)  # custom file
+params = CropParameters(crop_name="wheat")      # built-in by name
+params = CropParameters(crop_name="maize")
+params = CropParameters(config_file="my_crop.yaml")  # custom file
 </code></pre></div></td></tr></table></div>
 <p><code>crop_name</code> selects a bundled preset from <code>parameters/crop_data/</code> and
 is matched case- and whitespace-insensitively (<code>"grain maize"</code> →
@@ -5290,7 +5318,7 @@ control.</p>
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CropParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Species-specific Lintul5 crop parameters.</span>
+<span class="w">    </span><span class="sd">"""Species-specific Lintul5 crop parameters.</span>
 
 <span class="sd">    Scalar fields have shape ``[]`` or ``[B]`` (broadcastable against the</span>
 <span class="sd">    batch dimension). Table fields have shape ``[N, 2]`` or ``[B, N, 2]``.</span>
@@ -5298,12 +5326,12 @@ control.</p>
 <span class="sd">    Parameters are loaded from a YAML preset on construction:</span>
 
 <span class="sd">        params = CropParameters()                       # built-in default.yaml</span>
-<span class="sd">        params = CropParameters(crop_name=&quot;wheat&quot;)      # built-in by name</span>
-<span class="sd">        params = CropParameters(crop_name=&quot;maize&quot;)</span>
-<span class="sd">        params = CropParameters(config_file=&quot;my_crop.yaml&quot;)  # custom file</span>
+<span class="sd">        params = CropParameters(crop_name="wheat")      # built-in by name</span>
+<span class="sd">        params = CropParameters(crop_name="maize")</span>
+<span class="sd">        params = CropParameters(config_file="my_crop.yaml")  # custom file</span>
 
 <span class="sd">    ``crop_name`` selects a bundled preset from ``parameters/crop_data/`` and</span>
-<span class="sd">    is matched case- and whitespace-insensitively (``&quot;grain maize&quot;`` →</span>
+<span class="sd">    is matched case- and whitespace-insensitively (``"grain maize"`` →</span>
 <span class="sd">    ``maize``); see `available_crops` for the full list. ``config_file``</span>
 <span class="sd">    loads a user-provided YAML, making it easy to add custom</span>
 <span class="sd">    parameterisations. With neither argument, the built-in ``default`` preset</span>
@@ -5321,103 +5349,103 @@ control.</p>
 <span class="sd">    SIMPLACE source). Customise individual values afterwards</span>
 <span class="sd">    (``params.scale_factor_rue = ...``) or use `from_crop_name` for dtype</span>
 <span class="sd">    control.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 1. Phenology (from Phenology.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">idsl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIDSL``. Phenology mode selector:</span>
+<span class="w">    </span><span class="sd">"""``cIDSL``. Phenology mode selector:</span>
 <span class="sd">    ``0`` → temperature only; ``1`` → temperature + day length;</span>
 <span class="sd">    ``2`` → temperature + day length + vernalisation. Stored as float so it</span>
-<span class="sd">    can be used in differentiable masking; cast to int for branching.&quot;&quot;&quot;</span>
+<span class="sd">    can be used in differentiable masking; cast to int for branching."""</span>
 
     <span class="n">tbasem</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTBASEM``. Lower threshold (base) temperature [°C] for</span>
-<span class="sd">    accumulation of temperature sum **before** crop emergence.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTBASEM``. Lower threshold (base) temperature [°C] for</span>
+<span class="sd">    accumulation of temperature sum **before** crop emergence."""</span>
 
     <span class="n">teffmx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">30.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTEFFMX``. Maximum effective temperature [°C] used when</span>
-<span class="sd">    accumulating temperature sum **before** emergence (caps TEFF).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTEFFMX``. Maximum effective temperature [°C] used when</span>
+<span class="sd">    accumulating temperature sum **before** emergence (caps TEFF)."""</span>
 
     <span class="n">tsumem</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">110.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUMEM``. Required temperature sum [°C·d] from sowing to</span>
-<span class="sd">    emergence.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTSUMEM``. Required temperature sum [°C·d] from sowing to</span>
+<span class="sd">    emergence."""</span>
 
     <span class="n">tsum1</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">900.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUM1``. Required temperature sum [°C·d] from emergence to</span>
-<span class="sd">    flowering / anthesis (vegetative period, DVS 0 → 1).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTSUM1``. Required temperature sum [°C·d] from emergence to</span>
+<span class="sd">    flowering / anthesis (vegetative period, DVS 0 → 1)."""</span>
 
     <span class="n">tsum2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">700.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTSUM2``. Required temperature sum [°C·d] from anthesis to</span>
-<span class="sd">    maturity (generative period, DVS 1 → 2).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTSUM2``. Required temperature sum [°C·d] from anthesis to</span>
+<span class="sd">    maturity (generative period, DVS 1 → 2)."""</span>
 
     <span class="n">dvsi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSI``. Initial development stage of the crop at the start of</span>
-<span class="sd">    the simulation (in the range ``0`` … ``2``).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDVSI``. Initial development stage of the crop at the start of</span>
+<span class="sd">    the simulation (in the range ``0`` … ``2``)."""</span>
 
     <span class="n">dtsmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">45.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDTSMTB`` (= ``cTsumIncrementTableMeanTemp`` × ``cTsumIncrementTableRate``).</span>
+<span class="w">    </span><span class="sd">"""``cDTSMTB`` (= ``cTsumIncrementTableMeanTemp`` × ``cTsumIncrementTableRate``).</span>
 <span class="sd">    Daily increment of temperature sum [°C·d] as a function of mean daily</span>
-<span class="sd">    air temperature [°C]. Shape ``[N, 2]`` with x = T̄, y = ΔTsum/d.&quot;&quot;&quot;</span>
+<span class="sd">    air temperature [°C]. Shape ``[N, 2]`` with x = T̄, y = ΔTsum/d."""</span>
 
     <span class="n">phottb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">12.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">18.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPHOTTB`` (= ``cPhotoperiodTableHour`` × ``cPhotoperiodTableFactor``).</span>
+<span class="w">    </span><span class="sd">"""``cPHOTTB`` (= ``cPhotoperiodTableHour`` × ``cPhotoperiodTableFactor``).</span>
 <span class="sd">    Photoperiod reduction factor [-] of development rate (until anthesis)</span>
-<span class="sd">    as a function of day length [h].&quot;&quot;&quot;</span>
+<span class="sd">    as a function of day length [h]."""</span>
 
     <span class="n">vernrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)])</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVERNRT`` (= ``cVernalisationTableMeanTemp`` × ``cVernalisationTableRate``).</span>
+<span class="w">    </span><span class="sd">"""``cVERNRT`` (= ``cVernalisationTableMeanTemp`` × ``cVernalisationTableRate``).</span>
 <span class="sd">    Daily vernal-day rate [-] as a function of mean daily temperature [°C].</span>
-<span class="sd">    Used only when `idsl` ≥ 2.&quot;&quot;&quot;</span>
+<span class="sd">    Used only when `idsl` ≥ 2."""</span>
 
     <span class="n">vbase</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVBASE``. Vernalisation base [thermal day]: vernal days</span>
+<span class="w">    </span><span class="sd">"""``cVBASE``. Vernalisation base [thermal day]: vernal days</span>
 <span class="sd">    accumulated below this value contribute nothing to the vernalisation</span>
-<span class="sd">    factor.&quot;&quot;&quot;</span>
+<span class="sd">    factor."""</span>
 
     <span class="n">versat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVERSAT``. Vernalisation saturation [thermal day]: number of</span>
+<span class="w">    </span><span class="sd">"""``cVERSAT``. Vernalisation saturation [thermal day]: number of</span>
 <span class="sd">    vernal days above which the vernalisation factor is fully released</span>
-<span class="sd">    (=1).&quot;&quot;&quot;</span>
+<span class="sd">    (=1)."""</span>
 
     <span class="n">vernalisation_devstage</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.3</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cVernalisationDevStage``. Maximum DVS [-] up to which the</span>
-<span class="sd">    vernalisation factor is applied; beyond this stage VERNFAC = 1.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cVernalisationDevStage``. Maximum DVS [-] up to which the</span>
+<span class="sd">    vernalisation factor is applied; beyond this stage VERNFAC = 1."""</span>
 
     <span class="n">minimal_vernalisation_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cMinimalVernalisationFactor``. Lower bound [0–1] on the</span>
-<span class="sd">    vernalisation factor used to limit pheno-rate suppression.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cMinimalVernalisationFactor``. Lower bound [0–1] on the</span>
+<span class="sd">    vernalisation factor used to limit pheno-rate suppression."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 2. Radiation use efficiency / RUE (from RadiationUseEfficiency.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">day_temp_factor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.25</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDayTempFactor``. Weight ``f`` in</span>
+<span class="w">    </span><span class="sd">"""``cDayTempFactor``. Weight ``f`` in</span>
 <span class="sd">    ``T_day = TMAX − f·(TMAX − TMIN)`` used to derive a *daytime* mean</span>
 <span class="sd">    temperature from min/max. ``f = 0.25`` → daytime mean (default);</span>
-<span class="sd">    ``f = 0.5`` → 24-h mean.&quot;&quot;&quot;</span>
+<span class="sd">    ``f = 0.5`` → 24-h mean."""</span>
 
     <span class="n">ruetb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.3</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRUETB`` (= ``cRUETableDVS`` × ``cRUETableRUE``). Radiation use</span>
+<span class="w">    </span><span class="sd">"""``cRUETB`` (= ``cRUETableDVS`` × ``cRUETableRUE``). Radiation use</span>
 <span class="sd">    efficiency [g DM · MJ⁻¹ PAR] as a function of DVS (declines after</span>
-<span class="sd">    grain filling).&quot;&quot;&quot;</span>
+<span class="sd">    grain filling)."""</span>
 
     <span class="n">tmpftb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
@@ -5432,28 +5460,28 @@ control.</p>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTMPFTB``. RUE reduction factor [-] as a function of mean daytime</span>
-<span class="sd">    temperature [°C] (high- and low-temperature stress).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTMPFTB``. RUE reduction factor [-] as a function of mean daytime</span>
+<span class="sd">    temperature [°C] (high- and low-temperature stress)."""</span>
 
     <span class="n">tmnftb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTMNFTB``. RUE reduction factor [-] as a function of daily</span>
-<span class="sd">    minimum temperature [°C] (cold-night stress).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTMNFTB``. RUE reduction factor [-] as a function of daily</span>
+<span class="sd">    minimum temperature [°C] (cold-night stress)."""</span>
 
     <span class="n">cotb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">40.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">360.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">720.0</span><span class="p">,</span> <span class="mf">1.35</span><span class="p">),</span> <span class="p">(</span><span class="mf">1000.0</span><span class="p">,</span> <span class="mf">1.50</span><span class="p">),</span> <span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span> <span class="mf">1.50</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCOTB``. CO₂ correction factor [-] applied to RUE as a function of</span>
-<span class="sd">    atmospheric CO₂ concentration [ppm].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cCOTB``. CO₂ correction factor [-] applied to RUE as a function of</span>
+<span class="sd">    atmospheric CO₂ concentration [ppm]."""</span>
 
     <span class="n">scale_factor_rue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRUE``. Multiplicative scale factor on the y-values of</span>
-<span class="sd">    `ruetb` for sensitivity analysis / calibration.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorRUE``. Multiplicative scale factor on the y-values of</span>
+<span class="sd">    `ruetb` for sensitivity analysis / calibration."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 3. Light interception / canopy (from Lintul5.java)</span>
@@ -5462,56 +5490,56 @@ control.</p>
     <span class="n">kdiftb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">)])</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKDIFTB``. Extinction coefficient [-] for diffuse PAR as a</span>
-<span class="sd">    function of DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKDIFTB``. Extinction coefficient [-] for diffuse PAR as a</span>
+<span class="sd">    function of DVS."""</span>
 
     <span class="n">scale_factor_kdif</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorKDIF``. Scale factor on `kdiftb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorKDIF``. Scale factor on `kdiftb` y-values."""</span>
 
     <span class="n">laicr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">4.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves</span>
-<span class="sd">    suffer self-shading mortality.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLAICR``. Critical leaf area index [m² m⁻²] above which leaves</span>
+<span class="sd">    suffer self-shading mortality."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 3b. Crop water-use response (from WaterBalance.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># ``cDEPNR`` and ``cIAIRDU`` are consumed by the water balance but are</span>
     <span class="c1"># *crop* traits in SIMPLACE — they live in the crop data file</span>
-    <span class="c1"># (``simplace/crop_default/*.xml``, &quot;Water Use&quot; group) and vary by</span>
+    <span class="c1"># (``simplace/crop_default/*.xml``, "Water Use" group) and vary by</span>
     <span class="c1"># species (e.g. rice has ``IAIRDU = 1`` and ``DEPNR = 3.5``), so they</span>
     <span class="c1"># belong here rather than on `SoilParameters`. The water balance reads</span>
     <span class="c1"># them through `Lintul5Model`, which forwards these crop fields.</span>
 
     <span class="n">depnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">4.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDEPNR``. Crop group number [-] for soil-water depletion</span>
+<span class="w">    </span><span class="sd">"""``cDEPNR``. Crop group number [-] for soil-water depletion</span>
 <span class="sd">    (Doorenbos &amp; Kassam). Used to compute the critical soil-moisture</span>
-<span class="sd">    content above which transpiration is unrestricted.&quot;&quot;&quot;</span>
+<span class="sd">    content above which transpiration is unrestricted."""</span>
 
     <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIAIRDU``. Boolean flag (0/1) indicating whether the crop has</span>
+<span class="w">    </span><span class="sd">"""``cIAIRDU``. Boolean flag (0/1) indicating whether the crop has</span>
 <span class="sd">    air ducts in its roots (=1, e.g. rice → tolerates waterlogging) or</span>
-<span class="sd">    not (=0). Stored as float for batch broadcasting.&quot;&quot;&quot;</span>
+<span class="sd">    not (=0). Stored as float for batch broadcasting."""</span>
 
     <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFET``. Crop-specific empirical correction factor [-] applied to</span>
-<span class="sd">    the Penman transpiration rate (canopy-resistance proxy).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cCFET``. Crop-specific empirical correction factor [-] applied to</span>
+<span class="sd">    the Penman transpiration rate (canopy-resistance proxy)."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 4. Initial biomass and rooting (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">tdwi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">210.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTDWI``. Initial total crop dry weight [g DM m⁻²] at sowing /</span>
-<span class="sd">    emergence; partitioned to organs via the partitioning tables.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTDWI``. Initial total crop dry weight [g DM m⁻²] at sowing /</span>
+<span class="sd">    emergence; partitioned to organs via the partitioning tables."""</span>
 
     <span class="n">rdi</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.10</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDI``. Initial rooting depth [m] (also used by WaterBalance).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDI``. Initial rooting depth [m] (also used by WaterBalance)."""</span>
 
     <span class="n">rri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRRI``. Maximum daily increase in rooting depth [m d⁻¹].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRRI``. Maximum daily increase in rooting depth [m d⁻¹]."""</span>
 
     <span class="n">rdmcr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.20</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDMCR``. Crop-specific maximum rooting depth [m].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDMCR``. Crop-specific maximum rooting depth [m]."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 5. Leaf dynamics &amp; senescence (from Lintul5.java)</span>
@@ -5520,66 +5548,66 @@ control.</p>
     <span class="n">slatb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0212</span><span class="p">)])</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSLATB``. Specific leaf area [m² g⁻¹] as a function of DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSLATB``. Specific leaf area [m² g⁻¹] as a function of DVS."""</span>
 
     <span class="n">scale_factor_sla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorSLA``. Scale factor on `slatb` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorSLA``. Scale factor on `slatb` y-values."""</span>
 
     <span class="n">laii</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.012</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``LAII`` initial leaf area index [m² m⁻²] at emergence (Lintul5</span>
-<span class="sd">    output, persisted here as a parameter for re-init).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``LAII`` initial leaf area index [m² m⁻²] at emergence (Lintul5</span>
+<span class="sd">    output, persisted here as a parameter for re-init)."""</span>
 
     <span class="n">rgrl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.009</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRGRLAI``. Maximum relative increase in LAI [d⁻¹] during the</span>
-<span class="sd">    juvenile (exponential) phase.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRGRLAI``. Maximum relative increase in LAI [d⁻¹] during the</span>
+<span class="sd">    juvenile (exponential) phase."""</span>
 
     <span class="n">tbase</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTBASE``. Lower threshold temperature [°C] for LAI increase.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTBASE``. Lower threshold temperature [°C] for LAI increase."""</span>
 
     <span class="n">rdrshm</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.03</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRSHM``. Maximum relative death rate of leaves [d⁻¹] caused by</span>
-<span class="sd">    shading when LAI &gt; `laicr`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRSHM``. Maximum relative death rate of leaves [d⁻¹] caused by</span>
+<span class="sd">    shading when LAI &gt; `laicr`."""</span>
 
     <span class="n">rdrl</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRL``. Maximum relative death rate of leaves [d⁻¹] due to</span>
-<span class="sd">    water stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRL``. Maximum relative death rate of leaves [d⁻¹] due to</span>
+<span class="sd">    water stress."""</span>
 
     <span class="n">rdrns</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.05</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRNS``. Maximum relative death rate of leaves [d⁻¹] due to</span>
-<span class="sd">    NPK (nutrient) stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRNS``. Maximum relative death rate of leaves [d⁻¹] due to</span>
+<span class="sd">    NPK (nutrient) stress."""</span>
 
     <span class="n">rdrltb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="mf">15.0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">),</span> <span class="p">(</span><span class="mf">50.0</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRLTB``. Relative death rate of leaves [d⁻¹] as a function of</span>
-<span class="sd">    mean daily temperature [°C] (heat-stress curve).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRLTB``. Relative death rate of leaves [d⁻¹] as a function of</span>
+<span class="sd">    mean daily temperature [°C] (heat-stress curve)."""</span>
 
     <span class="n">rdrrtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5001</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRRTB``. Relative death rate of roots [d⁻¹] as a function of</span>
-<span class="sd">    DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRRTB``. Relative death rate of roots [d⁻¹] as a function of</span>
+<span class="sd">    DVS."""</span>
 
     <span class="n">rdrstb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5001</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDRSTB``. Relative death rate of stems [d⁻¹] as a function of</span>
-<span class="sd">    DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRDRSTB``. Relative death rate of stems [d⁻¹] as a function of</span>
+<span class="sd">    DVS."""</span>
 
     <span class="n">scale_factor_rdr_leaves</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRLeaves``. Scale factor on `rdrltb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorRDRLeaves``. Scale factor on `rdrltb`."""</span>
 
     <span class="n">scale_factor_rdr_stems</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRStems``. Scale factor on `rdrstb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorRDRStems``. Scale factor on `rdrstb`."""</span>
 
     <span class="n">scale_factor_rdr_roots</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorRDRRoots``. Scale factor on `rdrrtb`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorRDRRoots``. Scale factor on `rdrrtb`."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 6. Biomass partitioning (from Lintul5.java)</span>
@@ -5601,9 +5629,9 @@ control.</p>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRTB``. Fraction of total daily DM growth allocated to **roots**</span>
+<span class="w">    </span><span class="sd">"""``cFRTB``. Fraction of total daily DM growth allocated to **roots**</span>
 <span class="sd">    as a function of DVS. The remainder (``1 − FR``) is split among leaves,</span>
-<span class="sd">    stems and storage organs by ``FLTB``, ``FSTB``, ``FOTB``.&quot;&quot;&quot;</span>
+<span class="sd">    stems and storage organs by ``FLTB``, ``FSTB``, ``FOTB``."""</span>
 
     <span class="n">fltb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
@@ -5618,8 +5646,8 @@ control.</p>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFLTB``. Fraction of above-ground DM allocated to **leaves** as a</span>
-<span class="sd">    function of DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFLTB``. Fraction of above-ground DM allocated to **leaves** as a</span>
+<span class="sd">    function of DVS."""</span>
 
     <span class="n">fstb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
@@ -5635,16 +5663,16 @@ control.</p>
             <span class="p">]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFSTB``. Fraction of above-ground DM allocated to **stems** as a</span>
-<span class="sd">    function of DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFSTB``. Fraction of above-ground DM allocated to **stems** as a</span>
+<span class="sd">    function of DVS."""</span>
 
     <span class="n">fotb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFOTB``. Fraction of above-ground DM allocated to **storage</span>
-<span class="sd">    organs** as a function of DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFOTB``. Fraction of above-ground DM allocated to **storage</span>
+<span class="sd">    organs** as a function of DVS."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 7. NPK demand and concentration limits (from Lintul5.java)</span>
@@ -5655,203 +5683,203 @@ control.</p>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.014</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.1</span><span class="p">,</span> <span class="mf">0.017</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNMXLV``. Maximum N concentration in leaves [g N · g⁻¹ DM] as a</span>
-<span class="sd">    function of DVS. Drives N demand and the N nutrition index NNI.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNMXLV``. Maximum N concentration in leaves [g N · g⁻¹ DM] as a</span>
+<span class="sd">    function of DVS. Drives N demand and the N nutrition index NNI."""</span>
 
     <span class="n">pmxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.011</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.006</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.004</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0027</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.1</span><span class="p">,</span> <span class="mf">0.0027</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPMXLV``. Maximum P concentration in leaves [g P · g⁻¹ DM] vs</span>
-<span class="sd">    DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cPMXLV``. Maximum P concentration in leaves [g P · g⁻¹ DM] vs</span>
+<span class="sd">    DVS."""</span>
 
     <span class="n">kmxlv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_table</span><span class="p">(</span>
             <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.028</span><span class="p">),</span> <span class="p">(</span><span class="mf">2.1</span><span class="p">,</span> <span class="mf">0.028</span><span class="p">)]</span>
         <span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKMXLV``. Maximum K concentration in leaves [g K · g⁻¹ DM] vs</span>
-<span class="sd">    DVS.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKMXLV``. Maximum K concentration in leaves [g K · g⁻¹ DM] vs</span>
+<span class="sd">    DVS."""</span>
 
     <span class="n">nmaxso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0176</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNMAXSO``. Maximum N concentration [g N · g⁻¹ DM] in storage</span>
-<span class="sd">    organs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNMAXSO``. Maximum N concentration [g N · g⁻¹ DM] in storage</span>
+<span class="sd">    organs."""</span>
 
     <span class="n">pmaxso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0026</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPMAXSO``. Maximum P concentration in storage organs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cPMAXSO``. Maximum P concentration in storage organs."""</span>
 
     <span class="n">kmaxso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0048</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKMAXSO``. Maximum K concentration in storage organs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKMAXSO``. Maximum K concentration in storage organs."""</span>
 
     <span class="n">lrnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRNR``. Maximum N concentration in **roots** expressed as a</span>
-<span class="sd">    fraction of the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLRNR``. Maximum N concentration in **roots** expressed as a</span>
+<span class="sd">    fraction of the maximum N concentration in leaves [-]."""</span>
 
     <span class="n">lrpr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRPR``. As `lrnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLRPR``. As `lrnr` but for P."""</span>
 
     <span class="n">lrkr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLRKR``. As `lrnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLRKR``. As `lrnr` but for K."""</span>
 
     <span class="n">lsnr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSNR``. Maximum N concentration in **stems** as a fraction of</span>
-<span class="sd">    the maximum N concentration in leaves [-].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLSNR``. Maximum N concentration in **stems** as a fraction of</span>
+<span class="sd">    the maximum N concentration in leaves [-]."""</span>
 
     <span class="n">lspr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSPR``. As `lsnr` but for P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLSPR``. As `lsnr` but for P."""</span>
 
     <span class="n">lskr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cLSKR``. As `lsnr` but for K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cLSKR``. As `lsnr` but for K."""</span>
 
     <span class="n">frnx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRNX``. Optimal N concentration as a fraction of the maximum N</span>
-<span class="sd">    concentration [-] — controls the N stress index NNI.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFRNX``. Optimal N concentration as a fraction of the maximum N</span>
+<span class="sd">    concentration [-] — controls the N stress index NNI."""</span>
 
     <span class="n">frpx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRPX``. Optimal P concentration as a fraction of maximum P [-].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFRPX``. Optimal P concentration as a fraction of maximum P [-]."""</span>
 
     <span class="n">frkx</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFRKX``. Optimal K concentration as a fraction of maximum K [-].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFRKX``. Optimal K concentration as a fraction of maximum K [-]."""</span>
 
     <span class="n">rnflv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.004</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRNFLV``. Residual (non-translocatable) N concentration in</span>
-<span class="sd">    leaves [g N · g⁻¹ DM].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRNFLV``. Residual (non-translocatable) N concentration in</span>
+<span class="sd">    leaves [g N · g⁻¹ DM]."""</span>
 
     <span class="n">rnfst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.002</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRNFST``. Residual N concentration in stems.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRNFST``. Residual N concentration in stems."""</span>
 
     <span class="n">rnfrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.002</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRNFRT``. Residual N concentration in roots.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRNFRT``. Residual N concentration in roots."""</span>
 
     <span class="n">rpflv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0005</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRPFLV``. Residual P concentration in leaves.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRPFLV``. Residual P concentration in leaves."""</span>
 
     <span class="n">rpfst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0003</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRPFST``. Residual P concentration in stems.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRPFST``. Residual P concentration in stems."""</span>
 
     <span class="n">rpfrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0003</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRPFRT``. Residual P concentration in roots.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRPFRT``. Residual P concentration in roots."""</span>
 
     <span class="n">rkflv</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.009</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRKFLV``. Residual K concentration in leaves.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRKFLV``. Residual K concentration in leaves."""</span>
 
     <span class="n">rkfst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.005</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRKFST``. Residual K concentration in stems.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRKFST``. Residual K concentration in stems."""</span>
 
     <span class="n">rkfrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.005</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRKFRT``. Residual K concentration in roots.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRKFRT``. Residual K concentration in roots."""</span>
 
     <span class="n">fntrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.15</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFNTRT``. NPK translocation from **roots** expressed as a</span>
-<span class="sd">    fraction of the total NPK translocated from leaves and stems [-].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFNTRT``. NPK translocation from **roots** expressed as a</span>
+<span class="sd">    fraction of the total NPK translocated from leaves and stems [-]."""</span>
 
     <span class="n">tcnt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">10.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTCNT``. Time constant [d] for N translocation to storage</span>
-<span class="sd">    organs (first-order kinetics).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTCNT``. Time constant [d] for N translocation to storage</span>
+<span class="sd">    organs (first-order kinetics)."""</span>
 
     <span class="n">tcpt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">10.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTCPT``. Time constant [d] for P translocation to storage</span>
-<span class="sd">    organs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTCPT``. Time constant [d] for P translocation to storage</span>
+<span class="sd">    organs."""</span>
 
     <span class="n">tckt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">10.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTCKT``. Time constant [d] for K translocation to storage</span>
-<span class="sd">    organs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTCKT``. Time constant [d] for K translocation to storage</span>
+<span class="sd">    organs."""</span>
 
     <span class="n">nfixf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNFIXF``. Fraction of crop N uptake supplied by biological N₂</span>
-<span class="sd">    fixation [-]; &gt; 0 for legumes.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNFIXF``. Fraction of crop N uptake supplied by biological N₂</span>
+<span class="sd">    fixation [-]; &gt; 0 for legumes."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 8. Stress sensitivities (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">nlue</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.1</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNLUE``. Coefficient of the reduction of RUE due to NPK</span>
-<span class="sd">    (nutrient) stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNLUE``. Coefficient of the reduction of RUE due to NPK</span>
+<span class="sd">    (nutrient) stress."""</span>
 
     <span class="n">nlai</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNLAI``. Coefficient of the reduction of LAI growth (juvenile</span>
-<span class="sd">    phase) due to nutrient stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNLAI``. Coefficient of the reduction of LAI growth (juvenile</span>
+<span class="sd">    phase) due to nutrient stress."""</span>
 
     <span class="n">nsla</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNSLA``. Coefficient of the reduction of SLA due to nutrient</span>
-<span class="sd">    stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNSLA``. Coefficient of the reduction of SLA due to nutrient</span>
+<span class="sd">    stress."""</span>
 
     <span class="n">npart</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNPART``. Coefficient of the N-stress effect on leaf biomass</span>
-<span class="sd">    reduction (re-allocation away from leaves under N deficiency).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNPART``. Coefficient of the N-stress effect on leaf biomass</span>
+<span class="sd">    reduction (re-allocation away from leaves under N deficiency)."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 9. DVS thresholds for NPK dynamics (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">dvsnt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.8</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSNT``. DVS above which N, P and K **translocation** to</span>
-<span class="sd">    storage organs occurs.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDVSNT``. DVS above which N, P and K **translocation** to</span>
+<span class="sd">    storage organs occurs."""</span>
 
     <span class="n">dvsnlt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.3</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSNLT``. DVS above which crop **uptake** of N, P and K stops.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDVSNLT``. DVS above which crop **uptake** of N, P and K stops."""</span>
 
     <span class="n">dvsdr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSDR``. DVS above which death of roots and stems begins.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDVSDR``. DVS above which death of roots and stems begins."""</span>
 
     <span class="n">dvsdlt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDVSDLT``. DVS above which leaf death (controlled by mean</span>
-<span class="sd">    temperature, see `rdrltb`) begins.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDVSDLT``. DVS above which leaf death (controlled by mean</span>
+<span class="sd">    temperature, see `rdrltb`) begins."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 10. Fertiliser application &amp; recovery (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">nrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.7</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNRF``. Default recovery fraction [0–1] of applied fertiliser N</span>
-<span class="sd">    (used when no day-resolved `nrftab` is provided).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNRF``. Default recovery fraction [0–1] of applied fertiliser N</span>
+<span class="sd">    (used when no day-resolved `nrftab` is provided)."""</span>
 
     <span class="n">prf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPRF``. Default recovery fraction [0–1] of applied fertiliser P.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cPRF``. Default recovery fraction [0–1] of applied fertiliser P."""</span>
 
     <span class="n">krf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.6</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKRF``. Default recovery fraction [0–1] of applied fertiliser K.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKRF``. Default recovery fraction [0–1] of applied fertiliser K."""</span>
 
     <span class="n">nrftab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNRFTAB``. Optional day-resolved table of N fertiliser recovery</span>
-<span class="sd">    fractions [-] (shape ``[N, 2]``: x = day, y = fraction).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cNRFTAB``. Optional day-resolved table of N fertiliser recovery</span>
+<span class="sd">    fractions [-] (shape ``[N, 2]``: x = day, y = fraction)."""</span>
 
     <span class="n">prftab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPRFTAB``. Optional day-resolved table of P recovery fractions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cPRFTAB``. Optional day-resolved table of P recovery fractions."""</span>
 
     <span class="n">krftab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKRFTAB``. Optional day-resolved table of K recovery fractions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKRFTAB``. Optional day-resolved table of K recovery fractions."""</span>
 
     <span class="n">ferntab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFERNTAB``. Optional table of N fertiliser applications</span>
-<span class="sd">    [g N · m⁻² · d⁻¹] at given calendar days. Shape ``[N, 2]``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFERNTAB``. Optional table of N fertiliser applications</span>
+<span class="sd">    [g N · m⁻² · d⁻¹] at given calendar days. Shape ``[N, 2]``."""</span>
 
     <span class="n">ferptab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFERPTAB``. Optional table of P fertiliser applications.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFERPTAB``. Optional table of P fertiliser applications."""</span>
 
     <span class="n">ferktab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFERKTAB``. Optional table of K fertiliser applications.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFERKTAB``. Optional table of K fertiliser applications."""</span>
 
     <span class="n">scale_factor_fern</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERN``. Scale factor on `ferntab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorFERN``. Scale factor on `ferntab` y-values."""</span>
 
     <span class="n">scale_factor_ferp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERP``. Scale factor on `ferptab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorFERP``. Scale factor on `ferptab` y-values."""</span>
 
     <span class="n">scale_factor_ferk</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorFERK``. Scale factor on `ferktab` y-values.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorFERK``. Scale factor on `ferktab` y-values."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 11. Run-control flags (from Lintul5.java)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">iopt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIOPT``. Run mode selector:</span>
+<span class="w">    </span><span class="sd">"""``cIOPT``. Run mode selector:</span>
 <span class="sd">    ``1`` → optimal (no stresses), ``2`` → water-limited,</span>
 <span class="sd">    ``3`` → water + N limited, ``4`` → water + N + P + K limited.</span>
-<span class="sd">    Stored as float so it can be used in masking; cast to int for branching.&quot;&quot;&quot;</span>
+<span class="sd">    Stored as float so it can be used in masking; cast to int for branching."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 12. Heat stress (optional add-on components)</span>
@@ -5870,59 +5898,59 @@ control.</p>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">leaf_heat_temp_critical</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">34.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTempCritical`` of ``HeatStressOnLeafSenescence``. Critical daily</span>
+<span class="w">    </span><span class="sd">"""``cTempCritical`` of ``HeatStressOnLeafSenescence``. Critical daily</span>
 <span class="sd">    maximum temperature [°C] above which heat stress accelerates leaf</span>
-<span class="sd">    senescence.&quot;&quot;&quot;</span>
+<span class="sd">    senescence."""</span>
 
     <span class="n">leaf_heat_factor_at_temp_critical</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFactorAtTempCritical``. Leaf-senescence multiplier [-] at exactly</span>
-<span class="sd">    the critical temperature `leaf_heat_temp_critical`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFactorAtTempCritical``. Leaf-senescence multiplier [-] at exactly</span>
+<span class="sd">    the critical temperature `leaf_heat_temp_critical`."""</span>
 
     <span class="n">leaf_heat_factor_slope</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cFactorSlope``. Increment of the leaf-senescence multiplier per °C</span>
-<span class="sd">    above `leaf_heat_temp_critical` [°C⁻¹].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cFactorSlope``. Increment of the leaf-senescence multiplier per °C</span>
+<span class="sd">    above `leaf_heat_temp_critical` [°C⁻¹]."""</span>
 
     <span class="n">leaf_heat_devstage_critical</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cDevStageCritical``. Development stage [-] above which heat stress</span>
-<span class="sd">    on leaf senescence applies.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cDevStageCritical``. Development stage [-] above which heat stress</span>
+<span class="sd">    on leaf senescence applies."""</span>
 
     <span class="n">grain_heat_temp_critical</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">27.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTempCritical`` of ``HeatStressOnGrain``. Critical day-time</span>
-<span class="sd">    temperature [°C] at which heat stress on grain yield starts.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTempCritical`` of ``HeatStressOnGrain``. Critical day-time</span>
+<span class="sd">    temperature [°C] at which heat stress on grain yield starts."""</span>
 
     <span class="n">grain_heat_temp_limit</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">40.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cTempLimit``. Day-time temperature [°C] at which the daily grain</span>
-<span class="sd">    heat-stress intensity saturates at 1.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cTempLimit``. Day-time temperature [°C] at which the daily grain</span>
+<span class="sd">    heat-stress intensity saturates at 1."""</span>
 
     <span class="n">grain_heat_begin_devstage</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>
     <span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cBeginDevStage``. Development stage [-] at which the grain</span>
-<span class="sd">    thermally sensitive window opens.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cBeginDevStage``. Development stage [-] at which the grain</span>
+<span class="sd">    thermally sensitive window opens."""</span>
 
     <span class="n">grain_heat_end_devstage</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.3</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cEndDevStage``. Development stage [-] at which the grain</span>
-<span class="sd">    thermally sensitive window closes.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cEndDevStage``. Development stage [-] at which the grain</span>
+<span class="sd">    thermally sensitive window closes."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Init-only inputs (not stored as fields)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">crop_name</span><span class="p">:</span> <span class="n">InitVar</span> <span class="o">=</span> <span class="n">_UNSET</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optional crop name selecting a bundled preset from</span>
+<span class="w">    </span><span class="sd">"""Optional crop name selecting a bundled preset from</span>
 <span class="sd">    ``parameters/crop_data/`` (case- and whitespace-insensitive). When</span>
 <span class="sd">    omitted, the ``default`` preset is loaded. Pass ``None`` to skip preset</span>
 <span class="sd">    loading entirely (keep the field values as constructed). Mutually</span>
-<span class="sd">    exclusive with `config_file`. Not retained as an attribute.&quot;&quot;&quot;</span>
+<span class="sd">    exclusive with `config_file`. Not retained as an attribute."""</span>
 
     <span class="n">config_file</span><span class="p">:</span> <span class="n">InitVar</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optional path to a user-provided YAML file (same schema as the</span>
+<span class="w">    </span><span class="sd">"""Optional path to a user-provided YAML file (same schema as the</span>
 <span class="sd">    bundled presets) to load instead of a built-in crop. Mutually exclusive</span>
-<span class="sd">    with `crop_name`. Not retained as an attribute.&quot;&quot;&quot;</span>
+<span class="sd">    with `crop_name`. Not retained as an attribute."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
@@ -5931,7 +5959,7 @@ control.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">crop_name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a crop preset into the parameter fields.</span>
+<span class="w">        </span><span class="sd">"""Load a crop preset into the parameter fields.</span>
 
 <span class="sd">        Resolution:</span>
 <span class="sd">            * ``config_file`` given → load that YAML file.</span>
@@ -5951,11 +5979,11 @@ control.</p>
 <span class="sd">            ValueError: If both ``crop_name`` and ``config_file`` are given,</span>
 <span class="sd">                or if ``crop_name`` matches no bundled preset.</span>
 <span class="sd">            FileNotFoundError: If ``config_file`` does not exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">crop_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">_UNSET</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;Pass either crop_name or config_file, not both.&quot;</span>
+                    <span class="s2">"Pass either crop_name or config_file, not both."</span>
                 <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_apply_preset</span><span class="p">(</span><span class="n">_load_preset_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">config_file</span><span class="p">)))</span>
             <span class="k">return</span>
@@ -5967,7 +5995,7 @@ control.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_preset</span><span class="p">(</span><span class="n">_load_preset_file</span><span class="p">(</span><span class="n">_builtin_crop_path</span><span class="p">(</span><span class="n">name</span><span class="p">)))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_apply_preset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preset</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite fields from a parsed preset dict.</span>
+<span class="w">        </span><span class="sd">"""Overwrite fields from a parsed preset dict.</span>
 
 <span class="sd">        Two preset layouts are supported and may be freely mixed:</span>
 
@@ -5985,7 +6013,7 @@ control.</p>
 
 <span class="sd">        Args:</span>
 <span class="sd">            preset: Parsed preset mapping in either layout.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">scalars</span><span class="p">,</span> <span class="n">tables</span> <span class="ow">in</span> <span class="n">_iter_preset_groups</span><span class="p">(</span><span class="n">preset</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">scalars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">_t</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
@@ -5995,7 +6023,7 @@ control.</p>
                 <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical crop fields.</span>
+<span class="w">        </span><span class="sd">"""Validate discrete/categorical crop fields.</span>
 
 <span class="sd">        Checks the two enumerated run-mode selectors against their</span>
 <span class="sd">        supported discrete domains (per element when batched):</span>
@@ -6015,17 +6043,17 @@ control.</p>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``idsl``, ``iopt`` or ``iairdu`` holds an</span>
 <span class="sd">                unsupported value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.idsl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
-        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iopt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
-        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iairdu&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="sd">        """</span>
+        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.idsl"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.iopt"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
+        <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.iairdu"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CropParameters"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Cast and/or move all tensor fields to a new dtype/device.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -6035,7 +6063,7 @@ control.</p>
 <span class="sd">            A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">            cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">            are copied through unchanged.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -6052,14 +6080,14 @@ control.</p>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">crop_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a `CropParameters` for a named crop preset.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CropParameters"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Build a `CropParameters` for a named crop preset.</span>
 
 <span class="sd">        Equivalent to ``CropParameters(crop_name=crop_name).to(dtype=dtype)``</span>
 <span class="sd">        but with explicit dtype control.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            crop_name: Crop name (e.g. ``&quot;wheat&quot;``, ``&quot;maize&quot;``), case- and</span>
+<span class="sd">            crop_name: Crop name (e.g. ``"wheat"``, ``"maize"``), case- and</span>
 <span class="sd">                whitespace-insensitive. See `available_crops` for the full</span>
 <span class="sd">                list.</span>
 <span class="sd">            dtype: Target tensor dtype for all scalar/tabular fields.</span>
@@ -6069,7 +6097,7 @@ control.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``crop_name`` matches no bundled preset.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">crop_name</span><span class="o">=</span><span class="n">crop_name</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -8635,7 +8663,7 @@ or if <code>crop_name</code> matches no bundled preset.</p></td>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">crop_name</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a crop preset into the parameter fields.</span>
+<span class="w">    </span><span class="sd">"""Load a crop preset into the parameter fields.</span>
 
 <span class="sd">    Resolution:</span>
 <span class="sd">        * ``config_file`` given → load that YAML file.</span>
@@ -8655,11 +8683,11 @@ or if <code>crop_name</code> matches no bundled preset.</p></td>
 <span class="sd">        ValueError: If both ``crop_name`` and ``config_file`` are given,</span>
 <span class="sd">            or if ``crop_name`` matches no bundled preset.</span>
 <span class="sd">        FileNotFoundError: If ``config_file`` does not exist.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">crop_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">_UNSET</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Pass either crop_name or config_file, not both.&quot;</span>
+                <span class="s2">"Pass either crop_name or config_file, not both."</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_preset</span><span class="p">(</span><span class="n">_load_preset_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">config_file</span><span class="p">)))</span>
         <span class="k">return</span>
@@ -8761,14 +8789,14 @@ list.</p></td>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">crop_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a `CropParameters` for a named crop preset.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CropParameters"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a `CropParameters` for a named crop preset.</span>
 
 <span class="sd">    Equivalent to ``CropParameters(crop_name=crop_name).to(dtype=dtype)``</span>
 <span class="sd">    but with explicit dtype control.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        crop_name: Crop name (e.g. ``&quot;wheat&quot;``, ``&quot;maize&quot;``), case- and</span>
+<span class="sd">        crop_name: Crop name (e.g. ``"wheat"``, ``"maize"``), case- and</span>
 <span class="sd">            whitespace-insensitive. See `available_crops` for the full</span>
 <span class="sd">            list.</span>
 <span class="sd">        dtype: Target tensor dtype for all scalar/tabular fields.</span>
@@ -8778,7 +8806,7 @@ list.</p></td>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``crop_name`` matches no bundled preset.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">crop_name</span><span class="o">=</span><span class="n">crop_name</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -8850,8 +8878,8 @@ are copied through unchanged.</p></td>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;CropParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"CropParameters"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Cast and/or move all tensor fields to a new dtype/device.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -8861,7 +8889,7 @@ are copied through unchanged.</p></td>
 <span class="sd">        A new `CropParameters` with every tensor field moved /</span>
 <span class="sd">        cast; non-tensor fields (e.g., optional tables set to ``None``)</span>
 <span class="sd">        are copied through unchanged.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -8927,7 +8955,7 @@ unsupported value.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical crop fields.</span>
+<span class="w">    </span><span class="sd">"""Validate discrete/categorical crop fields.</span>
 
 <span class="sd">    Checks the two enumerated run-mode selectors against their</span>
 <span class="sd">    supported discrete domains (per element when batched):</span>
@@ -8947,10 +8975,10 @@ unsupported value.</p></td>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``idsl``, ``iopt`` or ``iairdu`` holds an</span>
 <span class="sd">            unsupported value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.idsl&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
-    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iopt&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
-    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">&quot;crop_params.iairdu&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+<span class="sd">    """</span>
+    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.idsl"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idsl</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
+    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.iopt"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iopt</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
+    <span class="n">_check_discrete</span><span class="p">(</span><span class="s2">"crop_params.iairdu"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iairdu</span><span class="p">,</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 </code></pre></div>
         </details>
     </div>
@@ -9007,17 +9035,17 @@ and is also accepted, case- and whitespace-insensitively, by
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">available_crops</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the built-in crop names loadable via ``crop_name``.</span>
+<span class="w">    </span><span class="sd">"""Return the built-in crop names loadable via ``crop_name``.</span>
 
 <span class="sd">    Each name is the stem of a bundled YAML preset in</span>
-<span class="sd">    ``parameters/crop_data/`` (e.g. ``&quot;wheat&quot;``, ``&quot;maize&quot;``, ``&quot;soybean&quot;``)</span>
+<span class="sd">    ``parameters/crop_data/`` (e.g. ``"wheat"``, ``"maize"``, ``"soybean"``)</span>
 <span class="sd">    and is also accepted, case- and whitespace-insensitively, by</span>
 <span class="sd">    ``CropParameters(crop_name=...)``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A sorted tuple of available crop names.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_CROP_DATA_DIR</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.yaml&quot;</span><span class="p">)))</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">_CROP_DATA_DIR</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"*.yaml"</span><span class="p">)))</span>
 </code></pre></div>
         </details>
     </div>
@@ -9080,10 +9108,10 @@ cast to <code>dtype</code>.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/crop_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_wheat_params</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CropParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 wheat-like default parameter set.</span>
+<span class="w">    </span><span class="sd">"""Return the SIMPLACE Lintul5 wheat-like default parameter set.</span>
 
 <span class="sd">    Loads the built-in ``default`` preset (the wheat-like SIMPLACE default),</span>
-<span class="sd">    equivalent to ``CropParameters(crop_name=&quot;default&quot;)``.</span>
+<span class="sd">    equivalent to ``CropParameters(crop_name="default")``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype for all scalar/tabular fields.</span>
@@ -9091,7 +9119,7 @@ cast to <code>dtype</code>.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        A fresh `CropParameters` with the Lintul5 default parameters</span>
 <span class="sd">        cast to ``dtype``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>

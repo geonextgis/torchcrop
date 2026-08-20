@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2805,7 +2833,7 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/residual.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">NeuralResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bounded additive residual from an MLP.</span>
+<span class="w">    </span><span class="sd">"""Bounded additive residual from an MLP.</span>
 
 <span class="sd">    The residual output is produced by</span>
 
@@ -2822,7 +2850,7 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
 <span class="sd">        hidden_dim: Hidden-layer width.</span>
 <span class="sd">        n_hidden: Number of hidden layers (each followed by ``Tanh``).</span>
 <span class="sd">        scale: Magnitude cap on the residual output.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2843,7 +2871,7 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the bounded residual correction.</span>
+<span class="w">        </span><span class="sd">"""Compute the bounded residual correction.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x: Context feature tensor of shape ``[..., input_dim]``.</span>
@@ -2851,7 +2879,7 @@ learned term cannot overwhelm the mechanistic prediction it augments.</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Residual correction of shape ``[..., output_dim]`` with values</span>
 <span class="sd">            in ``[-scale, +scale]``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
         </details>
@@ -2921,7 +2949,7 @@ in <code>[-scale, +scale]</code>.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/residual.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the bounded residual correction.</span>
+<span class="w">    </span><span class="sd">"""Compute the bounded residual correction.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        x: Context feature tensor of shape ``[..., input_dim]``.</span>
@@ -2929,7 +2957,7 @@ in <code>[-scale, +scale]</code>.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        Residual correction of shape ``[..., output_dim]`` with values</span>
 <span class="sd">        in ``[-scale, +scale]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
         </details>

@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2886,13 +2914,13 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/phenology.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Phenology</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Development-stage rate calculation.</span>
+<span class="w">    </span><span class="sd">"""Development-stage rate calculation.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        smooth: If ``True``, replace hard stage branches with sigmoid</span>
 <span class="sd">            blends of sharpness ``k_sharp`` for smoother gradients.</span>
 <span class="sd">        k_sharp: Sigmoid sharpness; ignored when ``smooth=False``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">k_sharp</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -2907,7 +2935,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute phenology rates for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current state; uses ``state.dvs`` and ``state.tsump``.</span>
@@ -2922,7 +2950,7 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">                Multiplies the emergence (``tsump_rate``) and</span>
 <span class="sd">                vernalisation (``vern_rate``) clocks so that nothing</span>
 <span class="sd">                crop-related accumulates before sowing. ``None`` (the</span>
-<span class="sd">                default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">                default) is treated as "sown everywhere" (all ones),</span>
 <span class="sd">                reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">        Returns:</span>
@@ -2950,9 +2978,9 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
 <span class="sd">            * ``emerged`` [-] — hard (or smooth) mask of</span>
 <span class="sd">              ``tsump &gt;= tsumem``.</span>
 <span class="sd">            * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
-        <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+        <span class="c1"># pre-sowing spin-up. ``None`` means "always sown" (legacy</span>
         <span class="c1"># behaviour where t=0 is the sowing day).</span>
         <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
@@ -3050,14 +3078,14 @@ blends of sharpness <code>k_sharp</code> for smoother gradients.</p></td>
         <span class="n">dvs_rate</span> <span class="o">=</span> <span class="n">dvs_rate</span> <span class="o">*</span> <span class="n">emerged_f</span> <span class="o">*</span> <span class="n">pre_mat</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="n">dvs_rate</span><span class="p">,</span>
-            <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">tsum_rate</span><span class="p">,</span>
-            <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">tsump_rate</span><span class="p">,</span>
-            <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">vern_rate</span><span class="p">,</span>
-            <span class="s2">&quot;photofac&quot;</span><span class="p">:</span> <span class="n">photofac</span><span class="p">,</span>
-            <span class="s2">&quot;vernfac&quot;</span><span class="p">:</span> <span class="n">vernfac</span><span class="p">,</span>
-            <span class="s2">&quot;emerged&quot;</span><span class="p">:</span> <span class="n">emerged_f</span><span class="p">,</span>
-            <span class="s2">&quot;dtsu&quot;</span><span class="p">:</span> <span class="n">dtsu</span><span class="p">,</span>
+            <span class="s2">"dvs_rate"</span><span class="p">:</span> <span class="n">dvs_rate</span><span class="p">,</span>
+            <span class="s2">"tsum_rate"</span><span class="p">:</span> <span class="n">tsum_rate</span><span class="p">,</span>
+            <span class="s2">"tsump_rate"</span><span class="p">:</span> <span class="n">tsump_rate</span><span class="p">,</span>
+            <span class="s2">"vern_rate"</span><span class="p">:</span> <span class="n">vern_rate</span><span class="p">,</span>
+            <span class="s2">"photofac"</span><span class="p">:</span> <span class="n">photofac</span><span class="p">,</span>
+            <span class="s2">"vernfac"</span><span class="p">:</span> <span class="n">vernfac</span><span class="p">,</span>
+            <span class="s2">"emerged"</span><span class="p">:</span> <span class="n">emerged_f</span><span class="p">,</span>
+            <span class="s2">"dtsu"</span><span class="p">:</span> <span class="n">dtsu</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3189,7 +3217,7 @@ Rates (integrated by the engine)</code></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">sown</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute phenology rates for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute phenology rates for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current state; uses ``state.dvs`` and ``state.tsump``.</span>
@@ -3204,7 +3232,7 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">            Multiplies the emergence (``tsump_rate``) and</span>
 <span class="sd">            vernalisation (``vern_rate``) clocks so that nothing</span>
 <span class="sd">            crop-related accumulates before sowing. ``None`` (the</span>
-<span class="sd">            default) is treated as &quot;sown everywhere&quot; (all ones),</span>
+<span class="sd">            default) is treated as "sown everywhere" (all ones),</span>
 <span class="sd">            reproducing the original always-sown-at-``t=0`` behaviour.</span>
 
 <span class="sd">    Returns:</span>
@@ -3232,9 +3260,9 @@ Rates (integrated by the engine)</code></td>
 <span class="sd">        * ``emerged`` [-] — hard (or smooth) mask of</span>
 <span class="sd">          ``tsump &gt;= tsumem``.</span>
 <span class="sd">        * ``dtsu`` [°C d d⁻¹] — ``AFGEN(dtsmtb, T_avg)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Sowing gate — 1 from the sowing day onward, 0 during any</span>
-    <span class="c1"># pre-sowing spin-up. ``None`` means &quot;always sown&quot; (legacy</span>
+    <span class="c1"># pre-sowing spin-up. ``None`` means "always sown" (legacy</span>
     <span class="c1"># behaviour where t=0 is the sowing day).</span>
     <span class="k">if</span> <span class="n">sown</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">sown</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">davtmp</span><span class="p">)</span>
@@ -3332,14 +3360,14 @@ Rates (integrated by the engine)</code></td>
     <span class="n">dvs_rate</span> <span class="o">=</span> <span class="n">dvs_rate</span> <span class="o">*</span> <span class="n">emerged_f</span> <span class="o">*</span> <span class="n">pre_mat</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="n">dvs_rate</span><span class="p">,</span>
-        <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">tsum_rate</span><span class="p">,</span>
-        <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">tsump_rate</span><span class="p">,</span>
-        <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">vern_rate</span><span class="p">,</span>
-        <span class="s2">&quot;photofac&quot;</span><span class="p">:</span> <span class="n">photofac</span><span class="p">,</span>
-        <span class="s2">&quot;vernfac&quot;</span><span class="p">:</span> <span class="n">vernfac</span><span class="p">,</span>
-        <span class="s2">&quot;emerged&quot;</span><span class="p">:</span> <span class="n">emerged_f</span><span class="p">,</span>
-        <span class="s2">&quot;dtsu&quot;</span><span class="p">:</span> <span class="n">dtsu</span><span class="p">,</span>
+        <span class="s2">"dvs_rate"</span><span class="p">:</span> <span class="n">dvs_rate</span><span class="p">,</span>
+        <span class="s2">"tsum_rate"</span><span class="p">:</span> <span class="n">tsum_rate</span><span class="p">,</span>
+        <span class="s2">"tsump_rate"</span><span class="p">:</span> <span class="n">tsump_rate</span><span class="p">,</span>
+        <span class="s2">"vern_rate"</span><span class="p">:</span> <span class="n">vern_rate</span><span class="p">,</span>
+        <span class="s2">"photofac"</span><span class="p">:</span> <span class="n">photofac</span><span class="p">,</span>
+        <span class="s2">"vernfac"</span><span class="p">:</span> <span class="n">vernfac</span><span class="p">,</span>
+        <span class="s2">"emerged"</span><span class="p">:</span> <span class="n">emerged_f</span><span class="p">,</span>
+        <span class="s2">"dtsu"</span><span class="p">:</span> <span class="n">dtsu</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

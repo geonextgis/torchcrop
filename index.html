@@ -1013,6 +1013,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2964,7 +2992,7 @@ construction:</p>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Lintul5Model</span><span class="p">(</span><span class="n">crop_params</span><span class="o">=</span><span class="n">torchcrop</span><span class="o">.</span><span class="n">CropParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span><span class="o">.</span><span class="n">double</span><span class="p">()</span>
 <span class="n">manager</span> <span class="o">=</span> <span class="n">CalibrationManager</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span> <span class="n">specs</span><span class="o">=</span><span class="p">[</span><span class="n">ParameterSpec</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;crop.scale_factor_rue&quot;</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))]</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">specs</span><span class="o">=</span><span class="p">[</span><span class="n">ParameterSpec</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"crop.scale_factor_rue"</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))]</span>
 <span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">manager</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
 
@@ -2996,9 +3024,9 @@ via a declarative <code>ResidualSpec</code>:</p>
 <span class="n">model</span> <span class="o">=</span> <span class="n">torchcrop</span><span class="o">.</span><span class="n">Lintul5Model</span><span class="p">(</span>
     <span class="n">residual_specs</span><span class="o">=</span><span class="p">[</span>
         <span class="n">ResidualSpec</span><span class="p">(</span>
-            <span class="s2">&quot;photosynthesis.gtotal&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;rate_factor&quot;</span><span class="p">,</span>
-            <span class="n">context</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;lai&quot;</span><span class="p">,</span> <span class="s2">&quot;dvs&quot;</span><span class="p">,</span> <span class="s2">&quot;davtmp&quot;</span><span class="p">,</span> <span class="s2">&quot;tranrf&quot;</span><span class="p">,</span> <span class="s2">&quot;nstress&quot;</span><span class="p">),</span>
+            <span class="s2">"photosynthesis.gtotal"</span><span class="p">,</span>
+            <span class="s2">"rate_factor"</span><span class="p">,</span>
+            <span class="n">context</span><span class="o">=</span><span class="p">(</span><span class="s2">"lai"</span><span class="p">,</span> <span class="s2">"dvs"</span><span class="p">,</span> <span class="s2">"davtmp"</span><span class="p">,</span> <span class="s2">"tranrf"</span><span class="p">,</span> <span class="s2">"nstress"</span><span class="p">),</span>
             <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">],</span>

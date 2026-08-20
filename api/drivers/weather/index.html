@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2899,7 +2927,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WeatherDriver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Thin wrapper around a ``[B, T, C]`` weather tensor.</span>
+<span class="w">    </span><span class="sd">"""Thin wrapper around a ``[B, T, C]`` weather tensor.</span>
 
 <span class="sd">    Provides named channel access and input validation. The underlying tensor</span>
 <span class="sd">    is accessible as ``.data`` for direct use in process modules.</span>
@@ -2910,45 +2938,45 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``data`` is not 3-D or does not carry exactly</span>
 <span class="sd">            `N_WEATHER_CHANNELS` channels.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;weather tensor must be 3-D [B, T, C]; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"weather tensor must be 3-D [B, T, C]; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">N_WEATHER_CHANNELS</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;weather tensor must have </span><span class="si">{</span><span class="n">N_WEATHER_CHANNELS</span><span class="si">}</span><span class="s2"> channels; &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"weather tensor must have </span><span class="si">{</span><span class="n">N_WEATHER_CHANNELS</span><span class="si">}</span><span class="s2"> channels; "</span>
+                <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Leading batch dimension ``B``.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Leading batch dimension ``B``."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">n_days</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of daily time steps ``T``.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Number of daily time steps ``T``."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">day</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of named channels for day ``t``.</span>
+<span class="w">        </span><span class="sd">"""Return a dict of named channels for day ``t``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            t: Time index in ``[0, T)``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dict mapping channel name to a ``[B]`` tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">slice_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="p">:]</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">slice_t</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">WEATHER_CHANNELS</span><span class="p">)}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
+<span class="w">        </span><span class="sd">"""Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: Channel name (see `WEATHER_CHANNELS`).</span>
@@ -2958,15 +2986,15 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            KeyError: If ``name`` is not a known weather channel.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="n">WEATHER_CHANNELS</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown weather channel: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown weather channel: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">idx</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"WeatherDriver"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -2974,7 +3002,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A new `WeatherDriver` wrapping the cast tensor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>
         </details>
@@ -3108,7 +3136,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the full ``[B, T]`` trajectory of a named channel.</span>
+<span class="w">    </span><span class="sd">"""Return the full ``[B, T]`` trajectory of a named channel.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: Channel name (see `WEATHER_CHANNELS`).</span>
@@ -3118,11 +3146,11 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        KeyError: If ``name`` is not a known weather channel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="n">WEATHER_CHANNELS</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unknown weather channel: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"unknown weather channel: </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">idx</span><span class="p">]</span>
 </code></pre></div>
         </details>
@@ -3183,14 +3211,14 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">day</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a dict of named channels for day ``t``.</span>
+<span class="w">    </span><span class="sd">"""Return a dict of named channels for day ``t``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        t: Time index in ``[0, T)``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Dict mapping channel name to a ``[B]`` tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">slice_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="p">:]</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">slice_t</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">WEATHER_CHANNELS</span><span class="p">)}</span>
 </code></pre></div>
@@ -3257,8 +3285,8 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/drivers/weather.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;WeatherDriver&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"WeatherDriver"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return a new `WeatherDriver` cast/moved to ``dtype``/``device``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -3266,7 +3294,7 @@ is accessible as <code>.data</code> for direct use in process modules.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new `WeatherDriver` wrapping the cast tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">WeatherDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
 </code></pre></div>
         </details>

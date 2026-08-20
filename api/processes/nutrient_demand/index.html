@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2797,7 +2825,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/nutrient_demand.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">NutrientDemand</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily NPK demand, uptake, translocation, and nutrition indices.</span>
+<span class="w">    </span><span class="sd">"""Daily NPK demand, uptake, translocation, and nutrition indices.</span>
 
 <span class="sd">    Implements the deficit-based Lintul5 NPK dynamics:</span>
 
@@ -2823,7 +2851,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">       supply by translocatable-pool share.</span>
 <span class="sd">    6. *Net rate assembly* per organ</span>
 <span class="sd">       ``R{N,P,K}{LV,ST,RT} = uptake − translocation − death-loss``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2835,7 +2863,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
         <span class="n">drrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">drst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the full NPK rate package for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute the full NPK rate package for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`. Reads the biomass pools</span>
@@ -2911,7 +2939,7 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
 <span class="sd">              ``(DVS &lt; DVSNLT) ∧ (TRANRF ≥ 0.01)``.</span>
 <span class="sd">            * ``emerg`` [-] — Emergence mask</span>
 <span class="sd">              ``(tsump ≥ tsumem)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">del</span> <span class="n">soil_params</span>  <span class="c1"># uptake cap now lives on `ModelState.{nmint,pmint,kmint}`</span>
         <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
 
@@ -3173,43 +3201,43 @@ NutrientDemand            (<span title="torch.nn.modules.module.Module">Module</
             <span class="c1"># Stress factor consumed downstream (Photosynthesis, leaf</span>
             <span class="c1"># dynamics, stress combiner): historical concentration-based</span>
             <span class="c1"># NPK nutrition index NPKI.</span>
-            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">npki</span><span class="p">,</span>
-            <span class="s2">&quot;nni&quot;</span><span class="p">:</span> <span class="n">nni</span><span class="p">,</span>
-            <span class="s2">&quot;pni&quot;</span><span class="p">:</span> <span class="n">pni</span><span class="p">,</span>
-            <span class="s2">&quot;kni&quot;</span><span class="p">:</span> <span class="n">kni</span><span class="p">,</span>
+            <span class="s2">"nstress"</span><span class="p">:</span> <span class="n">npki</span><span class="p">,</span>
+            <span class="s2">"nni"</span><span class="p">:</span> <span class="n">nni</span><span class="p">,</span>
+            <span class="s2">"pni"</span><span class="p">:</span> <span class="n">pni</span><span class="p">,</span>
+            <span class="s2">"kni"</span><span class="p">:</span> <span class="n">kni</span><span class="p">,</span>
             <span class="c1"># Whole-plant flux diagnostics.</span>
-            <span class="s2">&quot;n_uptake&quot;</span><span class="p">:</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span><span class="p">,</span>
-            <span class="s2">&quot;p_uptake&quot;</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
-            <span class="s2">&quot;k_uptake&quot;</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
-            <span class="s2">&quot;n_demand&quot;</span><span class="p">:</span> <span class="n">ndemto</span><span class="p">,</span>
-            <span class="s2">&quot;p_demand&quot;</span><span class="p">:</span> <span class="n">pdemto</span><span class="p">,</span>
-            <span class="s2">&quot;k_demand&quot;</span><span class="p">:</span> <span class="n">kdemto</span><span class="p">,</span>
-            <span class="s2">&quot;nfixtr&quot;</span><span class="p">:</span> <span class="n">nfixtr</span><span class="p">,</span>
-            <span class="s2">&quot;rnso&quot;</span><span class="p">:</span> <span class="n">rnso</span><span class="p">,</span>
-            <span class="s2">&quot;rpso&quot;</span><span class="p">:</span> <span class="n">rpso</span><span class="p">,</span>
-            <span class="s2">&quot;rkso&quot;</span><span class="p">:</span> <span class="n">rkso</span><span class="p">,</span>
+            <span class="s2">"n_uptake"</span><span class="p">:</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span><span class="p">,</span>
+            <span class="s2">"p_uptake"</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
+            <span class="s2">"k_uptake"</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
+            <span class="s2">"n_demand"</span><span class="p">:</span> <span class="n">ndemto</span><span class="p">,</span>
+            <span class="s2">"p_demand"</span><span class="p">:</span> <span class="n">pdemto</span><span class="p">,</span>
+            <span class="s2">"k_demand"</span><span class="p">:</span> <span class="n">kdemto</span><span class="p">,</span>
+            <span class="s2">"nfixtr"</span><span class="p">:</span> <span class="n">nfixtr</span><span class="p">,</span>
+            <span class="s2">"rnso"</span><span class="p">:</span> <span class="n">rnso</span><span class="p">,</span>
+            <span class="s2">"rpso"</span><span class="p">:</span> <span class="n">rpso</span><span class="p">,</span>
+            <span class="s2">"rkso"</span><span class="p">:</span> <span class="n">rkso</span><span class="p">,</span>
             <span class="c1"># Soil-only uptake fluxes (no fixation) consumed by</span>
             <span class="c1"># `SoilNutrients` to deplete the inorganic pools.</span>
-            <span class="s2">&quot;nuptr&quot;</span><span class="p">:</span> <span class="n">nuptr</span><span class="p">,</span>
-            <span class="s2">&quot;puptr&quot;</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
-            <span class="s2">&quot;kuptr&quot;</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
+            <span class="s2">"nuptr"</span><span class="p">:</span> <span class="n">nuptr</span><span class="p">,</span>
+            <span class="s2">"puptr"</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
+            <span class="s2">"kuptr"</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
             <span class="c1"># Gates re-used downstream so SoilNutrients runs on the same</span>
             <span class="c1"># NLIMIT / EMERG masks as the uptake calculation.</span>
-            <span class="s2">&quot;nlimit&quot;</span><span class="p">:</span> <span class="n">nlimit</span><span class="p">,</span>
-            <span class="s2">&quot;emerg&quot;</span><span class="p">:</span> <span class="n">emerg</span><span class="p">,</span>
+            <span class="s2">"nlimit"</span><span class="p">:</span> <span class="n">nlimit</span><span class="p">,</span>
+            <span class="s2">"emerg"</span><span class="p">:</span> <span class="n">emerg</span><span class="p">,</span>
             <span class="c1"># Net per-organ NPK rates (consumed by the engine).</span>
-            <span class="s2">&quot;n_lv_rate&quot;</span><span class="p">:</span> <span class="n">n_lv_rate</span><span class="p">,</span>
-            <span class="s2">&quot;n_st_rate&quot;</span><span class="p">:</span> <span class="n">n_st_rate</span><span class="p">,</span>
-            <span class="s2">&quot;n_rt_rate&quot;</span><span class="p">:</span> <span class="n">n_rt_rate</span><span class="p">,</span>
-            <span class="s2">&quot;n_so_rate&quot;</span><span class="p">:</span> <span class="n">n_so_rate</span><span class="p">,</span>
-            <span class="s2">&quot;p_lv_rate&quot;</span><span class="p">:</span> <span class="n">p_lv_rate</span><span class="p">,</span>
-            <span class="s2">&quot;p_st_rate&quot;</span><span class="p">:</span> <span class="n">p_st_rate</span><span class="p">,</span>
-            <span class="s2">&quot;p_rt_rate&quot;</span><span class="p">:</span> <span class="n">p_rt_rate</span><span class="p">,</span>
-            <span class="s2">&quot;p_so_rate&quot;</span><span class="p">:</span> <span class="n">p_so_rate</span><span class="p">,</span>
-            <span class="s2">&quot;k_lv_rate&quot;</span><span class="p">:</span> <span class="n">k_lv_rate</span><span class="p">,</span>
-            <span class="s2">&quot;k_st_rate&quot;</span><span class="p">:</span> <span class="n">k_st_rate</span><span class="p">,</span>
-            <span class="s2">&quot;k_rt_rate&quot;</span><span class="p">:</span> <span class="n">k_rt_rate</span><span class="p">,</span>
-            <span class="s2">&quot;k_so_rate&quot;</span><span class="p">:</span> <span class="n">k_so_rate</span><span class="p">,</span>
+            <span class="s2">"n_lv_rate"</span><span class="p">:</span> <span class="n">n_lv_rate</span><span class="p">,</span>
+            <span class="s2">"n_st_rate"</span><span class="p">:</span> <span class="n">n_st_rate</span><span class="p">,</span>
+            <span class="s2">"n_rt_rate"</span><span class="p">:</span> <span class="n">n_rt_rate</span><span class="p">,</span>
+            <span class="s2">"n_so_rate"</span><span class="p">:</span> <span class="n">n_so_rate</span><span class="p">,</span>
+            <span class="s2">"p_lv_rate"</span><span class="p">:</span> <span class="n">p_lv_rate</span><span class="p">,</span>
+            <span class="s2">"p_st_rate"</span><span class="p">:</span> <span class="n">p_st_rate</span><span class="p">,</span>
+            <span class="s2">"p_rt_rate"</span><span class="p">:</span> <span class="n">p_rt_rate</span><span class="p">,</span>
+            <span class="s2">"p_so_rate"</span><span class="p">:</span> <span class="n">p_so_rate</span><span class="p">,</span>
+            <span class="s2">"k_lv_rate"</span><span class="p">:</span> <span class="n">k_lv_rate</span><span class="p">,</span>
+            <span class="s2">"k_st_rate"</span><span class="p">:</span> <span class="n">k_st_rate</span><span class="p">,</span>
+            <span class="s2">"k_rt_rate"</span><span class="p">:</span> <span class="n">k_rt_rate</span><span class="p">,</span>
+            <span class="s2">"k_so_rate"</span><span class="p">:</span> <span class="n">k_so_rate</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3385,7 +3413,7 @@ Rate variables (consumed by the engine to update the matching
     <span class="n">drrt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">drst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the full NPK rate package for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute the full NPK rate package for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`. Reads the biomass pools</span>
@@ -3461,7 +3489,7 @@ Rate variables (consumed by the engine to update the matching
 <span class="sd">          ``(DVS &lt; DVSNLT) ∧ (TRANRF ≥ 0.01)``.</span>
 <span class="sd">        * ``emerg`` [-] — Emergence mask</span>
 <span class="sd">          ``(tsump ≥ tsumem)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">del</span> <span class="n">soil_params</span>  <span class="c1"># uptake cap now lives on `ModelState.{nmint,pmint,kmint}`</span>
     <span class="n">cp</span> <span class="o">=</span> <span class="n">crop_params</span>
 
@@ -3723,43 +3751,43 @@ Rate variables (consumed by the engine to update the matching
         <span class="c1"># Stress factor consumed downstream (Photosynthesis, leaf</span>
         <span class="c1"># dynamics, stress combiner): historical concentration-based</span>
         <span class="c1"># NPK nutrition index NPKI.</span>
-        <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">npki</span><span class="p">,</span>
-        <span class="s2">&quot;nni&quot;</span><span class="p">:</span> <span class="n">nni</span><span class="p">,</span>
-        <span class="s2">&quot;pni&quot;</span><span class="p">:</span> <span class="n">pni</span><span class="p">,</span>
-        <span class="s2">&quot;kni&quot;</span><span class="p">:</span> <span class="n">kni</span><span class="p">,</span>
+        <span class="s2">"nstress"</span><span class="p">:</span> <span class="n">npki</span><span class="p">,</span>
+        <span class="s2">"nni"</span><span class="p">:</span> <span class="n">nni</span><span class="p">,</span>
+        <span class="s2">"pni"</span><span class="p">:</span> <span class="n">pni</span><span class="p">,</span>
+        <span class="s2">"kni"</span><span class="p">:</span> <span class="n">kni</span><span class="p">,</span>
         <span class="c1"># Whole-plant flux diagnostics.</span>
-        <span class="s2">&quot;n_uptake&quot;</span><span class="p">:</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span><span class="p">,</span>
-        <span class="s2">&quot;p_uptake&quot;</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
-        <span class="s2">&quot;k_uptake&quot;</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
-        <span class="s2">&quot;n_demand&quot;</span><span class="p">:</span> <span class="n">ndemto</span><span class="p">,</span>
-        <span class="s2">&quot;p_demand&quot;</span><span class="p">:</span> <span class="n">pdemto</span><span class="p">,</span>
-        <span class="s2">&quot;k_demand&quot;</span><span class="p">:</span> <span class="n">kdemto</span><span class="p">,</span>
-        <span class="s2">&quot;nfixtr&quot;</span><span class="p">:</span> <span class="n">nfixtr</span><span class="p">,</span>
-        <span class="s2">&quot;rnso&quot;</span><span class="p">:</span> <span class="n">rnso</span><span class="p">,</span>
-        <span class="s2">&quot;rpso&quot;</span><span class="p">:</span> <span class="n">rpso</span><span class="p">,</span>
-        <span class="s2">&quot;rkso&quot;</span><span class="p">:</span> <span class="n">rkso</span><span class="p">,</span>
+        <span class="s2">"n_uptake"</span><span class="p">:</span> <span class="n">nuptr</span> <span class="o">+</span> <span class="n">nfixtr</span><span class="p">,</span>
+        <span class="s2">"p_uptake"</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
+        <span class="s2">"k_uptake"</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
+        <span class="s2">"n_demand"</span><span class="p">:</span> <span class="n">ndemto</span><span class="p">,</span>
+        <span class="s2">"p_demand"</span><span class="p">:</span> <span class="n">pdemto</span><span class="p">,</span>
+        <span class="s2">"k_demand"</span><span class="p">:</span> <span class="n">kdemto</span><span class="p">,</span>
+        <span class="s2">"nfixtr"</span><span class="p">:</span> <span class="n">nfixtr</span><span class="p">,</span>
+        <span class="s2">"rnso"</span><span class="p">:</span> <span class="n">rnso</span><span class="p">,</span>
+        <span class="s2">"rpso"</span><span class="p">:</span> <span class="n">rpso</span><span class="p">,</span>
+        <span class="s2">"rkso"</span><span class="p">:</span> <span class="n">rkso</span><span class="p">,</span>
         <span class="c1"># Soil-only uptake fluxes (no fixation) consumed by</span>
         <span class="c1"># `SoilNutrients` to deplete the inorganic pools.</span>
-        <span class="s2">&quot;nuptr&quot;</span><span class="p">:</span> <span class="n">nuptr</span><span class="p">,</span>
-        <span class="s2">&quot;puptr&quot;</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
-        <span class="s2">&quot;kuptr&quot;</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
+        <span class="s2">"nuptr"</span><span class="p">:</span> <span class="n">nuptr</span><span class="p">,</span>
+        <span class="s2">"puptr"</span><span class="p">:</span> <span class="n">puptr</span><span class="p">,</span>
+        <span class="s2">"kuptr"</span><span class="p">:</span> <span class="n">kuptr</span><span class="p">,</span>
         <span class="c1"># Gates re-used downstream so SoilNutrients runs on the same</span>
         <span class="c1"># NLIMIT / EMERG masks as the uptake calculation.</span>
-        <span class="s2">&quot;nlimit&quot;</span><span class="p">:</span> <span class="n">nlimit</span><span class="p">,</span>
-        <span class="s2">&quot;emerg&quot;</span><span class="p">:</span> <span class="n">emerg</span><span class="p">,</span>
+        <span class="s2">"nlimit"</span><span class="p">:</span> <span class="n">nlimit</span><span class="p">,</span>
+        <span class="s2">"emerg"</span><span class="p">:</span> <span class="n">emerg</span><span class="p">,</span>
         <span class="c1"># Net per-organ NPK rates (consumed by the engine).</span>
-        <span class="s2">&quot;n_lv_rate&quot;</span><span class="p">:</span> <span class="n">n_lv_rate</span><span class="p">,</span>
-        <span class="s2">&quot;n_st_rate&quot;</span><span class="p">:</span> <span class="n">n_st_rate</span><span class="p">,</span>
-        <span class="s2">&quot;n_rt_rate&quot;</span><span class="p">:</span> <span class="n">n_rt_rate</span><span class="p">,</span>
-        <span class="s2">&quot;n_so_rate&quot;</span><span class="p">:</span> <span class="n">n_so_rate</span><span class="p">,</span>
-        <span class="s2">&quot;p_lv_rate&quot;</span><span class="p">:</span> <span class="n">p_lv_rate</span><span class="p">,</span>
-        <span class="s2">&quot;p_st_rate&quot;</span><span class="p">:</span> <span class="n">p_st_rate</span><span class="p">,</span>
-        <span class="s2">&quot;p_rt_rate&quot;</span><span class="p">:</span> <span class="n">p_rt_rate</span><span class="p">,</span>
-        <span class="s2">&quot;p_so_rate&quot;</span><span class="p">:</span> <span class="n">p_so_rate</span><span class="p">,</span>
-        <span class="s2">&quot;k_lv_rate&quot;</span><span class="p">:</span> <span class="n">k_lv_rate</span><span class="p">,</span>
-        <span class="s2">&quot;k_st_rate&quot;</span><span class="p">:</span> <span class="n">k_st_rate</span><span class="p">,</span>
-        <span class="s2">&quot;k_rt_rate&quot;</span><span class="p">:</span> <span class="n">k_rt_rate</span><span class="p">,</span>
-        <span class="s2">&quot;k_so_rate&quot;</span><span class="p">:</span> <span class="n">k_so_rate</span><span class="p">,</span>
+        <span class="s2">"n_lv_rate"</span><span class="p">:</span> <span class="n">n_lv_rate</span><span class="p">,</span>
+        <span class="s2">"n_st_rate"</span><span class="p">:</span> <span class="n">n_st_rate</span><span class="p">,</span>
+        <span class="s2">"n_rt_rate"</span><span class="p">:</span> <span class="n">n_rt_rate</span><span class="p">,</span>
+        <span class="s2">"n_so_rate"</span><span class="p">:</span> <span class="n">n_so_rate</span><span class="p">,</span>
+        <span class="s2">"p_lv_rate"</span><span class="p">:</span> <span class="n">p_lv_rate</span><span class="p">,</span>
+        <span class="s2">"p_st_rate"</span><span class="p">:</span> <span class="n">p_st_rate</span><span class="p">,</span>
+        <span class="s2">"p_rt_rate"</span><span class="p">:</span> <span class="n">p_rt_rate</span><span class="p">,</span>
+        <span class="s2">"p_so_rate"</span><span class="p">:</span> <span class="n">p_so_rate</span><span class="p">,</span>
+        <span class="s2">"k_lv_rate"</span><span class="p">:</span> <span class="n">k_lv_rate</span><span class="p">,</span>
+        <span class="s2">"k_st_rate"</span><span class="p">:</span> <span class="n">k_st_rate</span><span class="p">,</span>
+        <span class="s2">"k_rt_rate"</span><span class="p">:</span> <span class="n">k_rt_rate</span><span class="p">,</span>
+        <span class="s2">"k_so_rate"</span><span class="p">:</span> <span class="n">k_so_rate</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

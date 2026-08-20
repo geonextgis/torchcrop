@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2826,7 +2854,7 @@ independently — useful as a grouping label only).</p></td>
           <summary>Source code in <code>torchcrop/calibration/spec.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ConstraintGroup</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An ordering / cross-parameter relation over several targets.</span>
+<span class="w">    </span><span class="sd">"""An ordering / cross-parameter relation over several targets.</span>
 
 <span class="sd">    The members are reconstructed jointly so the relation holds *by</span>
 <span class="sd">    construction* on every iterate (no penalty term, no projection).</span>
@@ -2834,21 +2862,21 @@ independently — useful as a grouping label only).</p></td>
 <span class="sd">    Attributes:</span>
 <span class="sd">        members: Spec names participating in the relation, **in the intended</span>
 <span class="sd">            order** (for ``ascending`` / ``descending``).</span>
-<span class="sd">        order: ``&quot;ascending&quot;`` → ``v0 &lt;= v1 &lt;= ...``; ``&quot;descending&quot;`` →</span>
-<span class="sd">            ``v0 &gt;= v1 &gt;= ...``; ``&quot;free&quot;`` → no coupling (members optimized</span>
+<span class="sd">        order: ``"ascending"`` → ``v0 &lt;= v1 &lt;= ...``; ``"descending"`` →</span>
+<span class="sd">            ``v0 &gt;= v1 &gt;= ...``; ``"free"`` → no coupling (members optimized</span>
 <span class="sd">            independently — useful as a grouping label only).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">members</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-    <span class="n">order</span><span class="p">:</span> <span class="n">Order</span> <span class="o">=</span> <span class="s2">&quot;ascending&quot;</span>
+    <span class="n">order</span><span class="p">:</span> <span class="n">Order</span> <span class="o">=</span> <span class="s2">"ascending"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">!=</span> <span class="s2">&quot;free&quot;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">!=</span> <span class="s2">"free"</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;ordered group needs &gt;= 2 members; got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"ordered group needs &gt;= 2 members; got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate members in group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"duplicate members in group </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
         </details>
 
@@ -2957,54 +2985,54 @@ value in its container.</p></td>
           <summary>Source code in <code>torchcrop/calibration/spec.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParameterSpec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A single calibration target.</span>
+<span class="w">    </span><span class="sd">"""A single calibration target.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name: Dotted target path (see module docstring). Scalar fields are</span>
-<span class="sd">            ``&quot;&lt;container&gt;.&lt;field&gt;&quot;``; table entries add ``&quot;@&lt;dvs&gt;&quot;`` (match by</span>
-<span class="sd">            abscissa) or ``&quot;[&lt;i&gt;]&quot;`` (match by row index).</span>
+<span class="sd">            ``"&lt;container&gt;.&lt;field&gt;"``; table entries add ``"@&lt;dvs&gt;"`` (match by</span>
+<span class="sd">            abscissa) or ``"[&lt;i&gt;]"`` (match by row index).</span>
 <span class="sd">        bounds: ``(lo, hi)`` feasible range. Required for ``affine_sigmoid``</span>
 <span class="sd">            and for any member of an ordered `ConstraintGroup`.</span>
-<span class="sd">        kind: ``&quot;continuous&quot;`` (default), ``&quot;integer&quot;`` (rounded via a</span>
-<span class="sd">            straight-through estimator), or ``&quot;categorical&quot;`` (excluded from</span>
+<span class="sd">        kind: ``"continuous"`` (default), ``"integer"`` (rounded via a</span>
+<span class="sd">            straight-through estimator), or ``"categorical"`` (excluded from</span>
 <span class="sd">            the gradient path; driven by a gradient-free outer loop).</span>
 <span class="sd">        transform: Registered transform name (see</span>
 <span class="sd">            `torchcrop.calibration.transforms.available_transforms`).</span>
-<span class="sd">            Defaults to ``&quot;affine_sigmoid&quot;`` when ``bounds`` are given,</span>
-<span class="sd">            otherwise ``&quot;identity&quot;``.</span>
-<span class="sd">        init: Initial physical value. Defaults to the parameter&#39;s current</span>
+<span class="sd">            Defaults to ``"affine_sigmoid"`` when ``bounds`` are given,</span>
+<span class="sd">            otherwise ``"identity"``.</span>
+<span class="sd">        init: Initial physical value. Defaults to the parameter's current</span>
 <span class="sd">            value in its container.</span>
-<span class="sd">        categories: Allowed values for ``kind=&quot;categorical&quot;``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        categories: Allowed values for ``kind="categorical"``.</span>
+<span class="sd">    """</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">kind</span><span class="p">:</span> <span class="n">Kind</span> <span class="o">=</span> <span class="s2">&quot;continuous&quot;</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Kind</span> <span class="o">=</span> <span class="s2">"continuous"</span>
     <span class="n">transform</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">categories</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resolved_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the transform name, applying the bounds-based default.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the transform name, applying the bounds-based default."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span>
-        <span class="k">return</span> <span class="s2">&quot;affine_sigmoid&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;identity&quot;</span>
+        <span class="k">return</span> <span class="s2">"affine_sigmoid"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"identity"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">hi</span> <span class="o">&gt;</span> <span class="n">lo</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: bounds must satisfy hi &gt; lo; got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: bounds must satisfy hi &gt; lo; got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: init </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="si">}</span><span class="s2"> outside bounds </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: init </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="si">}</span><span class="s2"> outside bounds </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"categorical"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: kind=&#39;categorical&#39; requires a non-empty &quot;</span>
-                <span class="s2">&quot;`categories` tuple&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: kind='categorical' requires a non-empty "</span>
+                <span class="s2">"`categories` tuple"</span>
             <span class="p">)</span>
 </code></pre></div>
         </details>
@@ -3051,10 +3079,10 @@ value in its container.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/spec.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">resolved_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the transform name, applying the bounds-based default.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return the transform name, applying the bounds-based default."""</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span>
-    <span class="k">return</span> <span class="s2">&quot;affine_sigmoid&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;identity&quot;</span>
+    <span class="k">return</span> <span class="s2">"affine_sigmoid"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"identity"</span>
 </code></pre></div>
         </details>
     </div>

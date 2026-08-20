@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2814,14 +2842,14 @@ the <code>GTOTAL</code> formula in the downstream biomass block.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/photosynthesis.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Photosynthesis</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Radiation use efficiency component.</span>
+<span class="w">    </span><span class="sd">"""Radiation use efficiency component.</span>
 
 <span class="sd">    Outputs ``RUE`` from ``ruetb(DVS)`` and an overall correction</span>
 <span class="sd">    factor ``RTMCO`` that combines daytime-temperature,</span>
 <span class="sd">    minimum-temperature and CO\\(_2\\) responses. ``parint``,</span>
 <span class="sd">    ``tranrf`` and ``nstress`` are *not* consumed here — they enter</span>
 <span class="sd">    the ``GTOTAL`` formula in the downstream biomass block.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2831,7 +2859,7 @@ the <code>GTOTAL</code> formula in the downstream biomass block.</p>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute RUE and the RTMCO correction factor.</span>
+<span class="w">        </span><span class="sd">"""Compute RUE and the RTMCO correction factor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
@@ -2855,7 +2883,7 @@ the <code>GTOTAL</code> formula in the downstream biomass block.</p>
 <span class="sd">              ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
 <span class="sd">            * ``dtemp`` [°C] — Effective daytime temperature</span>
 <span class="sd">              ``TMAX − f · (TMAX − TMIN)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># DVS-dependent base RUE.</span>
         <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
@@ -2873,11 +2901,11 @@ the <code>GTOTAL</code> formula in the downstream biomass block.</p>
         <span class="n">rtmco</span> <span class="o">=</span> <span class="n">rtmp</span> <span class="o">*</span> <span class="n">rco</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;rue&quot;</span><span class="p">:</span> <span class="n">rue</span><span class="p">,</span>
-            <span class="s2">&quot;rtmco&quot;</span><span class="p">:</span> <span class="n">rtmco</span><span class="p">,</span>
-            <span class="s2">&quot;rco&quot;</span><span class="p">:</span> <span class="n">rco</span><span class="p">,</span>
-            <span class="s2">&quot;rtmp&quot;</span><span class="p">:</span> <span class="n">rtmp</span><span class="p">,</span>
-            <span class="s2">&quot;dtemp&quot;</span><span class="p">:</span> <span class="n">dtemp</span><span class="p">,</span>
+            <span class="s2">"rue"</span><span class="p">:</span> <span class="n">rue</span><span class="p">,</span>
+            <span class="s2">"rtmco"</span><span class="p">:</span> <span class="n">rtmco</span><span class="p">,</span>
+            <span class="s2">"rco"</span><span class="p">:</span> <span class="n">rco</span><span class="p">,</span>
+            <span class="s2">"rtmp"</span><span class="p">:</span> <span class="n">rtmp</span><span class="p">,</span>
+            <span class="s2">"dtemp"</span><span class="p">:</span> <span class="n">dtemp</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -2989,7 +3017,7 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">370.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute RUE and the RTMCO correction factor.</span>
+<span class="w">    </span><span class="sd">"""Compute RUE and the RTMCO correction factor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
@@ -3013,7 +3041,7 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
 <span class="sd">          ``TMPFTB(DTEMP) · TMNFTB(TMIN)``.</span>
 <span class="sd">        * ``dtemp`` [°C] — Effective daytime temperature</span>
 <span class="sd">          ``TMAX − f · (TMAX − TMIN)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># DVS-dependent base RUE.</span>
     <span class="n">rue</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">scale_factor_rue</span> <span class="o">*</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">ruetb</span><span class="p">,</span> <span class="n">dvs</span><span class="p">)</span>
 
@@ -3031,11 +3059,11 @@ Supplied by <code>SiteParameters.co2</code> in the model.</p></td>
     <span class="n">rtmco</span> <span class="o">=</span> <span class="n">rtmp</span> <span class="o">*</span> <span class="n">rco</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;rue&quot;</span><span class="p">:</span> <span class="n">rue</span><span class="p">,</span>
-        <span class="s2">&quot;rtmco&quot;</span><span class="p">:</span> <span class="n">rtmco</span><span class="p">,</span>
-        <span class="s2">&quot;rco&quot;</span><span class="p">:</span> <span class="n">rco</span><span class="p">,</span>
-        <span class="s2">&quot;rtmp&quot;</span><span class="p">:</span> <span class="n">rtmp</span><span class="p">,</span>
-        <span class="s2">&quot;dtemp&quot;</span><span class="p">:</span> <span class="n">dtemp</span><span class="p">,</span>
+        <span class="s2">"rue"</span><span class="p">:</span> <span class="n">rue</span><span class="p">,</span>
+        <span class="s2">"rtmco"</span><span class="p">:</span> <span class="n">rtmco</span><span class="p">,</span>
+        <span class="s2">"rco"</span><span class="p">:</span> <span class="n">rco</span><span class="p">,</span>
+        <span class="s2">"rtmp"</span><span class="p">:</span> <span class="n">rtmp</span><span class="p">,</span>
+        <span class="s2">"dtemp"</span><span class="p">:</span> <span class="n">dtemp</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

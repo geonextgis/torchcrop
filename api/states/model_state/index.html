@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3383,7 +3411,7 @@ grouped below by physical role.</p>
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DiagnosticState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Per-day diagnostic snapshot — companion to `ModelState`.</span>
+<span class="w">    </span><span class="sd">"""Per-day diagnostic snapshot — companion to `ModelState`.</span>
 
 <span class="sd">    Holds quantities that are **not** integrated by the engine but are</span>
 <span class="sd">    valuable for interpretation, attribution, and ML loss design:</span>
@@ -3454,7 +3482,7 @@ grouped below by physical role.</p>
 <span class="sd">    ## Partitioning fractions [-]:</span>
 <span class="sd">    - `fr`, `fl`, `fs`, `fo`: Stress-modified fractions to root, leaf,</span>
 <span class="sd">        stem and storage organ. Root + above-ground sum to 1.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Stress factors</span>
     <span class="n">tranrf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -3507,11 +3535,11 @@ grouped below by physical role.</p>
     <span class="n">fo</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack all tensor fields into a single ``[B, C]`` tensor.</span>
+<span class="w">        </span><span class="sd">"""Stack all tensor fields into a single ``[B, C]`` tensor.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``[B, C]`` tensor laid out in field-definition order.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -3521,7 +3549,7 @@ grouped below by physical role.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this `DiagnosticState`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Names of all tensor fields on this `DiagnosticState`."""</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">f</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -3636,11 +3664,11 @@ grouped below by physical role.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stack all tensor fields into a single ``[B, C]`` tensor.</span>
+<span class="w">    </span><span class="sd">"""Stack all tensor fields into a single ``[B, C]`` tensor.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``[B, C]`` tensor laid out in field-definition order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -3783,7 +3811,7 @@ other field.</p>
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Full Lintul5 state vector.</span>
+<span class="w">    </span><span class="sd">"""Full Lintul5 state vector.</span>
 
 <span class="sd">    Holds every persistent quantity advanced by the simulation engine.</span>
 <span class="sd">    All fields are ``torch.Tensor`` of shape ``[B]`` (one scalar per</span>
@@ -3823,8 +3851,8 @@ other field.</p>
 <span class="sd">    - `rootd`: Rooting depth [m].</span>
 
 <span class="sd">    ## Soil water (two-zone bucket):</span>
-<span class="sd">    - `wa`: Water stored in the rooted zone (full column, not &quot;above</span>
-<span class="sd">        wilting point&quot;) [mm].</span>
+<span class="sd">    - `wa`: Water stored in the rooted zone (full column, not "above</span>
+<span class="sd">        wilting point") [mm].</span>
 <span class="sd">    - `wa_lower`: Water stored in the lower zone, between ``rootd`` and</span>
 <span class="sd">        the maximum rooting depth ``rdm`` [mm].</span>
 <span class="sd">    - `dslr`: Days since the last (infiltrating) rain event [d];</span>
@@ -3873,7 +3901,7 @@ other field.</p>
 <span class="sd">    the autograd graph across the Euler step ``s_{t+1} = s_t + r_t · dt``.</span>
 <span class="sd">    Cumulative accumulators use the same ``&lt;field&gt;_rate`` mechanism as any</span>
 <span class="sd">    other field.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Phenology</span>
     <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>  <span class="c1"># [B] development stage [0, 2]</span>
@@ -3968,8 +3996,8 @@ other field.</p>
     <span class="n">parint_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative intercepted PAR [MJ m-2]</span>
     <span class="n">gtotal_cum</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># cumulative gross assimilate [g DM m-2]</span>
 
-    <span class="c1"># Root-front velocity carried from the *previous* day [m d⁻¹]. SIMPLACE&#39;s</span>
-    <span class="c1"># water balance consumes the prior step&#39;s ``RR`` (component order</span>
+    <span class="c1"># Root-front velocity carried from the *previous* day [m d⁻¹]. SIMPLACE's</span>
+    <span class="c1"># water balance consumes the prior step's ``RR`` (component order</span>
     <span class="c1"># ``WaterBalance`` → ``Biomass``), so ``WDR`` uses this lagged value while</span>
     <span class="c1"># rooting depth integrates the same-day ``RR``. Latched each step via</span>
     <span class="c1"># ``rr_prev_rate``; starts at 0 (no transfer on the first emerged day).</span>
@@ -3986,7 +4014,7 @@ other field.</p>
     <span class="c1"># Scheduled irrigation not yet delivered [mm]. The irrigation system</span>
     <span class="c1"># applies at most 10 mm d⁻¹, so a larger scheduled application is spread</span>
     <span class="c1"># over consecutive days rather than truncated: whatever does not fit on</span>
-    <span class="c1"># the day is held here and added to the next day&#39;s application. Only the</span>
+    <span class="c1"># the day is held here and added to the next day's application. Only the</span>
     <span class="c1"># table-driven mode (``soil.irri = 2``) can build up a surplus; automatic</span>
     <span class="c1"># irrigation is capped at 10 mm by construction and externally supplied</span>
     <span class="c1"># irrigation bypasses the limit entirely.</span>
@@ -3997,7 +4025,7 @@ other field.</p>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
         <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
         <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
@@ -4010,8 +4038,8 @@ other field.</p>
         <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ModelState"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Construct a zeroed initial state for a batch.</span>
 
 <span class="sd">        All biomass, per-organ nutrient, cumulative-accumulator, and</span>
 <span class="sd">        thermal-time fields are initialised to zero. The remaining</span>
@@ -4044,7 +4072,7 @@ other field.</p>
 <span class="sd">            cumulative pools at zero and the specified initial values</span>
 <span class="sd">            for ``dvs``, ``rootd``, the two soil-water stores, the</span>
 <span class="sd">            counters ``dslr``/``dsos``, and the soil mineral pools.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
         <span class="c1"># Broadcast each initial value (scalar or ``[B]`` tensor) to a</span>
         <span class="c1"># contiguous ``[batch_size]`` state field. ``broadcast_to`` accepts</span>
@@ -4117,8 +4145,8 @@ other field.</p>
             <span class="n">dirro</span><span class="o">=</span><span class="n">zeros</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
         <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ModelState"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            **updates: Field name / tensor pairs to override. Fields not</span>
@@ -4126,16 +4154,16 @@ other field.</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A new `ModelState` instance with the updates applied.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
+<span class="w">        </span><span class="sd">"""Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A ``[B, C]`` tensor where ``C`` is the number of tensor fields,</span>
 <span class="sd">            laid out in field-definition order.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -4145,7 +4173,7 @@ other field.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">field_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of all tensor fields on this `ModelState`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Names of all tensor fields on this `ModelState`."""</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">f</span><span class="o">.</span><span class="n">name</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -4258,7 +4286,7 @@ other field.</p>
 
 
 <h3 id="torchcrop.states.model_state.ModelState.initial" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wa_lower_i</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">initial</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">,</span> <span class="n">dvsi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">wai</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">rootdi</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">wa_lower_i</span><span class="o">=</span><span class="mf">400.0</span><span class="p">,</span> <span class="n">dslri</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">dsosi</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kmini</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">nminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">kminti</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span></code>
 
   <span class="doc doc-properties">
       <small class="doc doc-property doc-property-classmethod"><code>classmethod</code></small>
@@ -4385,7 +4413,7 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
     <span class="n">dvsi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">wai</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
     <span class="n">rootdi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.10</span><span class="p">,</span>
@@ -4398,8 +4426,8 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
     <span class="n">nminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">pminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">kminti</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a zeroed initial state for a batch.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ModelState"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Construct a zeroed initial state for a batch.</span>
 
 <span class="sd">    All biomass, per-organ nutrient, cumulative-accumulator, and</span>
 <span class="sd">    thermal-time fields are initialised to zero. The remaining</span>
@@ -4432,7 +4460,7 @@ counters <code>dslr</code>/<code>dsos</code>, and the soil mineral pools.</p></t
 <span class="sd">        cumulative pools at zero and the specified initial values</span>
 <span class="sd">        for ``dvs``, ``rootd``, the two soil-water stores, the</span>
 <span class="sd">        counters ``dslr``/``dsos``, and the soil mineral pools.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="c1"># Broadcast each initial value (scalar or ``[B]`` tensor) to a</span>
     <span class="c1"># contiguous ``[batch_size]`` state field. ``broadcast_to`` accepts</span>
@@ -4563,8 +4591,8 @@ passed are copied through unchanged.</p></td>
 </table>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ModelState&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `ModelState` with selected fields replaced.</span>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"ModelState"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Return a new `ModelState` with selected fields replaced.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        **updates: Field name / tensor pairs to override. Fields not</span>
@@ -4572,7 +4600,7 @@ passed are copied through unchanged.</p></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new `ModelState` instance with the updates applied.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">updates</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -4615,12 +4643,12 @@ laid out in field-definition order.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/states/model_state.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
+<span class="w">    </span><span class="sd">"""Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A ``[B, C]`` tensor where ``C`` is the number of tensor fields,</span>
 <span class="sd">        laid out in field-definition order.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tensors</span> <span class="o">=</span> <span class="p">[</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>

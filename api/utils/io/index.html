@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2814,7 +2842,7 @@ CSV, in the order used by
     <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WeatherDriver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load a single-site daily weather CSV.</span>
+<span class="w">    </span><span class="sd">"""Load a single-site daily weather CSV.</span>
 
 <span class="sd">    The CSV must contain the columns listed in</span>
 <span class="sd">    `WEATHER_CHANNELS` (lowercase) or an</span>
@@ -2836,19 +2864,19 @@ CSV, in the order used by
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``columns`` has a different length than</span>
 <span class="sd">            `WEATHER_CHANNELS`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="n">WEATHER_CHANNELS</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">WEATHER_CHANNELS</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">WEATHER_CHANNELS</span><span class="p">)</span><span class="si">}</span><span class="s2"> columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">WEATHER_CHANNELS</span><span class="p">)</span><span class="si">}</span><span class="s2"> columns, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 
     <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">()</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
-        <span class="n">header</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">header</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">]</span>
-    <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">","</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># [1, T, C]</span>
@@ -2866,7 +2894,7 @@ CSV, in the order used by
 
 
 <h2 id="torchcrop.utils.io.make_constant_weather" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">make_constant_weather</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_days</span><span class="p">,</span> <span class="n">davtmp</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">irrad</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">rain</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">vp</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">wind</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">make_constant_weather</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">n_days</span><span class="p">,</span> <span class="n">davtmp</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">tmin</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">tmax</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">irrad</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">rain</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">vp</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">wind</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">start_doy</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.utils.io.make_constant_weather" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -2995,9 +3023,9 @@ increments by 1 and wraps modulo 365.</p></td>
     <span class="n">wind</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
     <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WeatherDriver</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a synthetic constant-weather driver for quick tests and demos.</span>
+<span class="w">    </span><span class="sd">"""Build a synthetic constant-weather driver for quick tests and demos.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: Number of batch elements ``B`` in the output driver.</span>
@@ -3021,18 +3049,18 @@ increments by 1 and wraps modulo 365.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        `WeatherDriver` of shape</span>
 <span class="sd">        ``[B, T, C]`` with identical rows for every batch element.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">start_doy</span><span class="p">)</span>
     <span class="n">doy</span> <span class="o">=</span> <span class="p">((</span><span class="n">doy</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">365</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">channels</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;doy&quot;</span><span class="p">:</span> <span class="n">doy</span><span class="p">,</span>
-        <span class="s2">&quot;davtmp&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;tmin&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;tmax&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;irrad&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">irrad</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;rain&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">rain</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;vp&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">vp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
-        <span class="s2">&quot;wind&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">wind</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"doy"</span><span class="p">:</span> <span class="n">doy</span><span class="p">,</span>
+        <span class="s2">"davtmp"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"tmin"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">tmin</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"tmax"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">tmax</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"irrad"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">irrad</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"rain"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">rain</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"vp"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">vp</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+        <span class="s2">"wind"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">n_days</span><span class="p">,),</span> <span class="n">wind</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
     <span class="p">}</span>
     <span class="n">stacked</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">channels</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">WEATHER_CHANNELS</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">stacked</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>

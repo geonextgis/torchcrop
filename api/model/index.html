@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2944,7 +2972,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Lintul5Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Differentiable reimplementation of the Lintul5 crop growth model.</span>
+<span class="w">    </span><span class="sd">"""Differentiable reimplementation of the Lintul5 crop growth model.</span>
 
 <span class="sd">    The model assembles all biophysical process modules (phenology,</span>
 <span class="sd">    photosynthesis, partitioning, water and nutrient balances, etc.)</span>
@@ -2974,7 +3002,7 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">            ``None`` (the default) disables all corrections. See</span>
 <span class="sd">            `torchcrop.nn.hybrid.default_slots` for the recommended</span>
 <span class="sd">            catalogue and guidance on which slots to enable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1">#: Discrete/categorical parameter fields, keyed by container name.</span>
     <span class="c1">#: These select behaviour through hard thresholds or int casts, so they</span>
@@ -2990,9 +3018,9 @@ catalogue and guidance on which slots to enable.</p></td>
     <span class="c1">#:</span>
     <span class="c1">#: `learnable_parameter_groups` excludes them and warns the user.</span>
     <span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;idsl&quot;</span><span class="p">,</span> <span class="s2">&quot;iopt&quot;</span><span class="p">,</span> <span class="s2">&quot;iairdu&quot;</span><span class="p">}),</span>
-        <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;irri&quot;</span><span class="p">}),</span>
-        <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">&quot;plant_at_sowing&quot;</span><span class="p">,</span> <span class="s2">&quot;idpl&quot;</span><span class="p">,</span> <span class="s2">&quot;idem&quot;</span><span class="p">}),</span>
+        <span class="s2">"crop"</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"idsl"</span><span class="p">,</span> <span class="s2">"iopt"</span><span class="p">,</span> <span class="s2">"iairdu"</span><span class="p">}),</span>
+        <span class="s2">"soil"</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"irri"</span><span class="p">}),</span>
+        <span class="s2">"site"</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"plant_at_sowing"</span><span class="p">,</span> <span class="s2">"idpl"</span><span class="p">,</span> <span class="s2">"idem"</span><span class="p">}),</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -3051,14 +3079,14 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a sowing-day initial state for a batch.</span>
+<span class="w">        </span><span class="sd">"""Build a sowing-day initial state for a batch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_size: Number of parallel simulation instances ``B``.</span>
 <span class="sd">            dtype: Tensor dtype for all state fields.</span>
-<span class="sd">            device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
+<span class="sd">            device: Torch device (e.g. ``"cpu"``, ``"cuda"``).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A fresh `ModelState` representing a bare-soil, pre-emergence</span>
@@ -3077,7 +3105,7 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">            accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
 <span class="sd">            analogues) also start at zero and grow as senescence</span>
 <span class="sd">            proceeds.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Read each initial-condition parameter as a detached tensor, keeping</span>
         <span class="c1"># its shape (``[]`` shared or ``[B]`` per element). The arithmetic</span>
         <span class="c1"># below is element-wise, so batch-varying soil/crop parameters flow</span>
@@ -3146,7 +3174,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
+<span class="w">        </span><span class="sd">"""Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            weather: A `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
@@ -3159,13 +3187,13 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">                ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">                bypasses the SIMPLACE-parity setup in `initialize`.</span>
 <span class="sd">            irrigation: Optional daily irrigation ``[B, T]`` [mm d⁻¹],</span>
-<span class="sd">                aligned with the weather days. Day ``t``&#39;s value overrides</span>
+<span class="sd">                aligned with the weather days. Day ``t``'s value overrides</span>
 <span class="sd">                the ``soil_params.irri`` mode in the water balance; it may</span>
 <span class="sd">                be a fixed plan or an `nn.Parameter` optimised through the</span>
 <span class="sd">                simulation. ``None`` (the default) leaves the internal IRRI</span>
 <span class="sd">                logic (modes 0/1/2) in control.</span>
 <span class="sd">            fertilizer: Optional daily fertiliser ``[B, T, 3]``</span>
-<span class="sd">                [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``&#39;s</span>
+<span class="sd">                [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``'s</span>
 <span class="sd">                slice overrides the ``ferntab``/``ferptab``/``ferktab``</span>
 <span class="sd">                applications in the soil mineral balance; scale factors</span>
 <span class="sd">                ``scale_factor_fer*`` and recovery fractions</span>
@@ -3181,13 +3209,13 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">        Notes:</span>
 <span class="sd">            * ``HeatStressOnGrain`` is fed ``dvs[:, 1:]`` — the</span>
 <span class="sd">              *post-integration* DVS for each weather day — mirroring</span>
-<span class="sd">              SIMPLACE&#39;s component order (Phenology runs before HSG</span>
+<span class="sd">              SIMPLACE's component order (Phenology runs before HSG</span>
 <span class="sd">              within a day).</span>
 <span class="sd">            * ``adjusted_yield`` is gated by a ``period_ended`` mask</span>
 <span class="sd">              that fires only once ``max(DVS) &gt; grain_heat_end_devstage``,</span>
 <span class="sd">              so a truncated run that never exits the anthesis window</span>
 <span class="sd">              returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Validate discrete config (irrigation / phenology / run modes,</span>
         <span class="c1"># start-mode flag) once per run, before entering the per-day loop</span>
         <span class="c1"># — keeps the hot path free of CPU-syncing value checks.</span>
@@ -3202,8 +3230,8 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;irrigation must have shape [B, T] = &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="s2">"irrigation must have shape [B, T] = "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
@@ -3212,8 +3240,8 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="s2">&quot;fertilizer must have shape [B, T, 3] = &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="s2">"fertilizer must have shape [B, T, 3] = "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
             <span class="n">fertilizer</span> <span class="o">=</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
@@ -3253,8 +3281,8 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
         <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
         <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
-            <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
-            <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
+            <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">"tmin"</span><span class="p">),</span>
+            <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">"tmax"</span><span class="p">),</span>
             <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
             <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
@@ -3268,8 +3296,8 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span>
             <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">,</span>
             <span class="n">biomass</span><span class="o">=</span><span class="n">biomass</span><span class="p">,</span>
-            <span class="n">heat_stress_factor</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">],</span>
-            <span class="n">adjusted_yield</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">],</span>
+            <span class="n">heat_stress_factor</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">"heat_stress_factor"</span><span class="p">],</span>
+            <span class="n">adjusted_yield</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">"adjusted_yield"</span><span class="p">],</span>
         <span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -3284,7 +3312,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
+<span class="w">        </span><span class="sd">"""Compute the daily rate vector for a single day (low-level API).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`.</span>
@@ -3303,12 +3331,12 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">                leaves the internal table-driven application in control.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
+<span class="sd">            Dict of rate tensors keyed by ``"&lt;field&gt;_rate"`` plus a</span>
 <span class="sd">            handful of scalar diagnostics (``tranrf``, ``nstress``,</span>
 <span class="sd">            ``gtotal``). The companion `DiagnosticState` is discarded</span>
 <span class="sd">            here; use the high-level `forward` to access the full</span>
 <span class="sd">            diagnostic trajectory.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
@@ -3327,7 +3355,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
         <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
+<span class="w">        </span><span class="sd">"""Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`.</span>
@@ -3336,7 +3364,7 @@ catalogue and guidance on which slots to enable.</p></td>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A new `ModelState` advanced by one Euler step.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -3354,14 +3382,14 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">DiagnosticState</span><span class="p">]:</span>
-        <span class="c1"># Unpack the day&#39;s weather forcing.</span>
-        <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;davtmp&quot;</span><span class="p">]</span>
-        <span class="n">tmin</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmin&quot;</span><span class="p">]</span>
-        <span class="n">tmax</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;tmax&quot;</span><span class="p">]</span>
-        <span class="n">dtr</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;irrad&quot;</span><span class="p">]</span>
-        <span class="n">rain</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;rain&quot;</span><span class="p">]</span>
-        <span class="n">vap</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;vp&quot;</span><span class="p">]</span>  <span class="c1"># [kPa] from weather</span>
-        <span class="n">wind</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">&quot;wind&quot;</span><span class="p">]</span>
+        <span class="c1"># Unpack the day's weather forcing.</span>
+        <span class="n">davtmp</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"davtmp"</span><span class="p">]</span>
+        <span class="n">tmin</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"tmin"</span><span class="p">]</span>
+        <span class="n">tmax</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"tmax"</span><span class="p">]</span>
+        <span class="n">dtr</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"irrad"</span><span class="p">]</span>
+        <span class="n">rain</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"rain"</span><span class="p">]</span>
+        <span class="n">vap</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"vp"</span><span class="p">]</span>  <span class="c1"># [kPa] from weather</span>
+        <span class="n">wind</span> <span class="o">=</span> <span class="n">weather_day</span><span class="p">[</span><span class="s2">"wind"</span><span class="p">]</span>
 
         <span class="c1"># 1. Astro — solar declination, daylength</span>
         <span class="n">lat_b</span> <span class="o">=</span> <span class="p">(</span>
@@ -3370,21 +3398,21 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="k">else</span> <span class="n">site_params</span><span class="o">.</span><span class="n">latitude</span>
         <span class="p">)</span>
         <span class="n">astro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">astro</span><span class="p">(</span><span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span> <span class="n">latitude</span><span class="o">=</span><span class="n">lat_b</span><span class="p">)</span>
-        <span class="n">dayl</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;daylength&quot;</span><span class="p">]</span>
-        <span class="n">sinld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;sinld&quot;</span><span class="p">]</span>
-        <span class="n">cosld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;cosld&quot;</span><span class="p">]</span>
-        <span class="n">ddlp</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">&quot;ddlp&quot;</span><span class="p">]</span>
+        <span class="n">dayl</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">"daylength"</span><span class="p">]</span>
+        <span class="n">sinld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">"sinld"</span><span class="p">]</span>
+        <span class="n">cosld</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">"cosld"</span><span class="p">]</span>
+        <span class="n">ddlp</span> <span class="o">=</span> <span class="n">astro</span><span class="p">[</span><span class="s2">"ddlp"</span><span class="p">]</span>
 
         <span class="c1"># Per-day feature dict for optional neural residual corrections.</span>
         <span class="c1"># Populated progressively as quantities become available and consumed</span>
         <span class="c1"># by ``self.hybrid.correct`` at each slot site (a no-op when the</span>
         <span class="c1"># corresponding slot is not configured).</span>
         <span class="n">feats</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;lai&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span>
-            <span class="s2">&quot;dvs&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
-            <span class="s2">&quot;rootd&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span>
-            <span class="s2">&quot;davtmp&quot;</span><span class="p">:</span> <span class="n">davtmp</span><span class="p">,</span>
-            <span class="s2">&quot;ddlp&quot;</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
+            <span class="s2">"lai"</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span><span class="p">,</span>
+            <span class="s2">"dvs"</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span>
+            <span class="s2">"rootd"</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">,</span>
+            <span class="s2">"davtmp"</span><span class="p">:</span> <span class="n">davtmp</span><span class="p">,</span>
+            <span class="s2">"ddlp"</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="c1"># 2. Irradiation — daily total irradiation and PAR interception</span>
@@ -3397,9 +3425,9 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">dtr</span><span class="o">=</span><span class="n">dtr</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">avrad</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;avrad&quot;</span><span class="p">]</span>
-        <span class="n">atmtr</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;atmtr&quot;</span><span class="p">]</span>
-        <span class="n">frac_int</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;frac_intercepted&quot;</span><span class="p">]</span>
+        <span class="n">avrad</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">"avrad"</span><span class="p">]</span>
+        <span class="n">atmtr</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">"atmtr"</span><span class="p">]</span>
+        <span class="n">frac_int</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">"frac_intercepted"</span><span class="p">]</span>
 
         <span class="c1"># Light interception is physiologically active only once the crop has emerged.</span>
         <span class="n">emerged_gate</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">frac_int</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -3429,13 +3457,13 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1">#     CO₂ propagates into the water-stress factor ``TRANRF``.</span>
         <span class="c1">#     This is distinct from the CO₂ correction already applied</span>
         <span class="c1">#     to reference ET.</span>
-        <span class="n">co2_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_transpiration</span><span class="p">(</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">],</span> <span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
-        <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;ptran&quot;</span><span class="p">]</span>
-        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">&quot;co2_factor&quot;</span><span class="p">]</span>
+        <span class="n">co2_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">co2_transpiration</span><span class="p">(</span><span class="n">et</span><span class="p">[</span><span class="s2">"ptran"</span><span class="p">],</span> <span class="n">site_params</span><span class="o">.</span><span class="n">co2</span><span class="p">)</span>
+        <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">"ptran"</span><span class="p">]</span>
+        <span class="n">co2_factor</span> <span class="o">=</span> <span class="n">co2_trans</span><span class="p">[</span><span class="s2">"co2_factor"</span><span class="p">]</span>
 
         <span class="c1"># 3c. Pre-development transpiration gate. SIMPLACE holds PT at its</span>
         <span class="c1">#     ~1e-4 floor until development starts (DevStage &gt; 0), so the</span>
-        <span class="c1">#     canopy doesn&#39;t transpire on the emergence day (the only day with</span>
+        <span class="c1">#     canopy doesn't transpire on the emergence day (the only day with</span>
         <span class="c1">#     lai &gt; 0 and dvs == 0).</span>
         <span class="n">developing</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
         <span class="n">ptran_eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
@@ -3447,7 +3475,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1">#    ``max(state.sown, ...)`` makes it robust to day-of-year</span>
         <span class="c1">#    wraparound across a calendar-year boundary (autumn-sown winter</span>
         <span class="c1">#    wheat). With the default ``idpl = 0`` the gate is 1 every day,</span>
-        <span class="c1">#    reproducing the legacy &quot;sown at t=0&quot; behaviour. ``idpl`` is a</span>
+        <span class="c1">#    reproducing the legacy "sown at t=0" behaviour. ``idpl`` is a</span>
         <span class="c1">#    discrete switch, so the hard comparison adds no gradient path.</span>
         <span class="n">idpl</span> <span class="o">=</span> <span class="n">site_params</span><span class="o">.</span><span class="n">idpl</span>
         <span class="n">idpl_b</span> <span class="o">=</span> <span class="n">idpl</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">doy</span><span class="p">)</span> <span class="k">if</span> <span class="n">idpl</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">idpl</span>
@@ -3464,17 +3492,17 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">soil_params</span><span class="o">.</span><span class="n">rdmso</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
             <span class="n">crop_params</span><span class="o">.</span><span class="n">rdmcr</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">rootd</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="c1"># Emergence mask (TSUM-based), shared by the water balance&#39;s</span>
+        <span class="c1"># Emergence mask (TSUM-based), shared by the water balance's</span>
         <span class="c1"># root-front advance and by root/nutrient dynamics below.</span>
         <span class="n">emerg</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tsump</span> <span class="o">&gt;=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">tsumem</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">davtmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="n">water</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">water_balance</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
-            <span class="n">pevap</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;pevap&quot;</span><span class="p">],</span>
+            <span class="n">pevap</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">"pevap"</span><span class="p">],</span>
             <span class="n">ptran</span><span class="o">=</span><span class="n">ptran_eff</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
             <span class="n">rdm</span><span class="o">=</span><span class="n">rdm</span><span class="p">,</span>
-            <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">&quot;etc&quot;</span><span class="p">],</span>
+            <span class="n">etc</span><span class="o">=</span><span class="n">et</span><span class="p">[</span><span class="s2">"etc"</span><span class="p">],</span>
             <span class="n">rri</span><span class="o">=</span><span class="n">crop_params</span><span class="o">.</span><span class="n">rri</span><span class="p">,</span>
             <span class="n">rr_lag</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
             <span class="n">emerg</span><span class="o">=</span><span class="n">emerg</span><span class="p">,</span>
@@ -3489,9 +3517,9 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># corrected value propagates through every downstream consumer</span>
         <span class="c1"># (nutrient demand, photosynthesis stress, partitioning, leaf/root).</span>
         <span class="c1"># The ``unit_interval`` projection keeps ``tranrf`` within ``(0, 1)``.</span>
-        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">]</span>
-        <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;water.tranrf&quot;</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
-        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;tranrf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">"smact"</span><span class="p">]</span> <span class="o">=</span> <span class="n">water</span><span class="p">[</span><span class="s2">"smact"</span><span class="p">]</span>
+        <span class="n">tranrf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"water.tranrf"</span><span class="p">,</span> <span class="n">water</span><span class="p">[</span><span class="s2">"tranrf"</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">"tranrf"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tranrf</span>
 
         <span class="c1"># 5. Phenology. Reads only ``state.dvs``, ``state.tsump``,</span>
         <span class="c1">#    ``davtmp`` and ``ddlp``, so its position in the sequence</span>
@@ -3500,15 +3528,15 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">pheno</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phenology</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">davtmp</span><span class="p">,</span> <span class="n">ddlp</span><span class="p">,</span> <span class="n">crop_params</span><span class="p">,</span> <span class="n">sown</span><span class="o">=</span><span class="n">sown</span><span class="p">)</span>
 
         <span class="c1"># 6. Nutrient demand — independent of partitioning; drives the</span>
-        <span class="c1">#    day&#39;s uptake, translocation and per-organ NPK rates, and</span>
-        <span class="c1">#    measures the NPK stress index carried into *tomorrow&#39;s*</span>
+        <span class="c1">#    day's uptake, translocation and per-organ NPK rates, and</span>
+        <span class="c1">#    measures the NPK stress index carried into *tomorrow's*</span>
         <span class="c1">#    growth (see the lag note below).</span>
         <span class="c1">#    ``PARINT`` is converted from J m⁻² d⁻¹ to MJ PAR m⁻² d⁻¹</span>
         <span class="c1">#    here because the growth formula expects MJ. The same EMERG</span>
         <span class="c1">#    gate applied to ``frac_int`` above is applied so a dormant</span>
         <span class="c1">#    (pre-emergence) seedling intercepts no PAR and hence does</span>
         <span class="c1">#    not grow.</span>
-        <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">emerged_gate</span>
+        <span class="n">parint_mj</span> <span class="o">=</span> <span class="n">irrad_out</span><span class="p">[</span><span class="s2">"parint"</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="n">emerged_gate</span>
         <span class="n">nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutrient_demand</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
@@ -3517,31 +3545,31 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="p">)</span>
         <span class="c1"># Carbon and nutrient acquisition are coupled sequentially, not</span>
         <span class="c1"># simultaneously. The nutrition indices measure how far the standing</span>
-        <span class="c1"># canopy&#39;s N/P/K concentration has fallen below the optimum, so they</span>
+        <span class="c1"># canopy's N/P/K concentration has fallen below the optimum, so they</span>
         <span class="c1"># can only be evaluated once the canopy for the day exists. Growth,</span>
         <span class="c1"># however, must be computed *before* that canopy is known. The model</span>
-        <span class="c1"># therefore drives the day&#39;s carbon side with the indices measured at</span>
+        <span class="c1"># therefore drives the day's carbon side with the indices measured at</span>
         <span class="c1"># the close of the previous day (``state.npki_prev`` /</span>
         <span class="c1"># ``state.nni_prev``) and uses the freshly computed ``nut[...]``</span>
         <span class="c1"># values only for the nutrient and soil bookkeeping, which legitimately</span>
         <span class="c1"># sees the same-day state. The same one-step convention</span>
         <span class="c1"># applies to the root front (``state.rr_prev``).</span>
-        <span class="n">nstress_now</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span>
+        <span class="n">nstress_now</span> <span class="o">=</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"nstress"</span><span class="p">]</span>
         <span class="n">nstress</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span>
         <span class="n">nni_lag</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span>
-        <span class="n">feats</span><span class="p">[</span><span class="s2">&quot;nstress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nstress</span>
+        <span class="n">feats</span><span class="p">[</span><span class="s2">"nstress"</span><span class="p">]</span> <span class="o">=</span> <span class="n">nstress</span>
 
         <span class="c1"># 7. Soil mineral-pool balance. Runs after NutrientDemand</span>
-        <span class="c1">#    because it consumes the day&#39;s NUPTR/PUPTR/KUPTR (which</span>
+        <span class="c1">#    because it consumes the day's NUPTR/PUPTR/KUPTR (which</span>
         <span class="c1">#    deplete NMINT/PMINT/KMINT) and reuses the same</span>
         <span class="c1">#    NLIMIT/EMERG gates that drive uptake.</span>
         <span class="n">soil_nut</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_nutrients</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
-            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
-            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
-            <span class="n">nlimit</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nlimit&quot;</span><span class="p">],</span>
-            <span class="n">emerg</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;emerg&quot;</span><span class="p">],</span>
+            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"nuptr"</span><span class="p">],</span>
+            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"puptr"</span><span class="p">],</span>
+            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"kuptr"</span><span class="p">],</span>
+            <span class="n">nlimit</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"nlimit"</span><span class="p">],</span>
+            <span class="n">emerg</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"emerg"</span><span class="p">],</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">crop_params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
             <span class="n">soil_params</span><span class="o">=</span><span class="n">soil_params</span><span class="p">,</span>
@@ -3554,7 +3582,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># SIMPLACE ``GROWTH`` law of the minimum, where the more</span>
         <span class="c1"># limiting of water (``TRANRF``) and nutrient (``NPKREF``)</span>
         <span class="c1"># stress governs growth. ``NPKREF`` is the RUE reduction factor</span>
-        <span class="c1"># derived from the NPK index ``nstress`` (= the previous day&#39;s</span>
+        <span class="c1"># derived from the NPK index ``nstress`` (= the previous day's</span>
         <span class="c1"># ``NPKI``) via the ``NLUE`` coefficient:</span>
         <span class="c1">#</span>
         <span class="c1">#     NPKREF = clip(1 − NLUE · (1.0001 − NPKI)², 0, 1)</span>
@@ -3575,13 +3603,13 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">combined_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stress</span><span class="p">(</span><span class="n">tranrf</span><span class="p">,</span> <span class="n">npkref</span><span class="p">)</span>
-        <span class="n">gtotal</span> <span class="o">=</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">parint_mj</span> <span class="o">*</span> <span class="n">combined_stress</span>
+        <span class="n">gtotal</span> <span class="o">=</span> <span class="n">photo</span><span class="p">[</span><span class="s2">"rue"</span><span class="p">]</span> <span class="o">*</span> <span class="n">photo</span><span class="p">[</span><span class="s2">"rtmco"</span><span class="p">]</span> <span class="o">*</span> <span class="n">parint_mj</span> <span class="o">*</span> <span class="n">combined_stress</span>
 
         <span class="c1"># Optional neural residual correction on ``gtotal`` — the highest-</span>
         <span class="c1"># leverage hybridisation point, where all carbon enters the plant.</span>
         <span class="c1"># The ``rate_factor`` projection is multiplicative (``base · exp(δ)``),</span>
         <span class="c1"># so the corrected value stays non-negative without a hard clamp.</span>
-        <span class="n">gtotal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;photosynthesis.gtotal&quot;</span><span class="p">,</span> <span class="n">gtotal</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
+        <span class="n">gtotal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"photosynthesis.gtotal"</span><span class="p">,</span> <span class="n">gtotal</span><span class="p">,</span> <span class="n">feats</span><span class="p">)</span>
 
         <span class="c1"># 9. Partitioning. Water and N stress are fed into ``SUBPAR``;</span>
         <span class="c1">#    SIMPLACE passes the nitrogen-only index ``NNI``.</span>
@@ -3598,14 +3626,14 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># and the root/shoot fraction stays in ``(0, 1)``; organ growth is</span>
         <span class="c1"># then recomputed from the corrected fractions so carbon is conserved</span>
         <span class="c1"># (``g_lv + g_st + g_so == gtotal · (1 − fr)``).</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;partitioning.fr&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span>
-            <span class="s2">&quot;partitioning.aboveground&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">"partitioning.fr"</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span>
+            <span class="s2">"partitioning.aboveground"</span>
         <span class="p">):</span>
-            <span class="n">fr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;partitioning.fr&quot;</span><span class="p">,</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fr&quot;</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
-            <span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span> <span class="o">=</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fl&quot;</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">&quot;fo&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">&quot;partitioning.aboveground&quot;</span><span class="p">):</span>
+            <span class="n">fr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"partitioning.fr"</span><span class="p">,</span> <span class="n">part</span><span class="p">[</span><span class="s2">"fr"</span><span class="p">],</span> <span class="n">feats</span><span class="p">)</span>
+            <span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span> <span class="o">=</span> <span class="n">part</span><span class="p">[</span><span class="s2">"fl"</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">"fs"</span><span class="p">],</span> <span class="n">part</span><span class="p">[</span><span class="s2">"fo"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">enabled</span><span class="p">(</span><span class="s2">"partitioning.aboveground"</span><span class="p">):</span>
                 <span class="n">fvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
-                    <span class="s2">&quot;partitioning.aboveground&quot;</span><span class="p">,</span>
+                    <span class="s2">"partitioning.aboveground"</span><span class="p">,</span>
                     <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">fl</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">fo</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
                     <span class="n">feats</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -3613,14 +3641,14 @@ catalogue and guidance on which slots to enable.</p></td>
             <span class="n">agrt</span> <span class="o">=</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fr</span><span class="p">)</span>
             <span class="n">part</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="o">**</span><span class="n">part</span><span class="p">,</span>
-                <span class="s2">&quot;fr&quot;</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
-                <span class="s2">&quot;fl&quot;</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
-                <span class="s2">&quot;fs&quot;</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
-                <span class="s2">&quot;fo&quot;</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
-                <span class="s2">&quot;g_root&quot;</span><span class="p">:</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="n">fr</span><span class="p">,</span>
-                <span class="s2">&quot;g_lv&quot;</span><span class="p">:</span> <span class="n">fl</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
-                <span class="s2">&quot;g_st&quot;</span><span class="p">:</span> <span class="n">fs</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
-                <span class="s2">&quot;g_so&quot;</span><span class="p">:</span> <span class="n">fo</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+                <span class="s2">"fr"</span><span class="p">:</span> <span class="n">fr</span><span class="p">,</span>
+                <span class="s2">"fl"</span><span class="p">:</span> <span class="n">fl</span><span class="p">,</span>
+                <span class="s2">"fs"</span><span class="p">:</span> <span class="n">fs</span><span class="p">,</span>
+                <span class="s2">"fo"</span><span class="p">:</span> <span class="n">fo</span><span class="p">,</span>
+                <span class="s2">"g_root"</span><span class="p">:</span> <span class="n">gtotal</span> <span class="o">*</span> <span class="n">fr</span><span class="p">,</span>
+                <span class="s2">"g_lv"</span><span class="p">:</span> <span class="n">fl</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+                <span class="s2">"g_st"</span><span class="p">:</span> <span class="n">fs</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
+                <span class="s2">"g_so"</span><span class="p">:</span> <span class="n">fo</span> <span class="o">*</span> <span class="n">agrt</span><span class="p">,</span>
             <span class="p">}</span>
 
         <span class="c1"># 10. Leaf dynamics with heat-stress acceleration of senescence.</span>
@@ -3631,7 +3659,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">leaf_heat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaf_heat_stress</span><span class="p">(</span><span class="n">tmax</span><span class="o">=</span><span class="n">tmax</span><span class="p">,</span> <span class="n">dvs</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">dvs</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">)</span>
         <span class="n">leaf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leaf_dynamics</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">g_lv</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_lv&quot;</span><span class="p">],</span>
+            <span class="n">g_lv</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"g_lv"</span><span class="p">],</span>
             <span class="n">davtmp</span><span class="o">=</span><span class="n">davtmp</span><span class="p">,</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">nstress</span><span class="o">=</span><span class="n">nstress</span><span class="p">,</span>
@@ -3644,7 +3672,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># 11. Root dynamics</span>
         <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_dynamics</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">g_root</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_root&quot;</span><span class="p">],</span>
+            <span class="n">g_root</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"g_root"</span><span class="p">],</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
@@ -3652,7 +3680,7 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># 12. Stem dynamics</span>
         <span class="n">stem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stem_dynamics</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
-            <span class="n">g_st</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_st&quot;</span><span class="p">],</span>
+            <span class="n">g_st</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"g_st"</span><span class="p">],</span>
             <span class="n">params</span><span class="o">=</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -3671,9 +3699,9 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># ``nlossl``/``nlossr``/``nlosss`` (and P, K) accumulators so</span>
         <span class="c1"># that the SIMPLACE balance ``NUPTT + NFIXTT + initial =</span>
         <span class="c1"># ANLV+... + NLOSSL+...`` holds.</span>
-        <span class="n">dlv</span> <span class="o">=</span> <span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]</span>
-        <span class="n">drst</span> <span class="o">=</span> <span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wstd_rate&quot;</span><span class="p">]</span>
-        <span class="n">drrt</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]</span>
+        <span class="n">dlv</span> <span class="o">=</span> <span class="n">leaf</span><span class="p">[</span><span class="s2">"wlvd_rate"</span><span class="p">]</span>
+        <span class="n">drst</span> <span class="o">=</span> <span class="n">stem</span><span class="p">[</span><span class="s2">"wstd_rate"</span><span class="p">]</span>
+        <span class="n">drrt</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="s2">"wrtd_rate"</span><span class="p">]</span>
         <span class="n">rnldlv</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnflv</span> <span class="o">*</span> <span class="n">dlv</span>
         <span class="n">rnldst</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfst</span> <span class="o">*</span> <span class="n">drst</span>
         <span class="n">rnldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rnfrt</span> <span class="o">*</span> <span class="n">drrt</span>
@@ -3685,99 +3713,99 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">rkldrt</span> <span class="o">=</span> <span class="n">crop_params</span><span class="o">.</span><span class="n">rkfrt</span> <span class="o">*</span> <span class="n">drrt</span>
 
         <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;dvs_rate&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
-                <span class="s2">&quot;phenology.dvs_rate&quot;</span><span class="p">,</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dvs_rate&quot;</span><span class="p">],</span> <span class="n">feats</span>
+            <span class="s2">"dvs_rate"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span>
+                <span class="s2">"phenology.dvs_rate"</span><span class="p">,</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">"dvs_rate"</span><span class="p">],</span> <span class="n">feats</span>
             <span class="p">),</span>
-            <span class="s2">&quot;tsum_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsum_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;tsump_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;tsump_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;vern_rate&quot;</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vern_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;sown_rate&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
-            <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;wlvd_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wstd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">&quot;wstd_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">&quot;wrtd_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;wso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;g_so&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">"tsum_rate"</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">"tsum_rate"</span><span class="p">],</span>
+            <span class="s2">"tsump_rate"</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">"tsump_rate"</span><span class="p">],</span>
+            <span class="s2">"vern_rate"</span><span class="p">:</span> <span class="n">pheno</span><span class="p">[</span><span class="s2">"vern_rate"</span><span class="p">],</span>
+            <span class="s2">"sown_rate"</span><span class="p">:</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span>
+            <span class="s2">"wlv_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">"wlv_rate"</span><span class="p">]),</span>
+            <span class="s2">"wlvd_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">"wlvd_rate"</span><span class="p">]),</span>
+            <span class="s2">"wst_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">"wst_rate"</span><span class="p">]),</span>
+            <span class="s2">"wstd_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">stem</span><span class="p">[</span><span class="s2">"wstd_rate"</span><span class="p">]),</span>
+            <span class="s2">"wrt_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">"wrt_rate"</span><span class="p">]),</span>
+            <span class="s2">"wrtd_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">"wrtd_rate"</span><span class="p">]),</span>
+            <span class="s2">"wso_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="s2">"g_so"</span><span class="p">]),</span>
+            <span class="s2">"lai_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">leaf</span><span class="p">[</span><span class="s2">"lai_rate"</span><span class="p">]),</span>
             <span class="c1"># Rooting depth integrates the *lagged* velocity ``rr_prev``,</span>
             <span class="c1"># the same one the WDR transfer uses, so the zone deepens in</span>
             <span class="c1"># lock-step with the subsoil water it captures.</span>
-            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
-            <span class="c1"># Latch the same-day velocity into ``rr_prev`` for the next day&#39;s</span>
+            <span class="s2">"rootd_rate"</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
+            <span class="c1"># Latch the same-day velocity into ``rr_prev`` for the next day's</span>
             <span class="c1"># water balance and rooting-depth growth (``rr_prev_{t+1} = rr_t``).</span>
-            <span class="s2">&quot;rr_prev_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rr&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
-            <span class="c1"># Latch today&#39;s nutrition indices so tomorrow&#39;s carbon side can</span>
+            <span class="s2">"rr_prev_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"rr"</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">rr_prev</span><span class="p">,</span>
+            <span class="c1"># Latch today's nutrition indices so tomorrow's carbon side can</span>
             <span class="c1"># read the canopy status measured at the close of today</span>
             <span class="c1"># (``npki_prev_{t+1} = npki_t``). Expressed as a rate so the</span>
             <span class="c1"># Euler update performs the assignment.</span>
-            <span class="s2">&quot;nni_prev_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span><span class="p">,</span>
-            <span class="s2">&quot;npki_prev_rate&quot;</span><span class="p">:</span> <span class="n">nstress_now</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span><span class="p">,</span>
-            <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dslr_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dsos_rate&quot;</span><span class="p">],</span>
-            <span class="c1"># Carry the part of today&#39;s scheduled irrigation that exceeded</span>
-            <span class="c1"># the delivery limit into tomorrow&#39;s application.</span>
-            <span class="s2">&quot;dirro_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;dirro_next&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dirro</span><span class="p">,</span>
-            <span class="s2">&quot;anlv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
-            <span class="s2">&quot;anst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
-            <span class="s2">&quot;anrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
-            <span class="s2">&quot;anso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aplv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldlv</span><span class="p">),</span>
-            <span class="s2">&quot;apst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldst</span><span class="p">),</span>
-            <span class="s2">&quot;aprt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldrt</span><span class="p">),</span>
-            <span class="s2">&quot;apso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_so_rate&quot;</span><span class="p">]),</span>
-            <span class="s2">&quot;aklv_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_lv_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldlv</span><span class="p">),</span>
-            <span class="s2">&quot;akst_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_st_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldst</span><span class="p">),</span>
-            <span class="s2">&quot;akrt_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_rt_rate&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldrt</span><span class="p">),</span>
-            <span class="s2">&quot;akso_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_so_rate&quot;</span><span class="p">]),</span>
+            <span class="s2">"nni_prev_rate"</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"nni"</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">nni_prev</span><span class="p">,</span>
+            <span class="s2">"npki_prev_rate"</span><span class="p">:</span> <span class="n">nstress_now</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">npki_prev</span><span class="p">,</span>
+            <span class="s2">"wa_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"wa_rate"</span><span class="p">],</span>
+            <span class="s2">"wa_lower_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"wa_lower_rate"</span><span class="p">],</span>
+            <span class="s2">"dslr_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"dslr_rate"</span><span class="p">],</span>
+            <span class="s2">"dsos_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"dsos_rate"</span><span class="p">],</span>
+            <span class="c1"># Carry the part of today's scheduled irrigation that exceeded</span>
+            <span class="c1"># the delivery limit into tomorrow's application.</span>
+            <span class="s2">"dirro_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"dirro_next"</span><span class="p">]</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">dirro</span><span class="p">,</span>
+            <span class="s2">"anlv_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"n_lv_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">"anst_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"n_st_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">"anrt_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"n_rt_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rnldrt</span><span class="p">),</span>
+            <span class="s2">"anso_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"n_so_rate"</span><span class="p">]),</span>
+            <span class="s2">"aplv_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"p_lv_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">"apst_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"p_st_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">"aprt_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"p_rt_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rpldrt</span><span class="p">),</span>
+            <span class="s2">"apso_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"p_so_rate"</span><span class="p">]),</span>
+            <span class="s2">"aklv_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"k_lv_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">"akst_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"k_st_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldst</span><span class="p">),</span>
+            <span class="s2">"akrt_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"k_rt_rate"</span><span class="p">]</span> <span class="o">-</span> <span class="n">rkldrt</span><span class="p">),</span>
+            <span class="s2">"akso_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">nut</span><span class="p">[</span><span class="s2">"k_so_rate"</span><span class="p">]),</span>
             <span class="c1"># Dead-tissue NPK accumulators (SIMPLACE NLOSSL/NLOSSR/NLOSSS</span>
             <span class="c1"># and P, K analogues). Gated by ``active`` so accumulation</span>
             <span class="c1"># stops after maturity, mirroring the per-organ death rates.</span>
-            <span class="s2">&quot;nlossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldlv</span><span class="p">),</span>
-            <span class="s2">&quot;nlossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldrt</span><span class="p">),</span>
-            <span class="s2">&quot;nlosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldst</span><span class="p">),</span>
-            <span class="s2">&quot;plossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldlv</span><span class="p">),</span>
-            <span class="s2">&quot;plossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldrt</span><span class="p">),</span>
-            <span class="s2">&quot;plosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldst</span><span class="p">),</span>
-            <span class="s2">&quot;klossl_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldlv</span><span class="p">),</span>
-            <span class="s2">&quot;klossr_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldrt</span><span class="p">),</span>
-            <span class="s2">&quot;klosss_rate&quot;</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldst</span><span class="p">),</span>
+            <span class="s2">"nlossl_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldlv</span><span class="p">),</span>
+            <span class="s2">"nlossr_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldrt</span><span class="p">),</span>
+            <span class="s2">"nlosss_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rnldst</span><span class="p">),</span>
+            <span class="s2">"plossl_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldlv</span><span class="p">),</span>
+            <span class="s2">"plossr_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldrt</span><span class="p">),</span>
+            <span class="s2">"plosss_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rpldst</span><span class="p">),</span>
+            <span class="s2">"klossl_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldlv</span><span class="p">),</span>
+            <span class="s2">"klossr_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldrt</span><span class="p">),</span>
+            <span class="s2">"klosss_rate"</span><span class="p">:</span> <span class="n">gate</span><span class="p">(</span><span class="n">rkldst</span><span class="p">),</span>
             <span class="c1"># Soil pool dynamics. Organic pools deplete (negative</span>
             <span class="c1"># rates); inorganic pools follow ``fertiliser +</span>
             <span class="c1"># mineralisation − uptake``. Mineralisation is already</span>
             <span class="c1"># gated internally by EMERG/NLIMIT, and the soil pools are</span>
             <span class="c1"># *not* multiplied by ``active`` so that mineralisation</span>
             <span class="c1"># and fertiliser additions continue after crop maturity.</span>
-            <span class="s2">&quot;nmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;nmin_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;pmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;pmin_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;kmin_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmin_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;nmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;nmint_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;pmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;pmint_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;kmint_rate&quot;</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">&quot;kmint_rate&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;tran_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;evap_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
+            <span class="s2">"nmin_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"nmin_rate"</span><span class="p">],</span>
+            <span class="s2">"pmin_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"pmin_rate"</span><span class="p">],</span>
+            <span class="s2">"kmin_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"kmin_rate"</span><span class="p">],</span>
+            <span class="s2">"nmint_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"nmint_rate"</span><span class="p">],</span>
+            <span class="s2">"pmint_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"pmint_rate"</span><span class="p">],</span>
+            <span class="s2">"kmint_rate"</span><span class="p">:</span> <span class="n">soil_nut</span><span class="p">[</span><span class="s2">"kmint_rate"</span><span class="p">],</span>
+            <span class="s2">"tran_cum_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"tran"</span><span class="p">],</span>
+            <span class="s2">"evap_cum_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"evap"</span><span class="p">],</span>
             <span class="c1"># Cumulative water, nutrient and growth accumulators are</span>
             <span class="c1"># integrated by the engine via the same ``_rate`` mechanism</span>
             <span class="c1"># as ``tran_cum`` / ``evap_cum``. With ``dt = 1`` day, the</span>
             <span class="c1"># daily flux is itself the increment.</span>
-            <span class="s2">&quot;rain_cum_rate&quot;</span><span class="p">:</span> <span class="n">rain</span><span class="p">,</span>
-            <span class="s2">&quot;irrig_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;rirr&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;runoff_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;runoff&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;drain_cum_rate&quot;</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">&quot;drain&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;nuptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;puptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;kuptr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;nfixtr_cum_rate&quot;</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nfixtr&quot;</span><span class="p">],</span>
+            <span class="s2">"rain_cum_rate"</span><span class="p">:</span> <span class="n">rain</span><span class="p">,</span>
+            <span class="s2">"irrig_cum_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"rirr"</span><span class="p">],</span>
+            <span class="s2">"runoff_cum_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"runoff"</span><span class="p">],</span>
+            <span class="s2">"drain_cum_rate"</span><span class="p">:</span> <span class="n">water</span><span class="p">[</span><span class="s2">"drain"</span><span class="p">],</span>
+            <span class="s2">"nuptr_cum_rate"</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"nuptr"</span><span class="p">],</span>
+            <span class="s2">"puptr_cum_rate"</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"puptr"</span><span class="p">],</span>
+            <span class="s2">"kuptr_cum_rate"</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"kuptr"</span><span class="p">],</span>
+            <span class="s2">"nfixtr_cum_rate"</span><span class="p">:</span> <span class="n">nut</span><span class="p">[</span><span class="s2">"nfixtr"</span><span class="p">],</span>
             <span class="c1"># PAR accumulated in MJ m⁻² (same conversion used in the</span>
             <span class="c1"># GTOTAL calculation above).</span>
-            <span class="s2">&quot;parint_cum_rate&quot;</span><span class="p">:</span> <span class="n">parint_mj</span><span class="p">,</span>
-            <span class="s2">&quot;gtotal_cum_rate&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
+            <span class="s2">"parint_cum_rate"</span><span class="p">:</span> <span class="n">parint_mj</span><span class="p">,</span>
+            <span class="s2">"gtotal_cum_rate"</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
             <span class="c1"># Scalar diagnostics — not integrated by the engine.</span>
-            <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-            <span class="s2">&quot;nstress&quot;</span><span class="p">:</span> <span class="n">nstress_now</span><span class="p">,</span>
-            <span class="s2">&quot;gtotal&quot;</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
+            <span class="s2">"tranrf"</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
+            <span class="s2">"nstress"</span><span class="p">:</span> <span class="n">nstress_now</span><span class="p">,</span>
+            <span class="s2">"gtotal"</span><span class="p">:</span> <span class="n">gtotal</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="c1"># ---- Sowing-day seed-reserve bootstrap.</span>
@@ -3827,20 +3855,20 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="c1"># other, for both the autumn-sown (``idpl &gt; start_doy``) and the</span>
         <span class="c1"># legacy always-sown (``idpl &lt;= start_doy``) configurations.</span>
         <span class="n">just_sown</span> <span class="o">=</span> <span class="p">(</span><span class="n">sown</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">sown</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wlvgi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;wso_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;lai_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anlv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anlvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">ansti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;anrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aplv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aplvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;apst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">apsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aprt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aprti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;aklv_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aklvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akst_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aksti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
-        <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">&quot;akrt_rate&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">akrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"wlv_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"wlv_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wlvgi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"wst_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"wst_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"wrt_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"wrt_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"wso_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"wso_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">wsoi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"lai_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"lai_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">laii_dyn</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"anlv_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"anlv_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anlvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"anst_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"anst_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">ansti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"anrt_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"anrt_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">anrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"aplv_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"aplv_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aplvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"apst_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"apst_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">apsti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"aprt_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"aprt_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aprti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"aklv_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"aklv_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aklvi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"akst_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"akst_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">aksti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
+        <span class="n">rates</span><span class="p">[</span><span class="s2">"akrt_rate"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rates</span><span class="p">[</span><span class="s2">"akrt_rate"</span><span class="p">]</span> <span class="o">+</span> <span class="n">just_sown</span> <span class="o">*</span> <span class="n">akrti</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dt</span>
 
         <span class="c1"># Per-day `DiagnosticState` snapshot — built from the same</span>
         <span class="c1"># intermediate tensors used to assemble ``rates``. It is</span>
@@ -3851,41 +3879,41 @@ catalogue and guidance on which slots to enable.</p></td>
         <span class="n">b_shape</span> <span class="o">=</span> <span class="n">tranrf</span><span class="o">.</span><span class="n">shape</span>
         <span class="n">diagnostic</span> <span class="o">=</span> <span class="n">DiagnosticState</span><span class="p">(</span>
             <span class="n">tranrf</span><span class="o">=</span><span class="n">tranrf</span><span class="p">,</span>
-            <span class="n">rdry</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rdry&quot;</span><span class="p">],</span>
-            <span class="n">rwet</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rwet&quot;</span><span class="p">],</span>
+            <span class="n">rdry</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"rdry"</span><span class="p">],</span>
+            <span class="n">rwet</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"rwet"</span><span class="p">],</span>
             <span class="n">nstress</span><span class="o">=</span><span class="n">nstress_now</span><span class="p">,</span>
-            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nni&quot;</span><span class="p">],</span>
-            <span class="n">pni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;pni&quot;</span><span class="p">],</span>
-            <span class="n">kni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kni&quot;</span><span class="p">],</span>
+            <span class="n">nni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"nni"</span><span class="p">],</span>
+            <span class="n">pni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"pni"</span><span class="p">],</span>
+            <span class="n">kni</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"kni"</span><span class="p">],</span>
             <span class="n">leaf_heat_factor</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">leaf_heat</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
             <span class="n">combined_stress</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">combined_stress</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
             <span class="n">co2_factor</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">b_shape</span><span class="p">),</span>
             <span class="n">gtotal</span><span class="o">=</span><span class="n">gtotal</span><span class="p">,</span>
-            <span class="n">rue</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rue&quot;</span><span class="p">],</span>
-            <span class="n">rtmco</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">&quot;rtmco&quot;</span><span class="p">],</span>
+            <span class="n">rue</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">"rue"</span><span class="p">],</span>
+            <span class="n">rtmco</span><span class="o">=</span><span class="n">photo</span><span class="p">[</span><span class="s2">"rtmco"</span><span class="p">],</span>
             <span class="n">frac_intercepted</span><span class="o">=</span><span class="n">frac_int</span><span class="p">,</span>
-            <span class="n">parint</span><span class="o">=</span><span class="n">irrad_out</span><span class="p">[</span><span class="s2">&quot;parint&quot;</span><span class="p">],</span>
-            <span class="n">dtsu</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;dtsu&quot;</span><span class="p">],</span>
-            <span class="n">photofac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;photofac&quot;</span><span class="p">],</span>
-            <span class="n">vernfac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">&quot;vernfac&quot;</span><span class="p">],</span>
-            <span class="n">tran</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;tran&quot;</span><span class="p">],</span>
-            <span class="n">evap</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;evap&quot;</span><span class="p">],</span>
-            <span class="n">runoff</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;runoff&quot;</span><span class="p">],</span>
-            <span class="n">drain</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;drain&quot;</span><span class="p">],</span>
-            <span class="n">rirr</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;rirr&quot;</span><span class="p">],</span>
-            <span class="n">smact</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;smact&quot;</span><span class="p">],</span>
-            <span class="n">smactl</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">&quot;smactl&quot;</span><span class="p">],</span>
-            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nuptr&quot;</span><span class="p">],</span>
-            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;puptr&quot;</span><span class="p">],</span>
-            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;kuptr&quot;</span><span class="p">],</span>
-            <span class="n">nfixtr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;nfixtr&quot;</span><span class="p">],</span>
-            <span class="n">n_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;n_demand&quot;</span><span class="p">],</span>
-            <span class="n">p_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;p_demand&quot;</span><span class="p">],</span>
-            <span class="n">k_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">&quot;k_demand&quot;</span><span class="p">],</span>
-            <span class="n">fr</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fr&quot;</span><span class="p">],</span>
-            <span class="n">fl</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fl&quot;</span><span class="p">],</span>
-            <span class="n">fs</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fs&quot;</span><span class="p">],</span>
-            <span class="n">fo</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">&quot;fo&quot;</span><span class="p">],</span>
+            <span class="n">parint</span><span class="o">=</span><span class="n">irrad_out</span><span class="p">[</span><span class="s2">"parint"</span><span class="p">],</span>
+            <span class="n">dtsu</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">"dtsu"</span><span class="p">],</span>
+            <span class="n">photofac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">"photofac"</span><span class="p">],</span>
+            <span class="n">vernfac</span><span class="o">=</span><span class="n">pheno</span><span class="p">[</span><span class="s2">"vernfac"</span><span class="p">],</span>
+            <span class="n">tran</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"tran"</span><span class="p">],</span>
+            <span class="n">evap</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"evap"</span><span class="p">],</span>
+            <span class="n">runoff</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"runoff"</span><span class="p">],</span>
+            <span class="n">drain</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"drain"</span><span class="p">],</span>
+            <span class="n">rirr</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"rirr"</span><span class="p">],</span>
+            <span class="n">smact</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"smact"</span><span class="p">],</span>
+            <span class="n">smactl</span><span class="o">=</span><span class="n">water</span><span class="p">[</span><span class="s2">"smactl"</span><span class="p">],</span>
+            <span class="n">nuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"nuptr"</span><span class="p">],</span>
+            <span class="n">puptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"puptr"</span><span class="p">],</span>
+            <span class="n">kuptr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"kuptr"</span><span class="p">],</span>
+            <span class="n">nfixtr</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"nfixtr"</span><span class="p">],</span>
+            <span class="n">n_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"n_demand"</span><span class="p">],</span>
+            <span class="n">p_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"p_demand"</span><span class="p">],</span>
+            <span class="n">k_demand</span><span class="o">=</span><span class="n">nut</span><span class="p">[</span><span class="s2">"k_demand"</span><span class="p">],</span>
+            <span class="n">fr</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"fr"</span><span class="p">],</span>
+            <span class="n">fl</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"fl"</span><span class="p">],</span>
+            <span class="n">fs</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"fs"</span><span class="p">],</span>
+            <span class="n">fo</span><span class="o">=</span><span class="n">part</span><span class="p">[</span><span class="s2">"fo"</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">rates</span><span class="p">,</span> <span class="n">diagnostic</span>
@@ -3895,7 +3923,7 @@ catalogue and guidance on which slots to enable.</p></td>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Collect every learnable parameter across the parameter containers.</span>
+<span class="w">        </span><span class="sd">"""Collect every learnable parameter across the parameter containers.</span>
 
 <span class="sd">        Walks the ``crop``, ``soil`` and ``site`` parameter containers</span>
 <span class="sd">        and returns every field that is an `nn.Parameter` (i.e. has</span>
@@ -3909,15 +3937,15 @@ catalogue and guidance on which slots to enable.</p></td>
 <span class="sd">        `UserWarning` is emitted in that case to flag the no-op.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
-<span class="sd">            ``&quot;crop.scale_factor_rue&quot;``) mapping to the corresponding</span>
+<span class="sd">            Dict keyed by ``"&lt;container&gt;.&lt;field&gt;"`` (for example,</span>
+<span class="sd">            ``"crop.scale_factor_rue"``) mapping to the corresponding</span>
 <span class="sd">            `nn.Parameter`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="p">(</span><span class="s2">&quot;crop&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;soil&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
-            <span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"crop"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"soil"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">"site"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
         <span class="p">):</span>
             <span class="n">non_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
@@ -3925,14 +3953,14 @@ catalogue and guidance on which slots to enable.</p></td>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">non_diff</span><span class="p">:</span>
                         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) &quot;</span>
-                            <span class="s2">&quot;switch and cannot be calibrated by gradient descent; &quot;</span>
-                            <span class="s2">&quot;excluding it from the learnable parameter groups.&quot;</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) "</span>
+                            <span class="s2">"switch and cannot be calibrated by gradient descent; "</span>
+                            <span class="s2">"excluding it from the learnable parameter groups."</span><span class="p">,</span>
                             <span class="ne">UserWarning</span><span class="p">,</span>
                             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                         <span class="p">)</span>
                         <span class="k">continue</span>
-                    <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                    <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
         <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -4045,7 +4073,7 @@ diagnostic trajectory.</p></td>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the daily rate vector for a single day (low-level API).</span>
+<span class="w">    </span><span class="sd">"""Compute the daily rate vector for a single day (low-level API).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`.</span>
@@ -4064,12 +4092,12 @@ diagnostic trajectory.</p></td>
 <span class="sd">            leaves the internal table-driven application in control.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;`` plus a</span>
+<span class="sd">        Dict of rate tensors keyed by ``"&lt;field&gt;_rate"`` plus a</span>
 <span class="sd">        handful of scalar diagnostics (``tranrf``, ``nstress``,</span>
 <span class="sd">        ``gtotal``). The companion `DiagnosticState` is discarded</span>
 <span class="sd">        here; use the high-level `forward` to access the full</span>
 <span class="sd">        diagnostic trajectory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rates</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_rates_dispatch</span><span class="p">(</span>
         <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span>
         <span class="n">weather_day</span><span class="o">=</span><span class="n">weather_day</span><span class="p">,</span>
@@ -4204,7 +4232,7 @@ heat-stress-adjusted yield).</p></td>
     <span class="n">irrigation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">fertilizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelOutput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a full simulation and return trajectories plus final yield.</span>
+<span class="w">    </span><span class="sd">"""Run a full simulation and return trajectories plus final yield.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        weather: A `WeatherDriver` or a raw ``[B, T, C]`` tensor of</span>
@@ -4217,13 +4245,13 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">            ``wci``/``wci_lower``/``rdm`` clipping — this path</span>
 <span class="sd">            bypasses the SIMPLACE-parity setup in `initialize`.</span>
 <span class="sd">        irrigation: Optional daily irrigation ``[B, T]`` [mm d⁻¹],</span>
-<span class="sd">            aligned with the weather days. Day ``t``&#39;s value overrides</span>
+<span class="sd">            aligned with the weather days. Day ``t``'s value overrides</span>
 <span class="sd">            the ``soil_params.irri`` mode in the water balance; it may</span>
 <span class="sd">            be a fixed plan or an `nn.Parameter` optimised through the</span>
 <span class="sd">            simulation. ``None`` (the default) leaves the internal IRRI</span>
 <span class="sd">            logic (modes 0/1/2) in control.</span>
 <span class="sd">        fertilizer: Optional daily fertiliser ``[B, T, 3]``</span>
-<span class="sd">            [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``&#39;s</span>
+<span class="sd">            [g X m⁻² d⁻¹], last axis ordered ``(N, P, K)``. Day ``t``'s</span>
 <span class="sd">            slice overrides the ``ferntab``/``ferptab``/``ferktab``</span>
 <span class="sd">            applications in the soil mineral balance; scale factors</span>
 <span class="sd">            ``scale_factor_fer*`` and recovery fractions</span>
@@ -4239,13 +4267,13 @@ heat-stress-adjusted yield).</p></td>
 <span class="sd">    Notes:</span>
 <span class="sd">        * ``HeatStressOnGrain`` is fed ``dvs[:, 1:]`` — the</span>
 <span class="sd">          *post-integration* DVS for each weather day — mirroring</span>
-<span class="sd">          SIMPLACE&#39;s component order (Phenology runs before HSG</span>
+<span class="sd">          SIMPLACE's component order (Phenology runs before HSG</span>
 <span class="sd">          within a day).</span>
 <span class="sd">        * ``adjusted_yield`` is gated by a ``period_ended`` mask</span>
 <span class="sd">          that fires only once ``max(DVS) &gt; grain_heat_end_devstage``,</span>
 <span class="sd">          so a truncated run that never exits the anthesis window</span>
 <span class="sd">          returns ``0`` (matches SIMPLACE ``pPeriodEnded``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Validate discrete config (irrigation / phenology / run modes,</span>
     <span class="c1"># start-mode flag) once per run, before entering the per-day loop</span>
     <span class="c1"># — keeps the hot path free of CPU-syncing value checks.</span>
@@ -4260,8 +4288,8 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;irrigation must have shape [B, T] = &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"irrigation must have shape [B, T] = "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">irrigation</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">irrigation</span> <span class="o">=</span> <span class="n">irrigation</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
@@ -4270,8 +4298,8 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">weather</span><span class="o">.</span><span class="n">n_days</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;fertilizer must have shape [B, T, 3] = &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"fertilizer must have shape [B, T, 3] = "</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">fertilizer</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">fertilizer</span> <span class="o">=</span> <span class="n">fertilizer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">device</span>
@@ -4311,8 +4339,8 @@ heat-stress-adjusted yield).</p></td>
     <span class="c1"># (the trajectory carries a leading initial-condition entry, so</span>
     <span class="c1"># it has length ``T + 1`` against the ``T`` weather days).</span>
     <span class="n">hsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heat_stress_grain</span><span class="p">(</span>
-        <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmin&quot;</span><span class="p">),</span>
-        <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">&quot;tmax&quot;</span><span class="p">),</span>
+        <span class="n">tmin</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">"tmin"</span><span class="p">),</span>
+        <span class="n">tmax</span><span class="o">=</span><span class="n">weather</span><span class="o">.</span><span class="n">channel</span><span class="p">(</span><span class="s2">"tmax"</span><span class="p">),</span>
         <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:],</span>
         <span class="n">params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
         <span class="n">yield_</span><span class="o">=</span><span class="n">yield_</span><span class="p">,</span>
@@ -4326,8 +4354,8 @@ heat-stress-adjusted yield).</p></td>
         <span class="n">lai</span><span class="o">=</span><span class="n">lai</span><span class="p">,</span>
         <span class="n">dvs</span><span class="o">=</span><span class="n">dvs</span><span class="p">,</span>
         <span class="n">biomass</span><span class="o">=</span><span class="n">biomass</span><span class="p">,</span>
-        <span class="n">heat_stress_factor</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">],</span>
-        <span class="n">adjusted_yield</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">],</span>
+        <span class="n">heat_stress_factor</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">"heat_stress_factor"</span><span class="p">],</span>
+        <span class="n">adjusted_yield</span><span class="o">=</span><span class="n">hsg</span><span class="p">[</span><span class="s2">"adjusted_yield"</span><span class="p">],</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>
@@ -4342,7 +4370,7 @@ heat-stress-adjusted yield).</p></td>
 
 
 <h3 id="torchcrop.model.Lintul5Model.initialize" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">'cpu'</span><span class="p">)</span></code>
 
 
 <a href="#torchcrop.model.Lintul5Model.initialize" class="headerlink" title="Permanent link">&para;</a></h3>
@@ -4418,14 +4446,14 @@ proceeds.</p></td>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a sowing-day initial state for a batch.</span>
+<span class="w">    </span><span class="sd">"""Build a sowing-day initial state for a batch.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        batch_size: Number of parallel simulation instances ``B``.</span>
 <span class="sd">        dtype: Tensor dtype for all state fields.</span>
-<span class="sd">        device: Torch device (e.g. ``&quot;cpu&quot;``, ``&quot;cuda&quot;``).</span>
+<span class="sd">        device: Torch device (e.g. ``"cpu"``, ``"cuda"``).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A fresh `ModelState` representing a bare-soil, pre-emergence</span>
@@ -4444,7 +4472,7 @@ proceeds.</p></td>
 <span class="sd">        accumulators (``nlossl``/``nlossr``/``nlosss`` and the P, K</span>
 <span class="sd">        analogues) also start at zero and grow as senescence</span>
 <span class="sd">        proceeds.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Read each initial-condition parameter as a detached tensor, keeping</span>
     <span class="c1"># its shape (``[]`` shared or ``[B]`` per element). The arithmetic</span>
     <span class="c1"># below is element-wise, so batch-varying soil/crop parameters flow</span>
@@ -4555,7 +4583,7 @@ autograd graph and would silently never receive a gradient. A
         <details class="quote">
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">learnable_parameter_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect every learnable parameter across the parameter containers.</span>
+<span class="w">    </span><span class="sd">"""Collect every learnable parameter across the parameter containers.</span>
 
 <span class="sd">    Walks the ``crop``, ``soil`` and ``site`` parameter containers</span>
 <span class="sd">    and returns every field that is an `nn.Parameter` (i.e. has</span>
@@ -4569,15 +4597,15 @@ autograd graph and would silently never receive a gradient. A
 <span class="sd">    `UserWarning` is emitted in that case to flag the no-op.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Dict keyed by ``&quot;&lt;container&gt;.&lt;field&gt;&quot;`` (for example,</span>
-<span class="sd">        ``&quot;crop.scale_factor_rue&quot;``) mapping to the corresponding</span>
+<span class="sd">        Dict keyed by ``"&lt;container&gt;.&lt;field&gt;"`` (for example,</span>
+<span class="sd">        ``"crop.scale_factor_rue"``) mapping to the corresponding</span>
 <span class="sd">        `nn.Parameter`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="p">(</span>
-        <span class="p">(</span><span class="s2">&quot;crop&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;soil&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">&quot;site&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"crop"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">crop_params</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"soil"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">soil_params</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">"site"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">site_params</span><span class="p">),</span>
     <span class="p">):</span>
         <span class="n">non_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NON_DIFFERENTIABLE_FIELDS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">frozenset</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
@@ -4585,14 +4613,14 @@ autograd graph and would silently never receive a gradient. A
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">non_diff</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) &quot;</span>
-                        <span class="s2">&quot;switch and cannot be calibrated by gradient descent; &quot;</span>
-                        <span class="s2">&quot;excluding it from the learnable parameter groups.&quot;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is a discrete (non-differentiable) "</span>
+                        <span class="s2">"switch and cannot be calibrated by gradient descent; "</span>
+                        <span class="s2">"excluding it from the learnable parameter groups."</span><span class="p">,</span>
                         <span class="ne">UserWarning</span><span class="p">,</span>
                         <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="k">continue</span>
-                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="n">out</span><span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
     <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -4670,7 +4698,7 @@ autograd graph and would silently never receive a gradient. A
     <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a forward-Euler step to advance the state by ``dt`` days.</span>
+<span class="w">    </span><span class="sd">"""Apply a forward-Euler step to advance the state by ``dt`` days.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`.</span>
@@ -4679,7 +4707,7 @@ autograd graph and would silently never receive a gradient. A
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new `ModelState` advanced by one Euler step.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -4792,7 +4820,7 @@ SIMPLACE <code>pPeriodEnded</code> gating.</p></td>
           <summary>Source code in <code>torchcrop/model.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ModelOutput</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for the results of a full simulation run.</span>
+<span class="w">    </span><span class="sd">"""Container for the results of a full simulation run.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        states: Per-day `ModelState` snapshots of length ``T + 1``. The</span>
@@ -4817,7 +4845,7 @@ SIMPLACE <code>pPeriodEnded</code> gating.</p></td>
 <span class="sd">            Equals ``0`` until the DVS trajectory exits the anthesis</span>
 <span class="sd">            window (``max(DVS) &gt; grain_heat_end_devstage``), matching</span>
 <span class="sd">            SIMPLACE ``pPeriodEnded`` gating.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span>
     <span class="n">rates</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>

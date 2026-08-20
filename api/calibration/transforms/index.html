@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2843,13 +2871,13 @@ the latent from an initial physical value.</p></td>
           <summary>Source code in <code>torchcrop/calibration/transforms.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Bijector</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A differentiable map between latent ``z`` and a constrained value.</span>
+<span class="w">    </span><span class="sd">"""A differentiable map between latent ``z`` and a constrained value.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        forward: ``z -&gt; value`` (unconstrained → constrained / physical).</span>
 <span class="sd">        inverse: ``value -&gt; z`` (constrained → unconstrained), used to seed</span>
 <span class="sd">            the latent from an initial physical value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">forward</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
     <span class="n">inverse</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
@@ -2904,7 +2932,7 @@ the latent from an initial physical value.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/transforms.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">available_transforms</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the names of all registered transforms.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return the names of all registered transforms."""</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_TRANSFORMS</span><span class="p">))</span>
 </code></pre></div>
         </details>
@@ -2987,10 +3015,10 @@ both, some only the lower bound, some ignore them).</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/transforms.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_transform</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bounds</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bijector</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Instantiate a registered transform.</span>
+<span class="w">    </span><span class="sd">"""Instantiate a registered transform.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: Registered transform name (e.g. ``&quot;affine_sigmoid&quot;``).</span>
+<span class="sd">        name: Registered transform name (e.g. ``"affine_sigmoid"``).</span>
 <span class="sd">        bounds: ``(lo, hi)`` bounds, interpreted per transform (some require</span>
 <span class="sd">            both, some only the lower bound, some ignore them).</span>
 
@@ -2999,10 +3027,10 @@ both, some only the lower bound, some ignore them).</p></td>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        KeyError: If ``name`` is not registered.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_TRANSFORMS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;unknown transform </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; registered: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_TRANSFORMS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"unknown transform </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">; registered: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">_TRANSFORMS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">_TRANSFORMS</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">bounds</span><span class="p">)</span>
 </code></pre></div>
@@ -3069,14 +3097,14 @@ both, some only the lower bound, some ignore them).</p></td>
     <span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Bijector</span><span class="p">]],</span>
     <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Bijector</span><span class="p">],</span>
 <span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a transform builder under ``name``.</span>
+<span class="w">    </span><span class="sd">"""Register a transform builder under ``name``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: Key used in `torchcrop.calibration.spec.ParameterSpec`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A decorator registering the wrapped ``builder(bounds) -&gt; Bijector``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_decorator</span><span class="p">(</span>
         <span class="n">builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Bijector</span><span class="p">],</span>
@@ -3149,7 +3177,7 @@ integral.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/transforms.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">round_ste</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round with a straight-through gradient estimator.</span>
+<span class="w">    </span><span class="sd">"""Round with a straight-through gradient estimator.</span>
 
 <span class="sd">    Forward returns ``round(x)``; backward passes the gradient through</span>
 <span class="sd">    unchanged (as if the op were the identity). This keeps an integer-valued</span>
@@ -3162,7 +3190,7 @@ integral.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ``round(x)`` in the forward pass, identity gradient in the backward.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span> <span class="o">+</span> <span class="n">x</span>
 </code></pre></div>
         </details>

@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2768,7 +2796,7 @@ is used.</p></td>
           <summary>Source code in <code>torchcrop/config.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">RunConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulation run configuration.</span>
+<span class="w">    </span><span class="sd">"""Simulation run configuration.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        n_days: Number of daily time steps ``T`` in the simulation.</span>
@@ -2779,17 +2807,17 @@ is used.</p></td>
 <span class="sd">        smooth: If ``True`` process modules use smooth (sigmoid-blend)</span>
 <span class="sd">            replacements for stage-based branching; otherwise ``torch.where``</span>
 <span class="sd">            is used.</span>
-<span class="sd">        dtype: Tensor dtype for the simulation (``&quot;float32&quot;`` or</span>
-<span class="sd">            ``&quot;float64&quot;``). Gradient checks require ``float64``.</span>
-<span class="sd">        device: Device string (``&quot;cpu&quot;``, ``&quot;cuda&quot;``, ...).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        dtype: Tensor dtype for the simulation (``"float32"`` or</span>
+<span class="sd">            ``"float64"``). Gradient checks require ``float64``.</span>
+<span class="sd">        device: Device string (``"cpu"``, ``"cuda"``, ...).</span>
+<span class="sd">    """</span>
 
     <span class="n">n_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
     <span class="n">start_doy</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
-    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"float32"</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cpu"</span>
 </code></pre></div>
         </details>
 

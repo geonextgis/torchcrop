@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2785,7 +2813,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     <span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Piecewise-linear interpolation of ``x`` against a breakpoint table.</span>
+<span class="w">    </span><span class="sd">"""Piecewise-linear interpolation of ``x`` against a breakpoint table.</span>
 
 <span class="sd">    Equivalent to the Lintul5 ``AFGEN`` function. Outside the support of the</span>
 <span class="sd">    table the output is clamped to the first/last y-value (flat extrapolation),</span>
@@ -2802,7 +2830,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``table`` is neither 2-D nor 3-D.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">xs</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
         <span class="n">ys</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
@@ -2810,7 +2838,7 @@ shape <code>[B, N, 2]</code> for batch-specific tables.</p></td>
     <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_interp_batched</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;table must be of shape [N, 2] or [B, N, 2]; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">"table must be of shape [N, 2] or [B, N, 2]; got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
     <span class="p">)</span>
 </code></pre></div>
         </details>

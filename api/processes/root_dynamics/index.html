@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2803,7 +2831,7 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/root_dynamics.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RootDynamics</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Root depth, root biomass and dead-root rates.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Root depth, root biomass and dead-root rates."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2813,7 +2841,7 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute root depth and root-biomass rates for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute root depth and root-biomass rates for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current state; uses ``state.rootd``, ``state.dvs``,</span>
@@ -2853,7 +2881,7 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
 <span class="sd">            * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
 <span class="sd">                root death rate after the scale factor.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">rootd</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
         <span class="n">wrt</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wrt</span>
@@ -2893,11 +2921,11 @@ RootDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">wrt_rate</span> <span class="o">=</span> <span class="n">g_root</span> <span class="o">-</span> <span class="n">drrt</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">rootd_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wrt_rate&quot;</span><span class="p">:</span> <span class="n">wrt_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
-            <span class="s2">&quot;drrt&quot;</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
-            <span class="s2">&quot;rdrrt&quot;</span><span class="p">:</span> <span class="n">rdrrt</span><span class="p">,</span>
+            <span class="s2">"rootd_rate"</span><span class="p">:</span> <span class="n">rootd_rate</span><span class="p">,</span>
+            <span class="s2">"wrt_rate"</span><span class="p">:</span> <span class="n">wrt_rate</span><span class="p">,</span>
+            <span class="s2">"wrtd_rate"</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
+            <span class="s2">"drrt"</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
+            <span class="s2">"rdrrt"</span><span class="p">:</span> <span class="n">rdrrt</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3025,7 +3053,7 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute root depth and root-biomass rates for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute root depth and root-biomass rates for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current state; uses ``state.rootd``, ``state.dvs``,</span>
@@ -3065,7 +3093,7 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            ``DRRT = WRT · RDRRT · 𝟙[DVS ≥ DVSDR]``.</span>
 <span class="sd">        * ``rdrrt`` [d⁻¹] — Effective DVS-indexed relative</span>
 <span class="sd">            root death rate after the scale factor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rootd</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">rootd</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
     <span class="n">wrt</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wrt</span>
@@ -3105,11 +3133,11 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">wrt_rate</span> <span class="o">=</span> <span class="n">g_root</span> <span class="o">-</span> <span class="n">drrt</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;rootd_rate&quot;</span><span class="p">:</span> <span class="n">rootd_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wrt_rate&quot;</span><span class="p">:</span> <span class="n">wrt_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wrtd_rate&quot;</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
-        <span class="s2">&quot;drrt&quot;</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
-        <span class="s2">&quot;rdrrt&quot;</span><span class="p">:</span> <span class="n">rdrrt</span><span class="p">,</span>
+        <span class="s2">"rootd_rate"</span><span class="p">:</span> <span class="n">rootd_rate</span><span class="p">,</span>
+        <span class="s2">"wrt_rate"</span><span class="p">:</span> <span class="n">wrt_rate</span><span class="p">,</span>
+        <span class="s2">"wrtd_rate"</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
+        <span class="s2">"drrt"</span><span class="p">:</span> <span class="n">drrt</span><span class="p">,</span>
+        <span class="s2">"rdrrt"</span><span class="p">:</span> <span class="n">rdrrt</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2848,7 +2876,7 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">afgen</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``AFGEN`` alias — piecewise-linear interpolation of ``x`` in ``table``.</span>
+<span class="w">    </span><span class="sd">"""FST ``AFGEN`` alias — piecewise-linear interpolation of ``x`` in ``table``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        table: Breakpoint table of shape ``[N, 2]`` or ``[B, N, 2]``.</span>
@@ -2856,7 +2884,7 @@ the Java ↔ Python translation is as syntactically close as possible.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Interpolated values; see `interpolate` for details.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -2950,7 +2978,7 @@ of the hard <code>torch.where</code> switch.</p></td>
     <span class="n">smooth</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">k</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">50.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``INSW`` — input switch.</span>
+<span class="w">    </span><span class="sd">"""FST ``INSW`` — input switch.</span>
 
 <span class="sd">    Returns ``y2`` when ``x &gt;= 0`` and ``y1`` otherwise. With ``smooth=True``</span>
 <span class="sd">    a sigmoid blend is used so that gradient flows through both branches.</span>
@@ -2965,7 +2993,7 @@ of the hard <code>torch.where</code> switch.</p></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Element-wise selected tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">smooth</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">soft_if</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
@@ -3044,7 +3072,7 @@ of the hard <code>torch.where</code> switch.</p></td>
     <span class="n">hi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clamp ``x`` to ``[lo, hi]`` — FST ``LIMIT``.</span>
+<span class="w">    </span><span class="sd">"""Clamp ``x`` to ``[lo, hi]`` — FST ``LIMIT``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lo: Lower bound (scalar or tensor broadcastable against ``x``).</span>
@@ -3053,7 +3081,7 @@ of the hard <code>torch.where</code> switch.</p></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        ``x`` clamped element-wise to ``[lo, hi]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="n">lo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -3125,7 +3153,7 @@ of the hard <code>torch.where</code> switch.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">notnul</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``NOTNUL`` — guarded denominator.</span>
+<span class="w">    </span><span class="sd">"""FST ``NOTNUL`` — guarded denominator.</span>
 
 <span class="sd">    Returns ``x`` where ``|x| &gt; eps`` else ``1``, for safe division.</span>
 
@@ -3135,7 +3163,7 @@ of the hard <code>torch.where</code> switch.</p></td>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Tensor of the same shape as ``x`` with near-zero entries replaced.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 </code></pre></div>
         </details>
@@ -3214,7 +3242,7 @@ to keep conditions differentiable as soft masks.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/functions/fst_functions.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reaand</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;FST ``REAAND`` — real-valued logical AND.</span>
+<span class="w">    </span><span class="sd">"""FST ``REAAND`` — real-valued logical AND.</span>
 
 <span class="sd">    Returns the element-wise product of real-valued indicator tensors. Useful</span>
 <span class="sd">    to keep conditions differentiable as soft masks.</span>
@@ -3228,9 +3256,9 @@ to keep conditions differentiable as soft masks.</p>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If called with no conditions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">conditions</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reaand requires at least one condition&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"reaand requires at least one condition"</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">*</span> <span class="n">c</span>

@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2954,7 +2982,7 @@ incompatible with a requested ordering.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CalibrationManager</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Owns latent variables and writes constrained parameters into a model.</span>
+<span class="w">    </span><span class="sd">"""Owns latent variables and writes constrained parameters into a model.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        model: The `Lintul5Model` (or any object</span>
@@ -2968,7 +2996,7 @@ incompatible with a requested ordering.</p></td>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: On duplicate spec names, unknown group members, or bounds</span>
 <span class="sd">            incompatible with a requested ordering.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2981,15 +3009,15 @@ incompatible with a requested ordering.</p></td>
         <span class="c1"># submodule (it is a plain dict of dataclasses), so ``self.parameters()``</span>
         <span class="c1"># yields only the calibration latents — exactly what the optimizer wants.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_containers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;crop&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
-            <span class="s2">&quot;soil&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
-            <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
+            <span class="s2">"crop"</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">crop_params</span><span class="p">,</span>
+            <span class="s2">"soil"</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">soil_params</span><span class="p">,</span>
+            <span class="s2">"site"</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">site_params</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ParameterSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">specs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate spec for </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"duplicate spec for </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_targets</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Target</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
@@ -3003,14 +3031,14 @@ incompatible with a requested ordering.</p></td>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">m</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;group member </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> has no ParameterSpec&quot;</span>
+                        <span class="sa">f</span><span class="s2">"group member </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> has no ParameterSpec"</span>
                     <span class="p">)</span>
-            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;free&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"free"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> belongs to more than one ordered group&quot;</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> belongs to more than one ordered group"</span>
                     <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">gi</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_validate_ordered_bounds</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
@@ -3031,47 +3059,47 @@ incompatible with a requested ordering.</p></td>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ref_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the live tensor backing ``name`` (scalar field or table y).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the live tensor backing ``name`` (scalar field or table y)."""</span>
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_targets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_containers</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">container</span><span class="p">]</span>
         <span class="n">field</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">field</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">field</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">is_table</span> <span class="k">else</span> <span class="n">field</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_init_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initial physical value: explicit ``init`` or the current value.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initial physical value: explicit ``init`` or the current value."""</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_tensor</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">init</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">read_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_targets</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_containers</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ref</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ref</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_ordered_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">ConstraintGroup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure member bounds are compatible with the requested ordering.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Ensure member bounds are compatible with the requested ordering."""</span>
         <span class="n">bnds</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">bounds</span>
             <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;ordered group member </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> requires bounds&quot;</span>
+                    <span class="sa">f</span><span class="s2">"ordered group member </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> requires bounds"</span>
                 <span class="p">)</span>
             <span class="n">bnds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">lo0</span><span class="p">,</span> <span class="n">hi0</span><span class="p">),</span> <span class="p">(</span><span class="n">lo1</span><span class="p">,</span> <span class="n">hi1</span><span class="p">),</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bnds</span><span class="p">,</span> <span class="n">bnds</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
-            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;ascending&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo1</span> <span class="o">&gt;=</span> <span class="n">lo0</span> <span class="ow">and</span> <span class="n">hi1</span> <span class="o">&gt;=</span> <span class="n">hi0</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"ascending"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo1</span> <span class="o">&gt;=</span> <span class="n">lo0</span> <span class="ow">and</span> <span class="n">hi1</span> <span class="o">&gt;=</span> <span class="n">hi0</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;ascending group: bounds of </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> </span><span class="si">{</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span><span class="w"> </span><span class="n">hi1</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;&gt;= previous member&#39;s bounds </span><span class="si">{</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span><span class="w"> </span><span class="n">hi0</span><span class="p">)</span><span class="si">}</span><span class="s2"> (lo and hi)&quot;</span>
+                    <span class="sa">f</span><span class="s2">"ascending group: bounds of </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> </span><span class="si">{</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span><span class="w"> </span><span class="n">hi1</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be "</span>
+                    <span class="sa">f</span><span class="s2">"&gt;= previous member's bounds </span><span class="si">{</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span><span class="w"> </span><span class="n">hi0</span><span class="p">)</span><span class="si">}</span><span class="s2"> (lo and hi)"</span>
                 <span class="p">)</span>
-            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;descending&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo1</span> <span class="o">&lt;=</span> <span class="n">lo0</span> <span class="ow">and</span> <span class="n">hi1</span> <span class="o">&lt;=</span> <span class="n">hi0</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"descending"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lo1</span> <span class="o">&lt;=</span> <span class="n">lo0</span> <span class="ow">and</span> <span class="n">hi1</span> <span class="o">&lt;=</span> <span class="n">hi0</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;descending group: bounds of </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> </span><span class="si">{</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span><span class="w"> </span><span class="n">hi1</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;&lt;= previous member&#39;s bounds </span><span class="si">{</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span><span class="w"> </span><span class="n">hi0</span><span class="p">)</span><span class="si">}</span><span class="s2"> (lo and hi)&quot;</span>
+                    <span class="sa">f</span><span class="s2">"descending group: bounds of </span><span class="si">{</span><span class="n">m</span><span class="si">!r}</span><span class="s2"> </span><span class="si">{</span><span class="p">(</span><span class="n">lo1</span><span class="p">,</span><span class="w"> </span><span class="n">hi1</span><span class="p">)</span><span class="si">}</span><span class="s2"> must be "</span>
+                    <span class="sa">f</span><span class="s2">"&lt;= previous member's bounds </span><span class="si">{</span><span class="p">(</span><span class="n">lo0</span><span class="p">,</span><span class="w"> </span><span class="n">hi0</span><span class="p">)</span><span class="si">}</span><span class="s2"> (lo and hi)"</span>
                 <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_latents</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create one latent per free / ordered-member spec (not categorical).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Create one latent per free / ordered-member spec (not categorical)."""</span>
         <span class="c1"># Free specs (not in any ordered group, not categorical): invert the</span>
         <span class="c1"># bijector at the init value to seed the latent.</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"categorical"</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">bij</span> <span class="o">=</span> <span class="n">build_transform</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">resolved_transform</span><span class="p">(),</span> <span class="n">spec</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
             <span class="n">z</span> <span class="o">=</span> <span class="n">bij</span><span class="o">.</span><span class="n">inverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_value</span><span class="p">(</span><span class="n">name</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
@@ -3079,12 +3107,12 @@ incompatible with a requested ordering.</p></td>
 
         <span class="c1"># Ordered-group members: seed latents from the incremental inverse.</span>
         <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;free&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"free"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_seed_ordered_latents</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_seed_ordered_latents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">ConstraintGroup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Seed per-member latents so materialize reproduces the init values.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Seed per-member latents so materialize reproduces the init values."""</span>
         <span class="n">inits</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_value</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">]</span>
         <span class="n">bnds</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span><span class="o">.</span><span class="n">bounds</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">]</span>
         <span class="n">prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -3093,7 +3121,7 @@ incompatible with a requested ordering.</p></td>
             <span class="n">hi_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">prev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">lo_t</span><span class="p">,</span> <span class="n">hi_t</span>
-            <span class="k">elif</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;ascending&quot;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"ascending"</span><span class="p">:</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">lo_t</span><span class="p">,</span> <span class="n">prev</span><span class="p">),</span> <span class="n">hi_t</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># descending</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">lo_t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">hi_t</span><span class="p">,</span> <span class="n">prev</span><span class="p">)</span>
@@ -3106,25 +3134,25 @@ incompatible with a requested ordering.</p></td>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_materialize_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the physical value tensor for every spec.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Compute the physical value tensor for every spec."""</span>
         <span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;categorical&quot;</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"categorical"</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_member_group</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">bij</span> <span class="o">=</span> <span class="n">build_transform</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">resolved_transform</span><span class="p">(),</span> <span class="n">spec</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">bij</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">_key</span><span class="p">(</span><span class="n">name</span><span class="p">)])</span>
-            <span class="n">values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_ste</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span> <span class="k">else</span> <span class="n">v</span>
+            <span class="n">values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_ste</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"integer"</span> <span class="k">else</span> <span class="n">v</span>
 
         <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_groups</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;free&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"free"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">for</span> <span class="n">m</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reconstruct_ordered</span><span class="p">(</span><span class="n">g</span><span class="p">)):</span>
                 <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
-                <span class="n">values</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_ste</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;integer&quot;</span> <span class="k">else</span> <span class="n">v</span>
+                <span class="n">values</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="n">round_ste</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"integer"</span> <span class="k">else</span> <span class="n">v</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">&quot;categorical&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">"categorical"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_tensor</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="n">cur</span> <span class="o">=</span> <span class="n">read_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_targets</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_containers</span><span class="p">)</span>
@@ -3135,7 +3163,7 @@ incompatible with a requested ordering.</p></td>
         <span class="k">return</span> <span class="n">values</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_reconstruct_ordered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">:</span> <span class="n">ConstraintGroup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map a group&#39;s latents to monotone values inside their boxes.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Map a group's latents to monotone values inside their boxes."""</span>
         <span class="n">out</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">prev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
@@ -3145,7 +3173,7 @@ incompatible with a requested ordering.</p></td>
             <span class="n">hi_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">prev</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">lo_t</span><span class="p">,</span> <span class="n">hi_t</span>
-            <span class="k">elif</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">&quot;ascending&quot;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">g</span><span class="o">.</span><span class="n">order</span> <span class="o">==</span> <span class="s2">"ascending"</span><span class="p">:</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">lo_t</span><span class="p">,</span> <span class="n">prev</span><span class="p">),</span> <span class="n">hi_t</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># descending</span>
                 <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span> <span class="o">=</span> <span class="n">lo_t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">hi_t</span><span class="p">,</span> <span class="n">prev</span><span class="p">)</span>
@@ -3155,7 +3183,7 @@ incompatible with a requested ordering.</p></td>
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">materialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write all constrained values into the parameter containers.</span>
+<span class="w">        </span><span class="sd">"""Write all constrained values into the parameter containers.</span>
 
 <span class="sd">        Call once **before each forward pass**. Scalar targets overwrite their</span>
 <span class="sd">        dataclass field; table targets are batched per owning table and the</span>
@@ -3165,7 +3193,7 @@ incompatible with a requested ordering.</p></td>
 <span class="sd">        Returns:</span>
 <span class="sd">            A mapping ``target name -&gt; materialized value tensor`` for</span>
 <span class="sd">            inspection / logging.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_materialize_values</span><span class="p">()</span>
 
         <span class="n">table_updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -3190,50 +3218,50 @@ incompatible with a requested ordering.</p></td>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">latent_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stable, sorted order of latent target names.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Stable, sorted order of latent target names."""</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the latent vector as a flat 1-D tensor (detached).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Return the latent vector as a flat 1-D tensor (detached)."""</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
             <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_names</span><span class="p">()]</span>
         <span class="p">)</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
+<span class="w">        </span><span class="sd">"""Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
+<span class="sd">            flat: 1-D tensor matching `flatten`'s length and order.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``flat`` has the wrong length.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_names</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> latents, got </span><span class="si">{</span><span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> latents, got </span><span class="si">{</span><span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">set_categorical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a categorical target&#39;s current value (for an outer loop).</span>
+<span class="w">        </span><span class="sd">"""Set a categorical target's current value (for an outer loop).</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            name: A spec name with ``kind=&quot;categorical&quot;``.</span>
-<span class="sd">            value: One of the spec&#39;s ``categories``.</span>
+<span class="sd">            name: A spec name with ``kind="categorical"``.</span>
+<span class="sd">            value: One of the spec's ``categories``.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If ``name`` is not categorical or ``value`` is not an</span>
 <span class="sd">                allowed category.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">&quot;categorical&quot;</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not a categorical target&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">"categorical"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not a categorical target"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>  <span class="c1"># type: ignore[operator]</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> not in categories </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> not in categories </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_tensor</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="n">write_scalar</span><span class="p">(</span>
@@ -3243,7 +3271,7 @@ incompatible with a requested ordering.</p></td>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">named_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Materialize and return current physical values as Python floats.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Materialize and return current physical values as Python floats."""</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">materialize</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div>
         </details>
@@ -3278,7 +3306,7 @@ incompatible with a requested ordering.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the latent vector as a flat 1-D tensor (detached).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Return the latent vector as a flat 1-D tensor (detached)."""</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
         <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_names</span><span class="p">()]</span>
     <span class="p">)</span>
@@ -3327,7 +3355,7 @@ inspection / logging.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">materialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write all constrained values into the parameter containers.</span>
+<span class="w">    </span><span class="sd">"""Write all constrained values into the parameter containers.</span>
 
 <span class="sd">    Call once **before each forward pass**. Scalar targets overwrite their</span>
 <span class="sd">    dataclass field; table targets are batched per owning table and the</span>
@@ -3337,7 +3365,7 @@ inspection / logging.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        A mapping ``target name -&gt; materialized value tensor`` for</span>
 <span class="sd">        inspection / logging.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_materialize_values</span><span class="p">()</span>
 
     <span class="n">table_updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -3379,7 +3407,7 @@ inspection / logging.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">latent_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stable, sorted order of latent target names.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Stable, sorted order of latent target names."""</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 </code></pre></div>
         </details>
@@ -3426,7 +3454,7 @@ inspection / logging.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">materialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write all constrained values into the parameter containers.</span>
+<span class="w">    </span><span class="sd">"""Write all constrained values into the parameter containers.</span>
 
 <span class="sd">    Call once **before each forward pass**. Scalar targets overwrite their</span>
 <span class="sd">    dataclass field; table targets are batched per owning table and the</span>
@@ -3436,7 +3464,7 @@ inspection / logging.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        A mapping ``target name -&gt; materialized value tensor`` for</span>
 <span class="sd">        inspection / logging.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_materialize_values</span><span class="p">()</span>
 
     <span class="n">table_updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -3478,7 +3506,7 @@ inspection / logging.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">named_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Materialize and return current physical values as Python floats.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Materialize and return current physical values as Python floats."""</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">materialize</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 </code></pre></div>
         </details>
@@ -3546,22 +3574,22 @@ allowed category.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_categorical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a categorical target&#39;s current value (for an outer loop).</span>
+<span class="w">    </span><span class="sd">"""Set a categorical target's current value (for an outer loop).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: A spec name with ``kind=&quot;categorical&quot;``.</span>
-<span class="sd">        value: One of the spec&#39;s ``categories``.</span>
+<span class="sd">        name: A spec name with ``kind="categorical"``.</span>
+<span class="sd">        value: One of the spec's ``categories``.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``name`` is not categorical or ``value`` is not an</span>
 <span class="sd">            allowed category.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_specs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">&quot;categorical&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not a categorical target&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">!=</span> <span class="s2">"categorical"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> is not a categorical target"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="p">:</span>  <span class="c1"># type: ignore[operator]</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> not in categories </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> not in categories </span><span class="si">{</span><span class="n">spec</span><span class="o">.</span><span class="n">categories</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_tensor</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">write_scalar</span><span class="p">(</span>
@@ -3629,18 +3657,18 @@ allowed category.</p></td>
           <summary>Source code in <code>torchcrop/calibration/manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flat</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Overwrite the latent vector from a flat 1-D tensor.</span>
+<span class="w">    </span><span class="sd">"""Overwrite the latent vector from a flat 1-D tensor.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        flat: 1-D tensor matching `flatten`&#39;s length and order.</span>
+<span class="sd">        flat: 1-D tensor matching `flatten`'s length and order.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If ``flat`` has the wrong length.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latent_names</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> latents, got </span><span class="si">{</span><span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">)</span><span class="si">}</span><span class="s2"> latents, got </span><span class="si">{</span><span class="n">flat</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">flat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latents</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>

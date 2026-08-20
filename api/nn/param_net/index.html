@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2793,7 +2821,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/param_net.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ParameterNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;MLP that maps a context embedding to a vector of crop parameters.</span>
+<span class="w">    </span><span class="sd">"""MLP that maps a context embedding to a vector of crop parameters.</span>
 
 <span class="sd">    This is useful when you want to condition parameters on site/cultivar</span>
 <span class="sd">    metadata (e.g., a learned embedding for each cultivar identifier).</span>
@@ -2803,7 +2831,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
 <span class="sd">        n_params: Number of crop parameters to predict.</span>
 <span class="sd">        hidden_dim: Hidden-layer width.</span>
 <span class="sd">        n_hidden: Number of hidden layers (each followed by ``Tanh``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2822,7 +2850,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict crop parameters from a context embedding.</span>
+<span class="w">        </span><span class="sd">"""Predict crop parameters from a context embedding.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            embedding: Context embedding tensor of shape</span>
@@ -2830,7 +2858,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Predicted parameter vector of shape ``[..., n_params]``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -2900,7 +2928,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/nn/param_net.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Predict crop parameters from a context embedding.</span>
+<span class="w">    </span><span class="sd">"""Predict crop parameters from a context embedding.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        embedding: Context embedding tensor of shape</span>
@@ -2908,7 +2936,7 @@ metadata (e.g., a learned embedding for each cultivar identifier).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Predicted parameter vector of shape ``[..., n_params]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
 </code></pre></div>
         </details>

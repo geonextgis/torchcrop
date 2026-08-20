@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3333,87 +3361,87 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">SoilParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Soil hydraulic and water-balance parameters.</span>
+<span class="w">    </span><span class="sd">"""Soil hydraulic and water-balance parameters.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        Only a single-layer bucket model is implemented in the initial</span>
 <span class="sd">        scaffold; the containers accept either ``[B]`` (single-layer) or</span>
 <span class="sd">        ``[B, N_layers]`` tensors for future multi-layer extensions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 1. Volumetric soil-moisture contents [m³ m⁻³]</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">wcad</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.150</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSMDRY``. Volumetric soil-moisture content at air-dry</span>
-<span class="sd">    [m³ m⁻³] (≈ pF 6.0). Lower bound of plant-available water.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSMDRY``. Volumetric soil-moisture content at air-dry</span>
+<span class="sd">    [m³ m⁻³] (≈ pF 6.0). Lower bound of plant-available water."""</span>
 
     <span class="n">wcwp</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.200</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSMW``. Volumetric soil-moisture content at the permanent</span>
-<span class="sd">    wilting point [m³ m⁻³] (pF ≈ 4.2).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSMW``. Volumetric soil-moisture content at the permanent</span>
+<span class="sd">    wilting point [m³ m⁻³] (pF ≈ 4.2)."""</span>
 
     <span class="n">wcfc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.350</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSMFC``. Volumetric soil-moisture content at field capacity</span>
-<span class="sd">    [m³ m⁻³] (pF ≈ 2.3) — drainage threshold.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSMFC``. Volumetric soil-moisture content at field capacity</span>
+<span class="sd">    [m³ m⁻³] (pF ≈ 2.3) — drainage threshold."""</span>
 
     <span class="n">wcst</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.450</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSM0``. Volumetric soil-moisture content at saturation</span>
-<span class="sd">    [m³ m⁻³] — upper limit of pore-space water content.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSM0``. Volumetric soil-moisture content at saturation</span>
+<span class="sd">    [m³ m⁻³] — upper limit of pore-space water content."""</span>
 
     <span class="n">wci</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.300</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSMI``. Initial volumetric soil-moisture content in the rooted</span>
-<span class="sd">    zone [m³ m⁻³] at planting / emergence.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSMI``. Initial volumetric soil-moisture content in the rooted</span>
+<span class="sd">    zone [m³ m⁻³] at planting / emergence."""</span>
 
     <span class="n">wci_lower</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.300</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cSMLOWI``. Initial volumetric soil-moisture content in the</span>
-<span class="sd">    **lower** zone (below the rooted zone) [m³ m⁻³].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cSMLOWI``. Initial volumetric soil-moisture content in the</span>
+<span class="sd">    **lower** zone (below the rooted zone) [m³ m⁻³]."""</span>
 
     <span class="n">crairc</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.07</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCRAIRC``. Critical soil-air content [m³ m⁻³] for aeration —</span>
-<span class="sd">    below this air-filled porosity the crop suffers waterlogging stress.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cCRAIRC``. Critical soil-air content [m³ m⁻³] for aeration —</span>
+<span class="sd">    below this air-filled porosity the crop suffers waterlogging stress."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 2. Drainage, runoff, and percolation</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">ksub</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">10.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKSUB``. Maximum percolation rate [mm d⁻¹] from the lower zone</span>
-<span class="sd">    to deeper soil layers (sub-surface drainage).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cKSUB``. Maximum percolation rate [mm d⁻¹] from the lower zone</span>
+<span class="sd">    to deeper soil layers (sub-surface drainage)."""</span>
 
     <span class="n">runfr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRUNFR``. Average fraction [0–1] of incoming precipitation lost</span>
-<span class="sd">    to surface runoff.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRUNFR``. Average fraction [0–1] of incoming precipitation lost</span>
+<span class="sd">    to surface runoff."""</span>
 
     <span class="n">cfev</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">2.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cCFEV``. Correction factor [-] for the time course of soil</span>
-<span class="sd">    evaporation under drying conditions (Stroosnijder; range 1 – 4).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cCFEV``. Correction factor [-] for the time course of soil</span>
+<span class="sd">    evaporation under drying conditions (Stroosnijder; range 1 – 4)."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 3. Rooting depth (soil-side)</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">rdmso</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.50</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRDMSO``. Maximum rooting depth [m] as constrained by the</span>
+<span class="w">    </span><span class="sd">"""``cRDMSO``. Maximum rooting depth [m] as constrained by the</span>
 <span class="sd">    soil profile (e.g. by an impermeable layer). The actual maximum</span>
-<span class="sd">    rooting depth is ``min(cRDMCR, cRDMSO)``.&quot;&quot;&quot;</span>
+<span class="sd">    rooting depth is ``min(cRDMCR, cRDMSO)``."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 4. Irrigation</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="n">irri</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIRRI``. Irrigation mode: ``0`` → no irrigation,</span>
+<span class="w">    </span><span class="sd">"""``cIRRI``. Irrigation mode: ``0`` → no irrigation,</span>
 <span class="sd">    ``1`` → automatic (refill to field capacity),</span>
-<span class="sd">    ``2`` → use day-resolved `irrtab`.&quot;&quot;&quot;</span>
+<span class="sd">    ``2`` → use day-resolved `irrtab`."""</span>
 
     <span class="n">irrtab</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cIRRTAB``. Optional table of effective irrigation applications</span>
-<span class="sd">    [mm d⁻¹] as a function of day number; shape ``[N, 2]``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cIRRTAB``. Optional table of effective irrigation applications</span>
+<span class="sd">    [mm d⁻¹] as a function of day number; shape ``[N, 2]``."""</span>
 
     <span class="n">scale_factor_irr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">1.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cScaleFactorIRR``. Scale factor on `irrtab` y-values for</span>
-<span class="sd">    sensitivity analysis / calibration.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cScaleFactorIRR``. Scale factor on `irrtab` y-values for</span>
+<span class="sd">    sensitivity analysis / calibration."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># 5. Soil mineral nutrient supply (mineralisation kinetics)</span>
@@ -3424,66 +3452,66 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
     <span class="c1"># that integration — the *current* pool levels live on `ModelState`.</span>
 
     <span class="n">rtnmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTNMINS``. Fraction [d⁻¹] of the soil organic-N pool that</span>
+<span class="w">    </span><span class="sd">"""``cRTNMINS``. Fraction [d⁻¹] of the soil organic-N pool that</span>
 <span class="sd">    becomes mineralised and plant-available per day. Multiplied by the</span>
 <span class="sd">    *initial* organic pool ``nmini`` (Lintul5 convention) and capped by</span>
 <span class="sd">    the current ``NMIN``. Default 0.01 gives a steady-state daily</span>
-<span class="sd">    mineralisation of ``0.01 × nmini`` g N m⁻² d⁻¹.&quot;&quot;&quot;</span>
+<span class="sd">    mineralisation of ``0.01 × nmini`` g N m⁻² d⁻¹."""</span>
 
     <span class="n">rtpmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTPMINS``. Fraction [d⁻¹] of soil P becoming available per</span>
-<span class="sd">    day. Default 0.01.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRTPMINS``. Fraction [d⁻¹] of soil P becoming available per</span>
+<span class="sd">    day. Default 0.01."""</span>
 
     <span class="n">rtkmins</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cRTKMINS``. Fraction [d⁻¹] of soil K becoming available per</span>
-<span class="sd">    day. Default 0.01.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""``cRTKMINS``. Fraction [d⁻¹] of soil K becoming available per</span>
+<span class="sd">    day. Default 0.01."""</span>
 
     <span class="n">nmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">50.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cNMINI``. Initial amount [g N m⁻²] of mineralisable soil</span>
+<span class="w">    </span><span class="sd">"""``cNMINI``. Initial amount [g N m⁻²] of mineralisable soil</span>
 <span class="sd">    organic N at crop emergence; this seeds `ModelState.nmin`. Default</span>
 <span class="sd">    50 g/m² (~500 kg N/ha) combined with ``rtnmins=0.01`` produces a</span>
 <span class="sd">    steady-state mineralisation flux of 0.5 g N m⁻² d⁻¹, matching the</span>
-<span class="sd">    previous scalar surrogate.&quot;&quot;&quot;</span>
+<span class="sd">    previous scalar surrogate."""</span>
 
     <span class="n">pmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">5.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cPMINI``. Initial mineralisable organic P pool [g P m⁻²].</span>
+<span class="w">    </span><span class="sd">"""``cPMINI``. Initial mineralisable organic P pool [g P m⁻²].</span>
 <span class="sd">    Default 5 g/m² × ``rtpmins=0.01`` ⇒ 0.05 g P m⁻² d⁻¹ steady-state</span>
-<span class="sd">    supply.&quot;&quot;&quot;</span>
+<span class="sd">    supply."""</span>
 
     <span class="n">kmini</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">30.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;``cKMINI``. Initial mineralisable organic K pool [g K m⁻²].</span>
+<span class="w">    </span><span class="sd">"""``cKMINI``. Initial mineralisable organic K pool [g K m⁻²].</span>
 <span class="sd">    Default 30 g/m² × ``rtkmins=0.01`` ⇒ 0.30 g K m⁻² d⁻¹ steady-state</span>
-<span class="sd">    supply.&quot;&quot;&quot;</span>
+<span class="sd">    supply."""</span>
 
     <span class="n">nminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic N pool ``NMINT`` [g N m⁻²]</span>
+<span class="w">    </span><span class="sd">"""Initial directly available inorganic N pool ``NMINT`` [g N m⁻²]</span>
 <span class="sd">    at sowing/emergence. SIMPLACE default is 0; raise this to represent</span>
-<span class="sd">    residual mineral N at planting.&quot;&quot;&quot;</span>
+<span class="sd">    residual mineral N at planting."""</span>
 
     <span class="n">pminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic P pool.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initial directly available inorganic P pool."""</span>
 
     <span class="n">kminti</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">_t</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initial directly available inorganic K pool.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Initial directly available inorganic K pool."""</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># Helpers</span>
     <span class="c1"># ------------------------------------------------------------------ #</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical soil fields.</span>
+<span class="w">        </span><span class="sd">"""Validate discrete/categorical soil fields.</span>
 
 <span class="sd">        Checks that the irrigation mode ``irri`` holds only the</span>
 <span class="sd">        supported discrete values ``{0, 1, 2}`` (per element when</span>
 <span class="sd">        batched). The water-balance selection logic matches these modes</span>
 <span class="sd">        by exact equality, so an off-grid value (e.g. ``1.5`` or ``3``)</span>
-<span class="sd">        would silently fall through to &quot;no irrigation&quot;; this guard turns</span>
+<span class="sd">        would silently fall through to "no irrigation"; this guard turns</span>
 <span class="sd">        that into an explicit error.</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If any ``irri`` element is not one of</span>
 <span class="sd">                ``{0, 1, 2}``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">):</span>
             <span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
@@ -3491,16 +3519,16 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
             <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;soil_params.irri must be one of {0, 1, 2} (0=none, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="s2">"soil_params.irri must be one of {0, 1, 2} (0=none, "</span>
+                <span class="sa">f</span><span class="s2">"1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SoilParameters&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SoilParameters"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Cast and/or move all tensor fields to a new dtype/device.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -3508,7 +3536,7 @@ scaffold; the containers accept either <code>[B]</code> (single-layer) or
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A new `SoilParameters` with every tensor field moved/cast.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -4133,8 +4161,8 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SoilParameters&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cast and/or move all tensor fields to a new dtype/device.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SoilParameters"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Cast and/or move all tensor fields to a new dtype/device.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype, or ``None`` to leave unchanged.</span>
@@ -4142,7 +4170,7 @@ wilting point [m³ m⁻³] (pF ≈ 4.2).</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new `SoilParameters` with every tensor field moved/cast.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">t</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -4198,19 +4226,19 @@ that into an explicit error.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate discrete/categorical soil fields.</span>
+<span class="w">    </span><span class="sd">"""Validate discrete/categorical soil fields.</span>
 
 <span class="sd">    Checks that the irrigation mode ``irri`` holds only the</span>
 <span class="sd">    supported discrete values ``{0, 1, 2}`` (per element when</span>
 <span class="sd">    batched). The water-balance selection logic matches these modes</span>
 <span class="sd">    by exact equality, so an off-grid value (e.g. ``1.5`` or ``3``)</span>
-<span class="sd">    would silently fall through to &quot;no irrigation&quot;; this guard turns</span>
+<span class="sd">    would silently fall through to "no irrigation"; this guard turns</span>
 <span class="sd">    that into an explicit error.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If any ``irri`` element is not one of</span>
 <span class="sd">            ``{0, 1, 2}``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">):</span>
         <span class="n">valid</span> <span class="o">=</span> <span class="n">valid</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
@@ -4218,8 +4246,8 @@ that into an explicit error.</p>
         <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;soil_params.irri must be one of {0, 1, 2} (0=none, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="s2">"soil_params.irri must be one of {0, 1, 2} (0=none, "</span>
+            <span class="sa">f</span><span class="s2">"1=auto refill, 2=irrtab); got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">irri</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
 </code></pre></div>
         </details>
@@ -4292,7 +4320,7 @@ cast to <code>dtype</code>.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/parameters/soil_params.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">default_loam_params</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SoilParameters</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the SIMPLACE Lintul5 default loam-like soil parameter set.</span>
+<span class="w">    </span><span class="sd">"""Return the SIMPLACE Lintul5 default loam-like soil parameter set.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        dtype: Target tensor dtype for all scalar fields.</span>
@@ -4300,7 +4328,7 @@ cast to <code>dtype</code>.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        A fresh `SoilParameters` with the Lintul5 loam defaults</span>
 <span class="sd">        cast to ``dtype``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">SoilParameters</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 </code></pre></div>
         </details>

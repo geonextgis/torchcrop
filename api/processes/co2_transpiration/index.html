@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2868,7 +2896,7 @@ flip the sign of transpiration.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Co2Transpiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reduce potential transpiration as a linear function of CO₂.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Reduce potential transpiration as a linear function of CO₂.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        transpiration_m: Slope ``cTranspiration_m`` of the linear reduction</span>
@@ -2878,7 +2906,7 @@ flip the sign of transpiration.</p></td>
 <span class="sd">        clamp_nonnegative: If ``True`` (default), clamp the reduction</span>
 <span class="sd">            factor to ``≥ 0`` so an extreme CO₂ value can never</span>
 <span class="sd">            flip the sign of transpiration.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2892,7 +2920,7 @@ flip the sign of transpiration.</p></td>
         <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span> <span class="o">=</span> <span class="n">clamp_nonnegative</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO₂ transpiration-reduction factor.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Compute the CO₂ transpiration-reduction factor.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            co2: Atmospheric CO₂ concentration [ppm], broadcastable</span>
@@ -2901,7 +2929,7 @@ flip the sign of transpiration.</p></td>
 <span class="sd">        Returns:</span>
 <span class="sd">            Reduction factor ``f(CO₂) = m·CO₂ + b`` [-]; clamped to ``≥ 0``</span>
 <span class="sd">            when ``clamp_nonnegative`` is set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_m</span> <span class="o">*</span> <span class="n">co2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_b</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span><span class="p">:</span>
             <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -2912,7 +2940,7 @@ flip the sign of transpiration.</p></td>
         <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO₂ reduction to potential transpiration.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Apply the CO₂ reduction to potential transpiration.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
@@ -2925,11 +2953,11 @@ flip the sign of transpiration.</p></td>
 <span class="sd">            * ``ptran`` [mm d⁻¹] — CO₂-reduced potential</span>
 <span class="sd">              transpiration ``PTRAN · f(CO₂)``.</span>
 <span class="sd">            * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">co2</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
-            <span class="s2">&quot;co2_factor&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+            <span class="s2">"ptran"</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
+            <span class="s2">"co2_factor"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3000,7 +3028,7 @@ when <code>clamp_nonnegative</code> is set.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/co2_transpiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the CO₂ transpiration-reduction factor.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Compute the CO₂ transpiration-reduction factor.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        co2: Atmospheric CO₂ concentration [ppm], broadcastable</span>
@@ -3009,7 +3037,7 @@ when <code>clamp_nonnegative</code> is set.</p></td>
 <span class="sd">    Returns:</span>
 <span class="sd">        Reduction factor ``f(CO₂) = m·CO₂ + b`` [-]; clamped to ``≥ 0``</span>
 <span class="sd">        when ``clamp_nonnegative`` is set.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_m</span> <span class="o">*</span> <span class="n">co2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transpiration_b</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_nonnegative</span><span class="p">:</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
@@ -3088,7 +3116,7 @@ tensor or shape broadcastable to <code>[B]</code>.</p></td>
     <span class="n">ptran</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">co2</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Apply the CO₂ reduction to potential transpiration.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Apply the CO₂ reduction to potential transpiration.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        ptran: Potential canopy transpiration [mm d⁻¹], shape ``[B]``.</span>
@@ -3101,11 +3129,11 @@ tensor or shape broadcastable to <code>[B]</code>.</p></td>
 <span class="sd">        * ``ptran`` [mm d⁻¹] — CO₂-reduced potential</span>
 <span class="sd">          transpiration ``PTRAN · f(CO₂)``.</span>
 <span class="sd">        * ``co2_factor`` [-] — The applied reduction factor ``f(CO₂)``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">co2_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">(</span><span class="n">co2</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
-        <span class="s2">&quot;co2_factor&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+        <span class="s2">"ptran"</span><span class="p">:</span> <span class="n">ptran</span> <span class="o">*</span> <span class="n">co2_factor</span><span class="p">,</span>
+        <span class="s2">"co2_factor"</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">co2_factor</span><span class="p">,</span> <span class="n">ptran</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

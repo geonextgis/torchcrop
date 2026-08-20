@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2826,12 +2854,12 @@ law.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/irradiation.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Irradiation</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily total irradiation and PAR interception by canopy.</span>
+<span class="w">    </span><span class="sd">"""Daily total irradiation and PAR interception by canopy.</span>
 
 <span class="sd">    Computes ``AVRAD`` (daily total irradiation) from solar geometry,</span>
 <span class="sd">    then calculates PAR interception via the Beer–Lambert extinction</span>
 <span class="sd">    law.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2843,7 +2871,7 @@ law.</p>
         <span class="n">dtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute daily irradiation and canopy PAR interception.</span>
+<span class="w">        </span><span class="sd">"""Compute daily irradiation and canopy PAR interception.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current model state (uses ``state.lai``,</span>
@@ -2871,7 +2899,7 @@ law.</p>
 <span class="sd">            * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
 <span class="sd">            * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">              fraction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN.</span>
         <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
 
@@ -2907,11 +2935,11 @@ law.</p>
         <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;avrad&quot;</span><span class="p">:</span> <span class="n">avrad</span><span class="p">,</span>
-            <span class="s2">&quot;atmtr&quot;</span><span class="p">:</span> <span class="n">atmtr</span><span class="p">,</span>
-            <span class="s2">&quot;par&quot;</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span>
-            <span class="s2">&quot;parint&quot;</span><span class="p">:</span> <span class="n">parint</span><span class="p">,</span>
-            <span class="s2">&quot;frac_intercepted&quot;</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span>
+            <span class="s2">"avrad"</span><span class="p">:</span> <span class="n">avrad</span><span class="p">,</span>
+            <span class="s2">"atmtr"</span><span class="p">:</span> <span class="n">atmtr</span><span class="p">,</span>
+            <span class="s2">"par"</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span>
+            <span class="s2">"parint"</span><span class="p">:</span> <span class="n">parint</span><span class="p">,</span>
+            <span class="s2">"frac_intercepted"</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3039,7 +3067,7 @@ y-values).</p></td>
     <span class="n">dtr</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute daily irradiation and canopy PAR interception.</span>
+<span class="w">    </span><span class="sd">"""Compute daily irradiation and canopy PAR interception.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current model state (uses ``state.lai``,</span>
@@ -3067,7 +3095,7 @@ y-values).</p></td>
 <span class="sd">        * ``parint`` [J m⁻² d⁻¹] — PAR intercepted by canopy.</span>
 <span class="sd">        * ``frac_intercepted`` [-] — Beer–Lambert interception</span>
 <span class="sd">          fraction.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Convert DTR from MJ m⁻² d⁻¹ to J m⁻² d⁻¹ for PENMAN.</span>
     <span class="n">dtr_j</span> <span class="o">=</span> <span class="n">dtr</span> <span class="o">*</span> <span class="mf">1e6</span>
 
@@ -3103,11 +3131,11 @@ y-values).</p></td>
     <span class="n">parint</span> <span class="o">=</span> <span class="n">par</span> <span class="o">*</span> <span class="n">frac</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;avrad&quot;</span><span class="p">:</span> <span class="n">avrad</span><span class="p">,</span>
-        <span class="s2">&quot;atmtr&quot;</span><span class="p">:</span> <span class="n">atmtr</span><span class="p">,</span>
-        <span class="s2">&quot;par&quot;</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span>
-        <span class="s2">&quot;parint&quot;</span><span class="p">:</span> <span class="n">parint</span><span class="p">,</span>
-        <span class="s2">&quot;frac_intercepted&quot;</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span>
+        <span class="s2">"avrad"</span><span class="p">:</span> <span class="n">avrad</span><span class="p">,</span>
+        <span class="s2">"atmtr"</span><span class="p">:</span> <span class="n">atmtr</span><span class="p">,</span>
+        <span class="s2">"par"</span><span class="p">:</span> <span class="n">par</span><span class="p">,</span>
+        <span class="s2">"parint"</span><span class="p">:</span> <span class="n">parint</span><span class="p">,</span>
+        <span class="s2">"frac_intercepted"</span><span class="p">:</span> <span class="n">frac</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

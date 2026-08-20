@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2842,7 +2870,7 @@ made batch-varying or learnable.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/evapotranspiration.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">PotentialEvapoTranspiration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;PENMAN-based potential evapotranspiration calculation.</span>
+<span class="w">    </span><span class="sd">"""PENMAN-based potential evapotranspiration calculation.</span>
 
 <span class="sd">    Implements the full PENMAN formula and outputs reference ET</span>
 <span class="sd">    (``E0``, ``ES0``, ``ETC``), which is then split into potential</span>
@@ -2852,7 +2880,7 @@ made batch-varying or learnable.</p>
 <span class="sd">    are supplied per call through `forward` rather than at construction,</span>
 <span class="sd">    so they flow directly from the `SiteParameters` dataclass and can be</span>
 <span class="sd">    made batch-varying or learnable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># Default Penman ET0 CO₂-correction table (concentration [ppm] →</span>
     <span class="c1"># factor), used when ``fpenmtb`` is not supplied. Mirrors the</span>
@@ -2879,7 +2907,7 @@ made batch-varying or learnable.</p>
         <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
+<span class="w">        </span><span class="sd">"""Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tmin: Minimum daily air temperature [°C], shape ``[B]``.</span>
@@ -2915,7 +2943,7 @@ made batch-varying or learnable.</p>
 <span class="sd">              (``= CFET · ETC · frac_int``).</span>
 <span class="sd">            * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">              (``= ES0 · (1 − frac_int)``).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Constants from the PENMAN formula.</span>
         <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
         <span class="n">B</span> <span class="o">=</span> <span class="mf">0.56</span>
@@ -3004,11 +3032,11 @@ made batch-varying or learnable.</p>
         <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;e0&quot;</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
-            <span class="s2">&quot;es0&quot;</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
-            <span class="s2">&quot;etc&quot;</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
-            <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
-            <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
+            <span class="s2">"e0"</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
+            <span class="s2">"es0"</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
+            <span class="s2">"etc"</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
+            <span class="s2">"ptran"</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
+            <span class="s2">"pevap"</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3168,7 +3196,7 @@ falls back to the standard C3 table when <code>None</code>.</p></td>
     <span class="n">cfet</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="n">fpenmtb</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
+<span class="w">    </span><span class="sd">"""Compute PENMAN potential ET and split into canopy/soil fluxes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tmin: Minimum daily air temperature [°C], shape ``[B]``.</span>
@@ -3204,7 +3232,7 @@ falls back to the standard C3 table when <code>None</code>.</p></td>
 <span class="sd">          (``= CFET · ETC · frac_int``).</span>
 <span class="sd">        * ``pevap`` [mm d⁻¹] — Potential soil evaporation</span>
 <span class="sd">          (``= ES0 · (1 − frac_int)``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Constants from the PENMAN formula.</span>
     <span class="n">A</span> <span class="o">=</span> <span class="mf">0.20</span>
     <span class="n">B</span> <span class="o">=</span> <span class="mf">0.56</span>
@@ -3293,11 +3321,11 @@ falls back to the standard C3 table when <code>None</code>.</p></td>
     <span class="n">pevap</span> <span class="o">=</span> <span class="n">es0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">frac_int</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;e0&quot;</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
-        <span class="s2">&quot;es0&quot;</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
-        <span class="s2">&quot;etc&quot;</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
-        <span class="s2">&quot;ptran&quot;</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
-        <span class="s2">&quot;pevap&quot;</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
+        <span class="s2">"e0"</span><span class="p">:</span> <span class="n">e0</span><span class="p">,</span>
+        <span class="s2">"es0"</span><span class="p">:</span> <span class="n">es0</span><span class="p">,</span>
+        <span class="s2">"etc"</span><span class="p">:</span> <span class="n">etc</span><span class="p">,</span>
+        <span class="s2">"ptran"</span><span class="p">:</span> <span class="n">ptran</span><span class="p">,</span>
+        <span class="s2">"pevap"</span><span class="p">:</span> <span class="n">pevap</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

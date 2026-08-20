@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2878,7 +2906,7 @@ file.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HeatStressOnGrain</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Heat-stress penalty on grain yield around anthesis.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Heat-stress penalty on grain yield around anthesis.</span>
 
 <span class="sd">    Accumulates a daily heat-stress intensity over a development-stage</span>
 <span class="sd">    window bracketing anthesis (``DVS`` roughly ``0.8``–``1.3``) and turns</span>
@@ -2924,7 +2952,7 @@ file.</p>
 <span class="sd">    ``grain_heat_begin_devstage`` and ``grain_heat_end_devstage`` —</span>
 <span class="sd">    so they can be loaded per crop from an external configuration</span>
 <span class="sd">    file.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2934,7 +2962,7 @@ file.</p>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">yield_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress factor over the anthesis window.</span>
+<span class="w">        </span><span class="sd">"""Compute the heat-stress factor over the anthesis window.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tmin: Daily minimum air temperature [°C], shape ``[B, T]``.</span>
@@ -2968,7 +2996,7 @@ file.</p>
 <span class="sd">              development-stage window, else ``0``, shape ``[B, T]``.</span>
 <span class="sd">            * ``window_days`` [-] — Number of days inside the window,</span>
 <span class="sd">              shape ``[B]``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_critical</span>
         <span class="n">temp_limit</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_limit</span>
         <span class="n">begin_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_begin_devstage</span>
@@ -3000,14 +3028,14 @@ file.</p>
         <span class="p">)</span>
 
         <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
-            <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
-            <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
-            <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
-            <span class="s2">&quot;period_ended&quot;</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
+            <span class="s2">"heat_stress_factor"</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
+            <span class="s2">"daily_factor"</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
+            <span class="s2">"window_mask"</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
+            <span class="s2">"window_days"</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+            <span class="s2">"period_ended"</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"adjusted_yield"</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
         <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -3129,7 +3157,7 @@ and <code>grain_heat_end_devstage</code>.</p></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">yield_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress factor over the anthesis window.</span>
+<span class="w">    </span><span class="sd">"""Compute the heat-stress factor over the anthesis window.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tmin: Daily minimum air temperature [°C], shape ``[B, T]``.</span>
@@ -3163,7 +3191,7 @@ and <code>grain_heat_end_devstage</code>.</p></td>
 <span class="sd">          development-stage window, else ``0``, shape ``[B, T]``.</span>
 <span class="sd">        * ``window_days`` [-] — Number of days inside the window,</span>
 <span class="sd">          shape ``[B]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_critical</span>
     <span class="n">temp_limit</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_temp_limit</span>
     <span class="n">begin_devstage</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">grain_heat_begin_devstage</span>
@@ -3195,14 +3223,14 @@ and <code>grain_heat_end_devstage</code>.</p></td>
     <span class="p">)</span>
 
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;heat_stress_factor&quot;</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
-        <span class="s2">&quot;daily_factor&quot;</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
-        <span class="s2">&quot;window_mask&quot;</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
-        <span class="s2">&quot;window_days&quot;</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
-        <span class="s2">&quot;period_ended&quot;</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
+        <span class="s2">"heat_stress_factor"</span><span class="p">:</span> <span class="n">heat_stress_factor</span><span class="p">,</span>
+        <span class="s2">"daily_factor"</span><span class="p">:</span> <span class="n">daily_factor</span><span class="p">,</span>
+        <span class="s2">"window_mask"</span><span class="p">:</span> <span class="n">window_mask</span><span class="p">,</span>
+        <span class="s2">"window_days"</span><span class="p">:</span> <span class="n">window_days</span><span class="p">,</span>
+        <span class="s2">"period_ended"</span><span class="p">:</span> <span class="n">period_ended</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">yield_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;adjusted_yield&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"adjusted_yield"</span><span class="p">]</span> <span class="o">=</span> <span class="n">period_ended</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">heat_stress_factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">yield_</span>
     <span class="k">return</span> <span class="n">out</span>
 </code></pre></div>
         </details>
@@ -3288,7 +3316,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/heat_stress.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">HeatStressOnLeafSenescence</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Heat-stress acceleration of leaf senescence.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Heat-stress acceleration of leaf senescence.</span>
 
 <span class="sd">    When the daily maximum temperature ``Tmax`` exceeds a critical</span>
 <span class="sd">    threshold ``Tc`` *and* the crop has passed a critical development</span>
@@ -3318,7 +3346,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
 <span class="sd">        smooth: If ``True``, replace the hard ``Tmax``/``DVS``</span>
 <span class="sd">            thresholds with sigmoid blends for smoother gradients.</span>
 <span class="sd">        k_sharp: Sigmoid sharpness; ignored when ``smooth=False``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -3335,7 +3363,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
         <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress leaf-senescence multiplier for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute the heat-stress leaf-senescence multiplier for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
@@ -3350,7 +3378,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
 <span class="sd">            ``[B]``. Equals ``1`` outside the heat-stress regime and ``≥ 0``</span>
 <span class="sd">            (typically ``&gt; 1``) inside it. Intended to be passed as the</span>
 <span class="sd">            ``heat_stress`` argument of `LeafDynamics`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_temp_critical</span>
         <span class="n">factor_at_temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_at_temp_critical</span>
         <span class="n">factor_slope</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_slope</span>
@@ -3466,7 +3494,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
     <span class="n">dvs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the heat-stress leaf-senescence multiplier for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute the heat-stress leaf-senescence multiplier for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tmax: Daily maximum air temperature [°C], shape ``[B]``.</span>
@@ -3481,7 +3509,7 @@ thresholds with sigmoid blends for smoother gradients.</p></td>
 <span class="sd">        ``[B]``. Equals ``1`` outside the heat-stress regime and ``≥ 0``</span>
 <span class="sd">        (typically ``&gt; 1``) inside it. Intended to be passed as the</span>
 <span class="sd">        ``heat_stress`` argument of `LeafDynamics`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_temp_critical</span>
     <span class="n">factor_at_temp_critical</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_at_temp_critical</span>
     <span class="n">factor_slope</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">leaf_heat_factor_slope</span>

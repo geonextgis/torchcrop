@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2834,7 +2862,7 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/leaf_dynamics.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LeafDynamics</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Leaf area growth, senescence, dead-leaf accumulation.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Leaf area growth, senescence, dead-leaf accumulation."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2846,10 +2874,10 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
         <span class="n">heat_stress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">hybrid</span><span class="p">:</span> <span class="s2">&quot;HybridManager | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">hybrid</span><span class="p">:</span> <span class="s2">"HybridManager | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">features</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute leaf area and leaf-biomass rates for one day.</span>
+<span class="w">        </span><span class="sd">"""Compute leaf area and leaf-biomass rates for one day.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current state; uses ``state.lai``, ``state.wlv``,</span>
@@ -2880,12 +2908,12 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                nor senesce. Defaults to</span>
 <span class="sd">                ``state.tsump &gt;= params.tsumem``.</span>
 <span class="sd">            hybrid: Optional `HybridManager`. When supplied together with</span>
-<span class="sd">                ``features`` and a ``&quot;leaf.rdr&quot;`` slot is configured, the</span>
+<span class="sd">                ``features`` and a ``"leaf.rdr"`` slot is configured, the</span>
 <span class="sd">                relative death rate ``RDR`` receives a bounded multiplicative</span>
 <span class="sd">                residual correction before the ≤ 1 cap. ``None`` disables</span>
 <span class="sd">                the correction (pure mechanistic behaviour).</span>
 <span class="sd">            features: Optional per-day feature dict supplying the context</span>
-<span class="sd">                tensors for the ``&quot;leaf.rdr&quot;`` slot. Ignored when ``hybrid``</span>
+<span class="sd">                tensors for the ``"leaf.rdr"`` slot. Ignored when ``hybrid``</span>
 <span class="sd">                is ``None``.</span>
 
 <span class="sd">        Returns:</span>
@@ -2911,7 +2939,7 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
 <span class="sd">                death.</span>
 <span class="sd">            * ``sla`` [m² g⁻¹] — Effective specific leaf area after</span>
 <span class="sd">                NPK reduction.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lai</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span>
         <span class="n">wlv</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wlv</span>
         <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
@@ -2968,7 +2996,7 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="c1"># (``dlais = lai · rdr``) consistent, so the green→dead-leaf transfer</span>
         <span class="c1"># remains mass-conserving.</span>
         <span class="k">if</span> <span class="n">hybrid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;leaf.rdr&quot;</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+            <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"leaf.rdr"</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
         <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdr</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
         <span class="c1"># Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).</span>
@@ -2995,13 +3023,13 @@ LeafDynamics            (<span title="torch.nn.modules.module.Module">Module</sp
         <span class="n">wlv_rate</span> <span class="o">=</span> <span class="n">g_lv</span> <span class="o">-</span> <span class="n">dlv</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">lai_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">wlv_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">dlv</span><span class="p">,</span>
-            <span class="s2">&quot;lai_growth&quot;</span><span class="p">:</span> <span class="n">glai</span><span class="p">,</span>
-            <span class="s2">&quot;lai_sen&quot;</span><span class="p">:</span> <span class="n">dlai</span><span class="p">,</span>
-            <span class="s2">&quot;rdr&quot;</span><span class="p">:</span> <span class="n">rdr</span><span class="p">,</span>
-            <span class="s2">&quot;sla&quot;</span><span class="p">:</span> <span class="n">sla</span><span class="p">,</span>
+            <span class="s2">"lai_rate"</span><span class="p">:</span> <span class="n">lai_rate</span><span class="p">,</span>
+            <span class="s2">"wlv_rate"</span><span class="p">:</span> <span class="n">wlv_rate</span><span class="p">,</span>
+            <span class="s2">"wlvd_rate"</span><span class="p">:</span> <span class="n">dlv</span><span class="p">,</span>
+            <span class="s2">"lai_growth"</span><span class="p">:</span> <span class="n">glai</span><span class="p">,</span>
+            <span class="s2">"lai_sen"</span><span class="p">:</span> <span class="n">dlai</span><span class="p">,</span>
+            <span class="s2">"rdr"</span><span class="p">:</span> <span class="n">rdr</span><span class="p">,</span>
+            <span class="s2">"sla"</span><span class="p">:</span> <span class="n">sla</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3178,10 +3206,10 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">params</span><span class="p">:</span> <span class="n">CropParameters</span><span class="p">,</span>
     <span class="n">heat_stress</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">emerg</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">hybrid</span><span class="p">:</span> <span class="s2">&quot;HybridManager | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">hybrid</span><span class="p">:</span> <span class="s2">"HybridManager | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">features</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute leaf area and leaf-biomass rates for one day.</span>
+<span class="w">    </span><span class="sd">"""Compute leaf area and leaf-biomass rates for one day.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current state; uses ``state.lai``, ``state.wlv``,</span>
@@ -3212,12 +3240,12 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            nor senesce. Defaults to</span>
 <span class="sd">            ``state.tsump &gt;= params.tsumem``.</span>
 <span class="sd">        hybrid: Optional `HybridManager`. When supplied together with</span>
-<span class="sd">            ``features`` and a ``&quot;leaf.rdr&quot;`` slot is configured, the</span>
+<span class="sd">            ``features`` and a ``"leaf.rdr"`` slot is configured, the</span>
 <span class="sd">            relative death rate ``RDR`` receives a bounded multiplicative</span>
 <span class="sd">            residual correction before the ≤ 1 cap. ``None`` disables</span>
 <span class="sd">            the correction (pure mechanistic behaviour).</span>
 <span class="sd">        features: Optional per-day feature dict supplying the context</span>
-<span class="sd">            tensors for the ``&quot;leaf.rdr&quot;`` slot. Ignored when ``hybrid``</span>
+<span class="sd">            tensors for the ``"leaf.rdr"`` slot. Ignored when ``hybrid``</span>
 <span class="sd">            is ``None``.</span>
 
 <span class="sd">    Returns:</span>
@@ -3243,7 +3271,7 @@ Rate variables (consumed by the engine for state update)</code></td>
 <span class="sd">            death.</span>
 <span class="sd">        * ``sla`` [m² g⁻¹] — Effective specific leaf area after</span>
 <span class="sd">            NPK reduction.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lai</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">lai</span>
     <span class="n">wlv</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">wlv</span>
     <span class="n">dvs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">dvs</span>
@@ -3300,7 +3328,7 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="c1"># (``dlais = lai · rdr``) consistent, so the green→dead-leaf transfer</span>
     <span class="c1"># remains mass-conserving.</span>
     <span class="k">if</span> <span class="n">hybrid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">&quot;leaf.rdr&quot;</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+        <span class="n">rdr</span> <span class="o">=</span> <span class="n">hybrid</span><span class="o">.</span><span class="n">correct</span><span class="p">(</span><span class="s2">"leaf.rdr"</span><span class="p">,</span> <span class="n">rdr</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
     <span class="n">rdr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">rdr</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="c1"># Senescence from drivers (max of RDRDV / RDRSH / RDRDRY).</span>
@@ -3327,13 +3355,13 @@ Rate variables (consumed by the engine for state update)</code></td>
     <span class="n">wlv_rate</span> <span class="o">=</span> <span class="n">g_lv</span> <span class="o">-</span> <span class="n">dlv</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;lai_rate&quot;</span><span class="p">:</span> <span class="n">lai_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wlv_rate&quot;</span><span class="p">:</span> <span class="n">wlv_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wlvd_rate&quot;</span><span class="p">:</span> <span class="n">dlv</span><span class="p">,</span>
-        <span class="s2">&quot;lai_growth&quot;</span><span class="p">:</span> <span class="n">glai</span><span class="p">,</span>
-        <span class="s2">&quot;lai_sen&quot;</span><span class="p">:</span> <span class="n">dlai</span><span class="p">,</span>
-        <span class="s2">&quot;rdr&quot;</span><span class="p">:</span> <span class="n">rdr</span><span class="p">,</span>
-        <span class="s2">&quot;sla&quot;</span><span class="p">:</span> <span class="n">sla</span><span class="p">,</span>
+        <span class="s2">"lai_rate"</span><span class="p">:</span> <span class="n">lai_rate</span><span class="p">,</span>
+        <span class="s2">"wlv_rate"</span><span class="p">:</span> <span class="n">wlv_rate</span><span class="p">,</span>
+        <span class="s2">"wlvd_rate"</span><span class="p">:</span> <span class="n">dlv</span><span class="p">,</span>
+        <span class="s2">"lai_growth"</span><span class="p">:</span> <span class="n">glai</span><span class="p">,</span>
+        <span class="s2">"lai_sen"</span><span class="p">:</span> <span class="n">dlai</span><span class="p">,</span>
+        <span class="s2">"rdr"</span><span class="p">:</span> <span class="n">rdr</span><span class="p">,</span>
+        <span class="s2">"sla"</span><span class="p">:</span> <span class="n">sla</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

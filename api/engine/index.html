@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2834,7 +2862,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SimulationEngine</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Daily time-stepping loop.</span>
+<span class="w">    </span><span class="sd">"""Daily time-stepping loop.</span>
 
 <span class="sd">    The engine expects a callable ``compute_rates(state, weather_day, doy)``</span>
 <span class="sd">    returning a dict of rate tensors indexed by state-field name, plus a</span>
@@ -2846,7 +2874,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="sd">        update_state: Callable applying an integration step</span>
 <span class="sd">            ``(state, rates, dt) -&gt; ModelState``.</span>
 <span class="sd">        dt: Integration step size in days. Defaults to ``1.0``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2906,7 +2934,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
         <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
         <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
+<span class="w">        </span><span class="sd">"""Run the full trajectory.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Initial `ModelState` at day 0.</span>
@@ -2936,7 +2964,7 @@ callable <code>update_state(state, rates, dt)</code>.</p>
 <span class="sd">            of length ``T`` of per-day `DiagnosticState` snapshots, or</span>
 <span class="sd">            entries of ``None`` when the configured ``compute_rates``</span>
 <span class="sd">            callable does not emit diagnostics.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
         <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">diagnostics_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -3103,7 +3131,7 @@ callable does not emit diagnostics.</p></td>
     <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span>
     <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
 <span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the full trajectory.</span>
+<span class="w">    </span><span class="sd">"""Run the full trajectory.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Initial `ModelState` at day 0.</span>
@@ -3133,7 +3161,7 @@ callable does not emit diagnostics.</p></td>
 <span class="sd">        of length ``T`` of per-day `DiagnosticState` snapshots, or</span>
 <span class="sd">        entries of ``None`` when the configured ``compute_rates``</span>
 <span class="sd">        callable does not emit diagnostics.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ModelState</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
     <span class="n">rates_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">diagnostics_all</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DiagnosticState</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -3234,7 +3262,7 @@ rates dict.</p></td>
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">StepResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Outputs of a single simulation step.</span>
+<span class="w">    </span><span class="sd">"""Outputs of a single simulation step.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        state: The updated `ModelState` after applying the Euler step.</span>
@@ -3244,7 +3272,7 @@ rates dict.</p></td>
 <span class="sd">            when the `compute_rates` callable returns</span>
 <span class="sd">            ``(rates, diagnostic)``; ``None`` when it returns only a</span>
 <span class="sd">            rates dict.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span>
     <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
@@ -3349,7 +3377,7 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
         <details class="quote">
           <summary>Source code in <code>torchcrop/engine.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">euler_update</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">ModelState</span><span class="p">,</span> <span class="n">rates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">dt</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ModelState</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forward-Euler update of a `ModelState`.</span>
+<span class="w">    </span><span class="sd">"""Forward-Euler update of a `ModelState`.</span>
 
 <span class="sd">    Rate keys must match state field names with a ``_rate`` suffix (e.g.</span>
 <span class="sd">    ``dvs_rate`` updates ``dvs``). Fields without a matching rate are left</span>
@@ -3357,84 +3385,84 @@ clamped to <code>&gt;= 0</code> and <code>dvs</code> is clamped to <code>[0, 2]<
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`.</span>
-<span class="sd">        rates: Dict of rate tensors keyed by ``&quot;&lt;field&gt;_rate&quot;``.</span>
+<span class="sd">        rates: Dict of rate tensors keyed by ``"&lt;field&gt;_rate"``.</span>
 <span class="sd">        dt: Integration step size in days.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new `ModelState` with all matched fields advanced by</span>
-<span class="sd">        ``rates[field + &quot;_rate&quot;] * dt``. Physically non-negative fields are</span>
+<span class="sd">        ``rates[field + "_rate"] * dt``. Physically non-negative fields are</span>
 <span class="sd">        clamped to ``&gt;= 0`` and ``dvs`` is clamped to ``[0, 2]``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
-        <span class="n">rate_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_rate&quot;</span>
+        <span class="n">rate_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_rate"</span>
         <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rate_key</span> <span class="ow">in</span> <span class="n">rates</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="n">new_val</span> <span class="o">=</span> <span class="n">current</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">rates</span><span class="p">[</span><span class="n">rate_key</span><span class="p">]</span>
             <span class="c1"># Non-negative clamping where it makes physical sense</span>
             <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span>
-                <span class="s2">&quot;tsum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;tsump&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;vern&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wlv&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wlvd&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wst&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wstd&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wrt&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wrtd&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wso&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;lai&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;rootd&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wa&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;wa_lower&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;anlv&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;anst&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;anrt&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;anso&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;aplv&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;apst&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;aprt&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;apso&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;aklv&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;akst&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;akrt&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;akso&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nmin&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;pmin&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;kmin&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nmint&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;pmint&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;kmint&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;tran_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;evap_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;rain_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;irrig_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;runoff_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;drain_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nuptr_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;puptr_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;kuptr_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nfixtr_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;parint_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;gtotal_cum&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nlossl&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nlossr&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;nlosss&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;plossl&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;plossr&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;plosss&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;klossl&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;klossr&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;klosss&quot;</span><span class="p">,</span>
+                <span class="s2">"tsum"</span><span class="p">,</span>
+                <span class="s2">"tsump"</span><span class="p">,</span>
+                <span class="s2">"vern"</span><span class="p">,</span>
+                <span class="s2">"wlv"</span><span class="p">,</span>
+                <span class="s2">"wlvd"</span><span class="p">,</span>
+                <span class="s2">"wst"</span><span class="p">,</span>
+                <span class="s2">"wstd"</span><span class="p">,</span>
+                <span class="s2">"wrt"</span><span class="p">,</span>
+                <span class="s2">"wrtd"</span><span class="p">,</span>
+                <span class="s2">"wso"</span><span class="p">,</span>
+                <span class="s2">"lai"</span><span class="p">,</span>
+                <span class="s2">"rootd"</span><span class="p">,</span>
+                <span class="s2">"wa"</span><span class="p">,</span>
+                <span class="s2">"wa_lower"</span><span class="p">,</span>
+                <span class="s2">"anlv"</span><span class="p">,</span>
+                <span class="s2">"anst"</span><span class="p">,</span>
+                <span class="s2">"anrt"</span><span class="p">,</span>
+                <span class="s2">"anso"</span><span class="p">,</span>
+                <span class="s2">"aplv"</span><span class="p">,</span>
+                <span class="s2">"apst"</span><span class="p">,</span>
+                <span class="s2">"aprt"</span><span class="p">,</span>
+                <span class="s2">"apso"</span><span class="p">,</span>
+                <span class="s2">"aklv"</span><span class="p">,</span>
+                <span class="s2">"akst"</span><span class="p">,</span>
+                <span class="s2">"akrt"</span><span class="p">,</span>
+                <span class="s2">"akso"</span><span class="p">,</span>
+                <span class="s2">"nmin"</span><span class="p">,</span>
+                <span class="s2">"pmin"</span><span class="p">,</span>
+                <span class="s2">"kmin"</span><span class="p">,</span>
+                <span class="s2">"nmint"</span><span class="p">,</span>
+                <span class="s2">"pmint"</span><span class="p">,</span>
+                <span class="s2">"kmint"</span><span class="p">,</span>
+                <span class="s2">"tran_cum"</span><span class="p">,</span>
+                <span class="s2">"evap_cum"</span><span class="p">,</span>
+                <span class="s2">"rain_cum"</span><span class="p">,</span>
+                <span class="s2">"irrig_cum"</span><span class="p">,</span>
+                <span class="s2">"runoff_cum"</span><span class="p">,</span>
+                <span class="s2">"drain_cum"</span><span class="p">,</span>
+                <span class="s2">"nuptr_cum"</span><span class="p">,</span>
+                <span class="s2">"puptr_cum"</span><span class="p">,</span>
+                <span class="s2">"kuptr_cum"</span><span class="p">,</span>
+                <span class="s2">"nfixtr_cum"</span><span class="p">,</span>
+                <span class="s2">"parint_cum"</span><span class="p">,</span>
+                <span class="s2">"gtotal_cum"</span><span class="p">,</span>
+                <span class="s2">"nlossl"</span><span class="p">,</span>
+                <span class="s2">"nlossr"</span><span class="p">,</span>
+                <span class="s2">"nlosss"</span><span class="p">,</span>
+                <span class="s2">"plossl"</span><span class="p">,</span>
+                <span class="s2">"plossr"</span><span class="p">,</span>
+                <span class="s2">"plosss"</span><span class="p">,</span>
+                <span class="s2">"klossl"</span><span class="p">,</span>
+                <span class="s2">"klossr"</span><span class="p">,</span>
+                <span class="s2">"klosss"</span><span class="p">,</span>
             <span class="p">}:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dvs&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"dvs"</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;sown&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"sown"</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dslr&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"dslr"</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;dsos&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"dsos"</span><span class="p">:</span>
                 <span class="n">new_val</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">new_val</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
             <span class="n">updates</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_val</span>
     <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="o">**</span><span class="n">updates</span><span class="p">)</span>

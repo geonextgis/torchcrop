@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2958,13 +2986,13 @@ batched and autograd-safe manner.</p>
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/water_balance.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">WaterBalance</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Two-zone soil water balance.</span>
+<span class="w">    </span><span class="sd">"""Two-zone soil water balance.</span>
 
 <span class="sd">    Computes daily water fluxes (transpiration, evaporation, runoff,</span>
 <span class="sd">    drainage), the stress factor ``TRANRF``, and rate variables for</span>
 <span class="sd">    the rooted / lower / Stroosnijder / oxygen states, in a fully</span>
 <span class="sd">    batched and autograd-safe manner.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2985,7 +3013,7 @@ batched and autograd-safe manner.</p>
         <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">iopt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
+<span class="w">        </span><span class="sd">"""Compute one day of water-balance rates and fluxes.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            state: Current `ModelState`; uses ``wa``, ``wa_lower``,</span>
@@ -3068,7 +3096,7 @@ batched and autograd-safe manner.</p>
 <span class="sd">              factors in ``[0, 1]``.</span>
 <span class="sd">            * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
 <span class="sd">              (should be ≈ 0).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># ``depnr`` / ``iairdu`` are crop traits (see `CropParameters`),</span>
         <span class="c1"># passed in from the crop config by `Lintul5Model`. Coerce to tensors</span>
         <span class="c1"># so a scalar default still flows through the tensor maths below (and</span>
@@ -3139,7 +3167,7 @@ batched and autograd-safe manner.</p>
             <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
             <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
             <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
-            <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;dirro&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">"dirro"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -3185,7 +3213,7 @@ batched and autograd-safe manner.</p>
 
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
-        <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+        <span class="c1"># step's RR) when supplied, else the same-day rr_eff.</span>
         <span class="c1"># ---------------------------------------------------------------- #</span>
         <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
         <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
@@ -3237,31 +3265,31 @@ batched and autograd-safe manner.</p>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="c1"># rates</span>
-            <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
-            <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
-            <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
-            <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
+            <span class="s2">"wa_rate"</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
+            <span class="s2">"wa_lower_rate"</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
+            <span class="s2">"dslr_rate"</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
+            <span class="s2">"dsos_rate"</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
             <span class="c1"># fluxes</span>
-            <span class="s2">&quot;tran&quot;</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
-            <span class="s2">&quot;evap&quot;</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
-            <span class="s2">&quot;runoff&quot;</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
-            <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
-            <span class="s2">&quot;perc1&quot;</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
-            <span class="s2">&quot;perc2&quot;</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
-            <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
-            <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
-            <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
-            <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
-            <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
-            <span class="s2">&quot;dirro_next&quot;</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
+            <span class="s2">"tran"</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
+            <span class="s2">"evap"</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
+            <span class="s2">"runoff"</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
+            <span class="s2">"drain"</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+            <span class="s2">"perc1"</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
+            <span class="s2">"perc2"</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
+            <span class="s2">"perc3"</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+            <span class="s2">"wdr"</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
+            <span class="s2">"wdra"</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+            <span class="s2">"rr"</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
+            <span class="s2">"rirr"</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+            <span class="s2">"dirro_next"</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
             <span class="c1"># stress factors / diagnostics</span>
-            <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-            <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
-            <span class="s2">&quot;smactl&quot;</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
-            <span class="s2">&quot;smcr&quot;</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
-            <span class="s2">&quot;rdry&quot;</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
-            <span class="s2">&quot;rwet&quot;</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
-            <span class="s2">&quot;wbal&quot;</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
+            <span class="s2">"tranrf"</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
+            <span class="s2">"smact"</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
+            <span class="s2">"smactl"</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
+            <span class="s2">"smcr"</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
+            <span class="s2">"rdry"</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
+            <span class="s2">"rwet"</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
+            <span class="s2">"wbal"</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -3498,7 +3526,7 @@ standalone calls are unaffected.</p></td>
     <span class="n">iairdu</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">iopt</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute one day of water-balance rates and fluxes.</span>
+<span class="w">    </span><span class="sd">"""Compute one day of water-balance rates and fluxes.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        state: Current `ModelState`; uses ``wa``, ``wa_lower``,</span>
@@ -3581,7 +3609,7 @@ standalone calls are unaffected.</p></td>
 <span class="sd">          factors in ``[0, 1]``.</span>
 <span class="sd">        * ``wbal``   — rooted-zone mass-balance residual [mm]</span>
 <span class="sd">          (should be ≈ 0).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># ``depnr`` / ``iairdu`` are crop traits (see `CropParameters`),</span>
     <span class="c1"># passed in from the crop config by `Lintul5Model`. Coerce to tensors</span>
     <span class="c1"># so a scalar default still flows through the tensor maths below (and</span>
@@ -3652,7 +3680,7 @@ standalone calls are unaffected.</p></td>
         <span class="n">rain</span><span class="o">=</span><span class="n">rain</span><span class="p">,</span>
         <span class="n">doy</span><span class="o">=</span><span class="n">doy</span><span class="p">,</span>
         <span class="n">external</span><span class="o">=</span><span class="n">irrigation</span><span class="p">,</span>
-        <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;dirro&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">dirro</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">"dirro"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">crop_present</span><span class="o">=</span><span class="n">crop_present</span><span class="p">,</span>
     <span class="p">)</span>
 
@@ -3698,7 +3726,7 @@ standalone calls are unaffected.</p></td>
 
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="c1"># 7. Root-front water transfer — uses the lagged velocity (prior</span>
-    <span class="c1"># step&#39;s RR) when supplied, else the same-day rr_eff.</span>
+    <span class="c1"># step's RR) when supplied, else the same-day rr_eff.</span>
     <span class="c1"># ---------------------------------------------------------------- #</span>
     <span class="n">rr_wdr</span> <span class="o">=</span> <span class="n">rr_lag</span> <span class="k">if</span> <span class="n">rr_lag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rr_eff</span>
     <span class="n">wdr</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">rr_wdr</span> <span class="o">*</span> <span class="n">smactl</span>
@@ -3750,31 +3778,31 @@ standalone calls are unaffected.</p></td>
 
     <span class="k">return</span> <span class="p">{</span>
         <span class="c1"># rates</span>
-        <span class="s2">&quot;wa_rate&quot;</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
-        <span class="s2">&quot;wa_lower_rate&quot;</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
-        <span class="s2">&quot;dslr_rate&quot;</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
-        <span class="s2">&quot;dsos_rate&quot;</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
+        <span class="s2">"wa_rate"</span><span class="p">:</span> <span class="n">wa_rate</span><span class="p">,</span>
+        <span class="s2">"wa_lower_rate"</span><span class="p">:</span> <span class="n">wa_lower_rate</span><span class="p">,</span>
+        <span class="s2">"dslr_rate"</span><span class="p">:</span> <span class="n">dslr_rate</span><span class="p">,</span>
+        <span class="s2">"dsos_rate"</span><span class="p">:</span> <span class="n">dsos_rate</span><span class="p">,</span>
         <span class="c1"># fluxes</span>
-        <span class="s2">&quot;tran&quot;</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
-        <span class="s2">&quot;evap&quot;</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
-        <span class="s2">&quot;runoff&quot;</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
-        <span class="s2">&quot;drain&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
-        <span class="s2">&quot;perc1&quot;</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
-        <span class="s2">&quot;perc2&quot;</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
-        <span class="s2">&quot;perc3&quot;</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
-        <span class="s2">&quot;wdr&quot;</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
-        <span class="s2">&quot;wdra&quot;</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
-        <span class="s2">&quot;rr&quot;</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
-        <span class="s2">&quot;rirr&quot;</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
-        <span class="s2">&quot;dirro_next&quot;</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
+        <span class="s2">"tran"</span><span class="p">:</span> <span class="n">tran</span><span class="p">,</span>
+        <span class="s2">"evap"</span><span class="p">:</span> <span class="n">evap</span><span class="p">,</span>
+        <span class="s2">"runoff"</span><span class="p">:</span> <span class="n">runoff</span><span class="p">,</span>
+        <span class="s2">"drain"</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+        <span class="s2">"perc1"</span><span class="p">:</span> <span class="n">perc1</span><span class="p">,</span>
+        <span class="s2">"perc2"</span><span class="p">:</span> <span class="n">perc2</span><span class="p">,</span>
+        <span class="s2">"perc3"</span><span class="p">:</span> <span class="n">perc3</span><span class="p">,</span>
+        <span class="s2">"wdr"</span><span class="p">:</span> <span class="n">wdr</span><span class="p">,</span>
+        <span class="s2">"wdra"</span><span class="p">:</span> <span class="n">wdra</span><span class="p">,</span>
+        <span class="s2">"rr"</span><span class="p">:</span> <span class="n">rr_eff</span><span class="p">,</span>
+        <span class="s2">"rirr"</span><span class="p">:</span> <span class="n">rirr</span><span class="p">,</span>
+        <span class="s2">"dirro_next"</span><span class="p">:</span> <span class="n">dirro_next</span><span class="p">,</span>
         <span class="c1"># stress factors / diagnostics</span>
-        <span class="s2">&quot;tranrf&quot;</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
-        <span class="s2">&quot;smact&quot;</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
-        <span class="s2">&quot;smactl&quot;</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
-        <span class="s2">&quot;smcr&quot;</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
-        <span class="s2">&quot;rdry&quot;</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
-        <span class="s2">&quot;rwet&quot;</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
-        <span class="s2">&quot;wbal&quot;</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
+        <span class="s2">"tranrf"</span><span class="p">:</span> <span class="n">tranrf</span><span class="p">,</span>
+        <span class="s2">"smact"</span><span class="p">:</span> <span class="n">smact</span><span class="p">,</span>
+        <span class="s2">"smactl"</span><span class="p">:</span> <span class="n">smactl</span><span class="p">,</span>
+        <span class="s2">"smcr"</span><span class="p">:</span> <span class="n">smcr</span><span class="p">,</span>
+        <span class="s2">"rdry"</span><span class="p">:</span> <span class="n">rdry</span><span class="p">,</span>
+        <span class="s2">"rwet"</span><span class="p">:</span> <span class="n">rwet</span><span class="p">,</span>
+        <span class="s2">"wbal"</span><span class="p">:</span> <span class="n">wbal</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

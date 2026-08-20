@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2810,7 +2838,7 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
         <details class="quote">
           <summary>Source code in <code>torchcrop/processes/astro.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Astro</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute solar declination and astronomical daylength.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Compute solar declination and astronomical daylength."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2818,7 +2846,7 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
         <span class="n">latitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">inclination</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
+<span class="w">        </span><span class="sd">"""Compute astronomical parameters.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            doy: Day of year, shape ``[B]``.</span>
@@ -2832,7 +2860,7 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
 <span class="sd">            Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
 <span class="sd">            ``ddlp`` [h] (photoperiod), and ``sinld``/``cosld``/``dsinbe``</span>
 <span class="sd">            (used by irradiation).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
         <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
@@ -2873,12 +2901,12 @@ Astro            (<span title="torch.nn.modules.module.Module">Module</span>)
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;declination&quot;</span><span class="p">:</span> <span class="n">dec</span><span class="p">,</span>
-            <span class="s2">&quot;daylength&quot;</span><span class="p">:</span> <span class="n">daylength</span><span class="p">,</span>
-            <span class="s2">&quot;ddlp&quot;</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
-            <span class="s2">&quot;sinld&quot;</span><span class="p">:</span> <span class="n">sinld</span><span class="p">,</span>
-            <span class="s2">&quot;cosld&quot;</span><span class="p">:</span> <span class="n">cosld</span><span class="p">,</span>
-            <span class="s2">&quot;dsinbe&quot;</span><span class="p">:</span> <span class="n">dsinbe</span><span class="p">,</span>
+            <span class="s2">"declination"</span><span class="p">:</span> <span class="n">dec</span><span class="p">,</span>
+            <span class="s2">"daylength"</span><span class="p">:</span> <span class="n">daylength</span><span class="p">,</span>
+            <span class="s2">"ddlp"</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
+            <span class="s2">"sinld"</span><span class="p">:</span> <span class="n">sinld</span><span class="p">,</span>
+            <span class="s2">"cosld"</span><span class="p">:</span> <span class="n">cosld</span><span class="p">,</span>
+            <span class="s2">"dsinbe"</span><span class="p">:</span> <span class="n">dsinbe</span><span class="p">,</span>
         <span class="p">}</span>
 </code></pre></div>
         </details>
@@ -2968,7 +2996,7 @@ photoperiodic daylength calculation. Defaults to
     <span class="n">latitude</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">inclination</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute astronomical parameters.</span>
+<span class="w">    </span><span class="sd">"""Compute astronomical parameters.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        doy: Day of year, shape ``[B]``.</span>
@@ -2982,7 +3010,7 @@ photoperiodic daylength calculation. Defaults to
 <span class="sd">        Dict with keys ``declination`` [rad], ``daylength`` [h],</span>
 <span class="sd">        ``ddlp`` [h] (photoperiod), and ``sinld``/``cosld``/``dsinbe``</span>
 <span class="sd">        (used by irradiation).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">lat_rad</span> <span class="o">=</span> <span class="n">latitude</span> <span class="o">*</span> <span class="n">_DEG2RAD</span>
     <span class="n">dec</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span>
@@ -3023,12 +3051,12 @@ photoperiodic daylength calculation. Defaults to
     <span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;declination&quot;</span><span class="p">:</span> <span class="n">dec</span><span class="p">,</span>
-        <span class="s2">&quot;daylength&quot;</span><span class="p">:</span> <span class="n">daylength</span><span class="p">,</span>
-        <span class="s2">&quot;ddlp&quot;</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
-        <span class="s2">&quot;sinld&quot;</span><span class="p">:</span> <span class="n">sinld</span><span class="p">,</span>
-        <span class="s2">&quot;cosld&quot;</span><span class="p">:</span> <span class="n">cosld</span><span class="p">,</span>
-        <span class="s2">&quot;dsinbe&quot;</span><span class="p">:</span> <span class="n">dsinbe</span><span class="p">,</span>
+        <span class="s2">"declination"</span><span class="p">:</span> <span class="n">dec</span><span class="p">,</span>
+        <span class="s2">"daylength"</span><span class="p">:</span> <span class="n">daylength</span><span class="p">,</span>
+        <span class="s2">"ddlp"</span><span class="p">:</span> <span class="n">ddlp</span><span class="p">,</span>
+        <span class="s2">"sinld"</span><span class="p">:</span> <span class="n">sinld</span><span class="p">,</span>
+        <span class="s2">"cosld"</span><span class="p">:</span> <span class="n">cosld</span><span class="p">,</span>
+        <span class="s2">"dsinbe"</span><span class="p">:</span> <span class="n">dsinbe</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div>
         </details>

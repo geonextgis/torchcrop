@@ -852,6 +852,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../examples/04_calibration/phenology_calibration_%28winter_wheat%29/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Phenology Calibration (Winter Wheat)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2908,14 +2936,14 @@ Target        </code>
           <summary>Source code in <code>torchcrop/calibration/paths.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Target</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A resolved write location for one calibration value.</span>
+<span class="w">    </span><span class="sd">"""A resolved write location for one calibration value.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        container: Logical container name (``&quot;crop&quot;`` / ``&quot;soil&quot;`` / ``&quot;site&quot;``).</span>
+<span class="sd">        container: Logical container name (``"crop"`` / ``"soil"`` / ``"site"``).</span>
 <span class="sd">        field: Dataclass field name on that container.</span>
 <span class="sd">        row: For a table entry, the 0-based row index whose ordinate is free;</span>
 <span class="sd">            ``None`` for a scalar field.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">container</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">field</span><span class="p">:</span> <span class="nb">str</span>
@@ -2923,12 +2951,12 @@ Target        </code>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether this target addresses a table ordinate.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Whether this target addresses a table ordinate."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">table_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;``(container, field)`` identifying the owning table.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""``(container, field)`` identifying the owning table."""</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">field</span><span class="p">)</span>
 </code></pre></div>
         </details>
@@ -3086,7 +3114,7 @@ or a table abscissa cannot be matched unambiguously.</p></td>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">parse_path</span><span class="p">(</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">containers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Target</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a dotted target path against the parameter containers.</span>
+<span class="w">    </span><span class="sd">"""Resolve a dotted target path against the parameter containers.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name: Target path (see module docstring).</span>
@@ -3098,33 +3126,33 @@ or a table abscissa cannot be matched unambiguously.</p></td>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: If the path is malformed, the container/field is unknown,</span>
 <span class="sd">            or a table abscissa cannot be matched unambiguously.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">row</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">selector</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-        <span class="n">base</span><span class="p">,</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">sel_kind</span> <span class="o">=</span> <span class="s2">&quot;key&quot;</span>
-    <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;[&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-        <span class="n">base</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"@"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"@"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">sel_kind</span> <span class="o">=</span> <span class="s2">"key"</span>
+    <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"]"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"["</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"["</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">selector</span> <span class="o">=</span> <span class="n">idx</span>
-        <span class="n">sel_kind</span> <span class="o">=</span> <span class="s2">&quot;index&quot;</span>
+        <span class="n">sel_kind</span> <span class="o">=</span> <span class="s2">"index"</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">base</span><span class="p">,</span> <span class="n">sel_kind</span> <span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span>
 
-    <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: expected &#39;&lt;container&gt;.&lt;field&gt;&#39; form&quot;</span>
+            <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: expected '&lt;container&gt;.&lt;field&gt;' form"</span>
         <span class="p">)</span>
-    <span class="n">container</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="n">container</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">container</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">containers</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: unknown container </span><span class="si">{</span><span class="n">container</span><span class="si">!r}</span><span class="s2"> &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;(expected one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">containers</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: unknown container </span><span class="si">{</span><span class="n">container</span><span class="si">!r}</span><span class="s2"> "</span>
+            <span class="sa">f</span><span class="s2">"(expected one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">containers</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span>
         <span class="p">)</span>
     <span class="n">obj</span> <span class="o">=</span> <span class="n">containers</span><span class="p">[</span><span class="n">container</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2"> has no field </span><span class="si">{</span><span class="n">field</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2"> has no field </span><span class="si">{</span><span class="n">field</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">sel_kind</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Target</span><span class="p">(</span><span class="n">container</span><span class="o">=</span><span class="n">container</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -3132,17 +3160,17 @@ or a table abscissa cannot be matched unambiguously.</p></td>
     <span class="n">table</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">or</span> <span class="n">table</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2"> is not an [N, 2] table&quot;</span>
+            <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">container</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2"> is not an [N, 2] table"</span>
         <span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">sel_kind</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">sel_kind</span> <span class="o">==</span> <span class="s2">"index"</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: bad row index&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: bad row index"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: row </span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2"> out of range [0, </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: row </span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2"> out of range [0, </span><span class="si">{</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)"</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">Target</span><span class="p">(</span><span class="n">container</span><span class="o">=</span><span class="n">container</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">)</span>
 
@@ -3153,13 +3181,13 @@ or a table abscissa cannot be matched unambiguously.</p></td>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">matches</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: no table row at DVS=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">; &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;abscissae are </span><span class="si">{</span><span class="n">xs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: no table row at DVS=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">; "</span>
+            <span class="sa">f</span><span class="s2">"abscissae are </span><span class="si">{</span><span class="n">xs</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: DVS=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> matches </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> rows; &quot;</span>
-            <span class="s2">&quot;use the &#39;[index]&#39; form to disambiguate&quot;</span>
+            <span class="sa">f</span><span class="s2">"target </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: DVS=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> matches </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> rows; "</span>
+            <span class="s2">"use the '[index]' form to disambiguate"</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">Target</span><span class="p">(</span><span class="n">container</span><span class="o">=</span><span class="n">container</span><span class="p">,</span> <span class="n">field</span><span class="o">=</span><span class="n">field</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">matches</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
 </code></pre></div>
@@ -3187,7 +3215,7 @@ or a table abscissa cannot be matched unambiguously.</p></td>
         <details class="quote">
           <summary>Source code in <code>torchcrop/calibration/paths.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_value</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span> <span class="n">containers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the current physical value at ``target``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Read the current physical value at ``target``."""</span>
     <span class="n">obj</span> <span class="o">=</span> <span class="n">containers</span><span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">container</span><span class="p">]</span>
     <span class="n">field</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">field</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">is_table</span><span class="p">:</span>
@@ -3266,13 +3294,13 @@ intact.</p>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rebuild_table</span><span class="p">(</span>
     <span class="n">table</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a fresh ``[N, 2]`` table with selected ordinates replaced.</span>
+<span class="w">    </span><span class="sd">"""Return a fresh ``[N, 2]`` table with selected ordinates replaced.</span>
 
 <span class="sd">    The abscissa column and the frozen ordinates are taken (detached) from</span>
 <span class="sd">    ``table``; the rows in ``updates`` are replaced by the supplied value</span>
 <span class="sd">    tensors. The result is assembled with `torch.stack` (no in-place</span>
 <span class="sd">    writes), so gradients flow from the loss back through the updated</span>
-<span class="sd">    ordinates while keeping the interpolation table&#39;s sorted-abscissa contract</span>
+<span class="sd">    ordinates while keeping the interpolation table's sorted-abscissa contract</span>
 <span class="sd">    intact.</span>
 
 <span class="sd">    Args:</span>
@@ -3281,7 +3309,7 @@ intact.</p>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A new ``[N, 2]`` table tensor.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">xs</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
     <span class="n">base_y</span> <span class="o">=</span> <span class="n">table</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
@@ -3316,7 +3344,7 @@ intact.</p>
           <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">write_scalar</span><span class="p">(</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">Target</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">containers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a scalar ``value`` into a non-table ``target`` field.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Write a scalar ``value`` into a non-table ``target`` field."""</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">containers</span><span class="p">[</span><span class="n">target</span><span class="o">.</span><span class="n">container</span><span class="p">],</span> <span class="n">target</span><span class="o">.</span><span class="n">field</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 </code></pre></div>
         </details>
