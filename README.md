@@ -48,6 +48,11 @@ responses, parameter networks) and calibrated end-to-end with standard
 - **External irrigation/fertiliser** — pass explicit `irrigation: [B, T]`
   and `fertilizer: [B, T, 3]` schedules to `model(...)`, overriding the
   internal table-driven application on a per-day basis.
+- **Long-term simulation** — `torchcrop.longterm` runs 30-50 years of
+  consecutive seasons in one call: per-year sowing dates (`CropCalendar`),
+  management that follows a moving sowing date (`ManagementSchedule`), and an
+  explicit `CarryOverPolicy` for what crosses each harvest boundary. A
+  one-season run reproduces `model(...)` bit-for-bit.
 - **Smooth options** — stage-based branching (`DVS < 1`, maturity, etc.) can
   be switched between hard `torch.where` and sigmoid blends for second-order
   smoothness.
@@ -151,6 +156,8 @@ torchcrop/
 │                              # HybridManager / ResidualSpec wiring layer
 ├── calibration/                # CalibrationManager, ParameterSpec,
 │                              # ConstraintGroup, transforms
+├── longterm/                  # Multi-year runs (CropCalendar, LongTermSimulator,
+│                              # CarryOverPolicy, ManagementSchedule)
 └── utils/                     # I/O, visualisation, validation helpers
 ```
 
@@ -164,6 +171,7 @@ Worked notebooks under `docs/examples/` (rendered into the docs site):
 - `04_calibration/` — gradient-based parameter calibration
 - `05_hybrid/` — hybrid ML residual corrections (reserved, notebook in progress)
 - `06_daily_timestep/` — low-level, day-by-day API usage
+- `08_long_term/` — multi-year simulation with varying sowing dates and management
 - `others/data_prep.ipynb` — preparing the Brandenburg example dataset
 
 ## Development
