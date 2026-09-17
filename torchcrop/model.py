@@ -338,6 +338,8 @@ class Lintul5Model(nn.Module):
         initial_state: ModelState | None = None,
         irrigation: torch.Tensor | None = None,
         fertilizer: torch.Tensor | None = None,
+        sowing: torch.Tensor | None = None,
+        doy: torch.Tensor | None = None,
     ) -> ModelOutput:
         """Run a full simulation and return trajectories plus final yield.
 
@@ -364,6 +366,22 @@ class Lintul5Model(nn.Module):
                 ``scale_factor_fer*`` and recovery fractions
                 ``nrf``/``prf``/``krf`` still apply. ``None`` (the default)
                 leaves the internal table-driven application in control.
+            sowing: Optional per-day sowing signal ``[B, T]`` in
+                ``{0, 1}``, aligned with the weather days. Replaces the
+                ``doy >= site.idpl`` comparison that drives the sowing
+                latch, leaving every downstream consumer (the seed-reserve
+                bootstrap, ``crop_present``, the EMERG gates) unchanged.
+                Passing a mask equal to ``doy >= idpl`` reproduces the
+                default path exactly; `torchcrop.longterm` uses it to
+                re-sow the field once per season. ``None`` (the default)
+                leaves the ``idpl`` calendar in control.
+            doy: Optional per-day day-of-year ``[B, T]``. When provided it
+                is used verbatim in place of the internal
+                ``((start_doy - 1 + t) % 365) + 1`` sequence. Multi-year
+                runs should pass the true calendar day-of-year (weather
+                channel ``0``), since the internal sequence drifts by one
+                day per leap year. ``None`` (the default) keeps the
+                internal sequence.
 
         Returns:
             A `ModelOutput` containing the full state, rate and
@@ -411,6 +429,22 @@ class Lintul5Model(nn.Module):
             fertilizer = fertilizer.to(
                 dtype=weather.data.dtype, device=weather.data.device
             )
+        if sowing is not None:
+            expected = (batch_size, weather.n_days)
+            if sowing.shape != expected:
+                raise ValueError(
+                    "sowing must have shape [B, T] = "
+                    f"{expected}; got {tuple(sowing.shape)}"
+                )
+            sowing = sowing.to(dtype=weather.data.dtype, device=weather.data.device)
+        if doy is not None:
+            expected = (batch_size, weather.n_days)
+            if doy.shape != expected:
+                raise ValueError(
+                    "doy must have shape [B, T] = "
+                    f"{expected}; got {tuple(doy.shape)}"
+                )
+            doy = doy.to(dtype=weather.data.dtype, device=weather.data.device)
         if initial_state is None:
             state = self.initialize(
                 batch_size=batch_size,
@@ -433,6 +467,8 @@ class Lintul5Model(nn.Module):
             site_params=self.site_params,
             irrigation=irrigation,
             fertilizer=fertilizer,
+            sowing=sowing,
+            doy=doy,
         )
 
         lai = torch.stack([s.lai for s in states], dim=1)  # [B, T+1]
@@ -476,6 +512,7 @@ class Lintul5Model(nn.Module):
         doy: torch.Tensor,
         irrigation: torch.Tensor | None = None,
         fertilizer: torch.Tensor | None = None,
+        sowing: torch.Tensor | None = None,
     ) -> dict[str, torch.Tensor]:
         """Compute the daily rate vector for a single day (low-level API).
 
@@ -494,6 +531,11 @@ class Lintul5Model(nn.Module):
                 ``ferntab``/``ferptab``/``ferktab`` look-ups (scale
                 factors and recovery fractions still apply); ``None``
                 leaves the internal table-driven application in control.
+            sowing: Optional sowing signal for this day ``[B]`` in
+                ``{0, 1}``. Replaces the ``doy >= site.idpl`` comparison
+                that feeds the sowing latch, so a caller can re-sow the
+                field (see `torchcrop.longterm`); ``None`` leaves the
+                ``idpl`` calendar in control.
 
         Returns:
             Dict of rate tensors keyed by ``"<field>_rate"`` plus a
@@ -511,6 +553,7 @@ class Lintul5Model(nn.Module):
             site_params=self.site_params,
             irrigation=irrigation,
             fertilizer=fertilizer,
+            sowing=sowing,
         )
         return rates
 
@@ -546,6 +589,7 @@ class Lintul5Model(nn.Module):
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
         fertilizer: torch.Tensor | None = None,
+        sowing: torch.Tensor | None = None,
     ) -> tuple[dict[str, torch.Tensor], DiagnosticState]:
         # Unpack the day's weather forcing.
         davtmp = weather_day["davtmp"]
@@ -642,9 +686,18 @@ class Lintul5Model(nn.Module):
         #    wheat). With the default ``idpl = 0`` the gate is 1 every day,
         #    reproducing the legacy "sown at t=0" behaviour. ``idpl`` is a
         #    discrete switch, so the hard comparison adds no gradient path.
-        idpl = site_params.idpl
-        idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
-        sown_now = (doy >= idpl_b).to(davtmp.dtype)
+        #
+        #    An externally supplied ``sowing`` signal replaces the ``idpl``
+        #    comparison as the latch *source* — everything downstream
+        #    (``just_sown``, the seed-reserve bootstrap, ``crop_present``)
+        #    is unchanged, which is what lets `torchcrop.longterm` re-sow
+        #    the same field once per season across a multi-decade run.
+        if sowing is None:
+            idpl = site_params.idpl
+            idpl_b = idpl.expand_as(doy) if idpl.dim() > 0 else idpl
+            sown_now = (doy >= idpl_b).to(davtmp.dtype)
+        else:
+            sown_now = sowing.to(davtmp.dtype)
         sown = torch.maximum(state.sown, sown_now)
 
         # A crop stands in the field between sowing and maturity. Demand-driven
