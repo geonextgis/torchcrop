@@ -9,8 +9,8 @@ extra_css:
 
 extra_javascript:
     - javascripts/mathjax.js
-    - https://polyfill.io/v3/polyfill.min.js?features=es6
     - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+#     - https://polyfill.io/v3/polyfill.min.js?features=es6
 
 copyright: "Copyright &copy; 2026 - 2026 Krishnagopal Halder"
 
@@ -102,11 +102,18 @@ nav:
                 - Phenology Calibration (Winter Wheat): examples/04_calibration/phenology_calibration_(winter_wheat).ipynb
           - Daily time-step:
                 - Runtime Parameter & State Changes (Winter Wheat): examples/06_daily_timestep/daily_timestep_(winter_wheat).ipynb
+          - Long-term:
+                - Multi-Year Simulation (Winter Wheat): examples/08_long_term/long_term_(winter_wheat).ipynb
     - API Reference:
           - Overview: api/torchcrop.md
           - Config: api/config.md
           - Engine: api/engine.md
           - Model: api/model.md
+          - Long-term:
+                - calendar: api/longterm/calendar.md
+                - carryover: api/longterm/carryover.md
+                - management: api/longterm/management.md
+                - simulator: api/longterm/simulator.md
           - Calibration:
                 - manager: api/calibration/manager.md
                 - spec: api/calibration/spec.md
