@@ -74,6 +74,7 @@ class SimulationEngine(nn.Module):
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
         fertilizer: torch.Tensor | None = None,
+        sowing: torch.Tensor | None = None,
     ) -> StepResult:
         result = self._compute_rates(
             state=state,
@@ -84,6 +85,7 @@ class SimulationEngine(nn.Module):
             site_params=site_params,
             irrigation=irrigation,
             fertilizer=fertilizer,
+            sowing=sowing,
         )
         # `compute_rates` may return either a rates dict (legacy) or a
         # ``(rates, DiagnosticState)`` tuple. The diagnostic does not
@@ -106,6 +108,8 @@ class SimulationEngine(nn.Module):
         site_params: SiteParameters,
         irrigation: torch.Tensor | None = None,
         fertilizer: torch.Tensor | None = None,
+        sowing: torch.Tensor | None = None,
+        doy: torch.Tensor | None = None,
     ) -> tuple[
         list[ModelState],
         list[dict[str, torch.Tensor]],
@@ -132,6 +136,20 @@ class SimulationEngine(nn.Module):
                 applications in the soil mineral balance (scale factors
                 and recovery fractions still apply); ``None`` leaves the
                 internal table-driven application in control.
+            sowing: Optional externally supplied per-day sowing signal
+                ``[B, T]`` in ``{0, 1}``. Day ``t``'s column replaces the
+                ``doy >= site_params.idpl`` comparison that drives the
+                sowing latch, which lets a caller re-sow a field several
+                times in one run (see `torchcrop.longterm`). ``None``
+                leaves the ``idpl`` calendar in control.
+            doy: Optional externally supplied day-of-year ``[B, T]``.
+                When provided, day ``t``'s column is used verbatim
+                instead of the internal ``((start_doy - 1 + t) % 365) + 1``
+                sequence. Multi-year runs should pass the true calendar
+                day-of-year (weather channel ``0``), because the internal
+                modulo-365 sequence drifts against the real calendar by
+                one day per leap year. ``None`` keeps the internal
+                sequence.
 
         Returns:
             A ``(states, rates, diagnostics)`` tuple. ``states`` is a list
@@ -149,12 +167,16 @@ class SimulationEngine(nn.Module):
         n_days = weather.n_days
         for t in range(n_days):
             weather_day = weather.day(t)
-            doy_t = torch.full_like(
-                state.dvs,
-                float(((start_doy - 1 + t) % 365) + 1),
-            )
+            if doy is None:
+                doy_t = torch.full_like(
+                    state.dvs,
+                    float(((start_doy - 1 + t) % 365) + 1),
+                )
+            else:
+                doy_t = doy[:, t]
             irrig_t = None if irrigation is None else irrigation[:, t]
             fert_t = None if fertilizer is None else fertilizer[:, t, :]
+            sow_t = None if sowing is None else sowing[:, t]
             result = self.step(
                 state=states[-1],
                 weather_day=weather_day,
@@ -164,6 +186,7 @@ class SimulationEngine(nn.Module):
                 site_params=site_params,
                 irrigation=irrig_t,
                 fertilizer=fert_t,
+                sowing=sow_t,
             )
             states.append(result.state)
             rates_all.append(result.rates)
