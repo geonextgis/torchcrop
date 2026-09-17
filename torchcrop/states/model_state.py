@@ -388,6 +388,27 @@ class ModelState:
         """
         return replace(self, **updates)
 
+    def detach(self) -> "ModelState":
+        """Return a new `ModelState` with every tensor field detached.
+
+        Cuts the autograd graph at this state without changing a single
+        value, which is what makes truncated back-propagation through time
+        possible: a long run can be split into segments whose graphs are
+        released as soon as each segment's loss has been formed. Used by
+        `torchcrop.longterm.LongTermSimulator` at season boundaries; see
+        its ``truncate_bptt`` argument.
+
+        Returns:
+            A new `ModelState` whose fields are ``tensor.detach()`` views
+            of this one's — same values, no gradient history.
+        """
+        updates = {
+            f.name: getattr(self, f.name).detach()
+            for f in fields(self)
+            if isinstance(getattr(self, f.name), torch.Tensor)
+        }
+        return replace(self, **updates)
+
     def stack(self) -> torch.Tensor:
         """Stack all scalar-per-batch tensors into a single ``[B, C]`` tensor.
 
