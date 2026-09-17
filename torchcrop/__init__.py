@@ -8,7 +8,7 @@ References:
 
 __author__ = """Krishnagopal Halder"""
 __email__ = "geonextgis@gmail.com"
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 from torchcrop.calibration import (
     CalibrationManager,
@@ -18,6 +18,15 @@ from torchcrop.calibration import (
 from torchcrop.config import RunConfig
 from torchcrop.drivers.weather import WeatherDriver
 from torchcrop.engine import SimulationEngine
+from torchcrop.longterm import (
+    CarryOverPolicy,
+    CropCalendar,
+    LongTermOutput,
+    LongTermSimulator,
+    ManagementEvent,
+    ManagementSchedule,
+    SeasonRecord,
+)
 from torchcrop.model import Lintul5Model, ModelOutput
 from torchcrop.parameters.crop_params import CropParameters, available_crops
 from torchcrop.parameters.site_params import SiteParameters
@@ -26,11 +35,18 @@ from torchcrop.states.model_state import DiagnosticState, ModelState
 
 __all__ = [
     "CalibrationManager",
+    "CarryOverPolicy",
     "ConstraintGroup",
+    "CropCalendar",
     "CropParameters",
     "DiagnosticState",
     "Lintul5Model",
+    "LongTermOutput",
+    "LongTermSimulator",
+    "ManagementEvent",
+    "ManagementSchedule",
     "ParameterSpec",
+    "SeasonRecord",
     "available_crops",
     "ModelOutput",
     "ModelState",
