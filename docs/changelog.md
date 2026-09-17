@@ -1,5 +1,74 @@
 # Changelog
 
+## v1.1.2 - 2026-08-20
+
+**New Features**:
+
+-   `torchcrop.longterm` — a multi-year simulation framework for continuous
+    30-50 year runs of consecutive seasons, with a different sowing date each
+    year and time-varying management.
+
+    -   `CropCalendar` — declarative sowing/harvest schedule, per batch element
+        and per season. Build it from real dates (`from_dates`, one sequence per
+        batch element, ragged allowed) or a repeating day-of-year
+        (`annual`, which also accepts a different day-of-year per year and a
+        spin-up offset). Harvest is rule-driven (at maturity, optionally plus a
+        ripening delay) or fixed per season; the field is always cleared before
+        the next sowing, so seasons can never overlap.
+    -   `LongTermSimulator` / `LongTermOutput` / `SeasonRecord` — the runner and
+        its results. Per-season yield, heat-stress-adjusted yield, peak LAI,
+        duration, maturity flag and full water/nutrient budgets as `[B, S]`
+        tensors, plus a `to_dataframe()` view. Daily trajectories are opt-in
+        through `collect=(...)`.
+    -   `CarryOverPolicy` / `reset_at_harvest` — what crosses a harvest
+        boundary. Harvest returns the field to a bare, pre-sowing condition,
+        with rooting depth reset to `rdi` under a water-conserving
+        redistribution into the lower zone (the inverse of the `WDR` transfer
+        applied as roots grow), so total profile water is preserved. Soil water
+        is always continuous; soil mineral pools carry by default
+        (`soil_minerals="reset"` gives independent seasons on a shared weather
+        stream), accumulators reset per season, and `residue_fraction`
+        optionally returns residue N/P/K to the organic pools.
+    -   `ManagementSchedule` / `ManagementEvent` — irrigation and fertiliser
+        events written once and expanded into the `[B, T]` / `[B, T, 3]` daily
+        driver arrays. Events anchor to an absolute day, a calendar
+        date, or an offset from **each season's own sowing day**, so a schedule
+        follows a sowing date that moves between years. Amounts may be
+        `nn.Parameter`s and stay differentiable through the simulation.
+
+**Improvements**:
+
+-   `Lintul5Model.forward` / `compute_rates` and `SimulationEngine.run` / `step`
+    accept two optional arguments, alongside the external `irrigation` /
+    `fertilizer` drivers:
+
+    -   `sowing` `[B, T]` — a per-day sowing signal driving the sowing latch,
+        which is what lets a field be re-sown once per season across a run.
+        When omitted, the `site.idpl` calendar is in control.
+    -   `doy` `[B, T]` — the calendar day-of-year, normally weather channel
+        `0`. Long runs should supply it: the internal
+        `((start_doy - 1 + t) % 365) + 1` sequence advances a day per leap year
+        against the real calendar, which over 50 years shifts day length and
+        solar geometry by nearly two weeks.
+
+    Both default to `None`, in which case the single-season path is followed
+    exactly; supplying values that encode that path reproduces it
+    byte-for-byte. Regression tests assert this with `torch.equal` across all
+    62 `ModelState` fields, every day, in all four production modes.
+
+-   `ModelState.detach()` — returns a new state with every tensor field
+    detached, enabling truncated back-propagation through time.
+-   `docs/examples/08_long_term/` — a tutorial running 24 consecutive
+    winter-wheat seasons (2000-2024) over the new
+    `data/brandenburg/torchcrop/weather_longterm/` record: loading a continuous
+    multi-decade series, a calendar with a sowing date that moves each year,
+    a sowing-anchored N and irrigation schedule, and the per-season outputs.
+-   `tests/test_longterm/` — 54 tests covering byte-identical single-season
+    equivalence, reset semantics and water conservation, season sequencing
+    (ragged calendars, per-element sowing dates, forced clearing of a crop that
+    never matures, run resumption from `final_state`), calendar and management
+    expansion, and differentiability in both BPTT regimes.
+
 ## v1.1.1 - 2026-07-28
 
 **Bug Fixes**:
